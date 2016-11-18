@@ -96,6 +96,39 @@ public class MultiLanguagePlugin extends JavaPlugin {
 	public boolean translateTitles() {
 		return false;
 	}
+	
+	/**
+	 * 
+	 * @return If you are checking for language regex on actionbars or
+	 *         not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateActionBars() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on GUI titles or
+	 *         not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateGUIs() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on scoreboards or
+	 *         not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateScoreboards() {
+		return false;
+	}
 
 	/**
 	 * Get the only MultiLanguagePlugin instance. You can also get it by using

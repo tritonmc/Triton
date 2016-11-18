@@ -14,6 +14,24 @@ import com.cloutteam.rex.multilanguage.LanguagePlayer;
  *
  */
 public class Language {
+	
+	/**
+	 * Get a message from the main language (useful for console).
+	 * 
+	 * @param message
+	 *            The message code.
+	 * @param complements
+	 *            (Optional) The arguments to replace on the message. If the
+	 *            message (on the language file) is "Welcome %1!" and you give
+	 *            "player" on the first argument, the output will be
+	 *            "Welcome player!"
+	 * @return The un-coded message with the arguments replaced.
+	 * @author Rexcantor64
+	 *
+	 */
+	public String getFromMain(String message, Object... complements) {
+		return null;
+	}
 
 	/**
 	 * Get a message using the

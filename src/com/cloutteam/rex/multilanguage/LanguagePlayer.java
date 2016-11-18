@@ -19,7 +19,7 @@ public class LanguagePlayer {
 	 * @param p
 	 *            The bukkit player.
 	 */
-	public LanguagePlayer(Player p) {
+	private LanguagePlayer(Player p) {
 	}
 
 	/**
