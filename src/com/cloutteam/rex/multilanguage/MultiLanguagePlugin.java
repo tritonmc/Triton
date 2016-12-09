@@ -1,5 +1,9 @@
 package com.cloutteam.rex.multilanguage;
 
+import java.util.Set;
+
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.cloutteam.rex.multilanguage.api.Language;
@@ -96,11 +100,10 @@ public class MultiLanguagePlugin extends JavaPlugin {
 	public boolean translateTitles() {
 		return false;
 	}
-	
+
 	/**
 	 * 
-	 * @return If you are checking for language regex on actionbars or
-	 *         not.
+	 * @return If you are checking for language regex on actionbars or not.
 	 * 
 	 * @author Rexcantor64
 	 */
@@ -110,8 +113,7 @@ public class MultiLanguagePlugin extends JavaPlugin {
 
 	/**
 	 * 
-	 * @return If you are checking for language regex on GUI titles or
-	 *         not.
+	 * @return If you are checking for language regex on GUI titles or not.
 	 * 
 	 * @author Rexcantor64
 	 */
@@ -121,13 +123,31 @@ public class MultiLanguagePlugin extends JavaPlugin {
 
 	/**
 	 * 
-	 * @return If you are checking for language regex on scoreboards or
-	 *         not.
+	 * @return If you are checking for language regex on scoreboards or not.
 	 * 
 	 * @author Rexcantor64
 	 */
 	public boolean translateScoreboards() {
 		return false;
+	}
+
+	/**
+	 * 
+	 * @return The array list of translating entity titles.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public Set<EntityType> translateHolograms() {
+		return null;
+	}
+	
+	/**
+	 * 
+	 * @param p The player to open the GUI
+	 * 
+	 * @author Rexcantor64
+	 */
+	public void openLanguagesSelectionGUI(Player p){
 	}
 
 	/**
