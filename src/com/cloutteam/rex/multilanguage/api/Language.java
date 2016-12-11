@@ -1,5 +1,7 @@
 package com.cloutteam.rex.multilanguage.api;
 
+import java.util.List;
+
 import org.bukkit.entity.Player;
 
 import com.cloutteam.rex.multilanguage.LanguagePlayer;
@@ -14,7 +16,7 @@ import com.cloutteam.rex.multilanguage.LanguagePlayer;
  *
  */
 public class Language {
-	
+
 	/**
 	 * Get a message from the main language (useful for console).
 	 * 
@@ -23,8 +25,8 @@ public class Language {
 	 * @param complements
 	 *            (Optional) The arguments to replace on the message. If the
 	 *            message (on the language file) is "Welcome %1!" and you give
-	 *            "player" on the first argument, the output will be
-	 *            "Welcome player!"
+	 *            "player" on the first argument, the output will be "Welcome
+	 *            player!"
 	 * @return The un-coded message with the arguments replaced.
 	 * @author Rexcantor64
 	 *
@@ -46,8 +48,8 @@ public class Language {
 	 * @param complements
 	 *            (Optional) The arguments to replace on the message. If the
 	 *            message (on the language file) is "Welcome %1!" and you give
-	 *            "player" on the first argument, the output will be
-	 *            "Welcome player!"
+	 *            "player" on the first argument, the output will be "Welcome
+	 *            player!"
 	 * @return The un-coded message with the arguments replaced.
 	 * @author Rexcantor64
 	 *
@@ -68,8 +70,8 @@ public class Language {
 	 * @param complements
 	 *            (Optional) The arguments to replace on the message. If the
 	 *            message (on the language file) is "Welcome %1!" and you give
-	 *            "player" on the first argument, the output will be
-	 *            "Welcome player!"
+	 *            "player" on the first argument, the output will be "Welcome
+	 *            player!"
 	 * @return The un-coded message with the arguments replaced.
 	 * @author Rexcantor64
 	 *
@@ -121,6 +123,17 @@ public class Language {
 	 *
 	 */
 	public Lang getLangByMcCode(String minecraftCode, boolean fallback) {
+		return null;
+	}
+
+	/**
+	 * Get all the languages
+	 * 
+	 * @return A {@link com.cloutteam.rex.multilanguage.api.Lang Lang} list which contains all the languages on config.
+	 * @author Rexcantor64
+	 *
+	 */
+	public List<Lang> getAllLangs() {
 		return null;
 	}
 
