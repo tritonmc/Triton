@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 /**
  * Handles the {@link LanguagePlayer LanguagePlayer} instances
  * 
+ * @category Spigot/Bukkit only
+ * 
  * @author Rexcantor64
  *
  */

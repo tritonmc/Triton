@@ -12,6 +12,8 @@ import com.cloutteam.rex.multilanguage.LanguagePlayer;
  * {@link com.cloutteam.rex.multilanguage.MultiLanguagePlugin#getLanguageManager()
  * MultiLanguagePlugin.get().getLanguageManager()}
  * 
+ * @category Spigot/Bukkit only
+ * 
  * @author Rexcantor64
  *
  */

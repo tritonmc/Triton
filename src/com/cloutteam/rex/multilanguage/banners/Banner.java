@@ -3,6 +3,12 @@ package com.cloutteam.rex.multilanguage.banners;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 
+/**
+ * @category Spigot/Bukkit only
+ * 
+ * @author Rexcantor64
+ *
+ */
 public class Banner {
 
 	/**

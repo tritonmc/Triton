@@ -7,6 +7,8 @@ import com.cloutteam.rex.multilanguage.api.Lang;
 /**
  * This represents the Player. Here, only the language is saved.
  * 
+ * @category Spigot/Bukkit only
+ * 
  * @author Rexcantor64
  *
  */

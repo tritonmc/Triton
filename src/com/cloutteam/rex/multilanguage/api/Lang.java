@@ -8,6 +8,8 @@ import org.bukkit.inventory.meta.BannerMeta;
 /**
  * Represents a language. You can get the language info from this class.
  * 
+ * @category Spigot/Bukkit only
+ * 
  * @author Rexcantor64
  *
  */
