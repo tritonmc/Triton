@@ -18,7 +18,7 @@ public class SpigotMLP extends JavaPlugin implements MLPInterface {
 	 * 
 	 * @return The only {@link com.cloutteam.rex.multilanguage.api.Language
 	 *         LanguageManager} instance.
-	 *         
+	 * 
 	 * @category Spigot/Bukkit only
 	 * 
 	 * @since 0.1.5
@@ -125,6 +125,16 @@ public class SpigotMLP extends JavaPlugin implements MLPInterface {
 	 * @author Rexcantor64
 	 */
 	public boolean translateScoreboards() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on kick messages or not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateKick() {
 		return false;
 	}
 
