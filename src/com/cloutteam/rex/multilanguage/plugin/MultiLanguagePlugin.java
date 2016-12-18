@@ -108,6 +108,24 @@ public class MultiLanguagePlugin {
 		 */
 		public boolean translateScoreboards();
 
+		/**
+		 * 
+		 * @return If you are checking for language regex on kick messages or
+		 *         not.
+		 * 
+		 * @author Rexcantor64
+		 */
+		public boolean translateKick();
+
+		/**
+		 * 
+		 * @return If you are checking for language regex on tab header and
+		 *         footer or not.
+		 * 
+		 * @author Rexcantor64
+		 */
+		public boolean translateTab();
+
 	}
 
 	/**

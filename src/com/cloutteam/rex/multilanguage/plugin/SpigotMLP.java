@@ -140,6 +140,39 @@ public class SpigotMLP extends JavaPlugin implements MLPInterface {
 
 	/**
 	 * 
+	 * @return If you are checking for language regex on tab header and footer
+	 *         or not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateTab() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on item's name and lore or
+	 *         not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateItems() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on item's name and lore or
+	 *         not (if the item is inside the inventory).
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateInventoryItems() {
+		return false;
+	}
+
+	/**
+	 * 
 	 * @return The array list of translating entity titles.
 	 * 
 	 * @author Rexcantor64

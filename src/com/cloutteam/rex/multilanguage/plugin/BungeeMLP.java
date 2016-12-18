@@ -24,8 +24,10 @@ public class BungeeMLP extends Plugin implements MLPInterface {
 
 	/**
 	 * 
-	 * @param messageCode The message code on your .language file.
-	 * @param args The arguments to insert on the string. Leave empty 
+	 * @param messageCode
+	 *            The message code on your .language file.
+	 * @param args
+	 *            The arguments to insert on the string. Leave empty
 	 * @return
 	 *
 	 * @author Rexcantor64
@@ -133,6 +135,29 @@ public class BungeeMLP extends Plugin implements MLPInterface {
 	 * 
 	 */
 	public boolean translateScoreboards() {
+		return false;
+	}
+
+	/**
+	 * Not implemented on BungeeCord yet.
+	 * 
+	 * @return If you are checking for language regex on kick messages or not.
+	 * 
+	 * @deprecated
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateKick() {
+		return false;
+	}
+
+	/**
+	 * 
+	 * @return If you are checking for language regex on tab header and footer or not.
+	 * 
+	 * @author Rexcantor64
+	 */
+	public boolean translateTab() {
 		return false;
 	}
 

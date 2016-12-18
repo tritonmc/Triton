@@ -1,10 +1,10 @@
-# MultiLanguagePlugin 0.2.1b
+# MultiLanguagePlugin 0.2.2
 _Sends the same message on different languages... Hooks into all plugins!_
 
 Buy it [here](https://www.spigotmc.org/resources/multilanguageplugin-9.30331/)!
 
 
-[Download API for MultiLanguagePlugin 0.2.1b](https://mega.nz/#!54omCCxR!BshyZ_SFMmtV2PempKuM0hHz-O6OcMlCt9dTorHRNEY)
+[Download API for MultiLanguagePlugin 0.2.2](https://mega.nz/#!dlwD0LwZ!nCwFitV03UfH03FXxybcAbbRmviGSxgUv2Smu0xkj_U)
 
 [Need help developing? Take a look at the JavaDocs!](http://islandcraftgames.net/multilanguageplugin)
 
