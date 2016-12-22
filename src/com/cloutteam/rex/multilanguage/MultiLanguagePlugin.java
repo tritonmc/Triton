@@ -1,16 +1,14 @@
-package com.cloutteam.rex.multilanguage.plugin;
+package com.cloutteam.rex.multilanguage;
 
 import java.util.Set;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import com.cloutteam.rex.multilanguage.api.Language;
-import com.cloutteam.rex.multilanguage.plugin.MultiLanguagePlugin.MLPInterface;
 import com.cloutteam.rex.multilanguage.plugin.MultiLanguagePlugin.PluginType;
 
-public class SpigotMLP extends JavaPlugin implements MLPInterface {
+public class MultiLanguagePlugin {
 
 	/**
 	 * Get the {@link com.cloutteam.rex.multilanguage.api.Language
