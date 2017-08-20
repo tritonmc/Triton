@@ -1,0 +1,23 @@
+language-creation:
+    syntax: lang
+    syntax-args: args
+    syntax-arg: arg
+    # Select what language checks are enabled. The API can't be disabled (yet).
+    enabled:
+        # Should the plugin check chat messages?
+        chat-messages: true
+        # Should the plugin check actions bars?
+        action-bars: true
+        # Should the plugin check titles?
+        titles: true
+        # Should the plugin check boss bars?
+        bossbars: true
+        # Should the plugin check tab header and footer?
+        tab: true
+        
+# The spigot servers where MultiLanguagePlugin is installed.
+# If you put here servers that don't have MultiLanguagePlugin
+# installed, your server will have 2 seconds delay on all tasks.
+# NOTE: server names are the ones on BungeeCord config.
+language-servers:
+    - hub
