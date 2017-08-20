@@ -3,3 +3,6 @@
 /doc
 /bin
 /.gitignore
+/.idea
+/out
+/javadocs

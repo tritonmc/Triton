@@ -55,6 +55,9 @@ language-creation:
         guis: true
         # Should the plugin check scoreboards?
         scoreboards: true
+        # Should the plugin check for scoreboards, ignoring colors in the middle of [lang] and [/lang] tags?
+        # Enable if the plugin isn't recognizing the scoreboard
+        scoreboards-advanced: false
         # Should the plugin check holograms (and/or entity display names)?
         # Normally the most recent plugins use armor stands to make the holograms, but if they don't, you can change it here.
         # Also, you can also translate other's entities name, like villagers. Add their entity type on the list below.

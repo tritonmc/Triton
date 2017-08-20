@@ -1,10 +1,10 @@
-# MultiLanguagePlugin 0.3.3
+# MultiLanguagePlugin 0.4.0
 _Sends the same message on different languages... Hooks into all plugins!_
 
 Buy it [here](https://www.spigotmc.org/resources/multilanguageplugin-9.30331/)!
 
 
-[Download API for MultiLanguagePlugin 0.3.3](http://cdn.clout-team.com/rexcantor64/multilanguageplugin/api/MultiLanguageAPI-v0.2.3.jar)
+[Download API for MultiLanguagePlugin 0.4.0](http://rex.clout-team.com/multilanguageplugin/api/MultiLanguageAPI-v0.4.0.jar)
 
 [Need help developing? Take a look at the JavaDocs!](http://rex.clout-team.com/multilanguageplugin/javadocs)
 
