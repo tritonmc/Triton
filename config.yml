@@ -38,6 +38,11 @@ languages:
 # Also, if you delete any language, the players with that language will have their language changed to this.
 main-language: en_GB
 
+# When enabled, every time the player joins, no matter if they joined before of if they have set their language manually,
+# their language will be switched to the same they're using on Minecraft itself.
+# When disabled, it will only attempt to switch on the first time they join the server.
+force-minecraft-locale: false
+
 # Do not change this if you don't know what you're doing.
 language-creation:
     syntax: lang
@@ -76,3 +81,7 @@ language-creation:
         # It's not recommended to enable this unless you're on lobbies where players can't share items.
         # Requires "items" enabled
         inventory-items: false
+        # Should the plugin check for signs?
+        # Do not forget to configure them on the language files.
+        # You can find a sign creator tool at https://rexcantor64.com/multilanguageplugin/signs
+        signs: true

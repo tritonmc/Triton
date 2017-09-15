@@ -83,6 +83,15 @@ public class SpigotMLP extends JavaPlugin implements MLPInterface {
     }
 
     /**
+     * @return If you are checking for locale on all joins or just on the first join.
+     * @author Rexcantor64
+     * @since 0.5.0
+     */
+    public boolean forceMinecraftLocale() {
+        return false;
+    }
+
+    /**
      * @return If you are checking for language regex on chat or not.
      * @author Rexcantor64
      */
@@ -164,6 +173,15 @@ public class SpigotMLP extends JavaPlugin implements MLPInterface {
      * @author Rexcantor64
      */
     public boolean translateInventoryItems() {
+        return false;
+    }
+
+    /**
+     * @return If you are checking for language regex on signs.
+     * @author Rexcantor64
+     * @since 0.5.0
+     */
+    public boolean translateSigns() {
         return false;
     }
 
