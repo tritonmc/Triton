@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/MultiLanguagePlugin v1.iml" filepath="$PROJECT_DIR$/MultiLanguagePlugin v1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../MultiLanguagePlugin v1 API/MultiLanguagePlugin v1 API.iml" filepath="$PROJECT_DIR$/../MultiLanguagePlugin v1 API/MultiLanguagePlugin v1 API.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/MultiLanguagePlugin v1 Test Suite.iml" filepath="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/MultiLanguagePlugin v1 Test Suite.iml" />
+    </modules>
+  </component>
+</project>

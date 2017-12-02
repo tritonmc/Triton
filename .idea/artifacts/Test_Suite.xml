@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Test Suite">
+    <output-path>/media/dtc/TOSHIBA EXT/Minecraft/Servers/Test Servers/MLP v1 Test Server/plugins</output-path>
+    <root id="archive" name="MLP Test Suite.jar">
+      <element id="module-output" name="MultiLanguagePlugin v1 Test Suite" />
+      <element id="dir-copy" path="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/res" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,11 @@
+name: MLPTestSuite
+main: com.rexcantor64.multilanguageplugin.testsuite.Main
+version: 0.0.1
+website: https://www.spigotmc.org/resources/multilanguageplugin.30331/
+author: Rexcantor64
+softdepend: [MultiLanguagePlugin]
+description: Test Suite
+commands:
+    testsuite:
+        aliases: [test]
+        description: The main command of MultiLanguagePlugin Test Suite.

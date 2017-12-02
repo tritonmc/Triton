@@ -1,0 +1,24 @@
+name: MultiLanguagePlugin
+main: com.rexcantor64.multilanguageplugin.SpigotMLP
+version: 1.0.0-BETA_1
+website: https://www.spigotmc.org/resources/multilanguageplugin.30331/
+author: Rexcantor64
+softdepend: [ProtocolLib]
+description: A plugin that replaces any message on your server, to the receiver's language, in real time!
+commands:
+    multilanguageplugin:
+        aliases: [mlp, ml, multilanguage, language, lang]
+        description: The main command of MultiLanguagePlugin.
+permissions:
+    multilanguageplugin.getflag:
+        default: op
+    multilanguageplugin.setlanguage:
+        default: true
+    multilanguageplugin.setlanguage.others:
+        default: op
+    multilanguageplugin.openselector:
+        default: true
+    multilanguageplugin.reload:
+        default: op
+    multilanguageplugin.help:
+        default: true

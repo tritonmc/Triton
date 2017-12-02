@@ -1,0 +1,25 @@
+error:
+    no-permission: "&cNo permission."
+    message-not-found: "ERROR 404: Message not found: '%1'! Please notify the staff!"
+    lang-not-found: "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages."
+    player-not-found: "&cPlayer %1 not found!"
+help:
+    menu:
+        - "&a---------MultiLanguagePlugin---------"
+        - "&6Available commands:"
+        - "%1"
+        - "&a---------MultiLanguagePlugin---------"
+    menu-item: "&6/%1 %2"
+    getflag: "&cUse /%1 getflag <language name>"
+    setlanguage: "&cUse /%1 setlanguage [player] <language name>"
+success:
+    getflag: "&aYou received the %1 flag!"
+    selector: "&aLanguage changed to %1"
+    reload: "&aConfig successfully reloaded."
+    setlanguage: "&aYour language has been changed to %1"
+    setlanguage-others: "&a%1's language has been changed to %2"
+other:
+    selector-gui-name: "&aSelect a language"
+    selector-gui-prev: "&aPrevious"
+    selector-gui-forward: "&aNext"
+    selector-gui-currentpage: "&aPage %1 of %2"
