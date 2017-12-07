@@ -12,11 +12,14 @@ public class Language {
 
     private String name;
     private List<String> minecraftCode;
+    private String rawDisplayName;
     private String displayName;
     private ItemStack stack;
+    private String flagCode;
 
     Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
         this.name = name;
+        this.rawDisplayName = displayName;
         this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
         Banner banner = new Banner(flagCode);
         this.stack = banner.toBukkit();
@@ -24,6 +27,7 @@ public class Language {
         im.setDisplayName(this.displayName);
         stack.setItemMeta(im);
         this.minecraftCode = minecraftCode;
+        this.flagCode = flagCode;
     }
 
     public String getName() {
@@ -47,5 +51,13 @@ public class Language {
         if (glow)
             is.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
         return is;
+    }
+
+    public String getRawDisplayName() {
+        return rawDisplayName;
+    }
+
+    public String getFlagCode() {
+        return flagCode;
     }
 }

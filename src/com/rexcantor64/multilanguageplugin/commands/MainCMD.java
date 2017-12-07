@@ -24,6 +24,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
 		setCommandAndCompleter("setlanguage", new SetLanguageCMD());
 		subCommands.put("openselector", new OpenSelectorCMD());
 		subCommands.put("reload", new ReloadCMD());
+		subCommands.put("web", new WebCMD());
 	}
 
 	@Override

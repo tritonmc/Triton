@@ -10,6 +10,7 @@ import com.rexcantor64.multilanguageplugin.language.LanguageParser;
 import com.rexcantor64.multilanguageplugin.migration.LanguageMigration;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.PlayerManager;
+import com.rexcantor64.multilanguageplugin.web.GistUploader;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -38,13 +39,14 @@ public class SpigotMLP extends JavaPlugin {
     private LanguageParser languageParser;
     private PlayerManager playerManager;
     private GuiManager guiManager;
+    private GistUploader gistUploader;
 
     @Override
     public void onEnable() {
         instance = this;
         languageFolder = new File(getDataFolder(), "languages");
         // Setup config.yml
-        (config = new MainConfig()).setup();
+        (config = new MainConfig(this)).setup();
         // Setup messages.yml
         File f = new File(getDataFolder(), "messages.yml");
         if (!f.exists())
@@ -58,6 +60,7 @@ public class SpigotMLP extends JavaPlugin {
         playerManager = new PlayerManager();
         languageParser = new LanguageParser();
         guiManager = new GuiManager();
+        gistUploader = new GistUploader(this);
         // Setup commands
         getCommand("multilanguageplugin").setExecutor(new MainCMD());
         // Setup listeners
@@ -105,6 +108,10 @@ public class SpigotMLP extends JavaPlugin {
 
     public GuiManager getGuiManager() {
         return guiManager;
+    }
+
+    public GistUploader getGistUploader() {
+        return gistUploader;
     }
 
     public String getMessage(String code, Object... args) {

@@ -1,15 +1,25 @@
 package com.rexcantor64.multilanguageplugin.config;
 
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.storage.SQLManager;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainConfig {
+
+    private final SpigotMLP main;
+
+    public MainConfig(SpigotMLP main) {
+        this.main = main;
+    }
 
     private SQLManager sql = null;
 
@@ -141,10 +151,10 @@ public class MainConfig {
     }
 
     public void setup() {
-        File f = new File(SpigotMLP.get().getDataFolder(), "config.yml");
+        File f = new File(main.getDataFolder(), "config.yml");
         if (!f.exists())
-            SpigotMLP.get().saveResource("config.yml", false);
-        setup(SpigotMLP.get().getConfig());
+            main.saveResource("config.yml", false);
+        setup(main.getConfig());
     }
 
     private void testSQLConnection() {
@@ -175,10 +185,48 @@ public class MainConfig {
         List<String> holograms = enabled.getStringList("holograms");
         for (String hologram : holograms)
             try {
-                this.holograms.add(EntityType.valueOf(hologram));
+                this.holograms.add(EntityType.valueOf(hologram.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                SpigotMLP.get().logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! Please check your spelling and if you can't fix it, please contact the developer!", hologram);
+                main.logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! Please check your spelling and if you can't fix it, please contact the developer!", hologram);
             }
+    }
+
+    public JSONObject toJSON() {
+        JSONObject config = new JSONObject();
+        JSONObject parser = new JSONObject();
+        parser.put("chat", chat);
+        parser.put("actionbar", actionbars);
+        parser.put("titles", titles);
+        parser.put("guis", guis);
+        parser.put("scoreboards", scoreboards);
+        parser.put("scoreboardsAdvanced", scoreboards);
+        parser.put("hologramsAllowAll", hologramsAll);
+        parser.put("kick", kick);
+        parser.put("items", items);
+        parser.put("inventoryItems", inventoryItems);
+        parser.put("signs", signs);
+        JSONArray holograms = new JSONArray();
+        for (EntityType et : this.holograms)
+            holograms.put(et.toString());
+        parser.put("holograms", holograms);
+        parser.put("syntax", syntax);
+        parser.put("syntaxArgs", syntaxArgs);
+        parser.put("syntaxArg", syntaxArg);
+        config.put("parser", parser);
+        config.put("debug", debug);
+        config.put("forceLocale", forceLocale);
+        config.put("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
+        JSONArray languages = new JSONArray();
+        for (Language language : main.getLanguageManager().getAllLanguages()) {
+            JSONObject lang = new JSONObject();
+            lang.put("name", language.getName());
+            lang.put("display", StringEscapeUtils.escapeJava(language.getRawDisplayName()));
+            lang.put("flag", language.getFlagCode());
+            lang.put("codes", language.getMinecraftCodes());
+            languages.put(lang);
+        }
+        config.put("languages", languages);
+        return config;
     }
 
 }

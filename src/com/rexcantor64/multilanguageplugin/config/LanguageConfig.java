@@ -12,10 +12,15 @@ import java.util.List;
 
 public class LanguageConfig {
 
+    private JSONArray raw;
     private List<LanguageItem> items = new ArrayList<>();
 
     public List<LanguageItem> getItems() {
         return items;
+    }
+
+    public JSONArray getRaw() {
+        return raw;
     }
 
     public void setup() {
@@ -33,9 +38,9 @@ public class LanguageConfig {
                 logCount(timeStarted);
                 return;
             }
-            JSONArray array = new JSONArray(IOUtils.toString(new FileReader(file)));
-            for (int i = 0; i < array.length(); i++) {
-                LanguageItem item = LanguageItem.fromJSON(array.optJSONObject(i));
+            raw = new JSONArray(IOUtils.toString(new FileReader(file)));
+            for (int i = 0; i < raw.length(); i++) {
+                LanguageItem item = LanguageItem.fromJSON(raw.optJSONObject(i));
                 if (item == null) continue;
                 items.add(item);
             }
