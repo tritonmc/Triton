@@ -202,6 +202,7 @@ public class MainConfig {
         parser.put("scoreboardsAdvanced", scoreboards);
         parser.put("hologramsAllowAll", hologramsAll);
         parser.put("kick", kick);
+        parser.put("tab", tab);
         parser.put("items", items);
         parser.put("inventoryItems", inventoryItems);
         parser.put("signs", signs);
