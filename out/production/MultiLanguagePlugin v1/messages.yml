@@ -3,6 +3,13 @@ error:
     message-not-found: "ERROR 404: Message not found: '%1'! Please notify the staff!"
     lang-not-found: "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages."
     player-not-found: "&cPlayer %1 not found!"
+    web:
+      failed-fetch: "&cFailed to fetch the config: %1"
+      incorrect-status: "&4status is not 202 (received &l%1&4)"
+      no-internet: "&4please check your internet connection and/or firewall! Error description: %1"
+      invalid-response: "&4error while parsing the response: %1"
+      files-not-found: "&4could not find the required files"
+      failed-file-update: "&cError while writing to file '%1': %2"
 help:
     menu:
         - "&a---------MultiLanguagePlugin---------"

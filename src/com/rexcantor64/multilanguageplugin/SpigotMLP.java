@@ -10,11 +10,10 @@ import com.rexcantor64.multilanguageplugin.language.LanguageParser;
 import com.rexcantor64.multilanguageplugin.migration.LanguageMigration;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.PlayerManager;
-import com.rexcantor64.multilanguageplugin.web.GistUploader;
+import com.rexcantor64.multilanguageplugin.web.GistManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -39,7 +38,7 @@ public class SpigotMLP extends JavaPlugin {
     private LanguageParser languageParser;
     private PlayerManager playerManager;
     private GuiManager guiManager;
-    private GistUploader gistUploader;
+    private GistManager gistUploader;
 
     @Override
     public void onEnable() {
@@ -60,7 +59,7 @@ public class SpigotMLP extends JavaPlugin {
         playerManager = new PlayerManager();
         languageParser = new LanguageParser();
         guiManager = new GuiManager();
-        gistUploader = new GistUploader(this);
+        gistUploader = new GistManager(this);
         // Setup commands
         getCommand("multilanguageplugin").setExecutor(new MainCMD());
         // Setup listeners
@@ -110,7 +109,7 @@ public class SpigotMLP extends JavaPlugin {
         return guiManager;
     }
 
-    public GistUploader getGistUploader() {
+    public GistManager getGistUploader() {
         return gistUploader;
     }
 

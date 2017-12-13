@@ -1,5 +1,7 @@
 package org.json;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -455,7 +457,7 @@ public class JSONObject {
             return w;
         }
 
-        char b;
+        /*char b;
         char c = 0;
         String hhhh;
         int i;
@@ -504,7 +506,8 @@ public class JSONObject {
                     }
             }
         }
-        w.write('"');
+        w.write('"');*/
+        w.write('"' + StringEscapeUtils.escapeJson(string) + '"');
         return w;
     }
 

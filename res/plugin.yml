@@ -20,5 +20,7 @@ permissions:
         default: true
     multilanguageplugin.reload:
         default: op
+    multilanguageplugin.reload.web:
+        default: op
     multilanguageplugin.help:
         default: true

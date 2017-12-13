@@ -7,11 +7,11 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class GistUploader {
+public class GistManager {
 
     private final SpigotMLP main;
 
-    public GistUploader(SpigotMLP main) {
+    public GistManager(SpigotMLP main) {
         this.main = main;
     }
 
@@ -41,6 +41,40 @@ public class GistUploader {
             os.writeBytes(encodedData);
             os.flush();
             os.close();
+
+            int responseCode = conn.getResponseCode();
+
+            try {
+                InputStream is;
+                if (responseCode < HttpURLConnection.HTTP_BAD_REQUEST)
+                    is = conn.getInputStream();
+                else
+                    is = conn.getErrorStream();
+                BufferedReader in = new BufferedReader(new InputStreamReader(is));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                return new HttpResponse(true, responseCode, response.toString());
+            } catch (FileNotFoundException e) {
+                return new HttpResponse(true, responseCode, "{}");
+            }
+        } catch (Exception e) {
+            return new HttpResponse(false, 0, e.getMessage());
+        }
+    }
+
+    public HttpResponse downloader(String id) {
+        try {
+            URL u = new URL("https://api.github.com/gists/" + id);
+            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
 
             int responseCode = conn.getResponseCode();
 

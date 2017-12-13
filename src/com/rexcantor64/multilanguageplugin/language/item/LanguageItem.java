@@ -16,6 +16,7 @@ public abstract class LanguageItem {
 
     public static LanguageItem fromJSON(JSONObject obj) {
         if (obj == null) return null;
+        if (obj.optBoolean("archived", false)) return null;
         LanguageItemType type = LanguageItemType.getType(obj.optString("type", ""));
         if (type == null) return null;
         switch (type) {

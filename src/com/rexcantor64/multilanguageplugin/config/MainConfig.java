@@ -135,8 +135,8 @@ public class MainConfig {
     }
 
     private void setup(ConfigurationSection section) {
-        ConfigurationSection sql = section.getConfigurationSection("storage");
-        if (sql == null) sql = section.createSection("storage");
+        ConfigurationSection sql = section.getConfigurationSection("sql");
+        if (sql == null) sql = section.createSection("sql");
         if (sql.getBoolean("enabled", false))
             this.sql = new SQLManager(sql.getString("host", "localhost"), sql.getInt("port", 3306), sql.getString("database", "minecraft"), sql.getString("username", "root"), sql.getString("password", ""));
         this.languages = section.getConfigurationSection("languages");

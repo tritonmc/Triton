@@ -120,10 +120,10 @@ public class LanguageMigration {
             JSONObject entryLoc = entry.optJSONObject("location");
             if (entryLoc == null) continue;
             if (!LocationUtils.equalsJSONLocation(entryLoc, location)) continue;
-            JSONObject languages = entry.optJSONObject("languages");
+            JSONObject languages = entry.optJSONObject("lines");
             if (languages == null) {
                 languages = new JSONObject();
-                entry.put("languages", languages);
+                entry.put("lines", languages);
             }
             languages.put(language, lines);
             return;
@@ -136,7 +136,7 @@ public class LanguageMigration {
         entry.put("tags", new JSONArray());
         JSONObject languages = new JSONObject();
         languages.put(language, lines);
-        entry.put("languages", languages);
+        entry.put("lines", languages);
         languageArray.put(entry);
     }
 
