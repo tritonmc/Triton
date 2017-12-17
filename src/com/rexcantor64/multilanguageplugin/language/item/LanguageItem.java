@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin.language.item;
 
 import com.rexcantor64.multilanguageplugin.utils.LocationUtils;
+import org.bukkit.ChatColor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,7 +36,7 @@ public abstract class LanguageItem {
             case SIGN:
                 JSONObject loc = obj.optJSONObject("location");
                 if (loc == null) return null;
-                JSONObject signLanguages = obj.optJSONObject("languages");
+                JSONObject signLanguages = obj.optJSONObject("lines");
                 if (signLanguages == null) return null;
                 HashMap<String, String[]> signMap = new HashMap<>();
                 for (String lKey : signLanguages.keySet()) {
@@ -44,9 +45,10 @@ public abstract class LanguageItem {
                     if (a != null)
                         for (int k = 0; k < 4; k++)
                             if (a.length() > k)
-                                b[k] = a.optString(k, "");
+                                b[k] = ChatColor.translateAlternateColorCodes('&', a.optString(k, ""));
                             else
                                 b[k] = "";
+                    signMap.put(lKey, b);
                 }
                 if (signMap.size() == 0) return null;
                 return new LanguageSign(LocationUtils.jsonToLocation(loc), signMap);

@@ -7,6 +7,7 @@ import com.rexcantor64.multilanguageplugin.config.MainConfig;
 import com.rexcantor64.multilanguageplugin.guiapi.GuiManager;
 import com.rexcantor64.multilanguageplugin.language.LanguageManager;
 import com.rexcantor64.multilanguageplugin.language.LanguageParser;
+import com.rexcantor64.multilanguageplugin.listeners.BukkitListener;
 import com.rexcantor64.multilanguageplugin.migration.LanguageMigration;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.PlayerManager;
@@ -39,7 +40,8 @@ public class SpigotMLP extends JavaPlugin {
     private LanguageParser languageParser;
     private PlayerManager playerManager;
     private GuiManager guiManager;
-    private GistManager gistUploader;
+    private GistManager gistManager;
+    private ProtocolLibListener protocolLibListener;
 
     @Override
     public void onEnable() {
@@ -60,14 +62,15 @@ public class SpigotMLP extends JavaPlugin {
         playerManager = new PlayerManager();
         languageParser = new LanguageParser();
         guiManager = new GuiManager();
-        gistUploader = new GistManager(this);
+        gistManager = new GistManager(this);
         // Setup commands
         getCommand("multilanguageplugin").setExecutor(new MainCMD());
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager, this);
+        Bukkit.getPluginManager().registerEvents(new BukkitListener(), this);
         // Use ProtocolLib if available
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib"))
-            ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibListener(this));
+            ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
     }
 
     @Override
@@ -110,8 +113,12 @@ public class SpigotMLP extends JavaPlugin {
         return guiManager;
     }
 
-    public GistManager getGistUploader() {
-        return gistUploader;
+    public GistManager getGistManager() {
+        return gistManager;
+    }
+
+    public ProtocolLibListener getProtocolLibListener() {
+        return protocolLibListener;
     }
 
     public String getMessage(String code, String def, Object... args) {

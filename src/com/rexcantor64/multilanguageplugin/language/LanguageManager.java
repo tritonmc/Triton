@@ -57,6 +57,13 @@ public class LanguageManager {
         return SpigotMLP.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
     }
 
+    public String[] getSign(Player p, Location location) {
+        return getSign(SpigotMLP.get().getPlayerManager().get(p), location);
+    }
+
+    public String[] getSign(LanguagePlayer p, Location location) {
+        return getSign(p.getLang().getName(), location);
+    }
 
     public String[] getSign(String language, Location location) {
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
@@ -90,6 +97,10 @@ public class LanguageManager {
 
     public List<Language> getAllLanguages() {
         return new ArrayList<>(languages);
+    }
+
+    public List<LanguageItem> getAllItems(LanguageItem.LanguageItemType type) {
+        return new ArrayList<>(items.get(type));
     }
 
     public Language getMainLanguage() {

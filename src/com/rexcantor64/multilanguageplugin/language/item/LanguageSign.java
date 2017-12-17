@@ -10,6 +10,7 @@ public class LanguageSign extends LanguageItem {
     private HashMap<String, String[]> languages;
 
     LanguageSign(Location location, HashMap<String, String[]> languages) {
+        super.type = LanguageItemType.SIGN;
         this.location = location;
         this.languages = languages;
     }

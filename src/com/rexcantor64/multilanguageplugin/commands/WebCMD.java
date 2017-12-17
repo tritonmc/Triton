@@ -12,7 +12,7 @@ public class WebCMD implements CommandExecutor {
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         try {
             s.sendMessage("Uploading...");
-            GistManager.HttpResponse response = SpigotMLP.get().getGistUploader().upload();
+            GistManager.HttpResponse response = SpigotMLP.get().getGistManager().upload();
             if (!response.isSuccess() || response.getStatusCode() != 201) {
                 s.sendMessage("Failed! " + response.getPage());
                 return true;

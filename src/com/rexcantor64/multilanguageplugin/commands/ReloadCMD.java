@@ -7,14 +7,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.List;
 
 public class ReloadCMD implements CommandExecutor {
 
@@ -32,7 +30,7 @@ public class ReloadCMD implements CommandExecutor {
                 return true;
             }
 
-            GistManager.HttpResponse response = main.getGistUploader().downloader(args[1]);
+            GistManager.HttpResponse response = main.getGistManager().downloader(args[1]);
 
             if (response.getStatusCode() == 0) {
                 s.sendMessage(main.getMessage("error.web.failed-fetch", "&cFailed to fetch the config: %1", main.getMessage("error.web.no-internet", "&4please check your internet connection and/or firewall! Error description: %1", response.getPage())));

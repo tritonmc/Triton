@@ -2,6 +2,7 @@ package com.rexcantor64.multilanguageplugin.player;
 
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.language.Language;
+import com.rexcantor64.multilanguageplugin.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.multilanguageplugin.storage.PlayerStorage;
 import org.bukkit.entity.Player;
 
@@ -11,6 +12,8 @@ public class LanguagePlayer {
 
     private boolean waitingForDefaultLanguage = false;
     private Language lang;
+
+    private PacketInterceptor interceptor;
 
     public LanguagePlayer(Player p) {
         this.bukkit = p;
@@ -37,10 +40,15 @@ public class LanguagePlayer {
         return waitingForDefaultLanguage;
     }
 
+    public void setInterceptor(PacketInterceptor interceptor) {
+        this.interceptor = interceptor;
+    }
+
     private void refreshSigns() {
         if (!SpigotMLP.get().getConf().isSigns())
             return;
-        //TODO implement
+        if (interceptor != null)
+            interceptor.refreshSigns(this);
     }
 
     private void refreshScoreboard() {

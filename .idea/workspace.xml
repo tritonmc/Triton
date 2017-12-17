@@ -8,20 +8,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4eb53bc5-80b5-454e-aefc-9e90535c90f7" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/res/config.yml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/utils/YAMLUtils.java" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/excludeFromValidation.xml" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/listeners/BukkitListener.java" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/GetFlagCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/GetFlagCMD.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/MainCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/MainCMD.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/OpenSelectorCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/OpenSelectorCMD.java" />
       <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/ReloadCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/ReloadCMD.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/SetLanguageCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/SetLanguageCMD.java" />
       <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/WebCMD.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/WebCMD.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/guiapi/ScrollableGui.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/guiapi/ScrollableGui.java" />
       <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageParser.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageParser.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageSign.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageSign.java" />
       <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -60,10 +58,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/guiapi/GuiManager.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/PlayerManager.java" />
-        <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/res/plugin.yml" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageMessage.java" />
         <option value="$PROJECT_DIR$/src/net/md_5/bungee/api/chat/ComponentWrapper.java" />
         <option value="$PROJECT_DIR$/src/net/md_5/bungee/api/chat/BaseComponent.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/ClickEvent.java" />
@@ -88,7 +82,6 @@
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/web/GistManager.java" />
         <option value="$PROJECT_DIR$/res/plugin.yml" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/MainConfig.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java" />
         <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/ReflectionUtils.java" />
         <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/commands/TitleCMD.java" />
         <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/Main.java" />
@@ -98,19 +91,24 @@
         <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/commands/ChatCMD.java" />
         <option value="$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/commands/ActionbarCMD.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageParser.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/WebCMD.java" />
         <option value="$PROJECT_DIR$/res/config.yml" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/utils/YAMLUtils.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/GetFlagCMD.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/ReloadCMD.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/SetLanguageCMD.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/OpenSelectorCMD.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java" />
         <option value="$PROJECT_DIR$/res/messages.yml" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/commands/MainCMD.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/guiapi/ScrollableGui.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageSign.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketListener.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/listeners/BukkitListener.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
       </list>
     </option>
   </component>
@@ -184,7 +182,24 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="com" type="462c0819:PsiDirectoryNode" />
               <item name="multilanguageplugin" type="462c0819:PsiDirectoryNode" />
-              <item name="utils" type="462c0819:PsiDirectoryNode" />
+              <item name="language" type="462c0819:PsiDirectoryNode" />
+              <item name="item" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="MultiLanguagePlugin v1" type="b2602c69:ProjectViewProjectNode" />
+              <item name="MultiLanguagePlugin v1" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="com" type="462c0819:PsiDirectoryNode" />
+              <item name="multilanguageplugin" type="462c0819:PsiDirectoryNode" />
+              <item name="packetinterceptor" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="MultiLanguagePlugin v1" type="b2602c69:ProjectViewProjectNode" />
+              <item name="MultiLanguagePlugin v1" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="com" type="462c0819:PsiDirectoryNode" />
+              <item name="multilanguageplugin" type="462c0819:PsiDirectoryNode" />
+              <item name="player" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="MultiLanguagePlugin v1" type="b2602c69:ProjectViewProjectNode" />
@@ -377,67 +392,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/HoverEvent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="522">
-          <caret line="29" column="5" lean-forward="true" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/TextComponent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="14" column="5" lean-forward="true" selection-start-line="14" selection-start-column="5" selection-end-line="14" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/TranslatableComponent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="468">
-          <caret line="25" column="21" lean-forward="false" selection-start-line="25" selection-start-column="21" selection-end-line="25" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/ChatColor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/ChatMessageType.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="1" lean-forward="true" selection-start-line="4" selection-start-column="1" selection-end-line="4" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/chat/BaseComponentSerializer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="489">
-          <caret line="95" column="27" lean-forward="false" selection-start-line="95" selection-start-column="27" selection-end-line="95" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/chat/ComponentSerializer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="17" column="34" lean-forward="false" selection-start-line="17" selection-start-column="34" selection-end-line="17" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/chat/TranslatableComponentSerializer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="11" column="0" lean-forward="true" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/chat/TextComponentSerializer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="396">
@@ -502,14 +461,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/utils/LocationUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="12" column="29" lean-forward="false" selection-start-line="12" selection-start-column="29" selection-end-line="12" selection-end-column="29" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/json/JSONTokener.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3321">
@@ -561,21 +512,6 @@
             <element signature="e#4569#4570#0" expanded="false" />
             <element signature="e#4610#4611#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/LanguageConfig.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="471">
-          <caret line="42" column="51" lean-forward="false" selection-start-line="42" selection-start-column="51" selection-end-line="42" selection-end-column="51" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="54" column="5" lean-forward="false" selection-start-line="54" selection-start-column="5" selection-end-line="54" selection-end-column="5" />
         </state>
       </provider>
     </entry>
@@ -657,14 +593,6 @@
       </provider>
     </entry>
     <entry file="jar:///media/dtc/TOSHIBA EXT/Minecraft/Plugins/Dependencies/ProtocolLib-4.3.0.jar!/com/comphenix/protocol/ProtocolManager.class" />
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="449">
-          <caret line="197" column="5" lean-forward="true" selection-start-line="197" selection-start-column="5" selection-end-line="197" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../MultiLanguagePlugin v1 Test Suite/src/com/rexcantor64/multilanguageplugin/testsuite/commands/MainCMD.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="147">
@@ -694,7 +622,7 @@
         <state relative-caret-position="126">
           <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -711,14 +639,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="366">
           <caret line="103" column="38" lean-forward="false" selection-start-line="103" selection-start-column="38" selection-end-line="103" selection-end-column="38" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="57" column="5" lean-forward="true" selection-start-line="57" selection-start-column="5" selection-end-line="57" selection-end-column="5" />
           <folding />
         </state>
       </provider>
@@ -771,10 +691,131 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/utils/LocationUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="576">
+          <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/LanguageConfig.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="576">
+          <caret line="42" column="51" lean-forward="true" selection-start-line="42" selection-start-column="51" selection-end-line="42" selection-end-column="51" />
+          <folding>
+            <element signature="e#502#503#0" expanded="false" />
+            <element signature="e#530#531#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///media/dtc/TOSHIBA EXT/Minecraft/Plugins/Dependencies/ProtocolLib-4.3.0.jar!/com/comphenix/protocol/reflect/EquivalentConverter.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="12" column="35" lean-forward="true" selection-start-line="12" selection-start-column="35" selection-end-line="12" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///media/dtc/TOSHIBA EXT/Minecraft/Plugins/Dependencies/ProtocolLib-4.3.0.jar!/com/comphenix/protocol/wrappers/BukkitConverters.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="261" column="60" lean-forward="false" selection-start-line="261" selection-start-column="60" selection-end-line="261" selection-end-column="60" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageSign.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="6" column="13" lean-forward="false" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageText.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="13" column="5" lean-forward="true" selection-start-line="13" selection-start-column="5" selection-end-line="13" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="6" column="32" lean-forward="true" selection-start-line="6" selection-start-column="32" selection-end-line="6" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="705">
+          <caret line="52" column="28" lean-forward="false" selection-start-line="52" selection-start-column="28" selection-end-line="52" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="414">
+          <caret line="29" column="26" lean-forward="true" selection-start-line="29" selection-start-column="26" selection-end-line="29" selection-end-column="26" />
+          <folding>
+            <element signature="e#1111#1112#0" expanded="true" />
+            <element signature="e#1157#1158#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/PlayerManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="18" column="18" lean-forward="true" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/listeners/BukkitListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="9" column="17" lean-forward="true" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="128" column="40" lean-forward="true" selection-start-line="128" selection-start-column="40" selection-end-line="128" selection-end-column="40" />
+        <state relative-caret-position="351">
+          <caret line="67" column="26" lean-forward="true" selection-start-line="67" selection-start-column="26" selection-end-line="67" selection-end-column="26" />
+          <folding>
+            <element signature="e#3527#3528#0" expanded="true" />
+            <element signature="e#3564#3565#0" expanded="true" />
+            <element signature="e#4032#4033#0" expanded="true" />
+            <element signature="e#4074#4075#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="471">
+          <caret line="232" column="30" lean-forward="false" selection-start-line="232" selection-start-column="30" selection-end-line="232" selection-end-column="30" />
+          <folding>
+            <element signature="e#1846#1878#0" expanded="true" />
+            <element signature="e#21215#21216#0" expanded="true" />
+            <element signature="e#21242#21243#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="68" column="31" lean-forward="false" selection-start-line="68" selection-start-column="31" selection-end-line="68" selection-end-column="31" />
           <folding />
         </state>
       </provider>

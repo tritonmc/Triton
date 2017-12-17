@@ -7,23 +7,39 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
+import com.comphenix.protocol.injector.PacketConstructor;
+import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.*;
+import com.comphenix.protocol.wrappers.nbt.NbtBase;
+import com.comphenix.protocol.wrappers.nbt.NbtCompound;
+import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
+import com.rexcantor64.multilanguageplugin.components.api.chat.TextComponent;
 import com.rexcantor64.multilanguageplugin.components.chat.ComponentSerializer;
 import com.rexcantor64.multilanguageplugin.language.LanguageParser;
+import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
+import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
+import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import jdk.nashorn.internal.ir.Block;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Team;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class ProtocolLibListener implements PacketListener {
+@SuppressWarnings("deprecation")
+public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private SpigotMLP main;
 
@@ -194,6 +210,70 @@ public class ProtocolLibListener implements PacketListener {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
             msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
             packet.getPacket().getChatComponents().write(0, msg);
+        } else if (packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
+            BlockPosition pos = packet.getPacket().getBlockPositionModifier().read(0);
+            String[] lines = main.getLanguageManager().getSign(packet.getPlayer(), new Location(packet.getPlayer().getWorld(), pos.getX(), pos.getY(), pos.getZ()));
+            if (lines == null) return;
+            WrappedChatComponent[] comps = new WrappedChatComponent[4];
+            for (int i = 0; i < 4; i++)
+                comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+            packet.getPacket().getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(), BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter())).write(0, Arrays.asList(comps));
+        } else if (packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
+            if (packet.getPacket().getIntegers().read(0) == 9) {
+                NbtCompound nbt = NbtFactory.asCompound(packet.getPacket().getNbtModifier().read(0));
+                Location l = new Location(packet.getPlayer().getWorld(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
+                String[] sign = main.getLanguageManager().getSign(packet.getPlayer(), l);
+                if (sign != null)
+                    for (int i = 0; i < 4; i++)
+                        nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+            }
+        } else if (packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK) {
+            List<NbtBase<?>> entities = packet.getPacket().getListNbtModifier().read(0);
+            for (NbtBase<?> entity : entities) {
+                NbtCompound nbt = NbtFactory.asCompound(entity);
+                if (nbt.getString("id").equals(getMCVersion() <= 10 ? "Sign" : "minecraft:sign")) {
+                    Location l = new Location(packet.getPlayer().getWorld(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
+                    String[] sign = main.getLanguageManager().getSign(packet.getPlayer(), l);
+                    if (sign != null)
+                        for (int i = 0; i < 4; i++)
+                            nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+                }
+            }
+        }
+    }
+
+    @Override
+    public void refreshSigns(LanguagePlayer player) {
+        for (LanguageItem item : main.getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
+            LanguageSign sign = (LanguageSign) item;
+            if (player.toBukkit().getWorld().equals(sign.getLocation().getWorld())) {
+                PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN);
+                String[] lines = sign.getLines(player.getLang().getName());
+                if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
+                if (lines == null) continue;
+                packet.getBlockPositionModifier().write(0, new BlockPosition(sign.getLocation().toVector()));
+                if (getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1)) {
+                    WrappedChatComponent[] comps = new WrappedChatComponent[4];
+                    for (int i = 0; i < 4; i++)
+                        comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                    packet.getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(), BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter())).write(0, Arrays.asList(comps));
+                } else {
+                    packet.getIntegers().write(0, 9);
+                    NbtCompound compound = NbtFactory.ofCompound(null);
+                    compound.put("x", sign.getLocation().getBlockX());
+                    compound.put("y", sign.getLocation().getBlockY());
+                    compound.put("z", sign.getLocation().getBlockZ());
+                    compound.put("id", "minecraft:sign");
+                    for (int i = 0; i < 4; i++)
+                        compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                    packet.getNbtModifier().write(0, compound);
+                }
+                try {
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
+                } catch (InvocationTargetException e) {
+                    main.logError("Failed to send sign update packet: %1", e.getMessage());
+                }
+            }
         }
     }
 
@@ -204,7 +284,7 @@ public class ProtocolLibListener implements PacketListener {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK).highest().build();
     }
 
     @Override
@@ -259,5 +339,10 @@ public class ProtocolLibListener implements PacketListener {
     private int getMCVersion() {
         String a = Bukkit.getServer().getClass().getPackage().getName();
         return Integer.parseInt(a.substring(a.lastIndexOf('.') + 1).split("_")[1]);
+    }
+
+    private int getMCVersionR() {
+        String a = Bukkit.getServer().getClass().getPackage().getName();
+        return Integer.parseInt(a.substring(a.lastIndexOf('.') + 1).split("_")[2].substring(1));
     }
 }
