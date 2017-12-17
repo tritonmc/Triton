@@ -3,10 +3,9 @@ package com.rexcantor64.multilanguageplugin.language;
 import com.google.common.collect.Lists;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
-import com.rexcantor64.multilanguageplugin.utils.ComponentUtils;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
 import com.rexcantor64.multilanguageplugin.components.api.chat.TextComponent;
-import com.rexcantor64.multilanguageplugin.components.chat.ComponentSerializer;
+import com.rexcantor64.multilanguageplugin.utils.ComponentUtils;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class LanguageParser {
     private final int patternSize = SpigotMLP.get().getConf().getSyntax().length() + 2;
     private final int patternArgSize = SpigotMLP.get().getConf().getSyntaxArg().length() + 2;
 
-    private String replaceLanguages(String input, Player p) {
+    public String replaceLanguages(String input, Player p) {
         Matcher matcher = pattern.matcher(input);
         while (matcher.find()) {
             String a = matcher.group(1);
@@ -48,6 +47,57 @@ public class LanguageParser {
                                     args.toArray()));
         }
         return input;
+    }
+
+    public boolean hasLanguages(String input) {
+        return findPlaceholdersIndex(input).size() != 0;
+    }
+
+    public String getLastColor(String input) {
+        String extraModifiers = "";
+        if (input.length() < 2)
+            return ChatColor.WHITE + "";
+        for (int i = input.length() - 2; i >= 0; i--)
+            if (input.charAt(i) == ChatColor.COLOR_CHAR) {
+                ChatColor color = ChatColor.getByChar(input.charAt(i + 1));
+                switch (color) {
+                    case AQUA:
+                    case BLACK:
+                    case BLUE:
+                    case DARK_AQUA:
+                    case DARK_BLUE:
+                    case DARK_GRAY:
+                    case DARK_GREEN:
+                    case DARK_PURPLE:
+                    case DARK_RED:
+                    case GOLD:
+                    case GRAY:
+                    case GREEN:
+                    case LIGHT_PURPLE:
+                    case RED:
+                    case WHITE:
+                    case YELLOW:
+                        return color + extraModifiers;
+                    case BOLD:
+                    case ITALIC:
+                    case MAGIC:
+                    case STRIKETHROUGH:
+                    case UNDERLINE:
+                        extraModifiers = color + extraModifiers;
+                        break;
+                    case RESET:
+                        return extraModifiers;
+                    default:
+                        break;
+                }
+            }
+        return ChatColor.WHITE.toString();
+    }
+
+    public String removeFirstColor(String str) {
+        if (str == null) return null;
+        if (str.length() <= 2) return str;
+        return ChatColor.stripColor(str.substring(0, 2)) + str.substring(2);
     }
 
     private List<Integer[]> findPlaceholdersIndex(String input) {
@@ -73,11 +123,15 @@ public class LanguageParser {
         return indexes;
     }
 
-    public BaseComponent[] parseActionbar(Player p, BaseComponent[] text) {
+    public BaseComponent[] parseSimpleBaseComponent(Player p, BaseComponent[] text) {
         for (BaseComponent a : text)
             if (a instanceof TextComponent)
                 ((TextComponent) a).setText(replaceLanguages(((TextComponent) a).getText(), p));
         return text;
+    }
+
+    public BaseComponent[] parseTitle(Player p, BaseComponent[] text) {
+        return TextComponent.fromLegacyText(replaceLanguages(TextComponent.toLegacyText(text), p));
     }
 
     public BaseComponent[] parseChat(Player p, BaseComponent[] text) {

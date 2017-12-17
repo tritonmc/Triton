@@ -21,25 +21,25 @@ public class ReloadCMD implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (!s.hasPermission("multilanguageplugin.reload")) {
-            s.sendMessage(SpigotMLP.get().getMessage("error.no-permission"));
+            s.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length > 1) {
             SpigotMLP main = SpigotMLP.get();
             if (!s.hasPermission("multilanguageplugin.reload.web")) {
-                s.sendMessage(main.getMessage("error.no-permission"));
+                s.sendMessage(main.getMessage("error.no-permission", "&cNo permission."));
                 return true;
             }
 
             GistManager.HttpResponse response = main.getGistUploader().downloader(args[1]);
 
             if (response.getStatusCode() == 0) {
-                s.sendMessage(main.getMessage("error.web.failed-fetch", main.getMessage("error.web.no-internet", response.getPage())));
+                s.sendMessage(main.getMessage("error.web.failed-fetch", "&cFailed to fetch the config: %1", main.getMessage("error.web.no-internet", "&4please check your internet connection and/or firewall! Error description: %1", response.getPage())));
                 return true;
             }
             if (response.getStatusCode() != 200) {
-                s.sendMessage(main.getMessage("error.web.failed-fetch", main.getMessage("error.web.incorrect-status", response.getStatusCode())));
+                s.sendMessage(main.getMessage("error.web.failed-fetch", "&cFailed to fetch the config: %1", main.getMessage("error.web.incorrect-status", "&4status is not 202 (received &l%1&4)", response.getStatusCode())));
                 return true;
             }
             try {
@@ -87,21 +87,21 @@ public class ReloadCMD implements CommandExecutor {
                         fileWriter.write(languageFile.toString(4));
                         fileWriter.flush();
                     } catch (Exception e) {
-                        s.sendMessage(main.getMessage("error.web.failed-file-update", "languages.json", e.getMessage()));
+                        s.sendMessage(main.getMessage("error.web.failed-file-update", "&cError while writing to file '%1': %2", "languages.json", e.getMessage()));
                         return true;
                     }
                 } catch (JSONException e) {
-                    s.sendMessage(main.getMessage("error.web.failed-fetch", main.getMessage("error.web.files-not-found")));
+                    s.sendMessage(main.getMessage("error.web.failed-fetch", "&cFailed to fetch the config: %1", main.getMessage("error.web.files-not-found", "&4could not find the required files")));
                     return true;
                 }
             } catch (JSONException e) {
-                s.sendMessage(main.getMessage("error.web.failed-fetch", main.getMessage("error.web.invalid-response", e.getMessage())));
+                s.sendMessage(main.getMessage("error.web.failed-fetch", "&cFailed to fetch the config: %1", main.getMessage("error.web.invalid-response", "&4error while parsing the response: %1", e.getMessage())));
                 return true;
             }
         }
 
         SpigotMLP.get().reload();
-        s.sendMessage(SpigotMLP.get().getMessage("success.reload"));
+        s.sendMessage(SpigotMLP.get().getMessage("success.reload", "&aConfig successfully reloaded."));
         return true;
     }
 

@@ -23,7 +23,7 @@ public class OpenSelectorCMD implements CommandExecutor {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.openselector")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission"));
+            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
@@ -34,12 +34,12 @@ public class OpenSelectorCMD implements CommandExecutor {
     private void openLanguagesSelectionGUI(Player p) {
         LanguageManager language = SpigotMLP.get().getLanguageManager();
         Language pLang = SpigotMLP.get().getPlayerManager().get(p).getLang();
-        Gui gui = new ScrollableGui(SpigotMLP.get().getMessage("other.selector-gui-name"));
+        Gui gui = new ScrollableGui(SpigotMLP.get().getMessage("other.selector-gui-name", "&aSelect a language"));
         for (Language lang : language.getAllLanguages())
             gui.addButton(new GuiButton(lang.getStack(pLang.equals(lang))).setListener(event -> {
                 SpigotMLP.get().getPlayerManager().get(p).setLang(lang);
                 p.closeInventory();
-                p.sendMessage(SpigotMLP.get().getMessage("success.selector", lang.getDisplayName()));
+                p.sendMessage(SpigotMLP.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
             }));
         gui.open(p);
     }

@@ -17,6 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -113,17 +114,20 @@ public class SpigotMLP extends JavaPlugin {
         return gistUploader;
     }
 
-    public String getMessage(String code, Object... args) {
+    public String getMessage(String code, String def, Object... args) {
         String s = ChatColor.translateAlternateColorCodes('&',
-                messagesConfig.getString(code, "Error while getting a message from the messages file!"));
+                messagesConfig.getString(code, def));
         for (int i = 0; i < args.length; i++)
             if (args[i] != null)
                 s = s.replace("%" + (i + 1), args[i].toString());
         return s;
     }
 
-    public List<String> getMessageList(String code) {
-        return messagesConfig.getStringList(code);
+    public List<String> getMessageList(String code, String... def) {
+        List<String> result = messagesConfig.getStringList(code);
+        if (result.size() == 0)
+            result = Arrays.asList(def);
+        return result;
     }
 
     public File getLanguageFolder() {

@@ -23,23 +23,23 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.getflag")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission"));
+            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length == 1) {
-            p.sendMessage(SpigotMLP.get().getMessage("help.getflag", label));
+            p.sendMessage(SpigotMLP.get().getMessage("help.getflag", "&cUse /%1 getflag <language name>", label));
             return true;
         }
 
         Language lang = SpigotMLP.get().getLanguageManager().getLanguageByName(args[1], false);
         if (lang == null) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not found", args[1]));
+            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
             return true;
         }
 
         p.getInventory().addItem(lang.getStack());
-        p.sendMessage(SpigotMLP.get().getMessage("success.getflag", lang.getDisplayName()));
+        p.sendMessage(SpigotMLP.get().getMessage("success.getflag", "&aYou received the %1 flag!", lang.getDisplayName()));
 
         return true;
     }

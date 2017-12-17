@@ -8,6 +8,7 @@ import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageText;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
 import com.rexcantor64.multilanguageplugin.utils.LocationUtils;
+import com.rexcantor64.multilanguageplugin.utils.YAMLUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,11 +23,11 @@ public class LanguageManager {
     private Language mainLanguage;
     private Multimap<LanguageItem.LanguageItemType, LanguageItem> items = ArrayListMultimap.create();
 
-    public String getText(Player p, String code, Object... args){
+    public String getText(Player p, String code, Object... args) {
         return getText(SpigotMLP.get().getPlayerManager().get(p), code, args);
     }
 
-    public String getText(LanguagePlayer p, String code, Object... args){
+    public String getText(LanguagePlayer p, String code, Object... args) {
         return getText(p.getLang().getName(), code, args);
     }
 
@@ -40,7 +41,7 @@ public class LanguageManager {
                 msg = msg.replace("%" + Integer.toString(i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
-        return SpigotMLP.get().getMessage("error.message-not-found", code);
+        return SpigotMLP.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
     }
 
     private String getTextFromMain(String code, Object... args) {
@@ -53,7 +54,7 @@ public class LanguageManager {
                 msg = msg.replace("%" + Integer.toString(i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
-        return SpigotMLP.get().getMessage("error.message-not-found", code);
+        return SpigotMLP.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
     }
 
 
@@ -101,9 +102,8 @@ public class LanguageManager {
         items.clear();
         SpigotMLP.get().logDebug("Setting up language manager...");
         ConfigurationSection languages = SpigotMLP.get().getConf().getLanguages();
-        for (String lang : languages.getKeys(false)) {
-            this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), languages.getStringList(lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown")));
-        }
+        for (String lang : languages.getKeys(false))
+            this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown")));
         this.mainLanguage = getLanguageByName(SpigotMLP.get().getConf().getMainLanguage(), true);
         for (LanguageItem item : SpigotMLP.get().getLanguageConfig().getItems())
             items.put(item.getType(), item);

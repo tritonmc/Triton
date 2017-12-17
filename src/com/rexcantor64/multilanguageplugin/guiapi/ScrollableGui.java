@@ -105,7 +105,7 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-prev"));
+            stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-prev", "&aPrevious"));
             backwardsButton.setItemMeta(stackMeta);
             inv.setItem(45, backwardsButton);
         }
@@ -115,7 +115,7 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-forward"));
+            stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-forward", "&aNext"));
             forwardButton.setItemMeta(stackMeta);
             inv.setItem(53, forwardButton);
         }
@@ -125,7 +125,7 @@ public class ScrollableGui extends Gui {
         stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-        stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-currentpage", page, getMaxPages()));
+        stackMeta.setDisplayName(SpigotMLP.get().getMessage("other.selector-gui-currentpage", "&aPage %1 of %2", page, getMaxPages()));
         infoButton.setItemMeta(stackMeta);
         inv.setItem(49, infoButton);
     }

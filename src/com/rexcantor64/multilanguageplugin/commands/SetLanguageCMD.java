@@ -24,12 +24,12 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.setlanguage")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission"));
+            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length == 1) {
-            p.sendMessage(SpigotMLP.get().getMessage("help.setlanguage", label));
+            p.sendMessage(SpigotMLP.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language name>", label));
             return true;
         }
 
@@ -41,7 +41,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
             if (p.hasPermission("multilanguageplugin.setlanguage.others")) {
                 target = Bukkit.getPlayer(args[1]);
                 if (target == null) {
-                    p.sendMessage(SpigotMLP.get().getMessage("error.player-not-found", args[1]));
+                    p.sendMessage(SpigotMLP.get().getMessage("error.player-not-found", "&cPlayer %1 not found!", args[1]));
                     return true;
                 }
             }
@@ -49,15 +49,15 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
 
         Language lang = SpigotMLP.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not-found", args[1]));
+            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
             return true;
         }
 
         SpigotMLP.get().getPlayerManager().get(target).setLang(lang);
         if (target == p)
-            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage", lang.getDisplayName()));
+            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage", "&aYour language has been changed to %1", lang.getDisplayName()));
         else
-            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage-others", target.getName(),
+            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to %2", target.getName(),
                     lang.getDisplayName()));
         return true;
     }
