@@ -221,7 +221,7 @@ public class MainConfig {
         for (Language language : main.getLanguageManager().getAllLanguages()) {
             JSONObject lang = new JSONObject();
             lang.put("name", language.getName());
-            lang.put("display", StringEscapeUtils.escapeJava(language.getRawDisplayName()));
+            lang.put("display", language.getRawDisplayName());
             lang.put("flag", language.getFlagCode());
             lang.put("codes", language.getMinecraftCodes());
             languages.put(lang);

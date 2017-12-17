@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin.language;
 
 import com.rexcantor64.multilanguageplugin.banners.Banner;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -20,7 +21,7 @@ public class Language {
     Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
         this.name = name;
         this.rawDisplayName = displayName;
-        this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
+        this.displayName = ChatColor.translateAlternateColorCodes('&', StringEscapeUtils.unescapeJava(displayName));
         Banner banner = new Banner(flagCode);
         this.stack = banner.toBukkit();
         ItemMeta im = stack.getItemMeta();
