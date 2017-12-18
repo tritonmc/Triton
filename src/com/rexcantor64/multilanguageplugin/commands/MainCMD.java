@@ -45,7 +45,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         for (String str : SpigotMLP.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
             if (str.equalsIgnoreCase("%1"))
                 for (String command : subCommands.keySet())
-                    s.sendMessage(SpigotMLP.get().getMessage("help.menu-item", label, command));
+                    s.sendMessage(SpigotMLP.get().getMessage("help.menu-item", "&6/%1 %2", label, command));
             else
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
         return true;

@@ -210,7 +210,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
             msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
             packet.getPacket().getChatComponents().write(0, msg);
-        } else if (packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
+        } else if (signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
             BlockPosition pos = packet.getPacket().getBlockPositionModifier().read(0);
             String[] lines = main.getLanguageManager().getSign(packet.getPlayer(), new Location(packet.getPlayer().getWorld(), pos.getX(), pos.getY(), pos.getZ()));
             if (lines == null) return;
@@ -218,7 +218,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             for (int i = 0; i < 4; i++)
                 comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
             packet.getPacket().getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(), BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter())).write(0, Arrays.asList(comps));
-        } else if (packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
+        } else if (!signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
             if (packet.getPacket().getIntegers().read(0) == 9) {
                 NbtCompound nbt = NbtFactory.asCompound(packet.getPacket().getNbtModifier().read(0));
                 Location l = new Location(packet.getPlayer().getWorld(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
@@ -227,7 +227,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     for (int i = 0; i < 4; i++)
                         nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
             }
-        } else if (packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
+        } else if (!signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
             List<NbtBase<?>> entities = packet.getPacket().getListNbtModifier().read(0);
             for (NbtBase<?> entity : entities) {
                 NbtCompound nbt = NbtFactory.asCompound(entity);
@@ -240,8 +240,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
             }
         } else if (packet.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS && main.getConf().isItems()) {
-            List<ItemStack> items = packet.getPacket().getItemListModifier().read(0);
+            List<ItemStack> items = getMCVersion() <= 10 ? Arrays.asList(packet.getPacket().getItemArrayModifier().read(0)) : packet.getPacket().getItemListModifier().read(0);
             for (ItemStack item : items) {
+                if (item == null) continue;
                 if (item.hasItemMeta()) {
                     ItemMeta meta = item.getItemMeta();
                     if (meta.hasDisplayName())
@@ -255,7 +256,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     item.setItemMeta(meta);
                 }
             }
-            packet.getPacket().getItemListModifier().write(0, items);
+            if (getMCVersion() <= 10)
+                packet.getPacket().getItemArrayModifier().write(0, items.toArray(new ItemStack[items.size()]));
+            else
+                packet.getPacket().getItemListModifier().write(0, items);
         } else if (packet.getPacketType() == PacketType.Play.Server.SET_SLOT && main.getConf().isItems()) {
             ItemStack item = packet.getPacket().getItemModifier().read(0);
             if (item.hasItemMeta()) {
@@ -284,7 +288,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
                 if (lines == null) continue;
                 packet.getBlockPositionModifier().write(0, new BlockPosition(sign.getLocation().toVector()));
-                if (getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1)) {
+                if (signUpdateExists()) {
                     WrappedChatComponent[] comps = new WrappedChatComponent[4];
                     for (int i = 0; i < 4; i++)
                         comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
@@ -295,7 +299,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     compound.put("x", sign.getLocation().getBlockX());
                     compound.put("y", sign.getLocation().getBlockY());
                     compound.put("z", sign.getLocation().getBlockZ());
-                    compound.put("id", "minecraft:sign");
+                    compound.put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
                     for (int i = 0; i < 4; i++)
                         compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
                     packet.getNbtModifier().write(0, compound);
@@ -399,5 +403,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private int getMCVersionR() {
         String a = Bukkit.getServer().getClass().getPackage().getName();
         return Integer.parseInt(a.substring(a.lastIndexOf('.') + 1).split("_")[2].substring(1));
+    }
+
+    private boolean signUpdateExists() {
+        return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
     }
 }
