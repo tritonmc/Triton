@@ -6,4 +6,6 @@ public interface PacketInterceptor {
 
     void refreshSigns(LanguagePlayer player);
 
+    void refreshEntities(LanguagePlayer player);
+
 }

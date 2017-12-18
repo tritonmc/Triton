@@ -8,8 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4eb53bc5-80b5-454e-aefc-9e90535c90f7" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/MainConfig.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/MainConfig.java" />
-      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/Language.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/Language.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
+      <change beforePath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" afterPath="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,7 +21,34 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="ProtocolLibListener.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="468">
+              <caret line="101" column="36" lean-forward="false" selection-start-line="101" selection-start-column="36" selection-end-line="101" selection-end-column="36" />
+              <folding>
+                <element signature="e#22534#22535#0" expanded="true" />
+                <element signature="e#22561#22562#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LanguagePlayer.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="561">
+              <caret line="61" column="19" lean-forward="true" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
+              <folding>
+                <element signature="e#1111#1112#0" expanded="true" />
+                <element signature="e#1157#1158#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -35,7 +63,11 @@
       <find>put</find>
       <find>toString</find>
       <find>storage</find>
+      <find>Multimap</find>
     </findStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$</dir>
+    </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -48,7 +80,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/net/md_5/bungee/api/chat/ComponentWrapper.java" />
         <option value="$PROJECT_DIR$/src/net/md_5/bungee/api/chat/BaseComponent.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/ClickEvent.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/components/api/chat/ComponentBuilder.java" />
@@ -93,12 +124,13 @@
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketListener.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/LanguageManager.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/listeners/BukkitListener.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/SpigotMLP.java" />
-        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/config/MainConfig.java" />
         <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/Language.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java" />
+        <option value="$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java" />
       </list>
     </option>
   </component>
@@ -347,6 +379,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1280" y="0" width="1922" height="1033" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -361,7 +394,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297062" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -713,30 +746,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="6" column="32" lean-forward="true" selection-start-line="6" selection-start-column="32" selection-end-line="6" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/language/item/LanguageItem.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="705">
           <caret line="52" column="28" lean-forward="false" selection-start-line="52" selection-start-column="28" selection-end-line="52" selection-end-column="28" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="29" column="26" lean-forward="true" selection-start-line="29" selection-start-column="26" selection-end-line="29" selection-end-column="26" />
-          <folding>
-            <element signature="e#1111#1112#0" expanded="true" />
-            <element signature="e#1157#1158#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -753,7 +767,7 @@
         <state relative-caret-position="162">
           <caret line="9" column="17" lean-forward="true" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="imports" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -767,18 +781,6 @@
             <element signature="e#3564#3565#0" expanded="true" />
             <element signature="e#4032#4033#0" expanded="true" />
             <element signature="e#4074#4075#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="471">
-          <caret line="232" column="30" lean-forward="false" selection-start-line="232" selection-start-column="30" selection-end-line="232" selection-end-column="30" />
-          <folding>
-            <element signature="e#1846#1878#0" expanded="true" />
-            <element signature="e#21215#21216#0" expanded="true" />
-            <element signature="e#21242#21243#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -804,6 +806,36 @@
         <state relative-caret-position="316">
           <caret line="26" column="42" lean-forward="true" selection-start-line="26" selection-start-column="42" selection-end-line="26" selection-end-column="42" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/player/LanguagePlayer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="61" column="19" lean-forward="true" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
+          <folding>
+            <element signature="e#1111#1112#0" expanded="true" />
+            <element signature="e#1157#1158#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/PacketInterceptor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="8" column="19" lean-forward="true" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/rexcantor64/multilanguageplugin/packetinterceptor/ProtocolLibListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="101" column="36" lean-forward="false" selection-start-line="101" selection-start-column="36" selection-end-line="101" selection-end-column="36" />
+          <folding>
+            <element signature="e#22534#22535#0" expanded="true" />
+            <element signature="e#22561#22562#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

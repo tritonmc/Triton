@@ -60,7 +60,8 @@ public class LanguagePlayer {
     private void refreshEntities() {
         if (SpigotMLP.get().getConf().getHolograms().size() == 0)
             return;
-        //TODO implement
+        if (interceptor != null)
+            interceptor.refreshEntities(this);
     }
 
     private void load() {
