@@ -27,6 +27,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.Team;
 
@@ -225,7 +227,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     for (int i = 0; i < 4; i++)
                         nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
             }
-        } else if (packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
             List<NbtBase<?>> entities = packet.getPacket().getListNbtModifier().read(0);
             for (NbtBase<?> entity : entities) {
                 NbtCompound nbt = NbtFactory.asCompound(entity);
@@ -237,6 +239,38 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
                 }
             }
+        } else if (packet.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS && main.getConf().isItems()) {
+            List<ItemStack> items = packet.getPacket().getItemListModifier().read(0);
+            for (ItemStack item : items) {
+                if (item.hasItemMeta()) {
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta.hasDisplayName())
+                        meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), packet.getPlayer()));
+                    if (meta.hasLore()) {
+                        List<String> newLore = new ArrayList<>();
+                        for (String lore : meta.getLore())
+                            newLore.add(main.getLanguageParser().replaceLanguages(lore, packet.getPlayer()));
+                        meta.setLore(newLore);
+                    }
+                    item.setItemMeta(meta);
+                }
+            }
+            packet.getPacket().getItemListModifier().write(0, items);
+        } else if (packet.getPacketType() == PacketType.Play.Server.SET_SLOT && main.getConf().isItems()) {
+            ItemStack item = packet.getPacket().getItemModifier().read(0);
+            if (item.hasItemMeta()) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta.hasDisplayName())
+                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), packet.getPlayer()));
+                if (meta.hasLore()) {
+                    List<String> newLore = new ArrayList<>();
+                    for (String lore : meta.getLore())
+                        newLore.add(main.getLanguageParser().replaceLanguages(lore, packet.getPlayer()));
+                    meta.setLore(newLore);
+                }
+                item.setItemMeta(meta);
+            }
+            packet.getPacket().getItemModifier().write(0, item);
         }
     }
 
@@ -301,12 +335,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void onPacketReceiving(PacketEvent packetEvent) {
-
     }
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT).highest().build();
     }
 
     @Override

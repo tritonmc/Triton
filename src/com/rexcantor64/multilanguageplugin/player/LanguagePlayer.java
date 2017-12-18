@@ -29,6 +29,7 @@ public class LanguagePlayer {
         refreshScoreboard();
         refreshEntities();
         refreshSigns();
+        bukkit.updateInventory();
         save();
     }
 
