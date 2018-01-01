@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
+import com.rexcantor64.multilanguageplugin.components.api.chat.HoverEvent;
 import com.rexcantor64.multilanguageplugin.components.api.chat.TextComponent;
 import com.rexcantor64.multilanguageplugin.utils.ComponentUtils;
 import org.bukkit.entity.Player;
@@ -100,12 +101,11 @@ public class LanguageParser {
         return ChatColor.stripColor(str.substring(0, 2)) + str.substring(2);
     }
 
-    private List<Integer[]> findPlaceholdersIndex(String input) {
+    private Integer[] findFirstPlaceholdersIndex(String input) {
         Matcher matcher = pattern.matcher(input);
-        List<Integer[]> indexes = new ArrayList<>();
-        while (matcher.find())
-            indexes.add(new Integer[]{matcher.start(), matcher.end()});
-        return indexes;
+        if (matcher.find())
+            return new Integer[]{matcher.start(), matcher.end()};
+        return null;
     }
 
     private Integer[] findArgsIndex(String input) {
@@ -134,16 +134,31 @@ public class LanguageParser {
         return TextComponent.fromLegacyText(replaceLanguages(TextComponent.toLegacyText(text), p));
     }
 
-    public BaseComponent[] parseChat(Player p, BaseComponent[] text) {
+    private BaseComponent[] translateHoverComponents(Player p, BaseComponent... text) {
+        List<BaseComponent> result = new ArrayList<>();
+        for (BaseComponent comp : text) {
+            if (comp.getHoverEvent() != null && comp.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT)
+                comp.setHoverEvent(new HoverEvent(comp.getHoverEvent().getAction(), parseChat(p, comp.getHoverEvent().getValue())));
+            result.add(comp);
+            if (comp.getExtra() != null)
+                for (BaseComponent extra : comp.getExtra())
+                    translateHoverComponents(p, extra);
+        }
+        return result.toArray(new BaseComponent[result.size()]);
+    }
+
+    public BaseComponent[] parseChat(Player p, BaseComponent... text) {
         if (text == null) return null;
-        int offset = 0;
         List<LanguageMessage> messages = LanguageMessage.fromBaseComponentArray(text);
+        int counter = 15;
         indexLoop:
-        for (Integer[] i : findPlaceholdersIndex(BaseComponent.toPlainText(text))) {
+        while (counter > 0) {
+            counter--;
+            Integer[] i = findFirstPlaceholdersIndex(BaseComponent.toPlainText(text));
+            if (i == null) break;
             int index = 0;
             boolean foundStart = false;
             boolean foundEnd = false;
-            StringBuilder cache = new StringBuilder();
             BaseComponent beforeCache = new TextComponent("");
             BaseComponent compCache = new TextComponent("");
             BaseComponent afterCache = new TextComponent("");
@@ -153,33 +168,29 @@ public class LanguageParser {
                     continue;
                 }
                 if (!foundStart) {
-                    if (index + message.getText().length() <= i[0] + offset) {
+                    if (index + message.getText().length() <= i[0]) {
                         beforeCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText())));
                         index += message.getText().length();
                         continue;
                     }
                     foundStart = true;
-                    if (index + message.getText().length() >= i[1] + offset) {
-                        cache.append(message.getText().substring(i[0] - index + offset, i[1] - index + offset));
-                        compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[0] - index + offset, i[1] - index + offset))));
-                        beforeCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[0] - index + offset))));
-                        afterCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[1] - index + offset))));
+                    if (index + message.getText().length() >= i[1]) {
+                        compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[0] - index, i[1] - index))));
+                        beforeCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[0] - index))));
+                        afterCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[1] - index))));
                         foundEnd = true;
                         continue;
                     }
-                    cache.append(message.getText().substring(i[0] - index + offset));
-                    compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[0] - index + offset))));
-                    beforeCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[0] - index + offset))));
+                    compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[0] - index))));
+                    beforeCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[0] - index))));
                 } else {
                     if (message.isTranslatableComponent()) continue indexLoop;
-                    if (index + message.getText().length() < i[1] + offset) {
-                        cache.append(message.getText());
+                    if (index + message.getText().length() < i[1]) {
                         compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText())));
-                        if (index + message.getText().length() + 1 == i[1] + offset) foundEnd = true;
+                        if (index + message.getText().length() + 1 == i[1]) foundEnd = true;
                     } else {
-                        cache.append(message.getText().substring(0, i[1] - index + offset));
-                        compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[1] - index + offset))));
-                        afterCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[1] - index + offset))));
+                        compCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(0, i[1] - index))));
+                        afterCache.addExtra(ComponentUtils.copyFormatting(message.getComponent(), new TextComponent(message.getText().substring(i[1] - index))));
                         foundEnd = true;
                         continue;
                     }
@@ -193,8 +204,9 @@ public class LanguageParser {
             result.addExtra(afterCache);
             text = new BaseComponent[]{result};
             messages = LanguageMessage.fromBaseComponentArray(text);
-            offset += (processed.toPlainText().length() - cache.length());
         }
+
+        text = translateHoverComponents(p, text);
 
         return text;
     }

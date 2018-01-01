@@ -1,5 +1,6 @@
 package com.rexcantor64.multilanguageplugin.web;
 
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import org.json.JSONObject;
 
@@ -9,9 +10,9 @@ import java.net.URL;
 
 public class GistManager {
 
-    private final SpigotMLP main;
+    private final MultiLanguagePlugin main;
 
-    public GistManager(SpigotMLP main) {
+    public GistManager(MultiLanguagePlugin main) {
         this.main = main;
     }
 

@@ -12,17 +12,19 @@ import com.rexcantor64.multilanguageplugin.migration.LanguageMigration;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.PlayerManager;
 import com.rexcantor64.multilanguageplugin.web.GistManager;
+import net.md_5.bungee.api.plugin.Plugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-public class SpigotMLP extends JavaPlugin implements MultiLanguagePlugin {
+public class BungeeMLP extends Plugin implements MultiLanguagePlugin{
+
+    // Create the instance
 
     // File-related variables
     private File languageFolder;
