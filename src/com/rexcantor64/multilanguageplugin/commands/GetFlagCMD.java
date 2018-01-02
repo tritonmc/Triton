@@ -1,7 +1,7 @@
 package com.rexcantor64.multilanguageplugin.commands;
 
 import com.google.common.collect.Lists;
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -23,23 +23,23 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.getflag")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length == 1) {
-            p.sendMessage(SpigotMLP.get().getMessage("help.getflag", "&cUse /%1 getflag <language name>", label));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("help.getflag", "&cUse /%1 getflag <language name>", label));
             return true;
         }
 
-        Language lang = SpigotMLP.get().getLanguageManager().getLanguageByName(args[1], false);
+        Language lang = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(args[1], false);
         if (lang == null) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.lang-not found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
             return true;
         }
 
         p.getInventory().addItem(lang.getStack());
-        p.sendMessage(SpigotMLP.get().getMessage("success.getflag", "&aYou received the %1 flag!", lang.getDisplayName()));
+        p.sendMessage(MultiLanguagePlugin.get().getMessage("success.getflag", "&aYou received the %1 flag!", lang.getDisplayName()));
 
         return true;
     }
@@ -50,7 +50,7 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
         if (!s.hasPermission("multilanguageplugin.getflag"))
             return tab;
         if (args.length == 2)
-            for (Language lang : SpigotMLP.get().getLanguageManager().getAllLanguages())
+            for (Language lang : MultiLanguagePlugin.get().getLanguageManager().getAllLanguages())
                 if (lang.getName().startsWith(args[1]))
                     tab.add(lang.getName());
         return tab;

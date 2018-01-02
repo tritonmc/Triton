@@ -1,6 +1,6 @@
 package com.rexcantor64.multilanguageplugin.player;
 
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.multilanguageplugin.storage.PlayerStorage;
@@ -46,20 +46,20 @@ public class LanguagePlayer {
     }
 
     private void refreshSigns() {
-        if (!SpigotMLP.get().getConf().isSigns())
+        if (!MultiLanguagePlugin.get().getConf().isSigns())
             return;
         if (interceptor != null)
             interceptor.refreshSigns(this);
     }
 
     private void refreshScoreboard() {
-        if (!SpigotMLP.get().getConf().isScoreboards())
+        if (!MultiLanguagePlugin.get().getConf().isScoreboards())
             return;
         //TODO implement
     }
 
     private void refreshEntities() {
-        if (SpigotMLP.get().getConf().getHolograms().size() == 0)
+        if (MultiLanguagePlugin.get().getConf().getHolograms().size() == 0)
             return;
         if (interceptor != null)
             interceptor.refreshEntities(this);

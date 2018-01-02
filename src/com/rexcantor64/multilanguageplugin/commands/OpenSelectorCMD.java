@@ -1,6 +1,6 @@
 package com.rexcantor64.multilanguageplugin.commands;
 
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.guiapi.Gui;
 import com.rexcantor64.multilanguageplugin.guiapi.GuiButton;
 import com.rexcantor64.multilanguageplugin.guiapi.ScrollableGui;
@@ -23,7 +23,7 @@ public class OpenSelectorCMD implements CommandExecutor {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.openselector")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
@@ -32,14 +32,14 @@ public class OpenSelectorCMD implements CommandExecutor {
     }
 
     private void openLanguagesSelectionGUI(Player p) {
-        LanguageManager language = SpigotMLP.get().getLanguageManager();
-        Language pLang = SpigotMLP.get().getPlayerManager().get(p).getLang();
-        Gui gui = new ScrollableGui(SpigotMLP.get().getMessage("other.selector-gui-name", "&aSelect a language"));
+        LanguageManager language = MultiLanguagePlugin.get().getLanguageManager();
+        Language pLang = MultiLanguagePlugin.get().getPlayerManager().get(p).getLang();
+        Gui gui = new ScrollableGui(MultiLanguagePlugin.get().getMessage("other.selector-gui-name", "&aSelect a language"));
         for (Language lang : language.getAllLanguages())
             gui.addButton(new GuiButton(lang.getStack(pLang.equals(lang))).setListener(event -> {
-                SpigotMLP.get().getPlayerManager().get(p).setLang(lang);
+                MultiLanguagePlugin.get().getPlayerManager().get(p).setLang(lang);
                 p.closeInventory();
-                p.sendMessage(SpigotMLP.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
+                p.sendMessage(MultiLanguagePlugin.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
             }));
         gui.open(p);
     }

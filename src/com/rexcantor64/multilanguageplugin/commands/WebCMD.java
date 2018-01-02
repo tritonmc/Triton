@@ -1,5 +1,6 @@
 package com.rexcantor64.multilanguageplugin.commands;
 
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.web.GistManager;
 import org.bukkit.command.Command;
@@ -12,7 +13,7 @@ public class WebCMD implements CommandExecutor {
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         try {
             s.sendMessage("Uploading...");
-            GistManager.HttpResponse response = SpigotMLP.get().getGistManager().upload();
+            GistManager.HttpResponse response = MultiLanguagePlugin.get().getGistManager().upload();
             if (!response.isSuccess() || response.getStatusCode() != 201) {
                 s.sendMessage("Failed! " + response.getPage());
                 return true;

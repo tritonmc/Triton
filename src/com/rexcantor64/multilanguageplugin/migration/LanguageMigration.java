@@ -1,6 +1,6 @@
 package com.rexcantor64.multilanguageplugin.migration;
 
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.utils.LocationUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -9,7 +9,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,12 +23,12 @@ public class LanguageMigration {
     private JSONArray languageArray = new JSONArray();
 
     public static void migrate() {
-        File file = new File(SpigotMLP.get().getDataFolder(), "languages.json");
+        File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
         if (file.exists()) return;
-        File languageFolder = SpigotMLP.get().getLanguageFolder();
+        File languageFolder = MultiLanguagePlugin.get().getLanguageFolder();
         String[] files = languageFolder.list();
         if (files == null) return;
-        SpigotMLP.get().logInfo("Starting migration from legacy versions... No files will be deleted!");
+        MultiLanguagePlugin.get().logInfo("Starting migration from legacy versions... No files will be deleted!");
         HashSet<String> languageFiles = new HashSet<>();
         for (String f : files) {
             Matcher matcher = filePattern.matcher(f);
@@ -33,12 +36,12 @@ public class LanguageMigration {
                 languageFiles.add(matcher.group(1));
         }
         if (languageFiles.isEmpty()) {
-            SpigotMLP.get().logInfo("No legacy files found! Migration aborted.");
+            MultiLanguagePlugin.get().logInfo("No legacy files found! Migration aborted.");
             return;
         }
         LanguageMigration migration = new LanguageMigration(languageFiles);
         if (migration.finishMigration())
-            SpigotMLP.get().logInfo("Migration finished successfully!");
+            MultiLanguagePlugin.get().logInfo("Migration finished successfully!");
     }
 
     private LanguageMigration(HashSet<String> languageList) {
@@ -50,21 +53,21 @@ public class LanguageMigration {
 
     private void addLanguage(String languageName) {
         try {
-            SpigotMLP.get().logDebug("Migrating %1.language to the new system...", languageName);
-            File file = new File(SpigotMLP.get().getLanguageFolder(), languageName + ".language");
+            MultiLanguagePlugin.get().logDebug("Migrating %1.language to the new system...", languageName);
+            File file = new File(MultiLanguagePlugin.get().getLanguageFolder(), languageName + ".language");
             if (!file.exists()) return;
             ResourceBundle rb = new PropertyResourceBundle(new FileReader(file));
             for (String s : Collections.list(rb.getKeys())) addMessageToArray(languageName, s, rb.getString(s));
-            SpigotMLP.get().logDebug("Successfully migrated %1.language to the new system!", languageName);
+            MultiLanguagePlugin.get().logDebug("Successfully migrated %1.language to the new system!", languageName);
         } catch (Exception e) {
-            SpigotMLP.get().logError("Failed to migrate %1.language to the new system: %2", languageName, e.getMessage());
+            MultiLanguagePlugin.get().logError("Failed to migrate %1.language to the new system: %2", languageName, e.getMessage());
         }
     }
 
     private void addLanguageSign(String languageName) {
         try {
-            SpigotMLP.get().logDebug("Migrating %1.signs.json to the new system...", languageName);
-            File file = new File(SpigotMLP.get().getLanguageFolder(), languageName + ".signs.json");
+            MultiLanguagePlugin.get().logDebug("Migrating %1.signs.json to the new system...", languageName);
+            File file = new File(MultiLanguagePlugin.get().getLanguageFolder(), languageName + ".signs.json");
             if (!file.exists()) return;
             JSONArray signs = new JSONArray(IOUtils.toString(new FileReader(file)));
             for (int i = 0; i < signs.length(); i++) {
@@ -79,9 +82,9 @@ public class LanguageMigration {
                             lines[k] = "";
                 addSignToArray(languageName, sign.optInt("x", 0), sign.optInt("y", 0), sign.optInt("z", 0), sign.optString("world", "world"), lines);
             }
-            SpigotMLP.get().logDebug("Successfully migrated %1.signs.json to the new system!", languageName);
+            MultiLanguagePlugin.get().logDebug("Successfully migrated %1.signs.json to the new system!", languageName);
         } catch (Exception e) {
-            SpigotMLP.get().logError("Failed to migrate %1.signs.json to the new system: %2", languageName, e.getMessage());
+            MultiLanguagePlugin.get().logError("Failed to migrate %1.signs.json to the new system: %2", languageName, e.getMessage());
         }
     }
 
@@ -142,9 +145,9 @@ public class LanguageMigration {
 
     private boolean finishMigration() {
         try {
-            File file = new File(SpigotMLP.get().getDataFolder(), "languages.json");
+            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
             if (file.exists()) {
-                SpigotMLP.get().logDebugWarning("Failed to finish migration! languages.json already exists!");
+                MultiLanguagePlugin.get().logDebugWarning("Failed to finish migration! languages.json already exists!");
                 return false;
             }
             PrintWriter writer = new PrintWriter(file, "UTF-8");
@@ -152,7 +155,7 @@ public class LanguageMigration {
             writer.close();
             return true;
         } catch (Exception e) {
-            SpigotMLP.get().logError("Failed to finish migration (writing out the file): %1", e.getMessage());
+            MultiLanguagePlugin.get().logError("Failed to finish migration (writing out the file): %1", e.getMessage());
             return false;
         }
     }

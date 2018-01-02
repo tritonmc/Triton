@@ -1,12 +1,12 @@
 package com.rexcantor64.multilanguageplugin.commands;
 
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
 import com.rexcantor64.multilanguageplugin.web.GistManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,12 +19,12 @@ public class ReloadCMD implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (!s.hasPermission("multilanguageplugin.reload")) {
-            s.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length > 1) {
-            SpigotMLP main = SpigotMLP.get();
+            MultiLanguagePlugin main = MultiLanguagePlugin.get();
             if (!s.hasPermission("multilanguageplugin.reload.web")) {
                 s.sendMessage(main.getMessage("error.no-permission", "&cNo permission."));
                 return true;
@@ -45,7 +45,7 @@ public class ReloadCMD implements CommandExecutor {
                 JSONObject files = responseJson.getJSONObject("files");
                 try {
                     JSONObject configFile = new JSONObject(files.getJSONObject("config.json").getString("content"));
-                    FileConfiguration config = main.getConfig();
+                    Configuration config = main.getConfig();
                     config.set("force-minecraft-locale", configFile.optBoolean("forceLocale", false));
                     config.set("debug", configFile.optBoolean("debug", false));
                     config.set("main-language", configFile.optString("mainLanguage", "en_GB"));
@@ -68,12 +68,12 @@ public class ReloadCMD implements CommandExecutor {
                     config.set("language-creation.enabled.signs", parser.optBoolean("signs", true));
 
                     config.set("languages", null);
-                    ConfigurationSection langSection = config.createSection("languages");
+                    Configuration langSection = config.getSection("languages");
 
                     JSONArray languages = configFile.optJSONArray("languages");
                     for (int i = 0; i < languages.length(); i++) {
                         JSONObject lang = languages.optJSONObject(i);
-                        ConfigurationSection sec = langSection.createSection(lang.optString("name"));
+                        Configuration sec = langSection.getSection(lang.optString("name"));
                         sec.set("flag", lang.optString("flag"));
                         sec.set("display-name", lang.optString("display"));
                         sec.set("minecraft-code", lang.optJSONArray("codes").toList());
@@ -81,7 +81,7 @@ public class ReloadCMD implements CommandExecutor {
                     main.saveConfig();
                     JSONArray languageFile = new JSONArray(files.getJSONObject("language.json").getString("content"));
                     try {
-                        FileWriter fileWriter = new FileWriter(new File(SpigotMLP.get().getDataFolder(), "languages.json"));
+                        FileWriter fileWriter = new FileWriter(new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json"));
                         fileWriter.write(languageFile.toString(4));
                         fileWriter.flush();
                     } catch (Exception e) {
@@ -98,8 +98,8 @@ public class ReloadCMD implements CommandExecutor {
             }
         }
 
-        SpigotMLP.get().reload();
-        s.sendMessage(SpigotMLP.get().getMessage("success.reload", "&aConfig successfully reloaded."));
+        MultiLanguagePlugin.get().reload();
+        s.sendMessage(MultiLanguagePlugin.get().getMessage("success.reload", "&aConfig successfully reloaded."));
         return true;
     }
 

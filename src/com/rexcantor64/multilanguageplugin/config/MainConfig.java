@@ -1,12 +1,9 @@
 package com.rexcantor64.multilanguageplugin.config;
 
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.storage.SQLManager;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -137,26 +134,20 @@ public class MainConfig {
     }
 
     private void setup(Configuration section) {
-        Configuration sql = section.getConfigurationSection("sql");
-        if (sql == null) sql = section.createSection("sql");
+        Configuration sql = section.getSection("sql");
         if (sql.getBoolean("enabled", false))
             this.sql = new SQLManager(sql.getString("host", "localhost"), sql.getInt("port", 3306), sql.getString("database", "minecraft"), sql.getString("username", "root"), sql.getString("password", ""));
-        this.languages = section.getConfigurationSection("languages");
-        if (this.languages == null) this.languages = section.createSection("languages");
+        this.languages = section.getSection("languages");
         this.mainLanguage = section.getString("main-language", "en_GB");
         this.forceLocale = section.getBoolean("force-minecraft-locale", false);
         this.debug = section.getBoolean("debug", false);
-        Configuration languageCreation = section.getConfigurationSection("language-creation");
-        if (languageCreation == null) languageCreation = section.createSection("language-creation");
+        Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
         testSQLConnection();
     }
 
     public void setup() {
-        File f = new File(main.getDataFolder(), "config.yml");
-        if (!f.exists())
-            main.saveResource("config.yml", false);
-        setup(main.getConfiguration());
+        setup(main.getConfig());
     }
 
     private void testSQLConnection() {
@@ -169,8 +160,7 @@ public class MainConfig {
         syntaxArgs = section.getString("syntax-args", "args");
         syntaxArg = section.getString("syntax-arg", "arg");
 
-        Configuration enabled = section.getConfigurationSection("enabled");
-        if (enabled == null) enabled = section.createSection("enabled");
+        Configuration enabled = section.getSection("enabled");
         chat = enabled.getBoolean("chat-messages", true);
         actionbars = enabled.getBoolean("action-bars", true);
         titles = enabled.getBoolean("titles", true);

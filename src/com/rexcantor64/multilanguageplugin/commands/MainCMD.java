@@ -2,7 +2,7 @@ package com.rexcantor64.multilanguageplugin.commands;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,14 +38,14 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 return entry.getValue().onCommand(s, cmd, label, args);
 
         if (!s.hasPermission("multilanguageplugin.help")) {
-            s.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
-        for (String str : SpigotMLP.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
+        for (String str : MultiLanguagePlugin.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
             if (str.equalsIgnoreCase("%1"))
                 for (String command : subCommands.keySet())
-                    s.sendMessage(SpigotMLP.get().getMessage("help.menu-item", "&6/%1 %2", label, command));
+                    s.sendMessage(MultiLanguagePlugin.get().getMessage("help.menu-item", "&6/%1 %2", label, command));
             else
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
         return true;
@@ -54,7 +54,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
         if (args.length == 0)
-            return new ArrayList<String>(subCommands.keySet());
+            return new ArrayList<>(subCommands.keySet());
         for (Entry<String, TabCompleter> entry : subCompleters.entrySet())
             if (entry.getKey().equalsIgnoreCase(args[0]))
                 return entry.getValue().onTabComplete(s, cmd, label, args);

@@ -1,6 +1,6 @@
 package com.rexcantor64.multilanguageplugin.config;
 
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -27,13 +27,13 @@ public class LanguageConfig {
         items.clear();
         long timeStarted = System.currentTimeMillis();
         try {
-            File file = new File(SpigotMLP.get().getDataFolder(), "languages.json");
+            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
             if (!file.exists()) {
                 try {
                     if (!file.createNewFile())
-                        SpigotMLP.get().logDebugWarning("Failed to create %1! File already exists!", file.getAbsolutePath());
+                        MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! File already exists!", file.getAbsolutePath());
                 } catch (Exception e) {
-                    SpigotMLP.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                    MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
                 }
                 logCount(timeStarted);
                 return;
@@ -45,13 +45,13 @@ public class LanguageConfig {
                 items.add(item);
             }
         } catch (Exception e) {
-            SpigotMLP.get().logWarning("An error occurred while loading languages.json! Some language items may not have been loaded! Error: %1", e.getMessage());
+            MultiLanguagePlugin.get().logWarning("An error occurred while loading languages.json! Some language items may not have been loaded! Error: %1", e.getMessage());
         }
         logCount(timeStarted);
     }
 
     private void logCount(long timeStarted) {
-        SpigotMLP.get().logDebug("Loaded %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
+        MultiLanguagePlugin.get().logDebug("Loaded %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
     }
 
 }

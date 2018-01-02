@@ -1,55 +1,225 @@
 package com.rexcantor64.multilanguageplugin;
 
+import com.google.common.io.ByteStreams;
+import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.config.LanguageConfig;
 import com.rexcantor64.multilanguageplugin.config.MainConfig;
 import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
+import com.rexcantor64.multilanguageplugin.config.interfaces.ConfigurationProvider;
+import com.rexcantor64.multilanguageplugin.config.interfaces.YamlConfiguration;
 import com.rexcantor64.multilanguageplugin.guiapi.GuiManager;
 import com.rexcantor64.multilanguageplugin.language.LanguageManager;
 import com.rexcantor64.multilanguageplugin.language.LanguageParser;
+import com.rexcantor64.multilanguageplugin.migration.LanguageMigration;
+import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.PlayerManager;
+import com.rexcantor64.multilanguageplugin.plugin.PluginLoader;
 import com.rexcantor64.multilanguageplugin.web.GistManager;
 
-import java.io.File;
+import java.io.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
-public interface MultiLanguagePlugin {
+public abstract class MultiLanguagePlugin {
 
-    void reload();
+    // Main instances
+    static MultiLanguagePlugin instance;
+    PluginLoader loader;
 
-    MainConfig getConf();
+    // File-related variables
+    private File languageFolder;
 
-    LanguageConfig getLanguageConfig();
+    // Configs
+    private Configuration configYAML;
+    MainConfig config;
+    private LanguageConfig languageConfig;
+    private Configuration messagesConfig;
 
-    LanguageManager getLanguageManager();
+    // Managers
+    private LanguageManager languageManager;
+    private LanguageParser languageParser;
+    private PlayerManager playerManager;
+    GuiManager guiManager;
+    private GistManager gistManager;
 
-    LanguageParser getLanguageParser();
+    public void reload() {
+        configYAML = loadYAML("config");
+        config.setup();
+        messagesConfig = loadYAML("message");
+        languageConfig.setup();
+        languageManager.setup();
+    }
 
-    PlayerManager getPlayerManager();
+    void onEnable() {
+        languageFolder = new File(getDataFolder(), "languages");
+        // Setup config.yml
+        configYAML = loadYAML("config");
+        (config = new MainConfig(this)).setup();
+        // Setup messages.yml
+        messagesConfig = loadYAML("message");
+        // Start migration. Remove on v1.1.0.
+        LanguageMigration.migrate();
+        // Setup more classes
+        (languageConfig = new LanguageConfig()).setup();
+        (languageManager = new LanguageManager()).setup();
+        playerManager = new PlayerManager();
+        languageParser = new LanguageParser();
+        guiManager = new GuiManager();
+        gistManager = new GistManager(this);
+    }
 
-    GuiManager getGuiManager();
+    public Configuration loadYAML(String fileName) {
+        File f = getResource(fileName + ".yml");
+        try {
+            return ConfigurationProvider.getProvider(YamlConfiguration.class).load(f);
+        } catch (Exception e) {
+            logError("Failed to load %1.yml: %2", fileName, e.getMessage());
+            logError("You'll likely receive more errors on console until the next restart.");
+        }
+        return null;
+    }
 
-    GistManager getGistManager();
+    public MainConfig getConf() {
+        return config;
+    }
 
-    String getMessage(String code, String def, Object... args);
+    public LanguageConfig getLanguageConfig() {
+        return languageConfig;
+    }
 
-    List<String> getMessageList(String code, String... def);
+    public LanguageManager getLanguageManager() {
+        return languageManager;
+    }
 
-    File getLanguageFolder();
+    public LanguageParser getLanguageParser() {
+        return languageParser;
+    }
 
-    void logInfo(String info, Object... arguments);
+    public PlayerManager getPlayerManager() {
+        return playerManager;
+    }
 
-    void logWarning(String warning, Object... arguments);
+    public GuiManager getGuiManager() {
+        return guiManager;
+    }
 
-    void logError(String error, Object... arguments);
+    public GistManager getGistManager() {
+        return gistManager;
+    }
 
-    void logDebug(String info, Object... arguments);
+    public abstract ProtocolLibListener getProtocolLibListener();
 
-    void logDebugWarning(String warning, Object... arguments);
+    public String getMessage(String code, String def, Object... args) {
+        String s = ChatColor.translateAlternateColorCodes('&',
+                messagesConfig.getString(code, def));
+        for (int i = 0; i < args.length; i++)
+            if (args[i] != null)
+                s = s.replace("%" + (i + 1), args[i].toString());
+        return s;
+    }
 
-    File getDataFolder();
+    public List<String> getMessageList(String code, String... def) {
+        List<String> result = messagesConfig.getStringList(code);
+        if (result.size() == 0)
+            result = Arrays.asList(def);
+        return result;
+    }
 
-    Configuration getConfiguration();
+    public File getLanguageFolder() {
+        if (!languageFolder.exists())
+            try {
+                if (!languageFolder.mkdirs())
+                    logWarning("Failed to create folder 'languages'! Please check the folder permissions or create it manually!");
+            } catch (Exception e) {
+                logError("Failed to create folder 'languages'! Please check the folder permissions or create it manually! Error: %1", e.getMessage());
+            }
+        return languageFolder;
+    }
 
-    void saveResource(String fileName, boolean override);
+    public void logInfo(String info, Object... arguments) {
+        if (info == null) return;
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i] != null)
+                info = info.replace("%" + Integer.toString(i + 1), arguments[i].toString());
+        loader.getLogger().log(Level.INFO, info);
+    }
+
+    public void logWarning(String warning, Object... arguments) {
+        if (warning == null) return;
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i] != null)
+                warning = warning.replace("%" + Integer.toString(i + 1), arguments[i].toString());
+        loader.getLogger().log(Level.WARNING, warning);
+    }
+
+    public void logError(String error, Object... arguments) {
+        if (error == null) return;
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i] != null)
+                error = error.replace("%" + Integer.toString(i + 1), arguments[i].toString());
+        loader.getLogger().log(Level.SEVERE, error);
+    }
+
+    public void logDebug(String info, Object... arguments) {
+        if (info == null) return;
+        if (!config.isDebug()) return;
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i] != null)
+                info = info.replace("%" + Integer.toString(i + 1), arguments[i].toString());
+        loader.getLogger().log(Level.INFO, "[DEBUG] " + info);
+    }
+
+    public void logDebugWarning(String warning, Object... arguments) {
+        if (!config.isDebug()) return;
+        if (warning == null) return;
+        for (int i = 0; i < arguments.length; i++)
+            if (arguments[i] != null)
+                warning = warning.replace("%" + Integer.toString(i + 1), arguments[i].toString());
+        loader.getLogger().log(Level.WARNING, "[DEBUG] " + warning);
+    }
+
+    public abstract File getDataFolder();
+
+    public Configuration getConfig() {
+        return configYAML;
+    }
+
+    public File getResource(String fileName) {
+        File folder = getDataFolder();
+        if (!folder.exists())
+            if (!folder.mkdirs())
+                logError("Failed to create plugin folder!");
+        File resourceFile = new File(folder, fileName);
+        try {
+            if (!resourceFile.exists()) {
+                if (!resourceFile.createNewFile())
+                    logError("Failed to create the file %1!", fileName);
+                try (InputStream in = loader.getResourceAsStream(fileName);
+                     OutputStream out = new FileOutputStream(resourceFile)) {
+                    ByteStreams.copy(in, out);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resourceFile;
+    }
+
+    public void saveConfig() {
+        try {
+            ConfigurationProvider.getProvider(YamlConfiguration.class).save(configYAML, new File(getDataFolder(), "config.yml"));
+        } catch (IOException e) {
+            logError("Failed to save config.yml! Cause: %1", e.getMessage());
+        }
+    }
+
+    public PluginLoader getLoader() {
+        return loader;
+    }
+
+    public static MultiLanguagePlugin get() {
+        return instance;
+    }
 
 }

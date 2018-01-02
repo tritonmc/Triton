@@ -1,5 +1,5 @@
 name: MultiLanguagePlugin
-main: com.rexcantor64.multilanguageplugin.SpigotMLP
+main: com.rexcantor64.multilanguageplugin.plugin.SpigotPlugin
 version: 1.0.0-BETA_2
 website: https://www.spigotmc.org/resources/multilanguageplugin.30331/
 author: Rexcantor64

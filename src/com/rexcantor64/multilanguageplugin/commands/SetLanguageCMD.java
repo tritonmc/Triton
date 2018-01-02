@@ -1,7 +1,7 @@
 package com.rexcantor64.multilanguageplugin.commands;
 
 import com.google.common.collect.Lists;
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -24,12 +24,12 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.setlanguage")) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.no-permission", "&cNo permission."));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
 
         if (args.length == 1) {
-            p.sendMessage(SpigotMLP.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language name>", label));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language name>", label));
             return true;
         }
 
@@ -41,23 +41,23 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
             if (p.hasPermission("multilanguageplugin.setlanguage.others")) {
                 target = Bukkit.getPlayer(args[1]);
                 if (target == null) {
-                    p.sendMessage(SpigotMLP.get().getMessage("error.player-not-found", "&cPlayer %1 not found!", args[1]));
+                    p.sendMessage(MultiLanguagePlugin.get().getMessage("error.player-not-found", "&cPlayer %1 not found!", args[1]));
                     return true;
                 }
             }
         }
 
-        Language lang = SpigotMLP.get().getLanguageManager().getLanguageByName(langName, false);
+        Language lang = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
-            p.sendMessage(SpigotMLP.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
             return true;
         }
 
-        SpigotMLP.get().getPlayerManager().get(target).setLang(lang);
+        MultiLanguagePlugin.get().getPlayerManager().get(target).setLang(lang);
         if (target == p)
-            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage", "&aYour language has been changed to %1", lang.getDisplayName()));
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("success.setlanguage", "&aYour language has been changed to %1", lang.getDisplayName()));
         else
-            p.sendMessage(SpigotMLP.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to %2", target.getName(),
+            p.sendMessage(MultiLanguagePlugin.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to %2", target.getName(),
                     lang.getDisplayName()));
         return true;
     }
@@ -68,7 +68,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         if (!s.hasPermission("multilanguageplugin.setlanguage"))
             return tab;
         if (args.length == 2 || (args.length == 3) && s.hasPermission("multilanguageplugin.setlanguage.others"))
-            for (Language lang : SpigotMLP.get().getLanguageManager().getAllLanguages())
+            for (Language lang : MultiLanguagePlugin.get().getLanguageManager().getAllLanguages())
                 if (lang.getName().toLowerCase().startsWith(args[1].toLowerCase()))
                     tab.add(lang.getName());
         return tab;

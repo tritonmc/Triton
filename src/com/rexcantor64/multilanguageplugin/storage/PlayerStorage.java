@@ -1,5 +1,6 @@
 package com.rexcantor64.multilanguageplugin.storage;
 
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
@@ -25,7 +26,7 @@ public interface PlayerStorage {
         private static final SqlStorage sql = new SqlStorage();
 
         public static PlayerStorage getCurrentStorage() {
-            if (SpigotMLP.get().getConf().useSql())
+            if (MultiLanguagePlugin.get().getConf().useSql())
                 return sql;
             return yaml;
         }
@@ -35,35 +36,35 @@ public interface PlayerStorage {
 
         @Override
         public Language getLanguage(LanguagePlayer lp) {
-            File f = new File(SpigotMLP.get().getDataFolder(), "players.yml");
+            File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
             if (!f.exists()) {
                 lp.waitForDefaultLanguage();
-                return SpigotMLP.get().getLanguageManager().getMainLanguage();
+                return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
             }
             YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
             if (players.isString(lp.toBukkit().getUniqueId().toString()))
-                return SpigotMLP.get().getLanguageManager()
+                return MultiLanguagePlugin.get().getLanguageManager()
                         .getLanguageByName(players.getString(lp.toBukkit().getUniqueId().toString()), true);
             lp.waitForDefaultLanguage();
-            return SpigotMLP.get().getLanguageManager().getMainLanguage();
+            return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         }
 
         @Override
         public void setLanguage(UUID uuid, Language newLanguage) {
             try {
-                SpigotMLP.get().logDebug("Saving language for %1...", uuid.toString());
-                File f = new File(SpigotMLP.get().getDataFolder(), "players.yml");
+                MultiLanguagePlugin.get().logDebug("Saving language for %1...", uuid.toString());
+                File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
                 if (!f.exists())
                     if (!f.createNewFile()) {
-                        SpigotMLP.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: File already exists", uuid.toString());
+                        MultiLanguagePlugin.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: File already exists", uuid.toString());
                         return;
                     }
                 YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
                 players.set(uuid.toString(), newLanguage.getName());
                 players.save(f);
-                SpigotMLP.get().logDebug("Saved!");
+                MultiLanguagePlugin.get().logDebug("Saved!");
             } catch (Exception e) {
-                SpigotMLP.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: %2", uuid.toString(), e.getMessage());
+                MultiLanguagePlugin.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: %2", uuid.toString(), e.getMessage());
             }
         }
 
@@ -74,7 +75,7 @@ public interface PlayerStorage {
         @Override
         public Language getLanguage(LanguagePlayer lp) {
             //TODO implement
-            return SpigotMLP.get().getLanguageManager().getMainLanguage();
+            return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         }
 
         @Override

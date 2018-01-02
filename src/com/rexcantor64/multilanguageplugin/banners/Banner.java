@@ -1,10 +1,8 @@
 package com.rexcantor64.multilanguageplugin.banners;
 
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
-import org.bukkit.DyeColor;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import org.bukkit.Material;
 import org.bukkit.block.banner.Pattern;
-import org.bukkit.block.banner.PatternType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -25,18 +23,18 @@ public class Banner {
         }
         for (String s : strings) {
             if (s.length() != 2) {
-                SpigotMLP.get().logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
+                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
                 continue;
             }
             BannerMeta bm = getMeta();
             Colors color = Colors.getByCode(s.charAt(0));
             Patterns type = Patterns.getByCode(s.charAt(1));
             if (color == null) {
-                SpigotMLP.get().logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
+                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
                 continue;
             }
             if (type == null) {
-                SpigotMLP.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
+                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
                 continue;
             }
             bm.addPattern(new Pattern(color.getColor(), type.getType()));

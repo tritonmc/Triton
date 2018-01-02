@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin.language;
 
 import com.google.common.collect.Lists;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
@@ -18,15 +19,15 @@ import java.util.regex.Pattern;
 public class LanguageParser {
 
     private final Pattern pattern = Pattern
-            .compile("\\[" + SpigotMLP.get().getConf().getSyntax() + "\\](.+?)\\[/" + SpigotMLP.get().getConf().getSyntax() + "\\](?!\\[)");
+            .compile("\\[" + MultiLanguagePlugin.get().getConf().getSyntax() + "\\](.+?)\\[/" + MultiLanguagePlugin.get().getConf().getSyntax() + "\\](?!\\[)");
     private final Pattern patternArgs = Pattern.compile(
-            "(.+?)\\[" + SpigotMLP.get().getConf().getSyntaxArgs() + "\\](.+?)\\[/" + SpigotMLP.get().getConf().getSyntaxArgs() + "\\]");
+            "(.+?)\\[" + MultiLanguagePlugin.get().getConf().getSyntaxArgs() + "\\](.+?)\\[/" + MultiLanguagePlugin.get().getConf().getSyntaxArgs() + "\\]");
     private final Pattern patternArgs2 = Pattern.compile(
-            "\\[" + SpigotMLP.get().getConf().getSyntaxArgs() + "\\](.+?)\\[/" + SpigotMLP.get().getConf().getSyntaxArgs() + "\\]");
+            "\\[" + MultiLanguagePlugin.get().getConf().getSyntaxArgs() + "\\](.+?)\\[/" + MultiLanguagePlugin.get().getConf().getSyntaxArgs() + "\\]");
     private final Pattern patternArg = Pattern
-            .compile("\\[" + SpigotMLP.get().getConf().getSyntaxArg() + "\\](.+?)\\[/" + SpigotMLP.get().getConf().getSyntaxArg() + "\\]");
-    private final int patternSize = SpigotMLP.get().getConf().getSyntax().length() + 2;
-    private final int patternArgSize = SpigotMLP.get().getConf().getSyntaxArg().length() + 2;
+            .compile("\\[" + MultiLanguagePlugin.get().getConf().getSyntaxArg() + "\\](.+?)\\[/" + MultiLanguagePlugin.get().getConf().getSyntaxArg() + "\\]");
+    private final int patternSize = MultiLanguagePlugin.get().getConf().getSyntax().length() + 2;
+    private final int patternArgSize = MultiLanguagePlugin.get().getConf().getSyntaxArg().length() + 2;
 
     public String replaceLanguages(String input, Player p) {
         Matcher matcher = pattern.matcher(input);
@@ -41,17 +42,17 @@ public class LanguageParser {
                     args.add(replaceLanguages(matcherArg.group(1), p));
             }
             input = input
-                    .replace("[" + SpigotMLP.get().getConf().getSyntax() + "]" + a + "[/" + SpigotMLP.get().getConf().getSyntax() + "]",
-                            SpigotMLP.get().getLanguageManager().getText(p,
-                                    org.bukkit.ChatColor.stripColor(a.replaceAll("\\[" + SpigotMLP.get().getConf().getSyntaxArgs()
-                                            + "\\](.+?)\\[/" + SpigotMLP.get().getConf().getSyntaxArgs() + "\\]", "")),
+                    .replace("[" + MultiLanguagePlugin.get().getConf().getSyntax() + "]" + a + "[/" + MultiLanguagePlugin.get().getConf().getSyntax() + "]",
+                            MultiLanguagePlugin.get().getLanguageManager().getText(p,
+                                    org.bukkit.ChatColor.stripColor(a.replaceAll("\\[" + MultiLanguagePlugin.get().getConf().getSyntaxArgs()
+                                            + "\\](.+?)\\[/" + MultiLanguagePlugin.get().getConf().getSyntaxArgs() + "\\]", "")),
                                     args.toArray()));
         }
         return input;
     }
 
     public boolean hasLanguages(String input) {
-        return findPlaceholdersIndex(input).size() != 0;
+        return findFirstPlaceholdersIndex(input) != null;
     }
 
     public String getLastColor(String input) {
@@ -252,7 +253,7 @@ public class LanguageParser {
             }
             arguments.add(cache);
         }
-        return replaceArguments(TextComponent.fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, messageCode)), arguments);
+        return replaceArguments(TextComponent.fromLegacyText(MultiLanguagePlugin.get().getLanguageManager().getText(p, messageCode)), arguments);
     }
 
     private BaseComponent replaceArguments(BaseComponent[] base, List<BaseComponent> args) {

@@ -13,6 +13,7 @@ import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
 import com.rexcantor64.multilanguageplugin.components.api.chat.TextComponent;
@@ -38,7 +39,7 @@ import java.util.*;
 @SuppressWarnings("deprecation")
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
-    private SpigotMLP main;
+    private MultiLanguagePlugin main;
 
     private HashMap<World, HashMap<Integer, Entity>> entities = new HashMap<>();
 
@@ -353,7 +354,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public Plugin getPlugin() {
-        return main;
+        return main.getLoader().asSpigot();
     }
 
     private BaseComponent[] fromLegacy(net.md_5.bungee.api.chat.BaseComponent[] components) {
