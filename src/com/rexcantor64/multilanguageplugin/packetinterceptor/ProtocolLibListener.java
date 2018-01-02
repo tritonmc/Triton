@@ -22,11 +22,11 @@ import com.rexcantor64.multilanguageplugin.language.LanguageParser;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import com.rexcantor64.multilanguageplugin.wrappers.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -82,7 +82,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && main.getConf().getHolograms().size() != 0) {
             Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
-            if (e == null || !main.getConf().getHolograms().contains(e.getType())) return;
+            if (e == null || !main.getConf().getHolograms().contains(EntityType.fromBukkit(e.getType()))) return;
             addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers().read(0), e);
             List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().read(0);
             List<WrappedWatchableObject> dwn = new ArrayList<>();
@@ -321,11 +321,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (entry.getValue().getCustomName() == null) continue;
                 PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().write(0, entry.getKey());
+                String oldName = entry.getValue().getCustomName();
                 WrappedDataWatcher dw = WrappedDataWatcher.getEntityWatcher(entry.getValue());
                 dw.setObject(2, main.getLanguageParser().replaceLanguages(entry.getValue().getCustomName(), player.toBukkit()));
                 packet.getWatchableCollectionModifier().write(0, dw.getWatchableObjects());
                 try {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
+                    dw.setObject(2, oldName);
                 } catch (InvocationTargetException e) {
                     main.logError("Failed to send entity update packet: %1", e.getMessage());
                 }

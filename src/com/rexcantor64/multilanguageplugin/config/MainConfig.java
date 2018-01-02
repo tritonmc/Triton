@@ -4,11 +4,10 @@ import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.storage.SQLManager;
-import org.bukkit.entity.EntityType;
+import com.rexcantor64.multilanguageplugin.wrappers.EntityType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 

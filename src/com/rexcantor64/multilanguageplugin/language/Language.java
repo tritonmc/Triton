@@ -1,8 +1,8 @@
 package com.rexcantor64.multilanguageplugin.language;
 
 import com.rexcantor64.multilanguageplugin.banners.Banner;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.bukkit.ChatColor;
+import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
+import org.apache.commons.text.StringEscapeUtils;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;

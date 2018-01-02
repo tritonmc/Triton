@@ -1,6 +1,6 @@
 package org.json;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.Closeable;
 import java.io.IOException;

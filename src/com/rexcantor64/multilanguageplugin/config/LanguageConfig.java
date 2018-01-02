@@ -2,6 +2,7 @@ package com.rexcantor64.multilanguageplugin.config;
 
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
+import com.rexcantor64.multilanguageplugin.utils.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 
@@ -38,7 +39,7 @@ public class LanguageConfig {
                 logCount(timeStarted);
                 return;
             }
-            raw = new JSONArray(IOUtils.toString(new FileReader(file)));
+            raw = new JSONArray(FileUtils.contentsToString(file));
             for (int i = 0; i < raw.length(); i++) {
                 LanguageItem item = LanguageItem.fromJSON(raw.optJSONObject(i));
                 if (item == null) continue;
