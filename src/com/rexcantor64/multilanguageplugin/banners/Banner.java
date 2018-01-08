@@ -1,20 +1,17 @@
 package com.rexcantor64.multilanguageplugin.banners;
 
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
-import org.bukkit.Material;
-import org.bukkit.block.banner.Pattern;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BannerMeta;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Banner {
 
-    private final ItemStack is = new ItemStack(Material.BANNER);
+    private List<Layer> layers = new ArrayList<>();
+    private String displayName;
 
-    public Banner(String encoded) {
+    public Banner(String encoded, String displayName) {
+        this.displayName = displayName;
         List<String> strings = new ArrayList<>();
         int index = 0;
         while (index < encoded.length()) {
@@ -26,7 +23,6 @@ public class Banner {
                 MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
                 continue;
             }
-            BannerMeta bm = getMeta();
             Colors color = Colors.getByCode(s.charAt(0));
             Patterns type = Patterns.getByCode(s.charAt(1));
             if (color == null) {
@@ -37,21 +33,34 @@ public class Banner {
                 MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
                 continue;
             }
-            bm.addPattern(new Pattern(color.getColor(), type.getType()));
-            is.setItemMeta(bm);
+            layers.add(new Layer(color, type));
         }
-        BannerMeta bm = getMeta();
-        bm.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_ENCHANTS,
-                ItemFlag.HIDE_PLACED_ON, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE);
-        is.setItemMeta(bm);
     }
 
-    public BannerMeta getMeta() {
-        return (BannerMeta) is.getItemMeta();
+    public List<Layer> getLayers() {
+        return layers;
     }
 
-    public ItemStack toBukkit() {
-        return is.clone();
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public class Layer {
+        private final Colors color;
+        private final Patterns pattern;
+
+        private Layer(Colors color, Patterns pattern) {
+            this.color = color;
+            this.pattern = pattern;
+        }
+
+        public Colors getColor() {
+            return color;
+        }
+
+        public Patterns getPattern() {
+            return pattern;
+        }
     }
 
 }

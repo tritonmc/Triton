@@ -3,6 +3,7 @@ package com.rexcantor64.multilanguageplugin.commands;
 import com.google.common.collect.Lists;
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.Language;
+import com.rexcantor64.multilanguageplugin.wrappers.items.ItemStackParser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,7 +39,7 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        p.getInventory().addItem(lang.getStack());
+        p.getInventory().addItem(ItemStackParser.bannerToItemStack(lang.getBanner(), false));
         p.sendMessage(MultiLanguagePlugin.get().getMessage("success.getflag", "&aYou received the %1 flag!", lang.getDisplayName()));
 
         return true;

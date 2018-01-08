@@ -3,11 +3,13 @@ package com.rexcantor64.multilanguageplugin.commands;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
+import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +34,9 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             subCommands.get("openselector").onCommand(s, cmd, label, args);
             return true;
+        }
+        if (args[0].equalsIgnoreCase("ping")) {
+            s.sendMessage(MultiLanguagePlugin.get().getBridgeManager().getPing((Player) s) + " ms");
         }
         for (Entry<String, CommandExecutor> entry : subCommands.entrySet())
             if (entry.getKey().equalsIgnoreCase(args[0]))

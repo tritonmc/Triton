@@ -3,52 +3,52 @@ package com.rexcantor64.multilanguageplugin.banners;
 import org.bukkit.block.banner.PatternType;
 
 public enum Patterns {
-    BASE(PatternType.BASE, 'a'), BL(PatternType.SQUARE_BOTTOM_LEFT, 'b'), BO(PatternType.BORDER, 'c'), BR(
-            PatternType.SQUARE_BOTTOM_RIGHT,
-            'd'), BRI(PatternType.BRICKS, 'e'), BS(PatternType.STRIPE_BOTTOM, 'f'), BT(PatternType.TRIANGLE_BOTTOM,
-            'g'), BTS(PatternType.TRIANGLES_BOTTOM, 'h'), CBO(PatternType.CURLY_BORDER, 'i'), CR(
-            PatternType.CROSS,
-            'j'), CRE(PatternType.CREEPER, 'k'), CS(PatternType.STRIPE_CENTER, 'l'), DLS(
-            PatternType.STRIPE_DOWNLEFT,
-            'm'), DRS(PatternType.STRIPE_DOWNRIGHT, 'n'), FLO(PatternType.FLOWER, 'o'), GRA(
-            PatternType.GRADIENT,
-            'p'), HH(PatternType.HALF_HORIZONTAL, 'q'), LD(PatternType.DIAGONAL_LEFT,
-            'r'), LS(PatternType.STRIPE_LEFT, 's'), MC(
-            PatternType.CIRCLE_MIDDLE,
-            't'), MOJ(PatternType.MOJANG, 'u'), MR(
-            PatternType.RHOMBUS_MIDDLE,
-            'v'), MS(PatternType.STRIPE_MIDDLE, 'w'), RD(
-            PatternType.DIAGONAL_RIGHT,
-            'x'), RS(PatternType.STRIPE_RIGHT, 'y'), SC(
-            PatternType.STRAIGHT_CROSS,
-            'z'), SKU(PatternType.SKULL,
+    BASE("BASE", 'a'), BL("SQUARE_BOTTOM_LEFT", 'b'), BO("BORDER", 'c'), BR(
+            "SQUARE_BOTTOM_RIGHT",
+            'd'), BRI("BRICKS", 'e'), BS("STRIPE_BOTTOM", 'f'), BT("TRIANGLE_BOTTOM",
+            'g'), BTS("TRIANGLES_BOTTOM", 'h'), CBO("CURLY_BORDER", 'i'), CR(
+            "CROSS",
+            'j'), CRE("CREEPER", 'k'), CS("STRIPE_CENTER", 'l'), DLS(
+            "STRIPE_DOWNLEFT",
+            'm'), DRS("STRIPE_DOWNRIGHT", 'n'), FLO("FLOWER", 'o'), GRA(
+            "GRADIENT",
+            'p'), HH("HALF_HORIZONTAL", 'q'), LD("DIAGONAL_LEFT",
+            'r'), LS("STRIPE_LEFT", 's'), MC(
+            "CIRCLE_MIDDLE",
+            't'), MOJ("MOJANG", 'u'), MR(
+            "RHOMBUS_MIDDLE",
+            'v'), MS("STRIPE_MIDDLE", 'w'), RD(
+            "DIAGONAL_RIGHT",
+            'x'), RS("STRIPE_RIGHT", 'y'), SC(
+            "STRAIGHT_CROSS",
+            'z'), SKU("SKULL",
             'A'), SS(
-            PatternType.STRIPE_SMALL,
+            "STRIPE_SMALL",
             'B'), TL(
-            PatternType.SQUARE_TOP_LEFT,
+            "SQUARE_TOP_LEFT",
             'C'), TR(
-            PatternType.SQUARE_TOP_RIGHT,
+            "SQUARE_TOP_RIGHT",
             'D'), TS(
-            PatternType.STRIPE_TOP,
+            "STRIPE_TOP",
             'E'), TT(
-            PatternType.TRIANGLE_TOP,
+            "TRIANGLE_TOP",
             'F'), TTS(
-            PatternType.TRIANGLES_TOP,
+            "TRIANGLES_TOP",
             'G'), VH(
-            PatternType.HALF_VERTICAL,
+            "HALF_VERTICAL",
             'H'), LUD(
-            PatternType.DIAGONAL_LEFT_MIRROR,
+            "DIAGONAL_LEFT_MIRROR",
             'I'), RUD(
-            PatternType.DIAGONAL_RIGHT_MIRROR,
+            "DIAGONAL_RIGHT_MIRROR",
             'J'), GRU(
-            PatternType.GRADIENT_UP,
+            "GRADIENT_UP",
             'K'), HHB(
-            PatternType.HALF_HORIZONTAL_MIRROR,
+            "HALF_HORIZONTAL_MIRROR",
             'L'), VHR(
-            PatternType.HALF_VERTICAL_MIRROR,
+            "HALF_VERTICAL_MIRROR",
             'M');
 
-    Patterns(PatternType type, char code) {
+    Patterns(String type, char code) {
         this.type = type;
         this.code = code;
     }
@@ -57,11 +57,11 @@ public enum Patterns {
         return code;
     }
 
-    public PatternType getType() {
+    public String getType() {
         return type;
     }
 
-    private final PatternType type;
+    private final String type;
     private final char code;
 
     public static Patterns getByCode(char code) {

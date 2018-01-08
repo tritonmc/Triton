@@ -3,9 +3,6 @@ package com.rexcantor64.multilanguageplugin.language;
 import com.rexcantor64.multilanguageplugin.banners.Banner;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import org.apache.commons.text.StringEscapeUtils;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
@@ -15,18 +12,14 @@ public class Language {
     private List<String> minecraftCode;
     private String rawDisplayName;
     private String displayName;
-    private ItemStack stack;
+    private Banner banner;
     private String flagCode;
 
     Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
         this.name = name;
         this.rawDisplayName = displayName;
         this.displayName = ChatColor.translateAlternateColorCodes('&', StringEscapeUtils.unescapeJava(displayName));
-        Banner banner = new Banner(flagCode);
-        this.stack = banner.toBukkit();
-        ItemMeta im = stack.getItemMeta();
-        im.setDisplayName(this.displayName);
-        stack.setItemMeta(im);
+        banner = new Banner(flagCode, this.displayName);
         this.minecraftCode = minecraftCode;
         this.flagCode = flagCode;
     }
@@ -43,15 +36,8 @@ public class Language {
         return displayName;
     }
 
-    public ItemStack getStack() {
-        return getStack(false);
-    }
-
-    public ItemStack getStack(boolean glow) {
-        ItemStack is = stack.clone();
-        if (glow)
-            is.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
-        return is;
+    public Banner getBanner() {
+        return banner;
     }
 
     public String getRawDisplayName() {

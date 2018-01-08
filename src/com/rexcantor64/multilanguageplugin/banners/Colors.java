@@ -1,15 +1,13 @@
 package com.rexcantor64.multilanguageplugin.banners;
 
-import org.bukkit.DyeColor;
-
 public enum Colors {
-    BLACK(DyeColor.BLACK, 'a'), RED(DyeColor.RED, 'b'), GREEN(DyeColor.GREEN, 'c'), BROWN(DyeColor.BROWN, 'd'), BLUE(
-            DyeColor.BLUE, 'e'), PURPLE(DyeColor.PURPLE, 'f'), CYAN(DyeColor.CYAN, 'g'), GRAY(DyeColor.SILVER,
-            'h'), DARK_GRAY(DyeColor.GRAY, 'i'), PINK(DyeColor.PINK, 'j'), LIME(DyeColor.LIME, 'k'), YELLOW(
-            DyeColor.YELLOW, 'l'), LIGHT_BLUE(DyeColor.LIGHT_BLUE, 'm'), MAGENTA(DyeColor.MAGENTA,
-            'n'), ORANGE(DyeColor.ORANGE, 'o'), WHITE(DyeColor.WHITE, 'p');
+    BLACK("BLACK", 'a'), RED("RED", 'b'), GREEN("GREEN", 'c'), BROWN("BROWN", 'd'), BLUE(
+            "BLUE", 'e'), PURPLE("PURPLE", 'f'), CYAN("CYAN", 'g'), GRAY("SILVER",
+            'h'), DARK_GRAY("GRAY", 'i'), PINK("PINK", 'j'), LIME("LIME", 'k'), YELLOW(
+            "YELLOW", 'l'), LIGHT_BLUE("LIGHT_BLUE", 'm'), MAGENTA("MAGENTA",
+            'n'), ORANGE("ORANGE", 'o'), WHITE("WHITE", 'p');
 
-    Colors(DyeColor color, char code) {
+    Colors(String color, char code) {
         this.color = color;
         this.code = code;
     }
@@ -18,11 +16,11 @@ public enum Colors {
         return code;
     }
 
-    public DyeColor getColor() {
+    public String getColor() {
         return color;
     }
 
-    private final DyeColor color;
+    private final String color;
     private final char code;
 
     public static Colors getByCode(char code) {

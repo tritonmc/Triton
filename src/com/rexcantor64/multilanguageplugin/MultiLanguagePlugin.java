@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin;
 
 import com.google.common.io.ByteStreams;
+import com.rexcantor64.multilanguageplugin.bridge.SpigotBridgeManager;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.config.LanguageConfig;
 import com.rexcantor64.multilanguageplugin.config.MainConfig;
@@ -65,7 +66,6 @@ public abstract class MultiLanguagePlugin {
         (languageManager = new LanguageManager()).setup();
         playerManager = new PlayerManager();
         languageParser = new LanguageParser();
-        guiManager = new GuiManager();
         gistManager = new GistManager(this);
     }
 
@@ -212,6 +212,10 @@ public abstract class MultiLanguagePlugin {
         } catch (IOException e) {
             logError("Failed to save config.yml! Cause: %1", e.getMessage());
         }
+    }
+
+    public SpigotBridgeManager getBridgeManager() {
+        return null;
     }
 
     public PluginLoader getLoader() {

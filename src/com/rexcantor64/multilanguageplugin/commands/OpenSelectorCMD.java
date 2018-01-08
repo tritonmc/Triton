@@ -6,6 +6,7 @@ import com.rexcantor64.multilanguageplugin.guiapi.GuiButton;
 import com.rexcantor64.multilanguageplugin.guiapi.ScrollableGui;
 import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.language.LanguageManager;
+import com.rexcantor64.multilanguageplugin.wrappers.items.ItemStackParser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,7 +37,7 @@ public class OpenSelectorCMD implements CommandExecutor {
         Language pLang = MultiLanguagePlugin.get().getPlayerManager().get(p).getLang();
         Gui gui = new ScrollableGui(MultiLanguagePlugin.get().getMessage("other.selector-gui-name", "&aSelect a language"));
         for (Language lang : language.getAllLanguages())
-            gui.addButton(new GuiButton(lang.getStack(pLang.equals(lang))).setListener(event -> {
+            gui.addButton(new GuiButton(ItemStackParser.bannerToItemStack(lang.getBanner(), pLang.equals(lang))).setListener(event -> {
                 MultiLanguagePlugin.get().getPlayerManager().get(p).setLang(lang);
                 p.closeInventory();
                 p.sendMessage(MultiLanguagePlugin.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
