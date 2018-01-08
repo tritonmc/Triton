@@ -86,7 +86,7 @@ public class TextComponent
                     String urlString = message.substring(i, pos);
                     component.setText(urlString);
                     component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
-                            "http://" + urlString));
+                            (urlString.startsWith("http") || urlString.startsWith("https")) ? urlString : ("http://" + urlString)));
                     components.add(component);
                     i += pos - i - 1;
                     component = old;
