@@ -85,3 +85,5 @@ language-creation:
         # Do not forget to configure them on the language files.
         # You can find a sign creator tool at https://rexcantor64.com/multilanguageplugin/signs
         signs: true
+        # Enable to translate bossbars. Only 1.9+
+        bossbars: true
