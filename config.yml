@@ -48,6 +48,11 @@ language-creation:
     syntax: lang
     syntax-args: args
     syntax-arg: arg
+    # If any message contains a placeholder with the key defined in the version, that message won't be sent to the players (console will still receive it).
+    # Leave empty to disable this feature (it's disabled by default).
+    # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
+    # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
+    disabled-line: ''
     # Select what language checks are enabled. The API can't be disabled (yet).
     enabled:
         # Should the plugin check chat messages?
