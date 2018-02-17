@@ -26,11 +26,13 @@ public class MainConfig {
     private ConfigurationSection languages;
     private String mainLanguage;
     private boolean forceLocale;
+    private boolean runLanguageCommandsOnLogin;
     private boolean debug;
 
     private String syntax;
     private String syntaxArgs;
     private String syntaxArg;
+    private String disabledLine;
 
     private boolean chat;
     private boolean actionbars;
@@ -45,6 +47,7 @@ public class MainConfig {
     private boolean items;
     private boolean inventoryItems;
     private boolean signs;
+    private boolean bossbars;
 
     public boolean useSql() {
         return sql != null;
@@ -66,6 +69,10 @@ public class MainConfig {
         return forceLocale;
     }
 
+    public boolean isRunLanguageCommandsOnLogin() {
+        return runLanguageCommandsOnLogin;
+    }
+
     public String getSyntax() {
         return syntax;
     }
@@ -76,6 +83,10 @@ public class MainConfig {
 
     public String getSyntaxArg() {
         return syntaxArg;
+    }
+
+    public String getDisabledLine() {
+        return disabledLine;
     }
 
     public boolean isChat() {
@@ -130,6 +141,10 @@ public class MainConfig {
         return signs;
     }
 
+    public boolean isBossbars() {
+        return bossbars;
+    }
+
     public boolean isDebug() {
         return debug;
     }
@@ -143,6 +158,7 @@ public class MainConfig {
         if (this.languages == null) this.languages = section.createSection("languages");
         this.mainLanguage = section.getString("main-language", "en_GB");
         this.forceLocale = section.getBoolean("force-minecraft-locale", false);
+        this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.debug = section.getBoolean("debug", false);
         ConfigurationSection languageCreation = section.getConfigurationSection("language-creation");
         if (languageCreation == null) languageCreation = section.createSection("language-creation");
@@ -166,6 +182,7 @@ public class MainConfig {
         syntax = section.getString("syntax", "lang");
         syntaxArgs = section.getString("syntax-args", "args");
         syntaxArg = section.getString("syntax-arg", "arg");
+        disabledLine = section.getString("disabled-line", "");
 
         ConfigurationSection enabled = section.getConfigurationSection("enabled");
         if (enabled == null) enabled = section.createSection("enabled");
@@ -181,6 +198,7 @@ public class MainConfig {
         items = enabled.getBoolean("items", true);
         inventoryItems = enabled.getBoolean("inventory-items", false);
         signs = enabled.getBoolean("signs", true);
+        bossbars = enabled.getBoolean("bossbars", true);
 
         List<String> holograms = enabled.getStringList("holograms");
         for (String hologram : holograms)
@@ -206,6 +224,7 @@ public class MainConfig {
         parser.put("items", items);
         parser.put("inventoryItems", inventoryItems);
         parser.put("signs", signs);
+        parser.put("bossbars", bossbars);
         JSONArray holograms = new JSONArray();
         for (EntityType et : this.holograms)
             holograms.put(et.toString());
@@ -213,9 +232,11 @@ public class MainConfig {
         parser.put("syntax", syntax);
         parser.put("syntaxArgs", syntaxArgs);
         parser.put("syntaxArg", syntaxArg);
+        parser.put("disabledLine", disabledLine);
         config.put("parser", parser);
         config.put("debug", debug);
         config.put("forceLocale", forceLocale);
+        config.put("runLanguageCMDsOnLogin", runLanguageCommandsOnLogin);
         config.put("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
         JSONArray languages = new JSONArray();
         for (Language language : main.getLanguageManager().getAllLanguages()) {

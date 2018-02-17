@@ -6,6 +6,10 @@ import com.rexcantor64.multilanguageplugin.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.multilanguageplugin.storage.PlayerStorage;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class LanguagePlayer {
 
     private final Player bukkit;
@@ -14,6 +18,10 @@ public class LanguagePlayer {
     private Language lang;
 
     private PacketInterceptor interceptor;
+
+    private String lastTabHeader;
+    private String lastTabFooter;
+    private HashMap<UUID, String> bossBars = new HashMap<>();
 
     public LanguagePlayer(Player p) {
         this.bukkit = p;
@@ -30,6 +38,11 @@ public class LanguagePlayer {
         refreshEntities();
         refreshSigns();
         bukkit.updateInventory();
+        if (interceptor != null && SpigotMLP.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+            interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
+        if (interceptor != null && SpigotMLP.get().getConf().isBossbars())
+            for (Map.Entry<UUID, String> entry : bossBars.entrySet())
+                interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
         save();
     }
 
@@ -64,6 +77,23 @@ public class LanguagePlayer {
         if (interceptor != null)
             interceptor.refreshEntities(this);
     }
+
+    public void setLastTabHeader(String lastTabHeader) {
+        this.lastTabHeader = lastTabHeader;
+    }
+
+    public void setLastTabFooter(String lastTabFooter) {
+        this.lastTabFooter = lastTabFooter;
+    }
+
+    public void setBossbar(UUID uuid, String lastBossBar) {
+        bossBars.put(uuid, lastBossBar);
+    }
+
+    public void removeBossbar(UUID uuid) {
+        bossBars.remove(uuid);
+    }
+
 
     private void load() {
         setLang(PlayerStorage.StorageManager.getCurrentStorage().getLanguage(this));

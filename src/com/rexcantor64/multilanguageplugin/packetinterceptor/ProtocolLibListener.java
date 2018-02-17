@@ -21,6 +21,7 @@ import com.rexcantor64.multilanguageplugin.language.LanguageParser;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import com.rexcantor64.multilanguageplugin.player.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -70,11 +71,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf().isTab()) {
             WrappedChatComponent header = packet.getPacket().getChatComponents().read(0);
+            String headerJson = header.getJson();
             header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(header.getJson()))));
             packet.getPacket().getChatComponents().write(0, header);
             WrappedChatComponent footer = packet.getPacket().getChatComponents().read(1);
+            String footerJson = footer.getJson();
             footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(footer.getJson()))));
             packet.getPacket().getChatComponents().write(1, footer);
+            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            lp.setLastTabHeader(headerJson);
+            lp.setLastTabFooter(footerJson);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
             msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
@@ -275,6 +281,20 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 item.setItemMeta(meta);
             }
             packet.getPacket().getItemModifier().write(0, item);
+        } else if (packet.getPacketType() == PacketType.Play.Server.BOSS && main.getConf().isBossbars()) {
+            UUID uuid = packet.getPacket().getUUIDs().readSafely(0);
+            Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
+            if (action == Action.REMOVE) {
+                LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+                lp.removeBossbar(uuid);
+                return;
+            }
+            if (action != Action.ADD && action != Action.UPDATE_NAME) return;
+            WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
+            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            lp.setBossbar(uuid, bossbar.getJson());
+            bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(packet.getPlayer(), ComponentSerializer.parse(bossbar.getJson()))));
+            packet.getPacket().getChatComponents().writeSafely(0, bossbar);
         }
     }
 
@@ -331,6 +351,32 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
     }
 
+    @Override
+    public void refreshTabHeaderFooter(LanguagePlayer player, String header, String footer) {
+        PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
+        packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+        } catch (InvocationTargetException e) {
+            main.logError("Failed to send tab update packet: %1", e.getMessage());
+        }
+    }
+
+    @Override
+    public void refreshBossbar(LanguagePlayer player, UUID uuid, String json) {
+        if (getMCVersion() <= 8) return;
+        PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BOSS);
+        packet.getUUIDs().writeSafely(0, uuid);
+        packet.getEnumModifier(Action.class, 1).writeSafely(0, Action.UPDATE_NAME);
+        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+        } catch (InvocationTargetException e) {
+            main.logError("Failed to send bossbar update packet: %1", e.getMessage());
+        }
+    }
+
     private void addEntity(World world, int id, Entity entity) {
         if (!entities.containsKey(world))
             entities.put(world, new HashMap<>());
@@ -343,7 +389,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Play.Server.BOSS).highest().build();
     }
 
     @Override
@@ -407,5 +453,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean signUpdateExists() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
+    }
+
+    public static enum Action {
+        ADD, REMOVE, UPDATE_PCT, UPDATE_NAME, UPDATE_STYLE, UPDATE_PROPERTIES;
     }
 }
