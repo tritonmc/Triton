@@ -337,6 +337,44 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     public void refreshEntities(LanguagePlayer player) {
         if (entities.containsKey(player.toBukkit().getWorld()))
             for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
+                if (entry.getValue().getType() == EntityType.PLAYER) {
+                    Player p = (Player) entry.getValue();
+                    if (Bukkit.getOnlinePlayers().contains(p)) continue;
+                    List<PlayerInfoData> dataList = new ArrayList<>();
+                    dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50, EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()), WrappedChatComponent.fromText(p.getPlayerListName())));
+                    PacketContainer packetRemove = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
+                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                    PacketContainer packetAdd = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
+                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                    PacketContainer packetDestroy = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+                    packetDestroy.getIntegerArrays().writeSafely(0, new int[]{p.getEntityId()});
+
+                    PacketContainer packetSpawn = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+                    packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
+                    packetSpawn.getUUIDs().writeSafely(0, p.getUniqueId());
+                    packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1, p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
+                    packetSpawn.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F)).writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
+                    packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
+
+                    PacketContainer packetRotation = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+                    packetRotation.getIntegers().writeSafely(0, p.getEntityId());
+                    packetRotation.getBytes().writeSafely(0, (byte) p.getLocation().getYaw());
+
+                    try {
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRemove, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetDestroy, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetSpawn, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRotation, true);
+                    } catch (InvocationTargetException e) {
+                        main.logError("Failed to send player entity update packet: %1", e.getMessage());
+                    }
+                    continue;
+                }
                 if (entry.getValue().getCustomName() == null) continue;
                 PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().write(0, entry.getKey());
