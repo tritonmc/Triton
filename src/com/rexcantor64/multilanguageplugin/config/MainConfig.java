@@ -160,6 +160,7 @@ public class MainConfig {
         this.mainLanguage = section.getString("main-language", "en_GB");
         this.forceLocale = section.getBoolean("force-minecraft-locale", false);
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
+        this.bungeecord = section.getBoolean("bungeecord", false);
         this.debug = section.getBoolean("debug", false);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);

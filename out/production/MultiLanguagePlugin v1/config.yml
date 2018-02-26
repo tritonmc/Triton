@@ -58,6 +58,9 @@ force-minecraft-locale: false
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
+# Enable this if you're using the plugin on BungeeCord.
+bungeecord: false
+
 # Do not change this if you don't know what you're doing.
 language-creation:
     syntax: lang
