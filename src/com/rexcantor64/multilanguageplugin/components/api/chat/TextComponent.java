@@ -98,6 +98,9 @@ public class TextComponent
         if (builder.length() > 0) {
             component.setText(builder.toString());
             components.add(component);
+        } else if (component.hasFormatting()) {
+            component.setText("");
+            components.add(component);
         }
         if (components.isEmpty()) {
             components.add(new TextComponent(""));

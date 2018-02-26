@@ -71,11 +71,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf().isTab()) {
             WrappedChatComponent header = packet.getPacket().getChatComponents().read(0);
+            String headerJson = header.getJson();
             header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(header.getJson()))));
             packet.getPacket().getChatComponents().write(0, header);
             WrappedChatComponent footer = packet.getPacket().getChatComponents().read(1);
+            String footerJson = footer.getJson();
             footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(footer.getJson()))));
             packet.getPacket().getChatComponents().write(1, footer);
+            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            lp.setLastTabHeader(headerJson);
+            lp.setLastTabFooter(footerJson);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
             msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
@@ -276,6 +281,20 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 item.setItemMeta(meta);
             }
             packet.getPacket().getItemModifier().write(0, item);
+        } else if (packet.getPacketType() == PacketType.Play.Server.BOSS && main.getConf().isBossbars()) {
+            UUID uuid = packet.getPacket().getUUIDs().readSafely(0);
+            Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
+            if (action == Action.REMOVE) {
+                LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+                lp.removeBossbar(uuid);
+                return;
+            }
+            if (action != Action.ADD && action != Action.UPDATE_NAME) return;
+            WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
+            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            lp.setBossbar(uuid, bossbar.getJson());
+            bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(packet.getPlayer(), ComponentSerializer.parse(bossbar.getJson()))));
+            packet.getPacket().getChatComponents().writeSafely(0, bossbar);
         }
     }
 
@@ -318,6 +337,44 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     public void refreshEntities(LanguagePlayer player) {
         if (entities.containsKey(player.toBukkit().getWorld()))
             for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
+                if (entry.getValue().getType() == org.bukkit.entity.EntityType.PLAYER) {
+                    Player p = (Player) entry.getValue();
+                    if (Bukkit.getOnlinePlayers().contains(p)) continue;
+                    List<PlayerInfoData> dataList = new ArrayList<>();
+                    dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50, EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()), WrappedChatComponent.fromText(p.getPlayerListName())));
+                    PacketContainer packetRemove = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
+                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                    PacketContainer packetAdd = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
+                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                    PacketContainer packetDestroy = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+                    packetDestroy.getIntegerArrays().writeSafely(0, new int[]{p.getEntityId()});
+
+                    PacketContainer packetSpawn = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+                    packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
+                    packetSpawn.getUUIDs().writeSafely(0, p.getUniqueId());
+                    packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1, p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
+                    packetSpawn.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F)).writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
+                    packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
+
+                    PacketContainer packetRotation = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+                    packetRotation.getIntegers().writeSafely(0, p.getEntityId());
+                    packetRotation.getBytes().writeSafely(0, (byte) p.getLocation().getYaw());
+
+                    try {
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRemove, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetDestroy, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetSpawn, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRotation, true);
+                    } catch (InvocationTargetException e) {
+                        main.logError("Failed to send player entity update packet: %1", e.getMessage());
+                    }
+                    continue;
+                }
                 if (entry.getValue().getCustomName() == null) continue;
                 PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().write(0, entry.getKey());
@@ -334,6 +391,32 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
     }
 
+    @Override
+    public void refreshTabHeaderFooter(LanguagePlayer player, String header, String footer) {
+        PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
+        packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+        } catch (InvocationTargetException e) {
+            main.logError("Failed to send tab update packet: %1", e.getMessage());
+        }
+    }
+
+    @Override
+    public void refreshBossbar(LanguagePlayer player, UUID uuid, String json) {
+        if (getMCVersion() <= 8) return;
+        PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BOSS);
+        packet.getUUIDs().writeSafely(0, uuid);
+        packet.getEnumModifier(Action.class, 1).writeSafely(0, Action.UPDATE_NAME);
+        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
+        try {
+            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+        } catch (InvocationTargetException e) {
+            main.logError("Failed to send bossbar update packet: %1", e.getMessage());
+        }
+    }
+
     private void addEntity(World world, int id, Entity entity) {
         if (!entities.containsKey(world))
             entities.put(world, new HashMap<>());
@@ -346,7 +429,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Play.Server.BOSS).highest().build();
     }
 
     @Override
@@ -410,5 +493,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean signUpdateExists() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
+    }
+
+    public static enum Action {
+        ADD, REMOVE, UPDATE_PCT, UPDATE_NAME, UPDATE_STYLE, UPDATE_PROPERTIES;
     }
 }

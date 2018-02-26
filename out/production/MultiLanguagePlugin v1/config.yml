@@ -29,10 +29,22 @@ languages:
         # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
         # Feel free to use colours here! You shouldn't use per-language here, as item names aren't translated yet.
         display-name: '&aEnglish (UK)'
+        # Use this to run commands on language change.
+        # The commands must not start with a slash.
+        # Prefix with 'SERVER:' for the command to be run as console.
+        # Please uncomment the lines below to start using this feature.
+        # Available variables:
+        # %player% - Replaced with the player's name.
+        # %uuid% - Replaced with the player's UUID (with dashes).
+#        commands:
+#          - 'SERVER:say %player% (%uuid%) just changed his/her language!'
     pt_PT:
         flag: bacLlt
         minecraft-code: [pt_PT]
         display-name: '&aPortuguese (Portugal)'
+#        commands:
+#          - 'SERVER:say %player% (%uuid%) just changed his/her language!'
+
 # The main language is the fallback language. If some message is not found, it will try to get it from here before
 # returning an error message.
 # Also, if you delete any language, the players with that language will have their language changed to this.
@@ -43,11 +55,19 @@ main-language: en_GB
 # When disabled, it will only attempt to switch on the first time they join the server.
 force-minecraft-locale: false
 
+# When enabled, the commands inside each language will run when the player joins.
+run-language-commands-on-join: false
+
 # Do not change this if you don't know what you're doing.
 language-creation:
     syntax: lang
     syntax-args: args
     syntax-arg: arg
+    # If any message contains a placeholder with the key defined in the version, that message won't be sent to the players (console will still receive it).
+    # Leave empty to disable this feature (it's disabled by default).
+    # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
+    # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
+    disabled-line: ''
     # Select what language checks are enabled. The API can't be disabled (yet).
     enabled:
         # Should the plugin check chat messages?
@@ -85,3 +105,5 @@ language-creation:
         # Do not forget to configure them on the language files.
         # You can find a sign creator tool using /mlp web
         signs: true
+        # Enable to translate bossbars. Only 1.9+
+        bossbars: true
