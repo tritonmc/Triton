@@ -26,6 +26,7 @@ public class MainConfig {
     private boolean forceLocale;
     private boolean runLanguageCommandsOnLogin;
     private boolean debug;
+    private boolean bungeecord;
 
     private String syntax;
     private String syntaxArgs;
@@ -69,6 +70,10 @@ public class MainConfig {
 
     public boolean isRunLanguageCommandsOnLogin() {
         return runLanguageCommandsOnLogin;
+    }
+
+    public boolean isBungeecord() {
+        return bungeecord;
     }
 
     public String getSyntax() {
