@@ -34,11 +34,11 @@ public class OpenSelectorCMD implements CommandExecutor {
 
     private void openLanguagesSelectionGUI(Player p) {
         LanguageManager language = MultiLanguagePlugin.get().getLanguageManager();
-        Language pLang = MultiLanguagePlugin.get().getPlayerManager().get(p).getLang();
+        Language pLang = MultiLanguagePlugin.asSpigot().getPlayerManager().get(p).getLang();
         Gui gui = new ScrollableGui(MultiLanguagePlugin.get().getMessage("other.selector-gui-name", "&aSelect a language"));
         for (Language lang : language.getAllLanguages())
             gui.addButton(new GuiButton(ItemStackParser.bannerToItemStack(lang.getBanner(), pLang.equals(lang))).setListener(event -> {
-                MultiLanguagePlugin.get().getPlayerManager().get(p).setLang(lang);
+                MultiLanguagePlugin.asSpigot().getPlayerManager().get(p).setLang(lang);
                 p.closeInventory();
                 p.sendMessage(MultiLanguagePlugin.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
             }));

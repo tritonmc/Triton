@@ -1,7 +1,7 @@
 package com.rexcantor64.multilanguageplugin.language.item;
 
+import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.utils.LocationUtils;
-import org.bukkit.ChatColor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

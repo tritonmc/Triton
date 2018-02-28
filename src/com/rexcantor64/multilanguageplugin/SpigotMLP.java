@@ -6,6 +6,7 @@ import com.rexcantor64.multilanguageplugin.commands.MainCMD;
 import com.rexcantor64.multilanguageplugin.guiapi.GuiManager;
 import com.rexcantor64.multilanguageplugin.listeners.BukkitListener;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.multilanguageplugin.player.PlayerManager;
 import com.rexcantor64.multilanguageplugin.plugin.PluginLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ public class SpigotMLP extends MultiLanguagePlugin {
 
     private ProtocolLibListener protocolLibListener;
     private SpigotBridgeManager bridgeManager;
+    private PlayerManager playerManager;
 
     public SpigotMLP(PluginLoader loader) {
         super.loader = loader;
@@ -26,6 +28,7 @@ public class SpigotMLP extends MultiLanguagePlugin {
     public void onEnable() {
         instance = this;
         super.onEnable();
+        playerManager = new PlayerManager();
         // Setup commands
         loader.asSpigot().getCommand("multilanguageplugin").setExecutor(new MainCMD());
         // Setup listeners
@@ -35,8 +38,10 @@ public class SpigotMLP extends MultiLanguagePlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib"))
             ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
 
-        loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin");
-        loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin", bridgeManager = new SpigotBridgeManager());
+        if (getConf().isBungeecord()) {
+            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin");
+            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin", bridgeManager = new SpigotBridgeManager());
+        }
     }
 
     public ProtocolLibListener getProtocolLibListener() {
@@ -49,5 +54,9 @@ public class SpigotMLP extends MultiLanguagePlugin {
 
     public SpigotBridgeManager getBridgeManager() {
         return bridgeManager;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
     }
 }

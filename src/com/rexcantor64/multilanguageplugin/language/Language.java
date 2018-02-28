@@ -15,7 +15,7 @@ public class Language {
     private Banner banner;
     private String flagCode;
 
-    Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
+    public Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
         this.name = name;
         this.rawDisplayName = displayName;
         this.displayName = ChatColor.translateAlternateColorCodes('&', StringEscapeUtils.unescapeJava(displayName));

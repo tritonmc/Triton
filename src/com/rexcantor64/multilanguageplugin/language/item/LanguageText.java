@@ -7,7 +7,7 @@ public class LanguageText extends LanguageItem {
     private String key;
     private HashMap<String, String> languages;
 
-    LanguageText(String key, HashMap<String, String> languages) {
+    public LanguageText(String key, HashMap<String, String> languages) {
         super.type = LanguageItemType.TEXT;
         this.key = key;
         this.languages = languages;

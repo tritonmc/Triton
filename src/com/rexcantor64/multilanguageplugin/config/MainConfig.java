@@ -60,8 +60,16 @@ public class MainConfig {
         return languages;
     }
 
+    public void setLanguages(Configuration languages) {
+        this.languages = languages;
+    }
+
     public String getMainLanguage() {
         return mainLanguage;
+    }
+
+    public void setMainLanguage(String mainLanguage) {
+        this.mainLanguage = mainLanguage;
     }
 
     public boolean isForceLocale() {

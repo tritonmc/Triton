@@ -40,7 +40,6 @@ public abstract class MultiLanguagePlugin {
     // Managers
     private LanguageManager languageManager;
     private LanguageParser languageParser;
-    private PlayerManager playerManager;
     GuiManager guiManager;
     private GistManager gistManager;
 
@@ -64,7 +63,6 @@ public abstract class MultiLanguagePlugin {
         // Setup more classes
         (languageConfig = new LanguageConfig()).setup();
         (languageManager = new LanguageManager()).setup();
-        playerManager = new PlayerManager();
         languageParser = new LanguageParser();
         gistManager = new GistManager(this);
     }
@@ -94,10 +92,6 @@ public abstract class MultiLanguagePlugin {
 
     public LanguageParser getLanguageParser() {
         return languageParser;
-    }
-
-    public PlayerManager getPlayerManager() {
-        return playerManager;
     }
 
     public GuiManager getGuiManager() {
@@ -224,6 +218,14 @@ public abstract class MultiLanguagePlugin {
 
     public static MultiLanguagePlugin get() {
         return instance;
+    }
+
+    public static SpigotMLP asSpigot() {
+        return (SpigotMLP) instance;
+    }
+
+    public static BungeeMLP asBungee() {
+        return (BungeeMLP) instance;
     }
 
 }

@@ -24,7 +24,7 @@ public class LanguageManager {
     private Multimap<LanguageItem.LanguageItemType, LanguageItem> items = ArrayListMultimap.create();
 
     public String getText(Player p, String code, Object... args) {
-        return getText(MultiLanguagePlugin.get().getPlayerManager().get(p), code, args);
+        return getText(MultiLanguagePlugin.asSpigot().getPlayerManager().get(p), code, args);
     }
 
     public String getText(LanguagePlayer p, String code, Object... args) {
@@ -58,7 +58,7 @@ public class LanguageManager {
     }
 
     public String[] getSign(Player p, Location location) {
-        return getSign(MultiLanguagePlugin.get().getPlayerManager().get(p), location);
+        return getSign(MultiLanguagePlugin.asSpigot().getPlayerManager().get(p), location);
     }
 
     public String[] getSign(LanguagePlayer p, Location location) {
@@ -68,7 +68,7 @@ public class LanguageManager {
     public String[] getSign(String language, Location location) {
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!LocationUtils.equalsBlock(sign.getLocation(), location)) continue;
+            if (!LocationUtils.equalsBlock(location, sign.getLocation())) continue;
             String[] lines = sign.getLines(language);
             if (lines == null) return getSignFromMain(location);
             return lines;
@@ -79,7 +79,7 @@ public class LanguageManager {
     private String[] getSignFromMain(Location location) {
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!LocationUtils.equalsBlock(sign.getLocation(), location)) continue;
+            if (!LocationUtils.equalsBlock(location, sign.getLocation())) continue;
             String[] lines = sign.getLines(mainLanguage.getName());
             if (lines == null) break;
             return lines;
@@ -88,9 +88,10 @@ public class LanguageManager {
     }
 
     public Language getLanguageByName(String name, boolean fallback) {
-        for (Language lang : languages)
-            if (lang.getName().equals(name))
-                return lang;
+        if (name != null)
+            for (Language lang : languages)
+                if (lang.getName().equals(name))
+                    return lang;
         if (fallback) return mainLanguage;
         return null;
     }
@@ -118,7 +119,7 @@ public class LanguageManager {
         this.mainLanguage = getLanguageByName(MultiLanguagePlugin.get().getConf().getMainLanguage(), true);
         for (LanguageItem item : MultiLanguagePlugin.get().getLanguageConfig().getItems())
             items.put(item.getType(), item);
-        MultiLanguagePlugin.get().logDebug("Successfully setup the language manager! %1 languages loaded!", this.languages.size());
+        MultiLanguagePlugin.get().logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!", this.languages.size(), this.items.size());
     }
 
 }

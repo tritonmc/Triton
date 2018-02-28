@@ -55,4 +55,7 @@ public class LanguageConfig {
         MultiLanguagePlugin.get().logDebug("Loaded %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
     }
 
+    public void setItems(List<LanguageItem> items) {
+        this.items = items;
+    }
 }

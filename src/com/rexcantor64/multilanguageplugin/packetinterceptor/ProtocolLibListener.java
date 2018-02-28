@@ -78,7 +78,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             String footerJson = footer.getJson();
             footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(footer.getJson()))));
             packet.getPacket().getChatComponents().write(1, footer);
-            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
             lp.setLastTabHeader(headerJson);
             lp.setLastTabFooter(footerJson);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
@@ -285,13 +285,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             UUID uuid = packet.getPacket().getUUIDs().readSafely(0);
             Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
             if (action == Action.REMOVE) {
-                LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+                LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
                 lp.removeBossbar(uuid);
                 return;
             }
             if (action != Action.ADD && action != Action.UPDATE_NAME) return;
             WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
-            LanguagePlayer lp = SpigotMLP.get().getPlayerManager().get(packet.getPlayer());
+            LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
             lp.setBossbar(uuid, bossbar.getJson());
             bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(packet.getPlayer(), ComponentSerializer.parse(bossbar.getJson()))));
             packet.getPacket().getChatComponents().writeSafely(0, bossbar);
@@ -307,7 +307,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 String[] lines = sign.getLines(player.getLang().getName());
                 if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
                 if (lines == null) continue;
-                packet.getBlockPositionModifier().write(0, new BlockPosition(sign.getLocation().toVector()));
+                packet.getBlockPositionModifier().write(0, new BlockPosition(sign.getLocation().getX(), sign.getLocation().getY(), sign.getLocation().getZ()));
                 if (signUpdateExists()) {
                     WrappedChatComponent[] comps = new WrappedChatComponent[4];
                     for (int i = 0; i < 4; i++)
@@ -316,9 +316,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 } else {
                     packet.getIntegers().write(0, 9);
                     NbtCompound compound = NbtFactory.ofCompound(null);
-                    compound.put("x", sign.getLocation().getBlockX());
-                    compound.put("y", sign.getLocation().getBlockY());
-                    compound.put("z", sign.getLocation().getBlockZ());
+                    compound.put("x", sign.getLocation().getX());
+                    compound.put("y", sign.getLocation().getY());
+                    compound.put("z", sign.getLocation().getZ());
                     compound.put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
                     for (int i = 0; i < 4; i++)
                         compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));

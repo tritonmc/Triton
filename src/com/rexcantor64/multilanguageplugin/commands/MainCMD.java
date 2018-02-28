@@ -35,9 +35,6 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             subCommands.get("openselector").onCommand(s, cmd, label, args);
             return true;
         }
-        if (args[0].equalsIgnoreCase("ping")) {
-            s.sendMessage(MultiLanguagePlugin.get().getBridgeManager().getPing((Player) s) + " ms");
-        }
         for (Entry<String, CommandExecutor> entry : subCommands.entrySet())
             if (entry.getKey().equalsIgnoreCase(args[0]))
                 return entry.getValue().onCommand(s, cmd, label, args);

@@ -33,17 +33,27 @@ public class LanguagePlayer {
     }
 
     public void setLang(Language lang) {
+        setLang(lang, true);
+    }
+
+    public void setLang(Language lang, boolean sendToBungee) {
         this.lang = lang;
+        refreshAll();
+        save();
+        if (sendToBungee)
+            MultiLanguagePlugin.asSpigot().getBridgeManager().updatePlayerLanguage(this);
+    }
+
+    public void refreshAll() {
         refreshScoreboard();
         refreshEntities();
         refreshSigns();
         bukkit.updateInventory();
-        if (interceptor != null && SpigotMLP.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+        if (interceptor != null && MultiLanguagePlugin.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
             interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-        if (interceptor != null && SpigotMLP.get().getConf().isBossbars())
+        if (interceptor != null && MultiLanguagePlugin.get().getConf().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
-        save();
     }
 
     public void waitForDefaultLanguage() {
