@@ -72,6 +72,10 @@ language-creation:
     enabled:
         # Should the plugin check chat messages?
         chat-messages: true
+        # Use the new parser to translate chat messages?
+        # The old parser has better support for hover and click actions, but the colors might get mixed up.
+        # The new one has worse support for hover and click actions, but the colors should be file.
+        use-new-chat-parser: false
         # Should the plugin check actions bars?
         action-bars: true
         # Should the plugin check titles?
