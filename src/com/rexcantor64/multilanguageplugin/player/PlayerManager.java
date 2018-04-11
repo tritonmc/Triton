@@ -1,7 +1,7 @@
 package com.rexcantor64.multilanguageplugin.player;
 
 import com.google.common.collect.Maps;
-import org.bukkit.entity.Player;
+import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +12,18 @@ public class PlayerManager {
 
     private Map<UUID, LanguagePlayer> players = Maps.newHashMap();
 
-    public LanguagePlayer get(Player p) {
-        LanguagePlayer lp = players.get(p.getUniqueId());
+    public LanguagePlayer get(UUID p) {
+        LanguagePlayer lp = players.get(p);
         if (lp != null) return lp;
-        players.put(p.getUniqueId(), lp = new LanguagePlayer(p));
+        if (MultiLanguagePlugin.isBungee())
+            players.put(p, lp = new BungeeLanguagePlayer(p));
+        else
+            players.put(p, lp = new SpigotLanguagePlayer(p));
         return lp;
     }
 
-    public void unregisterPlayer(Player p) {
-        players.remove(p.getUniqueId());
+    public void unregisterPlayer(UUID p) {
+        players.remove(p);
     }
 
     public List<LanguagePlayer> getAll() {

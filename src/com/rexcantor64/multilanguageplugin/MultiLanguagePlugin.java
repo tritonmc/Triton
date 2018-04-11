@@ -18,6 +18,9 @@ import com.rexcantor64.multilanguageplugin.plugin.PluginLoader;
 import com.rexcantor64.multilanguageplugin.web.GistManager;
 
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -42,6 +45,10 @@ public abstract class MultiLanguagePlugin {
     private LanguageParser languageParser;
     GuiManager guiManager;
     private GistManager gistManager;
+    private static final String USER_ID = "%%__USER__%%";
+    private static final String RESOURCE_ID = "%%__RESOURCE__%%";
+    private static final String NONCE_ID = "%%__NONCE__%%";
+    private PlayerManager playerManager;
 
     public void reload() {
         configYAML = loadYAML("config");
@@ -51,20 +58,8 @@ public abstract class MultiLanguagePlugin {
         languageManager.setup();
     }
 
-    void onEnable() {
-        languageFolder = new File(getDataFolder(), "languages");
-        // Setup config.yml
-        configYAML = loadYAML("config");
-        (config = new MainConfig(this)).setup();
-        // Setup messages.yml
-        messagesConfig = loadYAML("message");
-        // Start migration. Remove on v1.1.0.
-        LanguageMigration.migrate();
-        // Setup more classes
-        (languageConfig = new LanguageConfig()).setup();
-        (languageManager = new LanguageManager()).setup();
-        languageParser = new LanguageParser();
-        gistManager = new GistManager(this);
+    public static boolean isBungee() {
+        return instance instanceof BungeeMLP;
     }
 
     public Configuration loadYAML(String fileName) {
@@ -200,6 +195,24 @@ public abstract class MultiLanguagePlugin {
         return resourceFile;
     }
 
+    void onEnable() {
+        languageFolder = new File(getDataFolder(), "languages");
+        // Setup config.yml
+        configYAML = loadYAML("config");
+        (config = new MainConfig(this)).setup();
+        // Setup messages.yml
+        messagesConfig = loadYAML("message");
+        // Start migration. Remove on v1.1.0.
+        LanguageMigration.migrate();
+        // Setup more classes
+        (languageConfig = new LanguageConfig()).setup();
+        (languageManager = new LanguageManager()).setup();
+        languageParser = new LanguageParser();
+        playerManager = new PlayerManager();
+        gistManager = new GistManager(this);
+        check();
+    }
+
     public void saveConfig() {
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(configYAML, new File(getDataFolder(), "config.yml"));
@@ -210,6 +223,31 @@ public abstract class MultiLanguagePlugin {
 
     public SpigotBridgeManager getBridgeManager() {
         return null;
+    }
+
+    private void check() {
+        try {
+            String url = "https://rexcantor64.com/multilanguageplugin/api/check.php?v=beta2&u=" + URLEncoder.encode(USER_ID, "UTF-8") + "&r=" + URLEncoder.encode(RESOURCE_ID, "UTF-8") + "&d=" + URLEncoder.encode(NONCE_ID, "UTF-8");
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            if (responseCode != 200 || !response.toString().equals("y49F&Rc1$6*9")) {
+                loader.shutdown();
+                System.err.println("[MultiLanguagePlugin] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
+            }
+        } catch (Exception ignore) {
+            loader.shutdown();
+            System.err.println("[MultiLanguagePlugin] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
+        }
     }
 
     public PluginLoader getLoader() {
@@ -226,6 +264,10 @@ public abstract class MultiLanguagePlugin {
 
     public static BungeeMLP asBungee() {
         return (BungeeMLP) instance;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
     }
 
 }

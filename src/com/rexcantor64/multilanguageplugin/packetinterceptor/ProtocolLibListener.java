@@ -21,10 +21,9 @@ import com.rexcantor64.multilanguageplugin.components.chat.ComponentSerializer;
 import com.rexcantor64.multilanguageplugin.language.LanguageParser;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
-import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import com.rexcantor64.multilanguageplugin.player.SpigotLanguagePlayer;
 import com.rexcantor64.multilanguageplugin.wrappers.EntityType;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -50,40 +49,46 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
+        SpigotLanguagePlayer languagePlayer = null;
+        try {
+            languagePlayer = (SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
+        } catch (Exception ignore) {
+            MultiLanguagePlugin.get().logDebugWarning("Failed to translate packet because UUID of the player is unknown (because the player hasn't joined yet).");
+            return;
+        }
         if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
             boolean ab = isActionbar(packet.getPacket());
             if (ab && main.getConf().isActionbars()) {
                 WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
-                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
                 packet.getPacket().getChatComponents().write(0, msg);
             } else if (!ab && main.getConf().isChat()) {
                 WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
                 if (msg != null) {
-                    msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+                    msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
                     packet.getPacket().getChatComponents().write(0, msg);
                     return;
                 }
-                packet.getPacket().getModifier().write(1, toLegacy(main.getLanguageParser().parseChat(packet.getPlayer(), fromLegacy((net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().read(1)))));
+                packet.getPacket().getModifier().write(1, toLegacy(main.getLanguageParser().parseChat(languagePlayer, fromLegacy((net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().read(1)))));
             }
         } else if (packet.getPacketType() == PacketType.Play.Server.TITLE && main.getConf().isTitles()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf().isTab()) {
             WrappedChatComponent header = packet.getPacket().getChatComponents().read(0);
             String headerJson = header.getJson();
-            header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(header.getJson()))));
+            header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(header.getJson()))));
             packet.getPacket().getChatComponents().write(0, header);
             WrappedChatComponent footer = packet.getPacket().getChatComponents().read(1);
             String footerJson = footer.getJson();
-            footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(footer.getJson()))));
+            footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(footer.getJson()))));
             packet.getPacket().getChatComponents().write(1, footer);
-            LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
-            lp.setLastTabHeader(headerJson);
-            lp.setLastTabFooter(footerJson);
+            languagePlayer.setLastTabHeader(headerJson);
+            languagePlayer.setLastTabFooter(footerJson);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && main.getConf().getHolograms().size() != 0) {
             Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
@@ -94,9 +99,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             for (WrappedWatchableObject obj : dw)
                 if (obj.getIndex() == 2)
                     if (getMCVersion() < 9)
-                        dwn.add(new WrappedWatchableObject(obj.getIndex(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), packet.getPlayer())));
+                        dwn.add(new WrappedWatchableObject(obj.getIndex(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
                     else
-                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), packet.getPlayer())));
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
                 else
                     dwn.add(obj);
             packet.getPacket().getWatchableCollectionModifier().write(0, dwn);
@@ -108,56 +113,56 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             List<PlayerInfoData> dataListNew = new ArrayList<>();
             for (PlayerInfoData data : dataList) {
                 WrappedGameProfile oldGP = data.getProfile();
-                WrappedGameProfile newGP = oldGP.withName(main.getLanguageParser().replaceLanguages(oldGP.getName(), packet.getPlayer()));
+                WrappedGameProfile newGP = oldGP.withName(main.getLanguageParser().replaceLanguages(oldGP.getName(), languagePlayer));
                 newGP.getProperties().putAll(oldGP.getProperties());
                 WrappedChatComponent msg = data.getDisplayName();
                 if (msg != null)
-                    msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+                    msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
                 dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
             }
             packet.getPacket().getPlayerInfoDataLists().write(0, dataListNew);
         } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf().isScoreboards()) {
-            packet.getPacket().getStrings().write(1, main.getLanguageParser().replaceLanguages(packet.getPacket().getStrings().read(1), packet.getPlayer()));
+            packet.getPacket().getStrings().write(1, main.getLanguageParser().replaceLanguages(packet.getPacket().getStrings().read(1), languagePlayer));
         } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_SCORE && main.getConf().isScoreboards()) {
             StructureModifier<String> strings = packet.getPacket().getStrings();
             String name = strings.read(0);
             LanguageParser utils = main.getLanguageParser();
             if (utils.hasLanguages(name)) {
-                strings.write(0, utils.replaceLanguages(name, packet.getPlayer()));
+                strings.write(0, utils.replaceLanguages(name, languagePlayer));
                 for (Team team : packet.getPlayer().getScoreboard().getTeams())
                     for (String entry : team.getEntries())
                         if (entry.equals(name))
-                            team.addEntry(utils.replaceLanguages(name, packet.getPlayer()));
+                            team.addEntry(utils.replaceLanguages(name, languagePlayer));
                 return;
             }
             for (Team team : packet.getPlayer().getScoreboard().getTeams()) {
                 for (String entry : team.getEntries())
                     if (entry.equals(name)) {
                         if (utils.hasLanguages(team.getPrefix() + name)) {
-                            String translate = utils.replaceLanguages(team.getPrefix() + name, packet.getPlayer());
+                            String translate = utils.replaceLanguages(team.getPrefix() + name, languagePlayer);
                             int i = translate.length() - (name.length() > translate.length()
                                     ? (translate.length() < 16 ? translate.length() - 1 : 16) : name.length());
                             String newTeamPrefix = translate.substring(0, i);
                             String newName = utils.getLastColor(newTeamPrefix) + translate.substring(i);
-                            strings.write(0, utils.replaceLanguages(newName, packet.getPlayer()));
+                            strings.write(0, utils.replaceLanguages(newName, languagePlayer));
                             updateTeamPrefixSuffix(packet.getPlayer(), team,
                                     newTeamPrefix, team.getSuffix());
                             team.addEntry(newName);
                             return;
                         }
                         if (utils.hasLanguages(name + team.getSuffix())) {
-                            String translate = utils.replaceLanguages(name + team.getSuffix(), packet.getPlayer());
+                            String translate = utils.replaceLanguages(name + team.getSuffix(), languagePlayer);
                             int i = name.length() > translate.length() ? translate.length() - 1 : name.length();
                             String newName = translate.substring(0, i);
                             String newTeamSuffix = utils.getLastColor(newName) + translate.substring(i);
-                            strings.write(0, utils.replaceLanguages(newName, packet.getPlayer()));
+                            strings.write(0, utils.replaceLanguages(newName, languagePlayer));
                             updateTeamPrefixSuffix(packet.getPlayer(), team,
                                     team.getPrefix(), newTeamSuffix);
                             team.addEntry(newName);
                             return;
                         }
                         if (utils.hasLanguages(team.getPrefix() + name + team.getSuffix())) {
-                            String translate = utils.replaceLanguages(team.getPrefix() + name + team.getSuffix(), packet.getPlayer());
+                            String translate = utils.replaceLanguages(team.getPrefix() + name + team.getSuffix(), languagePlayer);
                             int i = (translate.length() - (name.length() > translate.length()
                                     ? (translate.length() < 16 ? translate.length() - 1 : 16) : name.length())) / 2;
                             String newTeamPrefix = translate.substring(0, i);
@@ -165,14 +170,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     + translate.substring(i, i + name.length());
                             String newTeamSuffix = utils.getLastColor(newTeamPrefix + newName)
                                     + translate.substring(i + name.length());
-                            strings.write(0, utils.replaceLanguages(newName, packet.getPlayer()));
+                            strings.write(0, utils.replaceLanguages(newName, languagePlayer));
                             updateTeamPrefixSuffix(packet.getPlayer(), team,
                                     newTeamPrefix, newTeamSuffix);
                             team.addEntry(newName);
                             return;
                         }
                         if (utils.hasLanguages(team.getPrefix() + team.getSuffix())) {
-                            String translate = utils.replaceLanguages(team.getPrefix() + team.getSuffix(), packet.getPlayer());
+                            String translate = utils.replaceLanguages(team.getPrefix() + team.getSuffix(), languagePlayer);
                             int i = translate.length() / 2;
                             String newTeamPrefix = translate.substring(0, i);
                             String newTeamSuffix = utils.getLastColor(newTeamPrefix) + translate.substring(i);
@@ -181,7 +186,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             return;
                         }
                         if (utils.hasLanguages(team.getPrefix() + utils.removeFirstColor(team.getSuffix())) && main.getConf().isScoreboardsAdvanced()) {
-                            String translate = utils.replaceLanguages(team.getPrefix() + utils.removeFirstColor(team.getSuffix()), packet.getPlayer());
+                            String translate = utils.replaceLanguages(team.getPrefix() + utils.removeFirstColor(team.getSuffix()), languagePlayer);
                             int i = translate.length() / 2;
                             String newTeamPrefix = translate.substring(0, i);
                             String newTeamSuffix = utils.getLastColor(newTeamPrefix) + translate.substring(i);
@@ -191,7 +196,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         }
                     }
             }
-            strings.write(0, utils.replaceLanguages(strings.read(0), packet.getPlayer()));
+            strings.write(0, utils.replaceLanguages(strings.read(0), languagePlayer));
         } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM && main.getConf().isScoreboards()) {
             StructureModifier<String> strings = packet.getPacket().getStrings();
             String prefix = strings.read(2);
@@ -199,9 +204,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             String checkSuffix = suffix;
             if (!main.getLanguageParser().hasLanguages(suffix) && !main.getLanguageParser().hasLanguages(prefix + suffix) && main.getConf().isScoreboardsAdvanced())
                 checkSuffix = main.getLanguageParser().removeFirstColor(checkSuffix);
-            strings.write(1, main.getLanguageParser().replaceLanguages(strings.read(1), packet.getPlayer()));
+            strings.write(1, main.getLanguageParser().replaceLanguages(strings.read(1), languagePlayer));
             if (main.getLanguageParser().hasLanguages(prefix + checkSuffix)) {
-                String translate = main.getLanguageParser().replaceLanguages(prefix + checkSuffix, packet.getPlayer());
+                String translate = main.getLanguageParser().replaceLanguages(prefix + checkSuffix, languagePlayer);
                 int i = translate.length() / 2;
                 String newTeamPrefix = translate.substring(0, i);
                 String newTeamSuffix = main.getLanguageParser().getLastColor(newTeamPrefix)
@@ -210,15 +215,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 strings.write(3, newTeamSuffix);
                 return;
             }
-            strings.write(2, main.getLanguageParser().replaceLanguages(prefix, packet.getPlayer()));
-            strings.write(3, main.getLanguageParser().replaceLanguages(suffix, packet.getPlayer()));
-        } else if ((packet.getPacketType() == PacketType.Login.Server.DISCONNECT || packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT) && main.getConf().isKick()) {
+            strings.write(2, main.getLanguageParser().replaceLanguages(prefix, languagePlayer));
+            strings.write(3, main.getLanguageParser().replaceLanguages(suffix, languagePlayer));
+        } else if (packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT && main.getConf().isKick()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().read(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(packet.getPlayer(), ComponentSerializer.parse(msg.getJson()))));
+            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
             packet.getPacket().getChatComponents().write(0, msg);
         } else if (signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
             BlockPosition pos = packet.getPacket().getBlockPositionModifier().read(0);
-            String[] lines = main.getLanguageManager().getSign(packet.getPlayer(), new Location(packet.getPlayer().getWorld(), pos.getX(), pos.getY(), pos.getZ()));
+            String[] lines = main.getLanguageManager().getSign(languagePlayer, new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(), pos.getZ()));
             if (lines == null) return;
             WrappedChatComponent[] comps = new WrappedChatComponent[4];
             for (int i = 0; i < 4; i++)
@@ -227,8 +232,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else if (!signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
             if (packet.getPacket().getIntegers().read(0) == 9) {
                 NbtCompound nbt = NbtFactory.asCompound(packet.getPacket().getNbtModifier().read(0));
-                Location l = new Location(packet.getPlayer().getWorld(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                String[] sign = main.getLanguageManager().getSign(packet.getPlayer(), l);
+                LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
+                String[] sign = main.getLanguageManager().getSign(languagePlayer, l);
                 if (sign != null)
                     for (int i = 0; i < 4; i++)
                         nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
@@ -238,8 +243,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             for (NbtBase<?> entity : entities) {
                 NbtCompound nbt = NbtFactory.asCompound(entity);
                 if (nbt.getString("id").equals(getMCVersion() <= 10 ? "Sign" : "minecraft:sign")) {
-                    Location l = new Location(packet.getPlayer().getWorld(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                    String[] sign = main.getLanguageManager().getSign(packet.getPlayer(), l);
+                    LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(), nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
+                    String[] sign = main.getLanguageManager().getSign(languagePlayer, l);
                     if (sign != null)
                         for (int i = 0; i < 4; i++)
                             nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
@@ -252,18 +257,18 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (item.hasItemMeta()) {
                     ItemMeta meta = item.getItemMeta();
                     if (meta.hasDisplayName())
-                        meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), packet.getPlayer()));
+                        meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer));
                     if (meta.hasLore()) {
                         List<String> newLore = new ArrayList<>();
                         for (String lore : meta.getLore())
-                            newLore.add(main.getLanguageParser().replaceLanguages(lore, packet.getPlayer()));
+                            newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer));
                         meta.setLore(newLore);
                     }
                     item.setItemMeta(meta);
                 }
             }
             if (getMCVersion() <= 10)
-                packet.getPacket().getItemArrayModifier().write(0, items.toArray(new ItemStack[items.size()]));
+                packet.getPacket().getItemArrayModifier().write(0, items.toArray(new ItemStack[0]));
             else
                 packet.getPacket().getItemListModifier().write(0, items);
         } else if (packet.getPacketType() == PacketType.Play.Server.SET_SLOT && main.getConf().isItems()) {
@@ -271,11 +276,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (item.hasItemMeta()) {
                 ItemMeta meta = item.getItemMeta();
                 if (meta.hasDisplayName())
-                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), packet.getPlayer()));
+                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer));
                 if (meta.hasLore()) {
                     List<String> newLore = new ArrayList<>();
                     for (String lore : meta.getLore())
-                        newLore.add(main.getLanguageParser().replaceLanguages(lore, packet.getPlayer()));
+                        newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer));
                     meta.setLore(newLore);
                 }
                 item.setItemMeta(meta);
@@ -285,21 +290,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             UUID uuid = packet.getPacket().getUUIDs().readSafely(0);
             Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
             if (action == Action.REMOVE) {
-                LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
-                lp.removeBossbar(uuid);
+                languagePlayer.removeBossbar(uuid);
                 return;
             }
             if (action != Action.ADD && action != Action.UPDATE_NAME) return;
             WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
-            LanguagePlayer lp = MultiLanguagePlugin.asSpigot().getPlayerManager().get(packet.getPlayer());
-            lp.setBossbar(uuid, bossbar.getJson());
-            bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(packet.getPlayer(), ComponentSerializer.parse(bossbar.getJson()))));
+            languagePlayer.setBossbar(uuid, bossbar.getJson());
+            bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(bossbar.getJson()))));
             packet.getPacket().getChatComponents().writeSafely(0, bossbar);
         }
     }
 
     @Override
-    public void refreshSigns(LanguagePlayer player) {
+    public void refreshSigns(SpigotLanguagePlayer player) {
         for (LanguageItem item : main.getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
             if (player.toBukkit().getWorld().equals(sign.getLocation().getWorld())) {
@@ -334,7 +337,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void refreshEntities(LanguagePlayer player) {
+    public void refreshEntities(SpigotLanguagePlayer player) {
         if (entities.containsKey(player.toBukkit().getWorld()))
             for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
                 if (entry.getValue().getType() == org.bukkit.entity.EntityType.PLAYER) {
@@ -380,7 +383,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 packet.getIntegers().write(0, entry.getKey());
                 String oldName = entry.getValue().getCustomName();
                 WrappedDataWatcher dw = WrappedDataWatcher.getEntityWatcher(entry.getValue());
-                dw.setObject(2, main.getLanguageParser().replaceLanguages(entry.getValue().getCustomName(), player.toBukkit()));
+                dw.setObject(2, main.getLanguageParser().replaceLanguages(entry.getValue().getCustomName(), player));
                 packet.getWatchableCollectionModifier().write(0, dw.getWatchableObjects());
                 try {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
@@ -392,7 +395,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void refreshTabHeaderFooter(LanguagePlayer player, String header, String footer) {
+    public void refreshTabHeaderFooter(SpigotLanguagePlayer player, String header, String footer) {
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
         packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
@@ -404,7 +407,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void refreshBossbar(LanguagePlayer player, UUID uuid, String json) {
+    public void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String json) {
         if (getMCVersion() <= 8) return;
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BOSS);
         packet.getUUIDs().writeSafely(0, uuid);
@@ -429,7 +432,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).gamePhase(GamePhase.LOGIN).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Login.Server.DISCONNECT, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Play.Server.BOSS).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Play.Server.BOSS).highest().build();
     }
 
     @Override

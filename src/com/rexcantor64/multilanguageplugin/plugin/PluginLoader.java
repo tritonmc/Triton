@@ -15,6 +15,8 @@ public interface PluginLoader {
 
     InputStream getResourceAsStream(String fileName);
 
+    void shutdown();
+
     enum PluginType {
         SPIGOT, BUNGEE
     }

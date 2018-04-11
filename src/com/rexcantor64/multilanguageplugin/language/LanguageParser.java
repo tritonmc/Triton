@@ -1,20 +1,17 @@
 package com.rexcantor64.multilanguageplugin.language;
 
-import com.google.common.collect.Lists;
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.components.api.chat.BaseComponent;
 import com.rexcantor64.multilanguageplugin.components.api.chat.HoverEvent;
 import com.rexcantor64.multilanguageplugin.components.api.chat.TextComponent;
+import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
 import com.rexcantor64.multilanguageplugin.utils.ComponentUtils;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class LanguageParser {
 
@@ -25,7 +22,7 @@ public class LanguageParser {
     private final int patternSize = SpigotMLP.get().getConf().getSyntax().length() + 2;
     private final int patternArgSize = SpigotMLP.get().getConf().getSyntaxArg().length() + 2;
 
-    public String replaceLanguages(String input, Player p) {
+    public String replaceLanguages(String input, LanguagePlayer p) {
         Integer[] i;
         while ((i = getPatternIndex(input, pattern)) != null) {
             StringBuilder builder = new StringBuilder();
@@ -210,18 +207,18 @@ public class LanguageParser {
         return ChatColor.stripColor(str.substring(0, 2)) + str.substring(2);
     }
 
-    public BaseComponent[] parseSimpleBaseComponent(Player p, BaseComponent[] text) {
+    public BaseComponent[] parseSimpleBaseComponent(LanguagePlayer p, BaseComponent[] text) {
         for (BaseComponent a : text)
             if (a instanceof TextComponent)
                 ((TextComponent) a).setText(replaceLanguages(((TextComponent) a).getText(), p));
         return text;
     }
 
-    public BaseComponent[] parseTitle(Player p, BaseComponent[] text) {
+    public BaseComponent[] parseTitle(LanguagePlayer p, BaseComponent[] text) {
         return TextComponent.fromLegacyText(replaceLanguages(TextComponent.toLegacyText(text), p));
     }
 
-    private BaseComponent[] translateHoverComponents(Player p, BaseComponent... text) {
+    private BaseComponent[] translateHoverComponents(LanguagePlayer p, BaseComponent... text) {
         List<BaseComponent> result = new ArrayList<>();
         for (BaseComponent comp : text) {
             if (comp.getHoverEvent() != null && comp.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT)
@@ -234,7 +231,7 @@ public class LanguageParser {
         return result.toArray(new BaseComponent[result.size()]);
     }
 
-    public BaseComponent[] parseChat(Player p, BaseComponent... text) {
+    public BaseComponent[] parseChat(LanguagePlayer p, BaseComponent... text) {
         if (text == null) return null;
         List<LanguageMessage> messages = LanguageMessage.fromBaseComponentArray(text);
         int counter = 15;
@@ -302,7 +299,7 @@ public class LanguageParser {
         return text;
     }
 
-    private BaseComponent processLanguageComponent(BaseComponent component, Player p) {
+    private BaseComponent processLanguageComponent(BaseComponent component, LanguagePlayer p) {
         String plainText = BaseComponent.toPlainText(component);
         Integer[] argsIndex = getPatternIndex(plainText, patternArgs);
         if (argsIndex == null) {

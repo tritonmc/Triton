@@ -3,16 +3,13 @@ package com.rexcantor64.multilanguageplugin.language;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
+import com.rexcantor64.multilanguageplugin.components.api.ChatColor;
 import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageText;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
-import com.rexcantor64.multilanguageplugin.utils.LocationUtils;
 import com.rexcantor64.multilanguageplugin.utils.YAMLUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +19,6 @@ public class LanguageManager {
     private List<Language> languages = new ArrayList<>();
     private Language mainLanguage;
     private Multimap<LanguageItem.LanguageItemType, LanguageItem> items = ArrayListMultimap.create();
-
-    public String getText(Player p, String code, Object... args) {
-        return getText(MultiLanguagePlugin.asSpigot().getPlayerManager().get(p), code, args);
-    }
 
     public String getText(LanguagePlayer p, String code, Object... args) {
         return getText(p.getLang().getName(), code, args);
@@ -57,18 +50,15 @@ public class LanguageManager {
         return MultiLanguagePlugin.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
     }
 
-    public String[] getSign(Player p, Location location) {
-        return getSign(MultiLanguagePlugin.asSpigot().getPlayerManager().get(p), location);
-    }
-
-    public String[] getSign(LanguagePlayer p, Location location) {
+    public String[] getSign(LanguagePlayer p, LanguageSign.SignLocation location) {
         return getSign(p.getLang().getName(), location);
     }
 
-    public String[] getSign(String language, Location location) {
+    public String[] getSign(String language, LanguageSign.SignLocation location) {
+        if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!LocationUtils.equalsBlock(location, sign.getLocation())) continue;
+            if (!location.equals(sign.getLocation())) continue;
             String[] lines = sign.getLines(language);
             if (lines == null) return getSignFromMain(location);
             return lines;
@@ -76,10 +66,11 @@ public class LanguageManager {
         return null;
     }
 
-    private String[] getSignFromMain(Location location) {
+    private String[] getSignFromMain(LanguageSign.SignLocation location) {
+        if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!LocationUtils.equalsBlock(location, sign.getLocation())) continue;
+            if (!location.equals(sign.getLocation())) continue;
             String[] lines = sign.getLines(mainLanguage.getName());
             if (lines == null) break;
             return lines;

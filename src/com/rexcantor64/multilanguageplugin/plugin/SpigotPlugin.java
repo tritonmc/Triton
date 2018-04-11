@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin.plugin;
 
 import com.rexcantor64.multilanguageplugin.SpigotMLP;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.InputStream;
@@ -30,5 +31,10 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
     @Override
     public InputStream getResourceAsStream(String fileName) {
         return getResource(fileName);
+    }
+
+    @Override
+    public void shutdown() {
+        Bukkit.getPluginManager().disablePlugin(this);
     }
 }

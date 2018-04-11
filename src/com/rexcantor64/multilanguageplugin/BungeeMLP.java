@@ -7,21 +7,22 @@ import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageText;
+import com.rexcantor64.multilanguageplugin.packetinterceptor.BungeeListener;
 import com.rexcantor64.multilanguageplugin.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.multilanguageplugin.player.BungeeLanguagePlayer;
 import com.rexcantor64.multilanguageplugin.plugin.PluginLoader;
+import com.rexcantor64.multilanguageplugin.utils.NMSUtils;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.netty.ChannelWrapper;
+import net.md_5.bungee.protocol.DefinedPacket;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class BungeeMLP extends MultiLanguagePlugin {
-
-    private HashMap<UUID, BungeeLanguagePlayer> players = new HashMap<>();
 
     public BungeeMLP(PluginLoader loader) {
         super.loader = loader;
@@ -35,24 +36,12 @@ public class BungeeMLP extends MultiLanguagePlugin {
         BungeeCord.getInstance().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());
         BungeeCord.getInstance().registerChannel("MultiLanguagePlugin");
 
-        for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers())
-            registerPlayer(p);
+        for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
+            BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
+            setCustomUnsafe(lp);
+        }
 
         sendConfigToEveryone();
-    }
-
-    public BungeeLanguagePlayer registerPlayer(ProxiedPlayer p) {
-        BungeeLanguagePlayer lp = new BungeeLanguagePlayer(p);
-        players.put(p.getUniqueId(), lp);
-        return lp;
-    }
-
-    public BungeeLanguagePlayer getLanguagePlayer(ProxiedPlayer p) {
-        return players.get(p.getUniqueId());
-    }
-
-    public BungeeLanguagePlayer getLanguagePlayer(UUID uuid) {
-        return players.get(uuid);
     }
 
     @Override
@@ -134,6 +123,19 @@ public class BungeeMLP extends MultiLanguagePlugin {
 
     public File getDataFolder() {
         return loader.asBungee().getDataFolder();
+    }
+
+    public void setCustomUnsafe(BungeeLanguagePlayer p) {
+        NMSUtils.setPrivateFinalField(p.getParent(), "unsafe", new BungeeListener(p));
+    }
+
+    public void setDefaultUnsafe(ProxiedPlayer p) {
+        NMSUtils.setPrivateFinalField(p, "unsafe", new Connection.Unsafe() {
+            @Override
+            public void sendPacket(DefinedPacket p) {
+                ((ChannelWrapper) NMSUtils.getDeclaredField(p, "ch")).write(p);
+            }
+        });
     }
 
 }

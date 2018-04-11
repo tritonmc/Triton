@@ -2,7 +2,7 @@ package com.rexcantor64.multilanguageplugin.storage;
 
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
 import com.rexcantor64.multilanguageplugin.language.Language;
-import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import com.rexcantor64.multilanguageplugin.player.SpigotLanguagePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface PlayerStorage {
 
-    Language getLanguage(LanguagePlayer lp);
+    Language getLanguage(SpigotLanguagePlayer lp);
 
     void setLanguage(UUID uuid, Language newLanguage);
 
@@ -28,16 +28,19 @@ public interface PlayerStorage {
     class YamlStorage implements PlayerStorage {
 
         @Override
-        public Language getLanguage(LanguagePlayer lp) {
+        public Language getLanguage(SpigotLanguagePlayer lp) {
             File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
             if (!f.exists()) {
                 lp.waitForDefaultLanguage();
                 return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
             }
             YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
-            if (players.isString(lp.toBukkit().getUniqueId().toString()))
+            if (players
+                    .isString(
+                            lp.getUUID()
+                                    .toString()))
                 return MultiLanguagePlugin.get().getLanguageManager()
-                        .getLanguageByName(players.getString(lp.toBukkit().getUniqueId().toString()), true);
+                        .getLanguageByName(players.getString(lp.getUUID().toString()), true);
             lp.waitForDefaultLanguage();
             return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         }
@@ -66,7 +69,7 @@ public interface PlayerStorage {
     class SqlStorage implements PlayerStorage {
 
         @Override
-        public Language getLanguage(LanguagePlayer lp) {
+        public Language getLanguage(SpigotLanguagePlayer lp) {
             //TODO implement
             return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         }

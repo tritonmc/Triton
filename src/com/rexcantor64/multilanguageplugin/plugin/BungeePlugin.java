@@ -1,6 +1,7 @@
 package com.rexcantor64.multilanguageplugin.plugin;
 
 import com.rexcantor64.multilanguageplugin.BungeeMLP;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeePlugin extends Plugin implements PluginLoader {
@@ -23,5 +24,13 @@ public class BungeePlugin extends Plugin implements PluginLoader {
     @Override
     public BungeePlugin asBungee() {
         return this;
+    }
+
+    @Override
+    public void shutdown() {
+        onDisable();
+        BungeeCord.getInstance().getPluginManager().unregisterCommands(this);
+        BungeeCord.getInstance().getPluginManager().unregisterListeners(this);
+        BungeeCord.getInstance().unregisterChannel("MultiLanguagePlugin");
     }
 }

@@ -53,7 +53,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        MultiLanguagePlugin.asSpigot().getPlayerManager().get(target).setLang(lang);
+        MultiLanguagePlugin.asSpigot().getPlayerManager().get(target.getUniqueId()).setLang(lang);
         if (target == p)
             p.sendMessage(MultiLanguagePlugin.get().getMessage("success.setlanguage", "&aYour language has been changed to %1", lang.getDisplayName()));
         else

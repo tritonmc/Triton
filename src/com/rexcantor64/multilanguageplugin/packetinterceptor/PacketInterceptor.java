@@ -1,17 +1,17 @@
 package com.rexcantor64.multilanguageplugin.packetinterceptor;
 
-import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
+import com.rexcantor64.multilanguageplugin.player.SpigotLanguagePlayer;
 
 import java.util.UUID;
 
 public interface PacketInterceptor {
 
-    void refreshSigns(LanguagePlayer player);
+    void refreshSigns(SpigotLanguagePlayer player);
 
-    void refreshEntities(LanguagePlayer player);
+    void refreshEntities(SpigotLanguagePlayer player);
 
-    void refreshTabHeaderFooter(LanguagePlayer player, String header, String footer);
+    void refreshTabHeaderFooter(SpigotLanguagePlayer player, String header, String footer);
 
-    void refreshBossbar(LanguagePlayer player, UUID uuid, String text);
+    void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String text);
 
 }

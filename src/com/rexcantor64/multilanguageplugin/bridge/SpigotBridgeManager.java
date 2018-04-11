@@ -3,24 +3,22 @@ package com.rexcantor64.multilanguageplugin.bridge;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.multilanguageplugin.MultiLanguagePlugin;
-import com.rexcantor64.multilanguageplugin.SpigotMLP;
 import com.rexcantor64.multilanguageplugin.config.MainConfig;
 import com.rexcantor64.multilanguageplugin.config.interfaces.Configuration;
-import com.rexcantor64.multilanguageplugin.language.Language;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageItem;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageSign;
 import com.rexcantor64.multilanguageplugin.language.item.LanguageText;
 import com.rexcantor64.multilanguageplugin.player.LanguagePlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Sign;
+import com.rexcantor64.multilanguageplugin.player.SpigotLanguagePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class SpigotBridgeManager implements PluginMessageListener {
 
@@ -83,23 +81,25 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 MultiLanguagePlugin.get().getLanguageConfig().setItems(languageItems);
                 MultiLanguagePlugin.get().logDebug("Received config from BungeeCord and parsed it in %1ms!", System.currentTimeMillis() - start);
 
-                for (LanguagePlayer lp : MultiLanguagePlugin.asSpigot().getPlayerManager().getAll())
-                    lp.refreshAll();
+                for (LanguagePlayer lp : MultiLanguagePlugin.get().getPlayerManager().getAll())
+                    ((SpigotLanguagePlayer) lp).refreshAll();
 
                 MultiLanguagePlugin.get().getLanguageManager().setup();
             } else if (action == 1) {
-                MultiLanguagePlugin.asSpigot().getPlayerManager().get(player).setLang(MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(in.readUTF(), true), false);
+                ((SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(UUID.fromString(in.readUTF()))).setLang(MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(in.readUTF(), true), false);
             }
         } catch (Exception e) {
             MultiLanguagePlugin.get().logError("Failed to parse plugin message: %1", e.getMessage());
+            if (MultiLanguagePlugin.get().getConf().isDebug())
+                e.printStackTrace();
         }
     }
 
-    public void updatePlayerLanguage(LanguagePlayer lp) {
+    public void updatePlayerLanguage(SpigotLanguagePlayer lp) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action (0): updatePlayerLanguage
         out.writeByte(0);
-        out.writeUTF(lp.toBukkit().getUniqueId().toString());
+        out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
         lp.toBukkit().sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "MultiLanguagePlugin", out.toByteArray());
     }
