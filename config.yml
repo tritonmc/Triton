@@ -76,6 +76,9 @@ language-creation:
         # The old parser has better support for hover and click actions, but the colors might get mixed up.
         # The new one has worse support for hover and click actions, but the colors should be file.
         use-new-chat-parser: false
+        # Sometimes the server's chat parser can parse some placeholders as links.
+        # Do you want MLP to remove invalid links, like placeholders?
+        remove-invalid-links: true
         # Should the plugin check actions bars?
         action-bars: true
         # Should the plugin check titles?
