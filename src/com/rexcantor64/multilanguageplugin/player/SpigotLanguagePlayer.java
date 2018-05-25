@@ -42,7 +42,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.lang = lang;
         refreshAll();
         save();
-        if (sendToBungee)
+        if (sendToBungee && MultiLanguagePlugin.asSpigot().getBridgeManager() != null)
             MultiLanguagePlugin.asSpigot().getBridgeManager().updatePlayerLanguage(this);
     }
 
