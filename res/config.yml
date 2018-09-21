@@ -1,17 +1,3 @@
-sql:
-    # Change to true if you want to use a database.
-    # You should have the credentials setup below.
-    enabled: false
-    # The URL of your database (normally it's localhost)
-    host: localhost
-    # The port of your database. The default sql port is 3306
-    port: 3306
-    # The database name
-    database: minecraft
-    # The username
-    username: root
-    # The password
-    password: ''
 languages:
     # The language name. This will influence the language file name.
     # i.e. If the name is en_UK, the language file name will be located at languages/en_UK.language

@@ -1,0 +1,239 @@
+package com.rexcantor64.triton.config;
+
+import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.config.interfaces.Configuration;
+import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.wrappers.EntityType;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainConfig {
+
+    private final MultiLanguagePlugin main;
+
+    public MainConfig(MultiLanguagePlugin main) {
+        this.main = main;
+    }
+
+    private Configuration languages;
+    private String mainLanguage;
+    private boolean forceLocale;
+    private boolean runLanguageCommandsOnLogin;
+    private boolean debug;
+    private boolean bungeecord;
+
+    private String syntax;
+    private String syntaxArgs;
+    private String syntaxArg;
+    private String disabledLine;
+
+    private boolean chat;
+    private boolean actionbars;
+    private boolean titles;
+    private boolean guis;
+    private boolean scoreboards;
+    private boolean scoreboardsAdvanced;
+    private List<EntityType> holograms = new ArrayList<>();
+    private boolean hologramsAll;
+    private boolean kick;
+    private boolean tab;
+    private boolean items;
+    private boolean inventoryItems;
+    private boolean signs;
+    private boolean bossbars;
+
+    public Configuration getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(Configuration languages) {
+        this.languages = languages;
+    }
+
+    public String getMainLanguage() {
+        return mainLanguage;
+    }
+
+    public void setMainLanguage(String mainLanguage) {
+        this.mainLanguage = mainLanguage;
+    }
+
+    public boolean isForceLocale() {
+        return forceLocale;
+    }
+
+    public boolean isRunLanguageCommandsOnLogin() {
+        return runLanguageCommandsOnLogin;
+    }
+
+    public boolean isBungeecord() {
+        return bungeecord;
+    }
+
+    public String getSyntax() {
+        return syntax;
+    }
+
+    public String getSyntaxArgs() {
+        return syntaxArgs;
+    }
+
+    public String getSyntaxArg() {
+        return syntaxArg;
+    }
+
+    public String getDisabledLine() {
+        return disabledLine;
+    }
+
+    public boolean isChat() {
+        return chat;
+    }
+
+    public boolean isActionbars() {
+        return actionbars;
+    }
+
+    public boolean isTitles() {
+        return titles;
+    }
+
+    public boolean isGuis() {
+        return guis;
+    }
+
+    public boolean isScoreboards() {
+        return scoreboards;
+    }
+
+    public boolean isScoreboardsAdvanced() {
+        return scoreboardsAdvanced;
+    }
+
+    public List<EntityType> getHolograms() {
+        return holograms;
+    }
+
+    public boolean isHologramsAll() {
+        return hologramsAll;
+    }
+
+    public boolean isKick() {
+        return kick;
+    }
+
+    public boolean isTab() {
+        return tab;
+    }
+
+    public boolean isItems() {
+        return items;
+    }
+
+    public boolean isInventoryItems() {
+        return inventoryItems;
+    }
+
+    public boolean isSigns() {
+        return signs;
+    }
+
+    public boolean isBossbars() {
+        return bossbars;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    private void setup(Configuration section) {
+        this.languages = section.getSection("languages");
+        this.mainLanguage = section.getString("main-language", "en_GB");
+        this.forceLocale = section.getBoolean("force-minecraft-locale", false);
+        this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
+        this.bungeecord = section.getBoolean("bungeecord", false);
+        this.debug = section.getBoolean("debug", false);
+        Configuration languageCreation = section.getSection("language-creation");
+        setupLanguageCreation(languageCreation);
+    }
+
+    public void setup() {
+        setup(main.getConfig());
+    }
+
+    private void setupLanguageCreation(Configuration section) {
+        syntax = section.getString("syntax", "lang");
+        syntaxArgs = section.getString("syntax-args", "args");
+        syntaxArg = section.getString("syntax-arg", "arg");
+        disabledLine = section.getString("disabled-line", "");
+
+        Configuration enabled = section.getSection("enabled");
+        chat = enabled.getBoolean("chat-messages", true);
+        actionbars = enabled.getBoolean("action-bars", true);
+        titles = enabled.getBoolean("titles", true);
+        guis = enabled.getBoolean("guis", true);
+        scoreboards = enabled.getBoolean("scoreboards", true);
+        scoreboardsAdvanced = enabled.getBoolean("scoreboards-advanced", false);
+        hologramsAll = enabled.getBoolean("holograms-allow-all", false);
+        kick = enabled.getBoolean("kick", true);
+        tab = enabled.getBoolean("tab", true);
+        items = enabled.getBoolean("items", true);
+        inventoryItems = enabled.getBoolean("inventory-items", false);
+        signs = enabled.getBoolean("signs", true);
+        bossbars = enabled.getBoolean("bossbars", true);
+
+        List<String> holograms = enabled.getStringList("holograms");
+        for (String hologram : holograms)
+            try {
+                this.holograms.add(EntityType.valueOf(hologram.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                main.logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! Please check your spelling and if you can't fix it, please contact the developer!", hologram);
+            }
+    }
+
+    public JSONObject toJSON() {
+        JSONObject config = new JSONObject();
+        JSONObject parser = new JSONObject();
+        parser.put("chat", chat);
+        parser.put("actionbar", actionbars);
+        parser.put("titles", titles);
+        parser.put("guis", guis);
+        parser.put("scoreboards", scoreboards);
+        parser.put("scoreboardsAdvanced", scoreboards);
+        parser.put("hologramsAllowAll", hologramsAll);
+        parser.put("kick", kick);
+        parser.put("tab", tab);
+        parser.put("items", items);
+        parser.put("inventoryItems", inventoryItems);
+        parser.put("signs", signs);
+        parser.put("bossbars", bossbars);
+        JSONArray holograms = new JSONArray();
+        for (EntityType et : this.holograms)
+            holograms.put(et.toString());
+        parser.put("holograms", holograms);
+        parser.put("syntax", syntax);
+        parser.put("syntaxArgs", syntaxArgs);
+        parser.put("syntaxArg", syntaxArg);
+        parser.put("disabledLine", disabledLine);
+        config.put("parser", parser);
+        config.put("debug", debug);
+        config.put("forceLocale", forceLocale);
+        config.put("runLanguageCMDsOnLogin", runLanguageCommandsOnLogin);
+        config.put("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
+        JSONArray languages = new JSONArray();
+        for (Language language : main.getLanguageManager().getAllLanguages()) {
+            JSONObject lang = new JSONObject();
+            lang.put("name", language.getName());
+            lang.put("display", language.getRawDisplayName());
+            lang.put("flag", language.getFlagCode());
+            lang.put("codes", language.getMinecraftCodes());
+            languages.put(lang);
+        }
+        config.put("languages", languages);
+        return config;
+    }
+
+}
