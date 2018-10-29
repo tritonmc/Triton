@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.bridge.BungeeBridgeManager;
 import com.rexcantor64.triton.commands.bungee.MainCMD;
+import com.rexcantor64.triton.commands.bungee.TwinCMD;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -43,6 +44,7 @@ public class BungeeMLP extends MultiLanguagePlugin {
         }
 
         BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new MainCMD());
+        BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new TwinCMD());
 
         sendConfigToEveryone();
     }
@@ -76,14 +78,14 @@ public class BungeeMLP extends MultiLanguagePlugin {
                 int size = 0;
                 ByteArrayDataOutput languageItemsOut = ByteStreams.newDataOutput();
                 for (LanguageItem item : languageItems) {
-                    if (!item.isUniversal() && (!item.isBlacklist() || item.getServers().contains(info.getName())) && (item.isBlacklist() || !item.getServers().contains(info.getName())))
-                        continue;
                     switch (item.getType()) {
                         case TEXT:
+                            LanguageText text = (LanguageText) item;
+                            if (!text.isUniversal() && (!text.isBlacklist() || text.getServers().contains(info.getName())) && (text.isBlacklist() || !text.getServers().contains(info.getName())))
+                                continue;
                             // Send type (0)
                             languageItemsOut.writeByte(0);
-                            LanguageText text = (LanguageText) item;
-                            languageItemsOut.writeUTF(text.getKey());
+                            languageItemsOut.writeUTF(item.getKey());
                             short langSize2 = 0;
                             ByteArrayDataOutput langOut2 = ByteStreams.newDataOutput();
                             for (Language lang : languageList) {
@@ -98,12 +100,28 @@ public class BungeeMLP extends MultiLanguagePlugin {
                             break;
                         case SIGN:
                             // Send type (1)
-                            languageItemsOut.writeByte(1);
                             LanguageSign sign = (LanguageSign) item;
-                            languageItemsOut.writeUTF(sign.getLocation().getWorld());
-                            languageItemsOut.writeInt(sign.getLocation().getX());
-                            languageItemsOut.writeInt(sign.getLocation().getY());
-                            languageItemsOut.writeInt(sign.getLocation().getZ());
+                            boolean sent = false;
+
+                            short locSize = 0;
+                            ByteArrayDataOutput locOut = ByteStreams.newDataOutput();
+                            for (LanguageSign.SignLocation loc : sign.getLocations()) {
+                                if (loc.getServer() != null && !loc.getServer().equals(info.getName()))
+                                    continue;
+                                if (!sent) {
+                                    languageItemsOut.writeByte(1);
+                                    languageItemsOut.writeUTF(item.getKey());
+                                    sent = true;
+                                }
+                                locOut.writeUTF(loc.getWorld());
+                                locOut.writeInt(loc.getX());
+                                locOut.writeInt(loc.getY());
+                                locOut.writeInt(loc.getZ());
+                                locSize++;
+                            }
+                            if (!sent) continue;
+                            languageItemsOut.writeShort(locSize);
+                            languageItemsOut.write(locOut.toByteArray());
                             short langSize = 0;
                             ByteArrayDataOutput langOut = ByteStreams.newDataOutput();
                             for (Language lang : languageList) {

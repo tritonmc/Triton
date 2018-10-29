@@ -1,27 +1,18 @@
 package com.rexcantor64.triton.language.item;
 
-import org.json.JSONArray;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class LanguageSign extends LanguageItem {
 
-    private SignLocation location;
+    private List<SignLocation> locations;
     private HashMap<String, String[]> languages;
 
-    public LanguageSign(SignLocation location, HashMap<String, String[]> languages, boolean universal, boolean blacklist, JSONArray servers) {
-        this.location = location;
+    public LanguageSign(String key, List<SignLocation> locations, HashMap<String, String[]> languages) {
+        super(key);
+        this.locations = locations;
         this.languages = languages;
-        super.universal = universal;
-        super.blacklist = blacklist;
-        super.setServers(servers);
-    }
-
-    public LanguageSign(SignLocation location, HashMap<String, String[]> languages) {
-        this.location = location;
-        this.languages = languages;
-        super.setServers(null);
     }
 
     @Override
@@ -29,8 +20,15 @@ public class LanguageSign extends LanguageItem {
         return LanguageItemType.SIGN;
     }
 
-    public SignLocation getLocation() {
-        return location;
+    public List<SignLocation> getLocations() {
+        return locations;
+    }
+
+    public boolean hasLocation(SignLocation loc) {
+        if (loc != null)
+            for (SignLocation l : locations)
+                if (loc.equalsNoServer(l)) return true;
+        return false;
     }
 
     public String[] getLines(String languageName) {
@@ -42,16 +40,34 @@ public class LanguageSign extends LanguageItem {
     }
 
     public static class SignLocation {
+        private String server;
         private String world;
         private int x;
         private int y;
         private int z;
 
-        public SignLocation(String world, int x, int y, int z) {
+        public SignLocation(String server, String world, int x, int y, int z) {
+            this.server = server;
             this.world = world;
             this.x = x;
             this.y = y;
             this.z = z;
+        }
+
+        public SignLocation(String world, int x, int y, int z) {
+            this.server = null;
+            this.world = world;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public String getServer() {
+            return server;
+        }
+
+        public void setServer(String server) {
+            this.server = server;
         }
 
         public String getWorld() {
@@ -94,9 +110,19 @@ public class LanguageSign extends LanguageItem {
             return x == that.x &&
                     y == that.y &&
                     z == that.z &&
+                    Objects.equals(server, that.server) &&
                     Objects.equals(world, that.world);
         }
 
+        public boolean equalsNoServer(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SignLocation that = (SignLocation) o;
+            return x == that.x &&
+                    y == that.y &&
+                    z == that.z &&
+                    Objects.equals(world, that.world);
+        }
     }
 
 }

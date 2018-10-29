@@ -58,7 +58,7 @@ public class LanguageManager {
         if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!location.equals(sign.getLocation())) continue;
+            if (!sign.hasLocation(location)) continue;
             String[] lines = sign.getLines(language);
             if (lines == null) return getSignFromMain(location);
             return lines;
@@ -70,7 +70,7 @@ public class LanguageManager {
         if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (!location.equals(sign.getLocation())) continue;
+            if (!sign.hasLocation(location)) continue;
             String[] lines = sign.getLines(mainLanguage.getName());
             if (lines == null) break;
             return lines;

@@ -66,9 +66,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     int itemsSize = in.readInt();
                     for (int i = 0; i < itemsSize; i++) {
                         byte type = in.readByte();
+                        String key = in.readUTF();
                         switch (type) {
                             case 0:
-                                String key = in.readUTF();
                                 HashMap<String, String> msgs = new HashMap<>();
                                 short langSize2 = in.readShort();
                                 for (int k = 0; k < langSize2; k++)
@@ -76,12 +76,16 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 languageItems.add(new LanguageText(key, msgs));
                                 break;
                             case 1:
-                                LanguageSign.SignLocation loc = new LanguageSign.SignLocation(in.readUTF(), in.readInt(), in.readInt(), in.readInt());
+                                List<LanguageSign.SignLocation> signLocations = new ArrayList<>();
+                                short locSize = in.readShort();
+                                for (int k = 0; k < locSize; k++) {
+                                    signLocations.add(new LanguageSign.SignLocation(in.readUTF(), in.readInt(), in.readInt(), in.readInt()));
+                                }
                                 HashMap<String, String[]> signLines = new HashMap<>();
                                 short langSize = in.readShort();
                                 for (int k = 0; k < langSize; k++)
                                     signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF(), in.readUTF()});
-                                languageItems.add(new LanguageSign(loc, signLines));
+                                languageItems.add(new LanguageSign(key, signLocations, signLines));
                                 break;
                             default:
                                 MultiLanguagePlugin.get().logDebugWarning("Received invalid type language item type while reading from BungeeCord: %1", type);

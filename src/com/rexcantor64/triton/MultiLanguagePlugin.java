@@ -235,11 +235,11 @@ public abstract class MultiLanguagePlugin {
             in.close();
             if (responseCode != 200 || !response.toString().equals("lEX%S5jVY8a2")) {
                 loader.shutdown();
-                System.err.println("[MultiLanguagePlugin] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
+                System.err.println("[Triton] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
             }
         } catch (Exception ignore) {
             loader.shutdown();
-            System.err.println("[MultiLanguagePlugin] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
+            System.err.println("[Triton] Disabled due to piracy! Contact the plugin's author if you believe this is a mistake!");
         }
     }
 

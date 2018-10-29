@@ -1,6 +1,6 @@
-name: MultiLanguagePlugin
-main: com.rexcantor64.multilanguageplugin.plugin.BungeePlugin
-version: 1.0.0-BETA_2
-website: https://www.spigotmc.org/resources/multilanguageplugin.30331/
+name: Triton
+main: com.rexcantor64.triton.plugin.BungeePlugin
+version: 1.0.0-BETA_3
+website: https://www.spigotmc.org/resources/triton.30331/
 author: Rexcantor64
 description: A plugin that replaces any message on your server, to the receiver's language, in real time!

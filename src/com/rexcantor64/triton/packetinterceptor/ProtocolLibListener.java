@@ -450,36 +450,38 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshSigns(SpigotLanguagePlayer player) {
+        out:
         for (LanguageItem item : main.getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            if (player.toBukkit().getWorld().getName().equals(sign.getLocation().getWorld())) {
-                PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN);
-                String[] lines = sign.getLines(player.getLang().getName());
-                if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
-                if (lines == null) continue;
-                packet.getBlockPositionModifier().writeSafely(0, new BlockPosition(sign.getLocation().getX(), sign.getLocation().getY(), sign.getLocation().getZ()));
-                if (signUpdateExists()) {
-                    WrappedChatComponent[] comps = new WrappedChatComponent[4];
-                    for (int i = 0; i < 4; i++)
-                        comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-                    packet.getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(), BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter())).writeSafely(0, Arrays.asList(comps));
-                } else {
-                    packet.getIntegers().writeSafely(0, 9);
-                    NbtCompound compound = NbtFactory.ofCompound(null);
-                    compound.put("x", sign.getLocation().getX());
-                    compound.put("y", sign.getLocation().getY());
-                    compound.put("z", sign.getLocation().getZ());
-                    compound.put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
-                    for (int i = 0; i < 4; i++)
-                        compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-                    packet.getNbtModifier().writeSafely(0, compound);
+            for (LanguageSign.SignLocation location : sign.getLocations())
+                if (player.toBukkit().getWorld().getName().equals(location.getWorld())) {
+                    PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN);
+                    String[] lines = sign.getLines(player.getLang().getName());
+                    if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
+                    if (lines == null) continue out;
+                    packet.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(), location.getZ()));
+                    if (signUpdateExists()) {
+                        WrappedChatComponent[] comps = new WrappedChatComponent[4];
+                        for (int i = 0; i < 4; i++)
+                            comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                        packet.getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(), BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter())).writeSafely(0, Arrays.asList(comps));
+                    } else {
+                        packet.getIntegers().writeSafely(0, 9);
+                        NbtCompound compound = NbtFactory.ofCompound(null);
+                        compound.put("x", location.getX());
+                        compound.put("y", location.getY());
+                        compound.put("z", location.getZ());
+                        compound.put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
+                        for (int i = 0; i < 4; i++)
+                            compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                        packet.getNbtModifier().writeSafely(0, compound);
+                    }
+                    try {
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
+                    } catch (InvocationTargetException e) {
+                        main.logError("Failed to send sign update packet: %1", e.getMessage());
+                    }
                 }
-                try {
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
-                } catch (InvocationTargetException e) {
-                    main.logError("Failed to send sign update packet: %1", e.getMessage());
-                }
-            }
         }
     }
 

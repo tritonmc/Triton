@@ -9,10 +9,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,9 +130,9 @@ public class LanguageMigration {
             return;
         }
         JSONObject entry = new JSONObject();
+        entry.put("key", UUID.randomUUID().toString());
         entry.put("type", "sign");
-        entry.put("location", location);
-        entry.put("universal", false);
+        entry.put("locations", Collections.singleton(location));
         entry.put("description", "");
         entry.put("tags", new JSONArray());
         JSONObject languages = new JSONObject();

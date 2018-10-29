@@ -1,15 +1,21 @@
 package com.rexcantor64.triton.web;
 
 import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.plugin.PluginLoader;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class GistManager {
 
     private final MultiLanguagePlugin main;
+
+    private static final int TWIN_VERSION = 1;
 
     public GistManager(MultiLanguagePlugin main) {
         this.main = main;
@@ -17,28 +23,27 @@ public class GistManager {
 
     public HttpResponse upload() {
         try {
+            if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
+                return null;
+
             JSONObject data = new JSONObject();
-            data.put("description", "Configuration from a Minecraft Server running MultiLanguagePlugin");
-            data.put("public", false);
-            JSONObject files = new JSONObject();
-            JSONObject languageFile = new JSONObject();
-            languageFile.put("content", main.getLanguageConfig().getRaw().toString());
-            files.put("language.json", languageFile);
-            JSONObject configFile = new JSONObject();
-            configFile.put("content", main.getConf().toJSON().toString());
-            files.put("config.json", configFile);
-            data.put("files", files);
-            String type = "application/json";
+            data.put("tritonv", TWIN_VERSION);
+            data.put("bungee", main.getLoader().getType() == PluginLoader.PluginType.BUNGEE);
+            JSONArray languages = new JSONArray();
+            for (Language lang : main.getLanguageManager().getAllLanguages())
+                languages.put(lang.getName());
+            data.put("languages", languages);
+            data.put("data", main.getLanguageConfig().getRaw());
+
+
             String encodedData = data.toString();
-            URL u = new URL("https://api.github.com/gists");
+            URL u = new URL("https://twin.rexcantor64.com/api/v1/upload");
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", type);
-            conn.setRequestProperty("Content-Length", String.valueOf(encodedData.length()));
-            conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
+            conn.setRequestProperty("Content-Type", "application/json");
             DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-            os.writeBytes(encodedData);
+            os.write(encodedData.getBytes(Charset.defaultCharset()));
             os.flush();
             os.close();
 
@@ -61,20 +66,22 @@ public class GistManager {
 
                 return new HttpResponse(true, responseCode, response.toString());
             } catch (FileNotFoundException e) {
-                return new HttpResponse(true, responseCode, "{}");
+                return new HttpResponse(true, responseCode, "");
             }
         } catch (Exception e) {
             return new HttpResponse(false, 0, e.getMessage());
         }
     }
 
-    public HttpResponse downloader(String id) {
+    public HttpResponse download(String id) {
         try {
-            URL u = new URL("https://api.github.com/gists/" + id);
+            if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
+                return null;
+
+            URL u = new URL("https://twin.rexcantor64.com/api/v1/get/" + id);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
 
             int responseCode = conn.getResponseCode();
 

@@ -5,25 +5,26 @@ import com.rexcantor64.triton.utils.LocationUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public abstract class LanguageItem {
 
-    boolean universal = false;
-    boolean blacklist = false;
-    List<String> servers;
+
+    private final String key;
+
+    public LanguageItem(String key) {
+        this.key = key;
+    }
 
     public static LanguageItem fromJSON(JSONObject obj) {
         if (obj == null) return null;
         if (obj.optBoolean("archived", false)) return null;
         LanguageItemType type = LanguageItemType.getType(obj.optString("type", ""));
         if (type == null) return null;
+        String key = obj.optString("key");
+        if (key == null || key.isEmpty()) return null;
         switch (type) {
             case TEXT:
-                String key = obj.optString("key");
-                if (key == null || key.isEmpty()) return null;
                 JSONObject languages = obj.optJSONObject("languages");
                 if (languages == null) return null;
                 HashMap<String, String> map = new HashMap<>();
@@ -34,7 +35,7 @@ public abstract class LanguageItem {
                 if (map.size() == 0) return null;
                 return new LanguageText(key, map, obj.optBoolean("universal", false), obj.optBoolean("blacklist", false), obj.optJSONArray("servers"));
             case SIGN:
-                JSONObject loc = obj.optJSONObject("location");
+                JSONArray loc = obj.optJSONArray("locations");
                 if (loc == null) return null;
                 JSONObject signLanguages = obj.optJSONObject("lines");
                 if (signLanguages == null) return null;
@@ -51,32 +52,16 @@ public abstract class LanguageItem {
                     signMap.put(lKey, b);
                 }
                 if (signMap.size() == 0) return null;
-                return new LanguageSign(LocationUtils.jsonToLocation(loc), signMap, obj.optBoolean("universal", false), obj.optBoolean("blacklist", false), obj.optJSONArray("servers"));
+                return new LanguageSign(key, LocationUtils.jsonToLocationArray(loc), signMap);
         }
         return null;
     }
 
+    public String getKey() {
+        return key;
+    }
+
     public abstract LanguageItemType getType();
-
-    public boolean isUniversal() {
-        return universal;
-    }
-
-    public boolean isBlacklist() {
-        return blacklist;
-    }
-
-    public List<String> getServers() {
-        return servers;
-    }
-
-    public void setServers(JSONArray array) {
-        List<String> list = new ArrayList<>();
-        if (array != null)
-            for (Object obj : array)
-                list.add(obj.toString());
-        this.servers = list;
-    }
 
     public enum LanguageItemType {
         TEXT("text"), SIGN("sign");

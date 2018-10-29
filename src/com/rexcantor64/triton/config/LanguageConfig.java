@@ -68,21 +68,25 @@ public class LanguageConfig {
             JSONArray array = new JSONArray();
             for (LanguageItem item : items) {
                 JSONObject obj = new JSONObject();
+                obj.put("key", item.getKey());
                 if (item.getType() == LanguageItem.LanguageItemType.TEXT) {
                     LanguageText lt = (LanguageText) item;
                     obj.put("type", "text");
-                    obj.put("key", lt.getKey());
                     obj.put("languages", lt.getLanguages());
                 } else if (item.getType() == LanguageItem.LanguageItemType.SIGN) {
-                    LanguageSign lt = (LanguageSign) item;
+                    LanguageSign ls = (LanguageSign) item;
                     obj.put("type", "sign");
-                    JSONObject loc = new JSONObject();
-                    loc.put("world", lt.getLocation().getWorld());
-                    loc.put("x", lt.getLocation().getX());
-                    loc.put("y", lt.getLocation().getY());
-                    loc.put("z", lt.getLocation().getZ());
-                    obj.put("location", loc);
-                    obj.put("lines", lt.getLanguages());
+                    JSONArray locs = new JSONArray();
+                    for (LanguageSign.SignLocation location : ls.getLocations()) {
+                        JSONObject loc = new JSONObject();
+                        loc.put("world", location.getWorld());
+                        loc.put("x", location.getX());
+                        loc.put("y", location.getY());
+                        loc.put("z", location.getZ());
+                        locs.put(loc);
+                    }
+                    obj.put("locations", locs);
+                    obj.put("lines", ls.getLanguages());
                 }
                 array.put(obj);
             }
