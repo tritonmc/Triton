@@ -94,6 +94,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
         if (e == null || (!main.getConf().isHologramsAll() && !main.getConf().getHolograms().contains(EntityType.fromBukkit(e.getType()))))
             return;
+        if (e.getType() == org.bukkit.entity.EntityType.PLAYER) {
+            for (Player p : Bukkit.getOnlinePlayers())
+                if (p.getUniqueId().equals(e.getUniqueId()))
+                    return;
+        }
         addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers().read(0), e);
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().read(0);
         List<WrappedWatchableObject> dwn = new ArrayList<>();
@@ -488,10 +493,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
         if (entities.containsKey(player.toBukkit().getWorld()))
-            for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
+            entityLoop:for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
                 if (entry.getValue().getType() == org.bukkit.entity.EntityType.PLAYER) {
                     Player p = (Player) entry.getValue();
-                    if (Bukkit.getOnlinePlayers().contains(p)) continue;
+                    for (Player op : Bukkit.getOnlinePlayers())
+                        if (op.getUniqueId().equals(p.getUniqueId())) continue entityLoop;
                     List<PlayerInfoData> dataList = new ArrayList<>();
                     dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50, EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()), WrappedChatComponent.fromText(p.getPlayerListName())));
                     PacketContainer packetRemove = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
