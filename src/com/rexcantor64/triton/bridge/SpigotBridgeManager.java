@@ -119,7 +119,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
         out.writeByte(0);
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
-        lp.toBukkit().sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "MultiLanguagePlugin", out.toByteArray());
+        lp.toBukkit().sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
     }
 
 }

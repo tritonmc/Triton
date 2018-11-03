@@ -93,10 +93,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
+    @SuppressWarnings("unchecked")
     private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
         if (e == null || (!main.getConf().isHologramsAll() && !main.getConf().getHolograms().contains(EntityType.fromBukkit(e.getType()))))
@@ -113,8 +114,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (obj.getIndex() == 2)
                 if (getMCVersion() < 9)
                     dwn.add(new WrappedWatchableObject(obj.getIndex(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
-                else
+                else if (getMCVersion() < 13)
                     dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
+                else {
+                    Optional optional = (Optional) obj.getValue();
+                    if (optional.isPresent()) {
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(WrappedChatComponent.fromHandle(optional.get()).getJson())))).getHandle())));
+                    } else dwn.add(obj);
+                }
             else
                 dwn.add(obj);
         packet.getPacket().getWatchableCollectionModifier().writeSafely(0, dwn);
@@ -214,28 +221,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
                     StructureModifier<String> packetStrings = container.getStrings();
                     packetStrings.writeSafely(0, team.getName());
-                    if (getMCVersion() < 13) {
-                        packetStrings.writeSafely(1, team.getDisplayName());
-                        packetStrings.writeSafely(2, translated[0]);
-                        packetStrings.writeSafely(3, translated[2]);
-                    } else {
-                        StructureModifier<WrappedChatComponent> chats = container.getChatComponents();
-                        String[] a = new String[]{team.getDisplayName(), translated[0], translated[2]};
-                        for (int i = 0; i < 3; i++) {
-                            WrappedChatComponent field = chats.readSafely(i);
-                            field.setJson(ComponentSerializer.toString(TextComponent.fromLegacyText(a[i])));
-                            chats.writeSafely(i, field);
-                        }
-                    }
-                    packetStrings.writeSafely(getMCVersion() < 13 ? 4 : 1, team.getVisibility());
-                    packetStrings.writeSafely(getMCVersion() < 13 ? 5 : 2, team.getCollision());
+                    packetStrings.writeSafely(1, team.getDisplayName());
+                    packetStrings.writeSafely(2, translated[0]);
+                    packetStrings.writeSafely(3, translated[2]);
+                    packetStrings.writeSafely(4, team.getVisibility());
+                    packetStrings.writeSafely(5, team.getCollision());
                     StructureModifier<Integer> integers = container.getIntegers();
-                    if (getMCVersion() < 13)
-                        integers.writeSafely(0, team.getColor());
-                    else
-                        container.getEnumModifier(TeamColor.class, 6).writeSafely(0, TeamColor.getById(team.getColor()));
-                    integers.writeSafely(getMCVersion() < 13 ? 1 : 0, 0);
-                    integers.writeSafely(getMCVersion() < 13 ? 2 : 1, team.getOptionData());
+                    integers.writeSafely(0, team.getColor());
+                    integers.writeSafely(1, 0);
+                    integers.writeSafely(2, team.getOptionData());
                     container.getSpecificModifier(Collection.class).writeSafely(0, team.getEntries());
                     try {
                         ProtocolLibrary.getProtocolManager().sendServerPacket(packet.getPlayer(), container, false);
@@ -290,11 +284,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @SuppressWarnings("unchecked")
     private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         StructureModifier<String> strings = packet.getPacket().getStrings();
-        StructureModifier<WrappedChatComponent> chat = packet.getPacket().getChatComponents();
         StructureModifier<Integer> integers = packet.getPacket().getIntegers();
         String name = strings.readSafely(0);
-        int mode = integers.readSafely(getMCVersion() < 13 ? 1 : 0);
-        System.out.println("TEAM: " + mode);
+        int mode = integers.readSafely(1);
         TTeam team = null;
         if (mode != 0 && mode != 1) {
             team = languagePlayer.getScoreboard().getTeam(name);
@@ -309,34 +301,17 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 team = new TTeam(name, (Collection<String>) packet.getPacket().getSpecificModifier(Collection.class).readSafely(0));
                 languagePlayer.getScoreboard().addTeam(team);
             case 2:
-                if (getMCVersion() >= 13) {
-                    team.setDisplayName(TextComponent.toLegacyText(ComponentSerializer.parse(chat.readSafely(0).getJson())));
-                    team.setPrefix(TextComponent.toLegacyText(ComponentSerializer.parse(chat.readSafely(1).getJson())));
-                    team.setSuffix(TextComponent.toLegacyText(ComponentSerializer.parse(chat.readSafely(2).getJson())));
-                } else {
-                    team.setDisplayName(strings.readSafely(1));
-                    team.setPrefix(strings.readSafely(2));
-                    team.setSuffix(strings.readSafely(3));
-                }
-                team.setVisibility(strings.readSafely(getMCVersion() < 13 ? 4 : 1));
-                team.setCollision(strings.readSafely(getMCVersion() < 13 ? 5 : 2));
-                if (getMCVersion() < 13)
-                    team.setColor(integers.readSafely(0));
-                else
-                    team.setColor(packet.getPacket().getEnumModifier(TeamColor.class, 6).readSafely(0).id);
-                team.setOptionData(integers.readSafely(getMCVersion() < 13 ? 2 : 1));
+                team.setDisplayName(strings.readSafely(1));
+                team.setPrefix(strings.readSafely(2));
+                team.setSuffix(strings.readSafely(3));
+                team.setVisibility(strings.readSafely(4));
+                team.setCollision(strings.readSafely(5));
+                team.setColor(integers.readSafely(0));
+                team.setOptionData(integers.readSafely(2));
                 if (!main.getConf().isScoreboardsAdvanced()) {
-                    if (getMCVersion() >= 13) {
-                        for (int i = 0; i < 3; i++) {
-                            WrappedChatComponent field = chat.readSafely(i);
-                            field.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(field.getJson()))));
-                            chat.writeSafely(i, field);
-                        }
-                    } else {
-                        strings.writeSafely(1, translate(languagePlayer, strings.readSafely(1), 32));
-                        strings.writeSafely(2, translate(languagePlayer, strings.readSafely(2), 16));
-                        strings.writeSafely(3, translate(languagePlayer, strings.readSafely(3), 16));
-                    }
+                    strings.writeSafely(1, translate(languagePlayer, strings.readSafely(1), 32));
+                    strings.writeSafely(2, translate(languagePlayer, strings.readSafely(2), 16));
+                    strings.writeSafely(3, translate(languagePlayer, strings.readSafely(3), 16));
                 }
                 break;
             case 3:
@@ -371,16 +346,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             objective.addTranslatedScore(translated[1]);
                         }
                         if (mode == 0 || mode == 2) {
-                            if (getMCVersion() >= 13) {
-                                for (int i = 1; i < 3; i++) {
-                                    WrappedChatComponent field = chat.readSafely(i);
-                                    field.setJson(ComponentSerializer.toString(TextComponent.fromLegacyText(translated[i - 1])));
-                                    chat.writeSafely(i, field);
-                                }
-                            } else {
-                                strings.writeSafely(2, translated[0]);
-                                strings.writeSafely(3, translated[1]);
-                            }
+                            strings.writeSafely(2, translated[0]);
+                            strings.writeSafely(3, translated[1]);
                         } else
                             updateTeamPrefixSuffix(packet.getPlayer(), team, translated[0], translated[2]);
                     }
@@ -679,13 +646,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (entry.getValue().getCustomName() == null) continue;
                 PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().writeSafely(0, entry.getKey());
-                String oldName = entry.getValue().getCustomName();
                 WrappedDataWatcher dw = WrappedDataWatcher.getEntityWatcher(entry.getValue());
-                dw.setObject(2, main.getLanguageParser().replaceLanguages(entry.getValue().getCustomName(), player));
                 packet.getWatchableCollectionModifier().writeSafely(0, dw.getWatchableObjects());
                 try {
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
-                    dw.setObject(2, oldName);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
                 } catch (InvocationTargetException e) {
                     main.logError("Failed to send entity update packet: %1", e.getMessage());
                 }
@@ -856,11 +820,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return main.getLoader().asSpigot();
     }
 
-    private BaseComponent[] fromLegacy(net.md_5.bungee.api.chat.BaseComponent[] components) {
+    private BaseComponent[] fromLegacy(net.md_5.bungee.api.chat.BaseComponent... components) {
         return ComponentSerializer.parse(net.md_5.bungee.chat.ComponentSerializer.toString(components));
     }
 
-    private net.md_5.bungee.api.chat.BaseComponent[] toLegacy(BaseComponent[] components) {
+    private net.md_5.bungee.api.chat.BaseComponent[] toLegacy(BaseComponent... components) {
         return net.md_5.bungee.chat.ComponentSerializer.parse(ComponentSerializer.toString(components));
     }
 
