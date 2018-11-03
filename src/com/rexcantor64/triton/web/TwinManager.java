@@ -11,13 +11,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-public class GistManager {
+public class TwinManager {
 
     private final MultiLanguagePlugin main;
 
     private static final int TWIN_VERSION = 1;
 
-    public GistManager(MultiLanguagePlugin main) {
+    public TwinManager(MultiLanguagePlugin main) {
         this.main = main;
     }
 

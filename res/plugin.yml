@@ -14,17 +14,17 @@ commands:
     usage: /twin [code]
     aliases: [tritonweb, tweb, twebinterface, tritonwebinterface]
 permissions:
-    multilanguageplugin.getflag:
+  triton.getflag:
         default: op
-    multilanguageplugin.setlanguage:
+  triton.setlanguage:
         default: true
-    multilanguageplugin.setlanguage.others:
+  triton.setlanguage.others:
         default: op
-    multilanguageplugin.openselector:
+  triton.openselector:
         default: true
-    multilanguageplugin.reload:
+  triton.reload:
         default: op
-    multilanguageplugin.help:
+  triton.help:
         default: true
     twin.upload:
       default: op

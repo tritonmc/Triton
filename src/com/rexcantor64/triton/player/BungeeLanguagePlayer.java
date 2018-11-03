@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.player;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
@@ -53,6 +55,12 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
 
     public void setLang(Language language) {
         this.language = language;
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        // Action 1
+        out.writeByte(1);
+        out.writeUTF(parent.getUniqueId().toString());
+        out.writeUTF(language.getName());
+        parent.getServer().sendData("triton:main", out.toByteArray());
         save();
         refreshAll();
     }

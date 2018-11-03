@@ -9,7 +9,7 @@ public class ReloadCMD implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-        if (!s.hasPermission("multilanguageplugin.reload")) {
+        if (!s.hasPermission("multilanguageplugin.reload") && !s.hasPermission("triton.reload")) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }

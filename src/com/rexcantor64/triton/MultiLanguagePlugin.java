@@ -15,7 +15,7 @@ import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import com.rexcantor64.triton.web.GistManager;
+import com.rexcantor64.triton.web.TwinManager;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -44,7 +44,7 @@ public abstract class MultiLanguagePlugin {
     private LanguageManager languageManager;
     private LanguageParser languageParser;
     GuiManager guiManager;
-    private GistManager gistManager;
+    private TwinManager twinManager;
     private static final String USER_ID = "%%__USER__%%";
     private static final String RESOURCE_ID = "%%__RESOURCE__%%";
     private static final String NONCE_ID = "%%__NONCE__%%";
@@ -93,8 +93,8 @@ public abstract class MultiLanguagePlugin {
         return guiManager;
     }
 
-    public GistManager getGistManager() {
-        return gistManager;
+    public TwinManager getTwinManager() {
+        return twinManager;
     }
 
     public abstract ProtocolLibListener getProtocolLibListener();
@@ -202,7 +202,7 @@ public abstract class MultiLanguagePlugin {
         (languageManager = new LanguageManager()).setup();
         languageParser = new LanguageParser();
         playerManager = new PlayerManager();
-        gistManager = new GistManager(this);
+        twinManager = new TwinManager(this);
         check();
     }
 

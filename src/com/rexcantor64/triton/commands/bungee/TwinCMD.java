@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.commands.bungee;
 
 import com.rexcantor64.triton.MultiLanguagePlugin;
-import com.rexcantor64.triton.web.GistManager;
+import com.rexcantor64.triton.web.TwinManager;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
@@ -39,7 +39,7 @@ public class TwinCMD extends Command {
     private void upload(CommandSender s) {
         s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.connecting", "&aConnecting to TWIN... Please wait"));
 
-        GistManager.HttpResponse response = MultiLanguagePlugin.get().getGistManager().upload();
+        TwinManager.HttpResponse response = MultiLanguagePlugin.get().getTwinManager().upload();
 
         if (response == null) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."));
@@ -62,7 +62,7 @@ public class TwinCMD extends Command {
     private void download(CommandSender s, String id) {
         s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.connecting", "&aConnecting to TWIN... Please wait"));
 
-        GistManager.HttpResponse response = MultiLanguagePlugin.get().getGistManager().download(id);
+        TwinManager.HttpResponse response = MultiLanguagePlugin.get().getTwinManager().download(id);
 
         if (response == null) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."));

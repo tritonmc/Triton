@@ -24,7 +24,6 @@ public class MainCMD implements CommandExecutor, TabCompleter {
         setCommandAndCompleter("setlanguage", new SetLanguageCMD());
         subCommands.put("openselector", new OpenSelectorCMD());
         subCommands.put("reload", new ReloadCMD());
-        subCommands.put("web", new WebCMD());
     }
 
     @Override
@@ -37,7 +36,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
             if (entry.getKey().equalsIgnoreCase(args[0]))
                 return entry.getValue().onCommand(s, cmd, label, args);
 
-        if (!s.hasPermission("multilanguageplugin.help")) {
+        if (!s.hasPermission("multilanguageplugin.help") && !s.hasPermission("triton.help")) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }

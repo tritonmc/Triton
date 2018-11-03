@@ -1,58 +1,53 @@
-package com.rexcantor64.triton.commands;
+package com.rexcantor64.triton.commands.bungee;
 
-import com.google.common.collect.Lists;
 import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.language.Language;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
+import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-import java.util.List;
-
-public class SetLanguageCMD implements CommandExecutor, TabCompleter {
+public class SetLanguageCMD implements CommandExecutor {
 
     @Override
-    public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
+    @SuppressWarnings("deprecation")
+    public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage")) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
-            return true;
+            return;
         }
 
         if (args.length == 1) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language name>", label));
-            return true;
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language name>", "triton"));
+            return;
         }
 
-        Player target;
+        ProxiedPlayer target;
         String langName;
 
         if (args.length >= 3) {
             langName = args[2];
             if (s.hasPermission("multilanguageplugin.setlanguage.others") || s.hasPermission("triton.setlanguage.others")) {
-                target = Bukkit.getPlayer(args[1]);
+                target = BungeeCord.getInstance().getPlayer(args[1]);
                 if (target == null) {
                     s.sendMessage(MultiLanguagePlugin.get().getMessage("error.player-not-found", "&cPlayer %1 not found!", args[1]));
-                    return true;
+                    return;
                 }
             } else {
                 s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
-                return true;
+                return;
             }
-        } else if (s instanceof Player) {
-            target = (Player) s;
+        } else if (s instanceof ProxiedPlayer) {
+            target = (ProxiedPlayer) s;
             langName = args[1];
         } else {
             s.sendMessage("Only Players.");
-            return true;
+            return;
         }
 
         Language lang = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
             s.sendMessage(MultiLanguagePlugin.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages.", args[1]));
-            return true;
+            return;
         }
 
         MultiLanguagePlugin.get().getPlayerManager().get(target.getUniqueId()).setLang(lang);
@@ -61,19 +56,5 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         else
             s.sendMessage(MultiLanguagePlugin.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to %2", target.getName(),
                     lang.getDisplayName()));
-        return true;
     }
-
-    @Override
-    public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
-        List<String> tab = Lists.newArrayList();
-        if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage"))
-            return tab;
-        if (args.length == 2 || (args.length == 3) && (s.hasPermission("multilanguageplugin.setlanguage.others") || s.hasPermission("triton.setlanguage.others")))
-            for (Language lang : MultiLanguagePlugin.get().getLanguageManager().getAllLanguages())
-                if (lang.getName().toLowerCase().startsWith(args[1].toLowerCase()))
-                    tab.add(lang.getName());
-        return tab;
-    }
-
 }

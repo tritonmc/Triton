@@ -29,7 +29,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] bytes) {
-        if (!channel.equals("MultiLanguagePlugin")) return;
+        if (!channel.equals("triton:main")) return;
 
         long start = System.currentTimeMillis();
 

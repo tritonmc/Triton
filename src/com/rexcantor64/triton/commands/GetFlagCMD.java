@@ -23,7 +23,7 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
 
         Player p = (Player) s;
 
-        if (!p.hasPermission("multilanguageplugin.getflag")) {
+        if (!p.hasPermission("multilanguageplugin.getflag") && !p.hasPermission("triton.getflag")) {
             p.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
             return true;
         }
@@ -48,7 +48,7 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
         List<String> tab = Lists.newArrayList();
-        if (!s.hasPermission("multilanguageplugin.getflag"))
+        if (!s.hasPermission("multilanguageplugin.getflag") && !s.hasPermission("triton.getflag"))
             return tab;
         if (args.length == 2)
             for (Language lang : MultiLanguagePlugin.get().getLanguageManager().getAllLanguages())
