@@ -26,6 +26,10 @@ public class TScoreboard {
         return objectives;
     }
 
+    public List<TTeam> getAllTeams() {
+        return teams;
+    }
+
     public void addTeam(TTeam team) {
         this.teams.add(team);
     }

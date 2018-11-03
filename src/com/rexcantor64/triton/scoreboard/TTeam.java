@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.scoreboard;
 
+import com.rexcantor64.triton.components.api.chat.BaseComponent;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +12,9 @@ public class TTeam {
     private String displayName;
     private String suffix;
     private String prefix;
+    private BaseComponent[] displayNameChat;
+    private BaseComponent[] suffixChat;
+    private BaseComponent[] prefixChat;
     private String visibility;
     private String collision;
     private int color;
@@ -64,6 +69,30 @@ public class TTeam {
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
+    }
+
+    public BaseComponent[] getDisplayNameChat() {
+        return displayNameChat;
+    }
+
+    public void setDisplayNameChat(BaseComponent[] displayNameChat) {
+        this.displayNameChat = displayNameChat;
+    }
+
+    public BaseComponent[] getSuffixChat() {
+        return suffixChat;
+    }
+
+    public void setSuffixChat(BaseComponent[] suffixChat) {
+        this.suffixChat = suffixChat;
+    }
+
+    public BaseComponent[] getPrefixChat() {
+        return prefixChat;
+    }
+
+    public void setPrefixChat(BaseComponent[] prefixChat) {
+        this.prefixChat = prefixChat;
     }
 
     public String getVisibility() {

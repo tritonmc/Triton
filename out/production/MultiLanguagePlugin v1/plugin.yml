@@ -6,13 +6,13 @@ author: Rexcantor64
 depend: [ProtocolLib]
 description: A plugin that replaces any message on your server, to the receiver's language, in real time!
 commands:
-    triton:
-        aliases: [mlp, ml, multilanguage, language, lang, multilanguageplugin]
-        description: The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.
-    twin:
-        description: Upload and download your config to/from the Triton Web INterface
-        usage: /twin [code]
-        aliases: [tritonweb, tweb, twebinterface, tritonwebinterface]
+  triton:
+    aliases: [mlp, ml, multilanguage, language, lang, multilanguageplugin]
+    description: The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.
+  twin:
+    description: Upload and download your config to/from the Triton Web INterface
+    usage: /twin [code]
+    aliases: [tritonweb, tweb, twebinterface, tritonwebinterface]
 permissions:
     multilanguageplugin.getflag:
         default: op
@@ -27,6 +27,6 @@ permissions:
     multilanguageplugin.help:
         default: true
     twin.upload:
-        default: op
+      default: op
     twin.download:
-        default: op
+      default: op

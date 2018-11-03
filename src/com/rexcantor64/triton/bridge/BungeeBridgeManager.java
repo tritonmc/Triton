@@ -20,7 +20,7 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getTag().equals("MultiLanguagePlugin")) return;
+        if (!e.getTag().equals("triton:main")) return;
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
         try {
@@ -42,8 +42,7 @@ public class BungeeBridgeManager implements Listener {
         out.writeByte(1);
         out.writeUTF(event.getPlayer().getUniqueId().toString());
         out.writeUTF(lp.getLang().getName());
-        //event.getPlayer().sendData("MultiLanguagePlugin", out.toByteArray());
-        event.getServer().sendData("MultiLanguagePlugin", out.toByteArray());
+        event.getServer().sendData("triton:main", out.toByteArray());
     }
 
     @EventHandler

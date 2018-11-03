@@ -36,8 +36,8 @@ public class SpigotMLP extends MultiLanguagePlugin {
             ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
 
         if (getConf().isBungeecord()) {
-            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin");
-            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "MultiLanguagePlugin", bridgeManager = new SpigotBridgeManager());
+            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "triton:main");
+            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "triton:main", bridgeManager = new SpigotBridgeManager());
         }
     }
 

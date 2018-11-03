@@ -28,6 +28,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private TScoreboard scoreboard = new TScoreboard();
     private int lastTeamId = 0;
+    private boolean isScoreboardSetup = false;
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -52,6 +53,14 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public TScoreboard getScoreboard() {
         return scoreboard;
+    }
+
+    public boolean isScoreboardSetup() {
+        return isScoreboardSetup;
+    }
+
+    public void setScoreboardSetup(boolean scoreboardSetup) {
+        isScoreboardSetup = scoreboardSetup;
     }
 
     public int getLastTeamId() {

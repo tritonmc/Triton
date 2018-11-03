@@ -36,7 +36,7 @@ public class BungeeMLP extends MultiLanguagePlugin {
         super.onEnable();
 
         BungeeCord.getInstance().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());
-        BungeeCord.getInstance().registerChannel("MultiLanguagePlugin");
+        BungeeCord.getInstance().registerChannel("triton:main");
 
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
             BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
@@ -144,7 +144,7 @@ public class BungeeMLP extends MultiLanguagePlugin {
                 out.write(languageOut.toByteArray());
                 out.writeInt(size);
                 out.write(languageItemsOut.toByteArray());
-                info.sendData("MultiLanguagePlugin", out.toByteArray());
+                info.sendData("triton:main", out.toByteArray());
             }
         } catch (Exception e) {
             logError("Failed to send config and language items to other servers! Not everything might work as expected! Error: %1", e.getMessage());
