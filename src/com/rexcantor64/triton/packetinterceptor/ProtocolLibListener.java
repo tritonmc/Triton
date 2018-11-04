@@ -26,6 +26,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.TObjective;
 import com.rexcantor64.triton.scoreboard.TTeam;
+import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -455,6 +456,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils.getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main.getConf().isInventoryItems())
+            return;
+
         List<ItemStack> items = getMCVersion() <= 10 ? Arrays.asList(packet.getPacket().getItemArrayModifier().readSafely(0)) : packet.getPacket().getItemListModifier().readSafely(0);
         for (ItemStack item : items) {
             if (item == null) continue;
@@ -478,6 +482,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils.getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main.getConf().isInventoryItems())
+            return;
+
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();

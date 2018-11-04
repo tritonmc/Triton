@@ -231,7 +231,7 @@ public class MainConfig {
         File file = new File(MultiLanguagePlugin.get().getDataFolder(), "cache.json");
         if (!file.exists()) {
             try {
-                Files.write(file.toPath(), "[]".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+                Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
             }

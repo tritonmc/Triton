@@ -58,7 +58,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         languages.put(name, lang);
                     }
                     config.setLanguages(languages);
-                    File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.cache.json");
+                    File file = new File(MultiLanguagePlugin.get().getDataFolder(), "cache.json");
                     Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     // Read language files
                     List<LanguageItem> languageItems = new ArrayList<>();
