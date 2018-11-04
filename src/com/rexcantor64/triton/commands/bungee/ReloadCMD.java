@@ -11,7 +11,7 @@ public class ReloadCMD implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("multilanguageplugin.reload") && !s.hasPermission("triton.reload")) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.reload"));
             return;
         }
 

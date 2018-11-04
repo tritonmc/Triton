@@ -23,13 +23,13 @@ public class TwinCMD extends Command {
     public void execute(CommandSender s, String[] args) {
         if (args.length == 0) {
             if (!s.hasPermission("twin.upload")) {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.upload"));
                 return;
             }
             BungeeCord.getInstance().getScheduler().runAsync(MultiLanguagePlugin.get().getLoader().asBungee(), () -> upload(s));
         } else {
             if (!s.hasPermission("twin.download")) {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.download"));
                 return;
             }
             BungeeCord.getInstance().getScheduler().runAsync(MultiLanguagePlugin.get().getLoader().asBungee(), () -> download(s, args[0]));

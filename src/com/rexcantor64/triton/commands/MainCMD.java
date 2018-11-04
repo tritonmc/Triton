@@ -37,7 +37,7 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 return entry.getValue().onCommand(s, cmd, label, args);
 
         if (!s.hasPermission("multilanguageplugin.help") && !s.hasPermission("triton.help")) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.help"));
             return true;
         }
 

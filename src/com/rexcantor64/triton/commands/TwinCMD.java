@@ -18,13 +18,13 @@ public class TwinCMD implements CommandExecutor {
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             if (!s.hasPermission("twin.upload")) {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.upload"));
                 return true;
             }
             Bukkit.getScheduler().runTaskAsynchronously(MultiLanguagePlugin.get().getLoader().asSpigot(), () -> upload(s));
         } else {
             if (!s.hasPermission("twin.download")) {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.download"));
                 return true;
             }
             Bukkit.getScheduler().runTaskAsynchronously(MultiLanguagePlugin.get().getLoader().asSpigot(), () -> download(s, args[0]));

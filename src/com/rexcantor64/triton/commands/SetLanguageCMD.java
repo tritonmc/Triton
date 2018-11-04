@@ -17,7 +17,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage")) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.setlanguage"));
             return true;
         }
 
@@ -38,7 +38,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
                     return true;
                 }
             } else {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission."));
+                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.setlanguage.others"));
                 return true;
             }
         } else if (s instanceof Player) {
