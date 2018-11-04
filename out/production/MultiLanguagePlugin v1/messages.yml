@@ -1,5 +1,5 @@
 error:
-    no-permission: "&cNo permission."
+  no-permission: "&cNo permission. Permission required: &4%1"
     message-not-found: "ERROR 404: Message not found: '%1'! Please notify the staff!"
     lang-not-found: "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages."
     player-not-found: "&cPlayer %1 not found!"
@@ -35,3 +35,4 @@ other:
     selector-gui-prev: "&aPrevious"
     selector-gui-forward: "&aNext"
     selector-gui-currentpage: "&aPage %1 of %2"
+    selected: "&6Currently selected"

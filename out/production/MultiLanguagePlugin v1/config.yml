@@ -91,7 +91,7 @@ language-creation:
     # Also, you can also translate other's entities name, like villagers. Add their entity type on the list below.
     # Full list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
     types:
-      - ARMOR_STAND
+    - ARMOR_STAND
     # When enabled, the list above is ignored and all entities' names are checked and translated.
     allow-all: false
     syntax-lang: lang
