@@ -31,11 +31,11 @@ public class BungeeListener implements Connection.Unsafe {
             if (p.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME || p.getAction() == PlayerListItem.Action.ADD_PLAYER) {
                 if (i.getDisplayName() != null) {
                     try {
-                        if (MultiLanguagePlugin.get().getLanguageParser().hasLanguages(i.getDisplayName())) {
+                        if (MultiLanguagePlugin.get().getLanguageParser().hasLanguages(i.getDisplayName(), MultiLanguagePlugin.get().getConf().getTabSyntax())) {
                             PlayerListItem.Item item = clonePlayerListItem(i);
                             tabListCache.put(item.getUuid(), item.getDisplayName());
                             JSONObject obj = new JSONObject(item.getDisplayName());
-                            obj.put("text", MultiLanguagePlugin.get().getLanguageParser().replaceLanguages(obj.getString("text"), owner));
+                            obj.put("text", MultiLanguagePlugin.get().getLanguageParser().replaceLanguages(obj.getString("text"), owner, MultiLanguagePlugin.get().getConf().getTabSyntax()));
                             item.setDisplayName(obj.toString());
                             items.add(item);
                             continue;
@@ -60,16 +60,16 @@ public class BungeeListener implements Connection.Unsafe {
             return;
         BaseComponent[] text = ComponentSerializer.parse(p.getMessage());
         if (type != 2) {
-            text = MultiLanguagePlugin.get().getLanguageParser().parseChat(owner, text);
+            text = MultiLanguagePlugin.get().getLanguageParser().parseChat(owner, MultiLanguagePlugin.get().getConf().getChatSyntax(), text);
         } else {
-            text = MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, text);
+            text = MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, text, MultiLanguagePlugin.get().getConf().getActionbarSyntax());
         }
         p.setMessage(ComponentSerializer.toString(text));
     }
 
     private void handleTitle(DefinedPacket packet) {
         Title p = (Title) packet;
-        p.setText(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getText()))));
+        p.setText(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getText()), MultiLanguagePlugin.get().getConf().getTitleSyntax())));
     }
 
     private void handleBossbar(DefinedPacket packet) {
@@ -81,15 +81,15 @@ public class BungeeListener implements Connection.Unsafe {
         }
         if (p.getAction() != 0 && p.getAction() != 3) return;
         owner.setBossbar(uuid, p.getTitle());
-        p.setTitle(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getTitle()))));
+        p.setTitle(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getTitle()), MultiLanguagePlugin.get().getConf().getBossbarSyntax())));
     }
 
     private void handlePlayerListHeaderFooter(DefinedPacket packet) {
         PlayerListHeaderFooter p = (PlayerListHeaderFooter) packet;
         owner.setLastTabHeader(p.getHeader());
         owner.setLastTabFooter(p.getFooter());
-        p.setHeader(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getHeader()))));
-        p.setFooter(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getFooter()))));
+        p.setHeader(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getHeader()), MultiLanguagePlugin.get().getConf().getTabSyntax())));
+        p.setFooter(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getFooter()), MultiLanguagePlugin.get().getConf().getTabSyntax())));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class BungeeListener implements Connection.Unsafe {
         for (Map.Entry<UUID, String> item : tabListCache.entrySet()) {
             PlayerListItem.Item i = new PlayerListItem.Item();
             i.setUuid(item.getKey());
-            i.setDisplayName(MultiLanguagePlugin.get().getLanguageParser().replaceLanguages(item.getValue(), owner));
+            i.setDisplayName(MultiLanguagePlugin.get().getLanguageParser().replaceLanguages(item.getValue(), owner, MultiLanguagePlugin.get().getConf().getTabSyntax()));
             items.add(i);
         }
         PlayerListItem packet = new PlayerListItem();
@@ -128,14 +128,14 @@ public class BungeeListener implements Connection.Unsafe {
     public void refreshBossbar(UUID uuid, String json) {
         if (owner.getParent().getPendingConnection().getVersion() < 107) return;
         BossBar p = new BossBar(uuid, 3);
-        p.setTitle(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(json))));
+        p.setTitle(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(json), MultiLanguagePlugin.get().getConf().getBossbarSyntax())));
         send(p);
     }
 
     public void refreshTabHeaderFooter(String header, String footer) {
         PlayerListHeaderFooter p = new PlayerListHeaderFooter();
-        p.setHeader(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(header))));
-        p.setFooter(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(footer))));
+        p.setHeader(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(header), MultiLanguagePlugin.get().getConf().getTabSyntax())));
+        p.setFooter(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(footer), MultiLanguagePlugin.get().getConf().getTabSyntax())));
         send(p);
     }
 

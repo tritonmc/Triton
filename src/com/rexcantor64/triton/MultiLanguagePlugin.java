@@ -176,8 +176,8 @@ public abstract class MultiLanguagePlugin {
         try {
             if (!resourceFile.exists()) {
                 if (!resourceFile.createNewFile())
-                    logError("Failed to create the file %1!", internalFileName);
-                try (InputStream in = loader.getResourceAsStream(fileName);
+                    logError("Failed to create the file %1!", fileName);
+                try (InputStream in = loader.getResourceAsStream(internalFileName);
                      OutputStream out = new FileOutputStream(resourceFile)) {
                     ByteStreams.copy(in, out);
                 }

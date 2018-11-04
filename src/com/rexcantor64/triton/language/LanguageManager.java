@@ -105,9 +105,14 @@ public class LanguageManager {
         items.clear();
         MultiLanguagePlugin.get().logDebug("Setting up language manager...");
         Configuration languages = MultiLanguagePlugin.get().getConf().getLanguages();
-        for (String lang : languages.getKeys())
-            this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown")));
-        this.mainLanguage = getLanguageByName(MultiLanguagePlugin.get().getConf().getMainLanguage(), true);
+        if (languages != null) {
+            for (String lang : languages.getKeys())
+                this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown")));
+            this.mainLanguage = getLanguageByName(MultiLanguagePlugin.get().getConf().getMainLanguage(), true);
+        } else {
+            this.mainLanguage = new Language("temp", "pabk", new ArrayList<>(), "Error");
+            this.languages.add(this.mainLanguage);
+        }
         for (LanguageItem item : MultiLanguagePlugin.get().getLanguageConfig().getItems())
             items.put(item.getType(), item);
         MultiLanguagePlugin.get().logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!", this.languages.size(), this.items.size());

@@ -6,6 +6,7 @@ import com.rexcantor64.triton.components.api.ChatColor;
 import com.rexcantor64.triton.components.api.chat.BaseComponent;
 import com.rexcantor64.triton.components.api.chat.HoverEvent;
 import com.rexcantor64.triton.components.api.chat.TextComponent;
+import com.rexcantor64.triton.config.MainConfig.FeatureSyntax;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.scoreboard.ScoreboardComponent;
 import com.rexcantor64.triton.utils.ComponentUtils;
@@ -16,20 +17,13 @@ import java.util.List;
 
 public class LanguageParser {
 
-
-    private final String pattern = SpigotMLP.get().getConf().getSyntax();
-    private final String patternArgs = SpigotMLP.get().getConf().getSyntaxArgs();
-    private final String patternArg = SpigotMLP.get().getConf().getSyntaxArg();
-    private final int patternSize = SpigotMLP.get().getConf().getSyntax().length() + 2;
-    private final int patternArgSize = SpigotMLP.get().getConf().getSyntaxArg().length() + 2;
-
-    public String replaceLanguages(String input, LanguagePlayer p) {
+    public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
         Integer[] i;
-        while ((i = getPatternIndex(input, pattern)) != null) {
+        while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             StringBuilder builder = new StringBuilder();
-            builder.append(input.substring(0, i[0]));
+            builder.append(input, 0, i[0]);
             String placeholder = input.substring(i[2], i[3]);
-            Integer[] argsIndex = getPatternIndex(placeholder, patternArgs);
+            Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
                 builder.append(SpigotMLP.get().getLanguageManager().getText(p, placeholder));
                 builder.append(input.substring(i[1]));
@@ -38,11 +32,11 @@ public class LanguageParser {
             }
             String code = placeholder.substring(0, argsIndex[0]);
             String args = placeholder.substring(argsIndex[2], argsIndex[3]);
-            List<Integer[]> argIndexList = getPatternIndexArray(args, patternArg);
+            List<Integer[]> argIndexList = getPatternIndexArray(args, syntax.getArg());
             Object[] argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
-                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p);
+                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
             }
             builder.append(SpigotMLP.get().getLanguageManager().getText(p, code, argList));
             builder.append(input.substring(i[1]));
@@ -51,8 +45,8 @@ public class LanguageParser {
         return input;
     }
 
-    public boolean hasLanguages(String input) {
-        return getPatternIndex(input, pattern) != null;
+    public boolean hasLanguages(String input, FeatureSyntax syntax) {
+        return getPatternIndex(input, syntax.getLang()) != null;
     }
 
     private static Integer[] getPatternIndex(String input, String pattern) {
@@ -110,48 +104,8 @@ public class LanguageParser {
         return result;
     }
 
-    public String getLastColor(String input) {
-        String extraModifiers = "";
-        if (input.length() < 2)
-            return ChatColor.WHITE + "";
-        for (int i = input.length() - 2; i >= 0; i--)
-            if (input.charAt(i) == ChatColor.COLOR_CHAR) {
-                ChatColor color = ChatColor.getByChar(input.charAt(i + 1));
-                switch (color) {
-                    case AQUA:
-                    case BLACK:
-                    case BLUE:
-                    case DARK_AQUA:
-                    case DARK_BLUE:
-                    case DARK_GRAY:
-                    case DARK_GREEN:
-                    case DARK_PURPLE:
-                    case DARK_RED:
-                    case GOLD:
-                    case GRAY:
-                    case GREEN:
-                    case LIGHT_PURPLE:
-                    case RED:
-                    case WHITE:
-                    case YELLOW:
-                        return color + extraModifiers;
-                    case BOLD:
-                    case ITALIC:
-                    case MAGIC:
-                    case STRIKETHROUGH:
-                    case UNDERLINE:
-                        extraModifiers = color + extraModifiers;
-                        break;
-                    case RESET:
-                        return extraModifiers;
-                    default:
-                        break;
-                }
-            }
-        return ChatColor.WHITE.toString();
-    }
 
-    public BaseComponent getLastColorComponent(String input) {
+    private BaseComponent getLastColorComponent(String input) {
         BaseComponent comp = new TextComponent("");
         if (input.length() < 2)
             return comp;
@@ -202,44 +156,38 @@ public class LanguageParser {
         return comp;
     }
 
-    public String removeFirstColor(String str) {
-        if (str == null) return null;
-        if (str.length() <= 2) return str;
-        return ChatColor.stripColor(str.substring(0, 2)) + str.substring(2);
-    }
-
-    public BaseComponent[] parseSimpleBaseComponent(LanguagePlayer p, BaseComponent[] text) {
+    public BaseComponent[] parseSimpleBaseComponent(LanguagePlayer p, BaseComponent[] text, FeatureSyntax syntax) {
         for (BaseComponent a : text)
             if (a instanceof TextComponent)
-                ((TextComponent) a).setText(replaceLanguages(((TextComponent) a).getText(), p));
+                ((TextComponent) a).setText(replaceLanguages(((TextComponent) a).getText(), p, syntax));
         return text;
     }
 
-    public BaseComponent[] parseTitle(LanguagePlayer p, BaseComponent[] text) {
-        return TextComponent.fromLegacyText(replaceLanguages(TextComponent.toLegacyText(text), p));
+    public BaseComponent[] parseTitle(LanguagePlayer p, BaseComponent[] text, FeatureSyntax syntax) {
+        return TextComponent.fromLegacyText(replaceLanguages(TextComponent.toLegacyText(text), p, syntax));
     }
 
-    private BaseComponent[] translateHoverComponents(LanguagePlayer p, BaseComponent... text) {
+    private BaseComponent[] translateHoverComponents(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
         List<BaseComponent> result = new ArrayList<>();
         for (BaseComponent comp : text) {
             if (comp.getHoverEvent() != null && comp.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT)
-                comp.setHoverEvent(new HoverEvent(comp.getHoverEvent().getAction(), parseChat(p, comp.getHoverEvent().getValue())));
+                comp.setHoverEvent(new HoverEvent(comp.getHoverEvent().getAction(), parseChat(p, syntax, comp.getHoverEvent().getValue())));
             result.add(comp);
             if (comp.getExtra() != null)
                 for (BaseComponent extra : comp.getExtra())
-                    translateHoverComponents(p, extra);
+                    translateHoverComponents(p, syntax, extra);
         }
-        return result.toArray(new BaseComponent[result.size()]);
+        return result.toArray(new BaseComponent[0]);
     }
 
-    public BaseComponent[] parseChat(LanguagePlayer p, BaseComponent... text) {
+    public BaseComponent[] parseChat(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
         if (text == null) return null;
         List<LanguageMessage> messages = LanguageMessage.fromBaseComponentArray(text);
         int counter = 15;
         indexLoop:
         while (counter > 0) {
             counter--;
-            Integer[] i = getPatternIndex(BaseComponent.toPlainText(text), pattern);
+            Integer[] i = getPatternIndex(BaseComponent.toPlainText(text), syntax.getLang());
             if (i == null) break;
             int index = 0;
             boolean foundStart = false;
@@ -284,7 +232,7 @@ public class LanguageParser {
             }
             BaseComponent result = new TextComponent("");
             result.addExtra(beforeCache);
-            BaseComponent processed = processLanguageComponent(compCache, p);
+            BaseComponent processed = processLanguageComponent(compCache, p, syntax);
             if (processed == null) return null;
             result.addExtra(processed);
 
@@ -295,29 +243,29 @@ public class LanguageParser {
             messages = LanguageMessage.fromBaseComponentArray(text);
         }
 
-        text = translateHoverComponents(p, text);
+        text = translateHoverComponents(p, syntax, text);
 
         return text;
     }
 
-    private BaseComponent processLanguageComponent(BaseComponent component, LanguagePlayer p) {
+    private BaseComponent processLanguageComponent(BaseComponent component, LanguagePlayer p, FeatureSyntax syntax) {
         String plainText = BaseComponent.toPlainText(component);
-        Integer[] argsIndex = getPatternIndex(plainText, patternArgs);
+        Integer[] argsIndex = getPatternIndex(plainText, syntax.getArgs());
         if (argsIndex == null) {
-            if (!SpigotMLP.get().getConf().getDisabledLine().isEmpty() && plainText.substring(patternSize, plainText.length() - patternSize - 1).equals(SpigotMLP.get().getConf().getDisabledLine()))
+            if (!SpigotMLP.get().getConf().getDisabledLine().isEmpty() && plainText.substring(syntax.getPatternSize(), plainText.length() - syntax.getPatternSize() - 1).equals(SpigotMLP.get().getConf().getDisabledLine()))
                 return null;
             BaseComponent comp = ComponentUtils.copyFormatting(component.getExtra().get(0), new TextComponent(""));
-            comp.setExtra(Arrays.asList(TextComponent.fromLegacyText(replaceLanguages(plainText, p))));
+            comp.setExtra(Arrays.asList(TextComponent.fromLegacyText(replaceLanguages(plainText, p, syntax))));
             return comp;
         }
-        String messageCode = plainText.substring(patternSize, argsIndex[0]);
+        String messageCode = plainText.substring(syntax.getPatternSize(), argsIndex[0]);
         if (!SpigotMLP.get().getConf().getDisabledLine().isEmpty() && messageCode.equals(SpigotMLP.get().getConf().getDisabledLine()))
             return null;
         List<BaseComponent> arguments = new ArrayList<>();
-        for (Integer[] i : getPatternIndexArray(plainText, patternArg)) {
+        for (Integer[] i : getPatternIndexArray(plainText, syntax.getArg())) {
             BaseComponent cache = new TextComponent("");
-            i[0] = i[0] + patternArgSize;
-            i[1] = i[1] - patternArgSize - 1;
+            i[0] = i[0] + syntax.getPatternArgSize();
+            i[1] = i[1] - syntax.getPatternArgSize() - 1;
             int index = 0;
             boolean foundStart = false;
             List<LanguageMessage> messages = LanguageMessage.fromBaseComponentArray(component);

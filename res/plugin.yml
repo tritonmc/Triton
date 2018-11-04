@@ -15,18 +15,18 @@ commands:
     aliases: [tritonweb, tweb, twebinterface, tritonwebinterface]
 permissions:
   triton.getflag:
-        default: op
+    default: op
   triton.setlanguage:
-        default: true
+    default: true
   triton.setlanguage.others:
-        default: op
+    default: op
   triton.openselector:
-        default: true
+    default: true
   triton.reload:
-        default: op
+    default: op
   triton.help:
-        default: true
-    twin.upload:
-      default: op
-    twin.download:
-      default: op
+    default: true
+  twin.upload:
+    default: op
+  twin.download:
+    default: op

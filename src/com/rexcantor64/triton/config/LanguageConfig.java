@@ -39,7 +39,8 @@ public class LanguageConfig {
             File file = new File(MultiLanguagePlugin.get().getDataFolder(), useCache ? "languages.cache.json" : "languages.json");
             if (!file.exists()) {
                 try {
-                    Files.write(file.toPath(), "[]".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+                    if (!useCache)
+                        Files.write(file.toPath(), "[]".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
                 } catch (Exception e) {
                     MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
                 }

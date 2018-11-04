@@ -4,9 +4,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.config.interfaces.Configuration;
-import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
-import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -16,10 +13,13 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +41,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     MainConfig config = MultiLanguagePlugin.get().getConf();
                     config.setMainLanguage(in.readUTF());
                     short languageSize = in.readShort();
-                    Configuration languages = new Configuration();
+                    JSONObject languages = new JSONObject();
                     for (int i = 0; i < languageSize; i++) {
                         String name = in.readUTF();
                         String displayName = in.readUTF();
@@ -50,17 +50,16 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         short mcSize = in.readShort();
                         for (int k = 0; k < mcSize; k++)
                             minecraftCodes.add(in.readUTF());
-                        Configuration section = languages.getSection(name);
-                        section.set("flag", flag);
-                        section.set("minecraft-code", minecraftCodes);
-                        section.set("display-name", displayName);
+                        JSONObject lang = new JSONObject();
+                        lang.put("flag", flag);
+                        lang.put("minecraft-code", minecraftCodes);
+                        lang.put("display-name", displayName);
+                        lang.put("main", name.equals(config.getMainLanguage()));
+                        languages.put(name, lang);
                     }
                     config.setLanguages(languages);
-                    ConfigurationProvider provider = ConfigurationProvider.getProvider(YamlConfiguration.class);
-                    File configFile = MultiLanguagePlugin.get().getResource("config.yml", "config.yml");
-                    Configuration yamlConfig = provider.load(configFile);
-                    yamlConfig.set("languages", languages);
-                    provider.save(yamlConfig, configFile);
+                    File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.cache.json");
+                    Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     // Read language files
                     List<LanguageItem> languageItems = new ArrayList<>();
                     int itemsSize = in.readInt();

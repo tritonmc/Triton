@@ -18,6 +18,7 @@ import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.components.api.chat.BaseComponent;
 import com.rexcantor64.triton.components.api.chat.TextComponent;
 import com.rexcantor64.triton.components.chat.ComponentSerializer;
+import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -59,33 +60,33 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         boolean ab = isActionbar(packet.getPacket());
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getActionbarSyntax())));
             packet.getPacket().getChatComponents().writeSafely(0, msg);
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getChatSyntax(), ComponentSerializer.parse(msg.getJson()))));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
-            packet.getPacket().getModifier().writeSafely(1, toLegacy(main.getLanguageParser().parseChat(languagePlayer, fromLegacy((net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1)))));
+            packet.getPacket().getModifier().writeSafely(1, toLegacy(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getChatSyntax(), fromLegacy((net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1)))));
         }
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getTitleSyntax())));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
         String headerJson = header.getJson();
-        header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(header.getJson()))));
+        header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(header.getJson()), main.getConf().getTabSyntax())));
         packet.getPacket().getChatComponents().writeSafely(0, header);
         WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
         String footerJson = footer.getJson();
-        footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(footer.getJson()))));
+        footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(footer.getJson()), main.getConf().getTabSyntax())));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
         languagePlayer.setLastTabFooter(footerJson);
@@ -93,7 +94,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer.parse(msg.getJson()))));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -113,13 +114,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         for (WrappedWatchableObject obj : dw)
             if (obj.getIndex() == 2)
                 if (getMCVersion() < 9)
-                    dwn.add(new WrappedWatchableObject(obj.getIndex(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
+                    dwn.add(new WrappedWatchableObject(obj.getIndex(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer, main.getConf().getHologramSyntax())));
                 else if (getMCVersion() < 13)
-                    dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer)));
+                    dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer, main.getConf().getHologramSyntax())));
                 else {
                     Optional optional = (Optional) obj.getValue();
                     if (optional.isPresent()) {
-                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, ComponentSerializer.parse(WrappedChatComponent.fromHandle(optional.get()).getJson())))).getHandle())));
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getHologramSyntax(), ComponentSerializer.parse(WrappedChatComponent.fromHandle(optional.get()).getJson())))).getHandle())));
                     } else dwn.add(obj);
                 }
             else
@@ -135,11 +136,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         List<PlayerInfoData> dataListNew = new ArrayList<>();
         for (PlayerInfoData data : dataList) {
             WrappedGameProfile oldGP = data.getProfile();
-            WrappedGameProfile newGP = oldGP.withName(translate(languagePlayer, oldGP.getName(), 16));
+            WrappedGameProfile newGP = oldGP.withName(translate(languagePlayer, oldGP.getName(), 16, main.getConf().getHologramSyntax()));
             newGP.getProperties().putAll(oldGP.getProperties());
             WrappedChatComponent msg = data.getDisplayName();
             if (msg != null)
-                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getActionbarSyntax())));
             dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
         }
         packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
@@ -165,7 +166,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         EnumScoreboardHealthDisplay criteria = packet.getPacket().getEnumModifier(EnumScoreboardHealthDisplay.class, 2).readSafely(0);
         objective.setHearts(criteria == EnumScoreboardHealthDisplay.HEARTS);
         if (objective.getDisplayName() != null && !objective.getDisplayName().isEmpty()) {
-            String translatedDisplayName = translate(languagePlayer, objective.getDisplayName(), 32);
+            String translatedDisplayName = translate(languagePlayer, objective.getDisplayName(), 32, main.getConf().getScoreboardSyntax());
             if (!translatedDisplayName.equals(objective.getDisplayName()))
                 packet.getPacket().getStrings().writeSafely(1, translatedDisplayName);
         }
@@ -192,7 +193,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         objective.setHearts(criteria == EnumScoreboardHealthDisplay.HEARTS);
         if (objective.getDisplayChat() != null) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, objective.getDisplayChat())));
+            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getScoreboardSyntax(), objective.getDisplayChat())));
             packet.getPacket().getChatComponents().writeSafely(0, msg);
         }
     }
@@ -207,11 +208,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 return;
             objective.setScore(entry, packet.getPacket().getIntegers().readSafely(0));
             TTeam team = languagePlayer.getScoreboard().getEntryTeam(entry);
-            if ((team == null || !main.getConf().isScoreboardsAdvanced()) && main.getLanguageParser().hasLanguages(entry)) {
+            if ((team == null || !main.getConf().isScoreboardsAdvanced()) && main.getLanguageParser().hasLanguages(entry, main.getConf().getScoreboardSyntax())) {
                 LanguageParser parser = main.getLanguageParser();
-                if (!parser.hasLanguages(entry))
+                if (!parser.hasLanguages(entry, main.getConf().getScoreboardSyntax()))
                     return;
-                String[] translated = parser.toPacketFormatting(parser.removeDummyColors(parser.toScoreboardComponents(translate(languagePlayer, entry))), objective.getScore(entry));
+                String[] translated = parser.toPacketFormatting(parser.removeDummyColors(parser.toScoreboardComponents(translate(languagePlayer, entry, main.getConf().getScoreboardSyntax()))), objective.getScore(entry));
                 if (team != null) {
                     changeTeamEntries(packet.getPlayer(), team, true, entry);
                     changeTeamEntries(packet.getPlayer(), team, false, translated[1]);
@@ -243,9 +244,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             } else if (team != null && main.getConf().isScoreboardsAdvanced()) {
                 LanguageParser parser = main.getLanguageParser();
                 String text = parser.scoreboardComponentToString(parser.removeDummyColors(parser.toScoreboardComponents(team.getPrefix() + entry + team.getSuffix())));
-                if (!parser.hasLanguages(text))
+                if (!parser.hasLanguages(text, main.getConf().getScoreboardSyntax()))
                     return;
-                String[] translated = parser.toPacketFormatting(parser.toScoreboardComponents(translate(languagePlayer, text)), objective.getScore(entry));
+                String[] translated = parser.toPacketFormatting(parser.toScoreboardComponents(translate(languagePlayer, text, main.getConf().getScoreboardSyntax())), objective.getScore(entry));
                 changeTeamEntries(packet.getPlayer(), team, true, entry);
                 if (translated[0].length() != 0)
                     changeTeamEntries(packet.getPlayer(), team, false, translated[1]);
@@ -309,9 +310,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 team.setColor(integers.readSafely(0));
                 team.setOptionData(integers.readSafely(2));
                 if (!main.getConf().isScoreboardsAdvanced()) {
-                    strings.writeSafely(1, translate(languagePlayer, strings.readSafely(1), 32));
-                    strings.writeSafely(2, translate(languagePlayer, strings.readSafely(2), 16));
-                    strings.writeSafely(3, translate(languagePlayer, strings.readSafely(3), 16));
+                    strings.writeSafely(1, translate(languagePlayer, strings.readSafely(1), 32, main.getConf().getScoreboardSyntax()));
+                    strings.writeSafely(2, translate(languagePlayer, strings.readSafely(2), 16, main.getConf().getScoreboardSyntax()));
+                    strings.writeSafely(3, translate(languagePlayer, strings.readSafely(3), 16, main.getConf().getScoreboardSyntax()));
                 }
                 break;
             case 3:
@@ -331,9 +332,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     if (objective.getScore(entry) != null) {
                         LanguageParser utils = main.getLanguageParser();
                         String text = utils.scoreboardComponentToString(utils.removeDummyColors(utils.toScoreboardComponents(team.getPrefix() + entry + team.getSuffix())));
-                        if (!utils.hasLanguages(text))
+                        if (!utils.hasLanguages(text, main.getConf().getScoreboardSyntax()))
                             return;
-                        String[] translated = utils.toPacketFormatting(utils.toScoreboardComponents(translate(languagePlayer, text)), objective.getScore(entry));
+                        String[] translated = utils.toPacketFormatting(utils.toScoreboardComponents(translate(languagePlayer, text, main.getConf().getScoreboardSyntax())), objective.getScore(entry));
                         if (!entry.equals(translated[1])) {
                             if (mode == 0 || mode == 3)
                                 packet.getPacket().getSpecificModifier(Collection.class).writeSafely(0, Collections.singletonList(translated[1]));
@@ -414,7 +415,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()))));
+        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getKickSyntax())));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -460,11 +461,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (item.hasItemMeta()) {
                 ItemMeta meta = item.getItemMeta();
                 if (meta.hasDisplayName())
-                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer));
+                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer, main.getConf().getItemsSyntax()));
                 if (meta.hasLore()) {
                     List<String> newLore = new ArrayList<>();
                     for (String lore : meta.getLore())
-                        newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer));
+                        newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer, main.getConf().getItemsSyntax()));
                     meta.setLore(newLore);
                 }
                 item.setItemMeta(meta);
@@ -481,11 +482,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName())
-                meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer));
+                meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer, main.getConf().getItemsSyntax()));
             if (meta.hasLore()) {
                 List<String> newLore = new ArrayList<>();
                 for (String lore : meta.getLore())
-                    newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer));
+                    newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer, main.getConf().getItemsSyntax()));
                 meta.setLore(newLore);
             }
             item.setItemMeta(meta);
@@ -503,7 +504,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (action != Action.ADD && action != Action.UPDATE_NAME) return;
         WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
         languagePlayer.setBossbar(uuid, bossbar.getJson());
-        bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(bossbar.getJson()))));
+        bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(bossbar.getJson()), main.getConf().getBossbarSyntax())));
         packet.getPacket().getChatComponents().writeSafely(0, bossbar);
     }
 
@@ -694,7 +695,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         for (TObjective objective : player.getScoreboard().getAllObjectives()) {
             if (objective.getDisplayPosition() != 1) continue;
             if (objective.getDisplayName() != null) {
-                String translatedDisplayName = translate(player, objective.getDisplayName(), 32);
+                String translatedDisplayName = translate(player, objective.getDisplayName(), 32, main.getConf().getScoreboardSyntax());
                 if (!translatedDisplayName.equals(objective.getDisplayName())) {
 
                     PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, true);
@@ -736,7 +737,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         StructureModifier<String> strings = container.getStrings();
         strings.writeSafely(0, "TritonObj");
         StructureModifier<WrappedChatComponent> chats = container.getChatComponents();
-        chats.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(player, objective.getDisplayChat()))));
+        chats.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseChat(player, main.getConf().getScoreboardSyntax(), objective.getDisplayChat()))));
         container.getEnumModifier(EnumScoreboardHealthDisplay.class, 2).writeSafely(0, EnumScoreboardHealthDisplay.INTEGER);
         container.getIntegers().writeSafely(0, player.isScoreboardSetup() ? 2 : 0);
         try {
@@ -779,7 +780,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     component = concatenate(concatenate(team.getPrefixChat(), TextComponent.fromLegacyText(scores.get(i))), team.getSuffixChat());
                 else
                     component = TextComponent.fromLegacyText(scores.get(i));
-                updateTeamPrefix(player.toBukkit(), i, main.getLanguageParser().parseChat(player, component));
+                updateTeamPrefix(player.toBukkit(), i, main.getLanguageParser().parseChat(player, main.getConf().getScoreboardSyntax(), component));
             } else {
                 container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_SCORE, true);
                 strings = container.getStrings();
@@ -963,14 +964,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
     }
 
-    private String translate(LanguagePlayer lp, String s, int max) {
-        String r = main.getLanguageParser().replaceLanguages(s, lp);
+    private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
+        String r = main.getLanguageParser().replaceLanguages(s, lp, syntax);
         if (r.length() > max) return r.substring(0, max);
         return r;
     }
 
-    private String translate(LanguagePlayer lp, String s) {
-        return main.getLanguageParser().replaceLanguages(s, lp);
+    private String translate(LanguagePlayer lp, String s, MainConfig.FeatureSyntax syntax) {
+        return main.getLanguageParser().replaceLanguages(s, lp, syntax);
     }
 
     public enum Action {

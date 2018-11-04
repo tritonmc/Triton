@@ -1,8 +1,8 @@
 languages:
   # The language name. This will influence the language file name.
-  # i.e. If the name is en_UK, the language file name will be located at languages/en_UK.language
-  # It's also not recommended to change this after someone join your server,
-  # as the name is saved with the player.
+  # i.e. If the name is en_GB, the language file name will be located at languages/en_GB.language
+  # It's also not recommended to change this after someone has joined your server,
+  # as their language will reset to default.
   en_GB:
     # This is the encoded flag code to show up the banner.
     # To get a working code, you should visit http://www.needcoolshoes.com/banner and create your banner.
@@ -44,27 +44,48 @@ force-minecraft-locale: false
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
-# Do not change this if you don't know what you're doing.
+# Here you can enable and disable certain features of the plugin.
+# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
+# If you change them, make sure to adjust accordingly in your plugins.
 language-creation:
-  syntax: lang
-  syntax-args: args
-  syntax-arg: arg
-  # If any message contains a placeholder with the key defined in the version, that message won't be sent to the players (console will still receive it).
+  chat:
+    # Should the plugin check for placeholders in chat messages?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  actionbars:
+    # Should the plugin check for placeholders in action bars?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  titles:
+    # Should the plugin check for placeholders in titles and subtitles?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  kick:
+    # Should the plugin check for placeholders in kick messages?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  tab:
+    # Should the plugin check for placeholders in tab?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  bossbars:
+    # Should the plugin check for placeholders in bossbars? (1.9+)
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
   # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
   disabled-line: ''
-  # Select what language checks are enabled. The API can't be disabled (yet).
-  enabled:
-    # Should the plugin check chat messages?
-    chat-messages: true
-    # Should the plugin check actions bars?
-    action-bars: true
-    # Should the plugin check titles?
-    titles: true
-    # Should the plugin check kick messages?
-    kick: true
-    # Should the plugin check tab header and footer?
-    tab: true
-    # Enable to translate bossbars. Only 1.9+
-    bossbars: true
