@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.commands.bungee;
 
 import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.utils.StringUtils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -30,7 +31,7 @@ public class MainCMD extends Command {
                     return;
                 }
         if (s instanceof ProxiedPlayer) {
-            ((ProxiedPlayer) s).getServer().unsafe().sendPacket(new Chat("/triton " + join(" ", args)));
+            ((ProxiedPlayer) s).getServer().unsafe().sendPacket(new Chat("/triton " + StringUtils.join(" ", args)));
             return;
         }
         if (!s.hasPermission("multilanguageplugin.help") && !s.hasPermission("triton.help")) {
@@ -46,12 +47,4 @@ public class MainCMD extends Command {
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
     }
 
-    private String join(String delimiter, String... strings) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < strings.length; i++) {
-            if (i != 0) builder.append(delimiter);
-            builder.append(strings[i]);
-        }
-        return builder.toString();
-    }
 }

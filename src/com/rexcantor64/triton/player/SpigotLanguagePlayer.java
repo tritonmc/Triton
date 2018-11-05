@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.player;
 
 import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.scoreboard.TScoreboard;
@@ -49,6 +50,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         save();
         if (sendToBungee && MultiLanguagePlugin.asSpigot().getBridgeManager() != null)
             MultiLanguagePlugin.asSpigot().getBridgeManager().updatePlayerLanguage(this);
+        executeCommands();
     }
 
     public TScoreboard getScoreboard() {
@@ -134,6 +136,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private void load() {
         lang = PlayerStorage.StorageManager.getCurrentStorage().getLanguage(this);
+        if (MultiLanguagePlugin.get().getConf().isRunLanguageCommandsOnLogin())
+            executeCommands();
     }
 
     void save() {
@@ -148,5 +152,15 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    private void executeCommands() {
+        for (ExecutableCommand cmd : lang.getCmds()) {
+            String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%", bukkit.getUniqueId().toString());
+            if (cmd.getType() == ExecutableCommand.Type.SERVER)
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);
+            else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+                Bukkit.dispatchCommand(bukkit, cmdText);
+        }
     }
 }

@@ -107,10 +107,10 @@ public class LanguageManager {
         Configuration languages = MultiLanguagePlugin.get().getConf().getLanguages();
         if (languages != null) {
             for (String lang : languages.getKeys())
-                this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown")));
+                this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown"), languages.getStringList(lang + ".commands")));
             this.mainLanguage = getLanguageByName(MultiLanguagePlugin.get().getConf().getMainLanguage(), true);
         } else {
-            this.mainLanguage = new Language("temp", "pabk", new ArrayList<>(), "Error");
+            this.mainLanguage = new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>());
             this.languages.add(this.mainLanguage);
         }
         for (LanguageItem item : MultiLanguagePlugin.get().getLanguageConfig().getItems())

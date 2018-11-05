@@ -6,10 +6,12 @@ import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
+import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.protocol.packet.Chat;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +65,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         parent.getServer().sendData("triton:main", out.toByteArray());
         save();
         refreshAll();
+        executeCommands();
     }
 
     private void refreshAll() {
@@ -82,6 +85,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     private void load() {
         Configuration config = MultiLanguagePlugin.get().loadYAML("players", "players");
         language = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(config.getString(parent.getUniqueId().toString()), true);
+        if (MultiLanguagePlugin.get().getConf().isRunLanguageCommandsOnLogin())
+            executeCommands();
     }
 
     private void save() {
@@ -96,5 +101,24 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
 
     public void setListener(BungeeListener listener) {
         this.listener = listener;
+    }
+
+    private void executeCommands() {
+        for (ExecutableCommand cmd : language.getCmds()) {
+            String cmdText = cmd.getCmd().replace("%player%", parent.getName()).replace("%uuid%", parent.getUniqueId().toString());
+            if (!cmd.isUniversal() && !cmd.getServers().contains(parent.getServer().getInfo().getName())) continue;
+            if (cmd.getType() == ExecutableCommand.Type.SERVER) {
+                ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                // Action 2
+                out.writeByte(2);
+                out.writeUTF(cmdText);
+                parent.getServer().sendData("triton:main", out.toByteArray());
+            } else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+                parent.getServer().unsafe().sendPacket(new Chat("/" + cmdText));
+            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE)
+                BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(), cmdText);
+            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
+                BungeeCord.getInstance().getPluginManager().dispatchCommand(parent, cmdText);
+        }
     }
 }
