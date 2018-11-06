@@ -1,6 +1,8 @@
 package com.rexcantor64.triton.packetinterceptor;
 
+import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
+import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
@@ -15,5 +17,7 @@ public interface PacketInterceptor {
     void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String text);
 
     void refreshScoreboard(SpigotLanguagePlayer player);
+
+    void resetSign(Player p, LanguageSign.SignLocation location);
 
 }

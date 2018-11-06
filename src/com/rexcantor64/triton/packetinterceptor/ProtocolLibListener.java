@@ -29,7 +29,10 @@ import com.rexcantor64.triton.scoreboard.TTeam;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.EntityType;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -799,6 +802,40 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 } catch (Exception e) {
                     main.logError("Failed to update scoreboard (packet remove score): %1", e.getMessage());
                 }
+            }
+        }
+    }
+
+    @Override
+    public void resetSign(Player p, LanguageSign.SignLocation location) {
+        World world = Bukkit.getWorld(location.getWorld());
+        if (world == null) return;
+        Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
+        if (block.getType() != Material.SIGN && block.getType() != Material.SIGN_POST && block.getType() != Material.WALL_SIGN)
+            return;
+        Sign sign = (Sign) block.getState();
+        String[] lines = sign.getLines();
+        if (signUpdateExists()) {
+            PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN, true);
+            container.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(), location.getZ()));
+            container.getChatComponentArrays().writeSafely(0, new WrappedChatComponent[]{WrappedChatComponent.fromText(lines[0]), WrappedChatComponent.fromText(lines[1]), WrappedChatComponent.fromText(lines[2]), WrappedChatComponent.fromText(lines[3])});
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
+            } catch (Exception e) {
+                main.logError("Failed refresh sign: %1", e.getMessage());
+            }
+        } else {
+            PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.TILE_ENTITY_DATA, true);
+            container.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(), location.getZ()));
+            container.getIntegers().writeSafely(0, 9); // Action (9): Update sign text
+            NbtCompound nbt = NbtFactory.asCompound(container.getNbtModifier().readSafely(0));
+            for (int i = 0; i < 4; i++)
+                nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+            nbt.put("name", "null").put("x", block.getX()).put("y", block.getY()).put("z", block.getZ()).put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
+            } catch (Exception e) {
+                main.logError("Failed refresh sign: %1", e.getMessage());
             }
         }
     }

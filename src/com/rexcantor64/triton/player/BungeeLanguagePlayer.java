@@ -68,7 +68,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         executeCommands();
     }
 
-    private void refreshAll() {
+    public void refreshAll() {
         if (listener == null) return;
         listener.refreshTab();
         if (MultiLanguagePlugin.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)

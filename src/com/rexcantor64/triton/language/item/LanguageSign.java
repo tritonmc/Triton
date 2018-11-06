@@ -25,9 +25,13 @@ public class LanguageSign extends LanguageItem {
     }
 
     public boolean hasLocation(SignLocation loc) {
+        return hasLocation(loc, false);
+    }
+
+    public boolean hasLocation(SignLocation loc, boolean checkServer) {
         if (loc != null)
             for (SignLocation l : locations)
-                if (loc.equalsNoServer(l)) return true;
+                if (checkServer ? loc.equals(l) : loc.equalsNoServer(l)) return true;
         return false;
     }
 

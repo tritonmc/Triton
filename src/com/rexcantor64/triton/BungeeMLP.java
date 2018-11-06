@@ -101,25 +101,20 @@ public class BungeeMLP extends MultiLanguagePlugin {
                         case SIGN:
                             // Send type (1)
                             LanguageSign sign = (LanguageSign) item;
-                            boolean sent = false;
+                            languageItemsOut.writeByte(1);
+                            languageItemsOut.writeUTF(item.getKey());
 
                             short locSize = 0;
                             ByteArrayDataOutput locOut = ByteStreams.newDataOutput();
                             for (LanguageSign.SignLocation loc : sign.getLocations()) {
                                 if (loc.getServer() != null && !loc.getServer().equals(info.getName()))
                                     continue;
-                                if (!sent) {
-                                    languageItemsOut.writeByte(1);
-                                    languageItemsOut.writeUTF(item.getKey());
-                                    sent = true;
-                                }
                                 locOut.writeUTF(loc.getWorld());
                                 locOut.writeInt(loc.getX());
                                 locOut.writeInt(loc.getY());
                                 locOut.writeInt(loc.getZ());
                                 locSize++;
                             }
-                            if (!sent) continue;
                             languageItemsOut.writeShort(locSize);
                             languageItemsOut.write(locOut.toByteArray());
                             short langSize = 0;

@@ -26,6 +26,8 @@ permissions:
     default: op
   triton.help:
     default: true
+  triton.sign:
+    default: op
   twin.upload:
     default: op
   twin.download:

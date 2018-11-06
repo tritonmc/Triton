@@ -13,6 +13,7 @@ import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.web.TwinManager;
@@ -56,6 +57,8 @@ public abstract class MultiLanguagePlugin {
         messagesConfig = loadYAML("messages", "messages");
         languageConfig.setup(config.isBungeecord());
         languageManager.setup();
+        for (LanguagePlayer lp : playerManager.getAll())
+            lp.refreshAll();
     }
 
     public static boolean isBungee() {

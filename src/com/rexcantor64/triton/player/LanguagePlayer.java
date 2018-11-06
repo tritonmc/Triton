@@ -18,4 +18,6 @@ public interface LanguagePlayer {
 
     void setLastTabFooter(String lastTabFooter);
 
+    void refreshAll();
+
 }

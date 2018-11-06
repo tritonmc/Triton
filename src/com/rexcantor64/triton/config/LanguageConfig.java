@@ -46,16 +46,33 @@ public class LanguageConfig {
                 }
                 return;
             }
-            raw = new JSONArray(FileUtils.contentsToString(file));
-            for (int i = 0; i < raw.length(); i++) {
-                LanguageItem item = LanguageItem.fromJSON(raw.optJSONObject(i));
-                if (item == null) continue;
-                items.add(item);
-            }
+            setup(new JSONArray(FileUtils.contentsToString(file)));
         } catch (Exception e) {
             MultiLanguagePlugin.get().logWarning("An error occurred while loading languages! Some language items may not have been loaded! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Loaded");
+        }
+    }
+
+    private void setup(JSONArray raw) {
+        this.raw = raw;
+        for (int i = 0; i < raw.length(); i++) {
+            LanguageItem item = LanguageItem.fromJSON(raw.optJSONObject(i));
+            if (item == null) continue;
+            items.add(item);
+        }
+    }
+
+    public void saveFromRaw(JSONArray raw) {
+        long timeStarted = System.currentTimeMillis();
+        try {
+            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
+            Files.write(file.toPath(), raw.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            items.clear();
+        } catch (Exception e) {
+            MultiLanguagePlugin.get().logWarning("An error occurred while saving language items after sign update! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
+        } finally {
+            logCount(timeStarted, "Saved");
         }
     }
 

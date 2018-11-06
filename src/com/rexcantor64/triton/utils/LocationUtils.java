@@ -28,12 +28,7 @@ public class LocationUtils {
     }
 
     public static JSONObject locationToJSON(int x, int y, int z, String world) {
-        JSONObject obj = new JSONObject();
-        obj.put("x", x);
-        obj.put("y", y);
-        obj.put("z", z);
-        obj.put("world", world);
-        return obj;
+        return new JSONObject().put("world", world).put("x", x).put("y", y).put("z", z);
     }
 
     public static boolean equalsJSONLocation(JSONObject obj1, JSONObject obj2) {
