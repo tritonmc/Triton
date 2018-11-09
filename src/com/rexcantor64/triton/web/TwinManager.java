@@ -16,8 +16,7 @@ public class TwinManager {
     private final MultiLanguagePlugin main;
 
     private static final int TWIN_VERSION = 1;
-    //private static final String BASE_URL = "https://twin.rexcantor64.com";
-    private static final String BASE_URL = "http://localhost:5000";
+    private static final String BASE_URL = "https://twin.rexcantor64.com";
 
     public TwinManager(MultiLanguagePlugin main) {
         this.main = main;
@@ -85,6 +84,7 @@ public class TwinManager {
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
 
             int responseCode = conn.getResponseCode();
 
