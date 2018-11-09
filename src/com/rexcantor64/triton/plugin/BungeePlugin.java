@@ -31,6 +31,6 @@ public class BungeePlugin extends Plugin implements PluginLoader {
         onDisable();
         BungeeCord.getInstance().getPluginManager().unregisterCommands(this);
         BungeeCord.getInstance().getPluginManager().unregisterListeners(this);
-        BungeeCord.getInstance().unregisterChannel("MultiLanguagePlugin");
+        BungeeCord.getInstance().unregisterChannel("triton:main");
     }
 }
