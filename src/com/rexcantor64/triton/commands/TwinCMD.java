@@ -43,12 +43,17 @@ public class TwinCMD implements CommandExecutor {
         }
 
         if (response.getStatusCode() == 0) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-internet", "&4please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-internet", "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            return;
+        }
+
+        if (response.getStatusCode() == 401) {
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-token", "&4Invalid token! Please check if you have setup TWIN correctly on config."));
             return;
         }
 
         if (response.getStatusCode() != 200) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1", MultiLanguagePlugin.get().getMessage("twin.incorrect-status", "&4status is not 202 (received &l%1&4)")));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.failed-upload", "&cFailed to upload the config: %1", MultiLanguagePlugin.get().getMessage("twin.incorrect-status", "&4status is not 200 (received &l%1&4)", response.getStatusCode())));
             return;
         }
 

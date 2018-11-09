@@ -47,7 +47,12 @@ public class TwinCMD extends Command {
         }
 
         if (response.getStatusCode() == 0) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-internet", "&4please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-internet", "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            return;
+        }
+
+        if (response.getStatusCode() == 401) {
+            s.sendMessage(MultiLanguagePlugin.get().getMessage("twin.no-token", "&4Invalid token! Please check if you have setup TWIN correctly on config."));
             return;
         }
 

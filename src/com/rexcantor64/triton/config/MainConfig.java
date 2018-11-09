@@ -28,6 +28,7 @@ public class MainConfig {
     private boolean runLanguageCommandsOnLogin;
     private boolean debug;
     private boolean bungeecord;
+    private String twinToken;
 
     private String disabledLine;
 
@@ -102,6 +103,10 @@ public class MainConfig {
 
     public boolean isBungeecord() {
         return bungeecord;
+    }
+
+    public String getTwinToken() {
+        return twinToken;
     }
 
     public String getDisabledLine() {
@@ -214,6 +219,7 @@ public class MainConfig {
             this.languages = section.getSection("languages");
             this.mainLanguage = section.getString("main-language", "en_GB");
         }
+        this.twinToken = section.getString("twin-token", "");
         this.forceLocale = section.getBoolean("force-minecraft-locale", false);
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.debug = section.getBoolean("debug", false);

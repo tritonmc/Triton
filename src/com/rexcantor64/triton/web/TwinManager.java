@@ -16,6 +16,8 @@ public class TwinManager {
     private final MultiLanguagePlugin main;
 
     private static final int TWIN_VERSION = 1;
+    //private static final String BASE_URL = "https://twin.rexcantor64.com";
+    private static final String BASE_URL = "http://localhost:5000";
 
     public TwinManager(MultiLanguagePlugin main) {
         this.main = main;
@@ -37,11 +39,12 @@ public class TwinManager {
 
 
             String encodedData = data.toString();
-            URL u = new URL("https://twin.rexcantor64.com/api/v1/upload");
+            URL u = new URL(BASE_URL + "/api/v1/upload");
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
             DataOutputStream os = new DataOutputStream(conn.getOutputStream());
             os.write(encodedData.getBytes(Charset.defaultCharset()));
             os.flush();
@@ -78,7 +81,7 @@ public class TwinManager {
             if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
                 return null;
 
-            URL u = new URL("https://twin.rexcantor64.com/api/v1/get/" + id);
+            URL u = new URL(BASE_URL + "/api/v1/get/" + id);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("GET");

@@ -49,6 +49,10 @@ force-minecraft-locale: false
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
+# To access TWIN, you need a special token.
+# To get it, join your Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
+twin-token: ""
+
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.

@@ -25,7 +25,7 @@ success:
   setlanguage-others: "&a%1's language has been changed to %2"
 twin:
   failed-bungeecord: "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."
-  no-internet: "&4please check your internet connection and/or firewall! Error description: %1"
+  no-internet: "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1"
   failed-fetch: "&cFailed to fetch the config: %1"
   failed-upload: "&cFailed to upload the config: %1"
   incorrect-status: "&4status is not 202 (received &l%1&4)"
@@ -33,6 +33,7 @@ twin:
   uploaded: "&aYour config is live! Start editing now at &6%1"
   failed-file-update: "&cError while writing to file '%1': %2"
   success: "&aSuccessfully fetched the config from TWIN and applied it into the server!"
+  no-token: "&4Invalid token! Please check if you have setup TWIN correctly on config."
 other:
   selector-gui-name: "&aSelect a language"
   selector-gui-prev: "&aPrevious"
