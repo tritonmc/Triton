@@ -79,6 +79,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
+        if (msg == null) return;
         msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseTitle(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getTitleSyntax())));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
@@ -526,6 +527,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             languagePlayer = (SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             MultiLanguagePlugin.get().logDebugWarning("Failed to translate packet because UUID of the player is unknown (because the player hasn't joined yet).");
+            return;
+        }
+        if (languagePlayer == null) {
+            MultiLanguagePlugin.get().logDebugWarning("Language Player is null on packet sending");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Server.CHAT) {

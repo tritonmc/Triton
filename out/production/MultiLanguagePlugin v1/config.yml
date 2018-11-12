@@ -52,6 +52,7 @@ bungeecord: false
 
 # To access TWIN, you need a special token.
 # To get it, join your Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
+# If you've enabled "bungeecord" above, there is no need to put your token here. You just need it on your BungeeCord config.
 twin-token: ""
 
 # Here you can enable and disable certain features of the plugin.
