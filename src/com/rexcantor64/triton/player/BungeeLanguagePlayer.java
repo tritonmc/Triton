@@ -52,6 +52,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public Language getLang() {
+        if (language == null)
+            language = MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         return language;
     }
 
