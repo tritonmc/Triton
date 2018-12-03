@@ -74,6 +74,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public void refreshAll() {
+        if (toBukkit() == null)
+            return;
         refreshScoreboard();
         refreshEntities();
         refreshSigns();
