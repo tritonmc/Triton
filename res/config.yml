@@ -38,11 +38,6 @@ languages:
 # Also, if you delete any language, the players with that language will have their language changed to this.
 main-language: en_GB
 
-# When enabled, every time the player joins, no matter if they joined before of if they have set their language manually,
-# their language will be switched to the same they're using on Minecraft itself.
-# When disabled, it will only attempt to switch on the first time they join the server.
-force-minecraft-locale: false
-
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 

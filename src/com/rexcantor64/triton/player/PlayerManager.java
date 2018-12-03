@@ -26,6 +26,11 @@ public class PlayerManager {
         players.remove(p);
     }
 
+    public BungeeLanguagePlayer registerBungee(UUID uuid, BungeeLanguagePlayer blp) {
+        players.put(uuid, blp);
+        return blp;
+    }
+
     public List<LanguagePlayer> getAll() {
         return new ArrayList<>(players.values());
     }

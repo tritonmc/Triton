@@ -10,6 +10,7 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.packet.Chat;
 
@@ -21,7 +22,9 @@ import java.util.UUID;
 
 public class BungeeLanguagePlayer implements LanguagePlayer {
 
-    private final ProxiedPlayer parent;
+    private final UUID uuid;
+    private Connection currentConnection;
+    private ProxiedPlayer parent;
 
     private Language language;
     private BungeeListener listener;
@@ -31,7 +34,15 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     private HashMap<UUID, String> bossBars = new HashMap<>();
 
     public BungeeLanguagePlayer(UUID parent) {
+        this.uuid = parent;
         this.parent = BungeeCord.getInstance().getPlayer(parent);
+        this.currentConnection = this.parent;
+        load();
+    }
+
+    public BungeeLanguagePlayer(UUID uuid, Connection connection) {
+        this.uuid = uuid;
+        this.currentConnection = connection;
         load();
     }
 
@@ -62,9 +73,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
         out.writeByte(1);
-        out.writeUTF(parent.getUniqueId().toString());
+        out.writeUTF(uuid.toString());
         out.writeUTF(language.getName());
-        parent.getServer().sendData("triton:main", out.toByteArray());
+        getParent().getServer().sendData("triton:main", out.toByteArray());
         save();
         refreshAll();
         executeCommands();
@@ -81,19 +92,27 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public ProxiedPlayer getParent() {
+        if (parent == null) {
+            this.parent = BungeeCord.getInstance().getPlayer(this.uuid);
+            this.currentConnection = this.parent;
+        }
         return parent;
+    }
+
+    public Connection getCurrentConnection() {
+        return currentConnection;
     }
 
     private void load() {
         Configuration config = MultiLanguagePlugin.get().loadYAML("players", "players");
-        language = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(config.getString(parent.getUniqueId().toString()), true);
+        language = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(config.getString(uuid.toString()), true);
         if (MultiLanguagePlugin.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
     private void save() {
         Configuration config = MultiLanguagePlugin.get().loadYAML("players", "players");
-        config.set(parent.getUniqueId().toString(), language.getName());
+        config.set(uuid.toString(), language.getName());
         try {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml"));
         } catch (IOException e) {

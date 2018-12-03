@@ -92,6 +92,12 @@ public class BungeeListener implements Connection.Unsafe {
         p.setFooter(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getFooter()), MultiLanguagePlugin.get().getConf().getTabSyntax())));
     }
 
+    private void handleKick(DefinedPacket packet) {
+        Kick p = (Kick) packet;
+        System.out.println(p);
+        p.setMessage(ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getMessage()), MultiLanguagePlugin.get().getConf().getKickSyntax())));
+    }
+
     @Override
     public void sendPacket(DefinedPacket packet) {
         if (packet instanceof PlayerListItem && MultiLanguagePlugin.get().getConf().isTab())
@@ -104,11 +110,14 @@ public class BungeeListener implements Connection.Unsafe {
             handleBossbar(packet);
         else if (packet instanceof PlayerListHeaderFooter && MultiLanguagePlugin.get().getConf().isTab())
             handlePlayerListHeaderFooter(packet);
+        else if (packet instanceof Kick && MultiLanguagePlugin.get().getConf().isKick())
+            handleKick(packet);
+
         send(packet);
     }
 
     private void send(DefinedPacket packet) {
-        ((ChannelWrapper) NMSUtils.getDeclaredField(owner.getParent(), "ch")).write(packet);
+        ((ChannelWrapper) NMSUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
     }
 
     public void refreshTab() {

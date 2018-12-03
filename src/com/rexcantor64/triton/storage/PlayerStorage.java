@@ -28,7 +28,6 @@ public interface PlayerStorage {
         public Language getLanguage(SpigotLanguagePlayer lp) {
             File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
             if (!f.exists()) {
-                lp.waitForDefaultLanguage();
                 return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
             }
             YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
@@ -38,7 +37,6 @@ public interface PlayerStorage {
                                     .toString()))
                 return MultiLanguagePlugin.get().getLanguageManager()
                         .getLanguageByName(players.getString(lp.getUUID().toString()), true);
-            lp.waitForDefaultLanguage();
             return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
         }
 

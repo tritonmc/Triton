@@ -18,7 +18,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private final UUID uuid;
     private Player bukkit;
 
-    private boolean waitingForDefaultLanguage = false;
     private Language lang;
 
     private PacketInterceptor interceptor;
@@ -85,14 +84,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (interceptor != null && MultiLanguagePlugin.get().getConf().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
-    }
-
-    public void waitForDefaultLanguage() {
-        waitingForDefaultLanguage = true;
-    }
-
-    public boolean isWaitingForDefaultLanguage() {
-        return waitingForDefaultLanguage;
     }
 
     public void setInterceptor(PacketInterceptor interceptor) {

@@ -576,7 +576,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleSetSlot(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.BOSS && main.getConf().isBossbars()) {
             handleBoss(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Login.Server.DISCONNECT && main.getConf().isKick()) {
+            handleKickDisconnect(packet, languagePlayer);
         }
+    }
+
+    @Override
+    public void onPacketReceiving(PacketEvent packetEvent) {
+
     }
 
     @Override
@@ -852,17 +859,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void onPacketReceiving(PacketEvent packetEvent) {
-    }
-
-    @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, getMCVersion() >= 9 ? PacketType.Play.Server.BOSS : PacketType.Play.Server.CHAT).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Login.Server.DISCONNECT, getMCVersion() >= 9 ? PacketType.Play.Server.BOSS : PacketType.Play.Server.CHAT).highest().build();
     }
 
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS).build();
+        return ListeningWhitelist.EMPTY_WHITELIST;
     }
 
     @Override

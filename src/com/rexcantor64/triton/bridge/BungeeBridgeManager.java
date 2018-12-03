@@ -8,13 +8,13 @@ import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.event.EventPriority;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -87,6 +87,21 @@ public class BungeeBridgeManager implements Listener {
         out.writeUTF(event.getPlayer().getUniqueId().toString());
         out.writeUTF(lp.getLang().getName());
         event.getServer().sendData("triton:main", out.toByteArray());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onLogin(LoginEvent event) {
+        if (!MultiLanguagePlugin.get().getConf().isKick()) return;
+        event.registerIntent(MultiLanguagePlugin.get().getLoader().asBungee());
+        BungeeLanguagePlayer lp = MultiLanguagePlugin.get().getPlayerManager().registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection()));
+        BungeeCord.getInstance().getScheduler().runAsync(MultiLanguagePlugin.get().getLoader().asBungee(), new Runnable() {
+            @Override
+            public void run() {
+                if (event.getCancelReasonComponents() != null)
+                    event.setCancelReason(ComponentSerializer.parse(com.rexcantor64.triton.components.chat.ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseChat(lp, MultiLanguagePlugin.get().getConf().getKickSyntax(), com.rexcantor64.triton.components.chat.ComponentSerializer.parse(ComponentSerializer.toString(event.getCancelReasonComponents()))))));
+                event.completeIntent(MultiLanguagePlugin.get().getLoader().asBungee());
+            }
+        });
     }
 
     @EventHandler
