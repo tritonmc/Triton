@@ -42,7 +42,7 @@ public class MainCMD extends Command {
         for (String str : MultiLanguagePlugin.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
             if (str.equalsIgnoreCase("%1"))
                 for (String command : subCommands.keySet())
-                    s.sendMessage(MultiLanguagePlugin.get().getMessage("help.menu-item", "&6/%1 %2", "triton", command));
+                    s.sendMessage(MultiLanguagePlugin.get().getMessage("help.menu-item", "&6/%1 %2 &e&l- &f%3", "triton", command, MultiLanguagePlugin.get().getMessage("command." + command, "Description not found. Please regenerate messages.yml!")));
             else
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
     }
