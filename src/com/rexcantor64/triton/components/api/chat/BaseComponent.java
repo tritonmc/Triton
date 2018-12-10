@@ -238,7 +238,7 @@ public abstract class BaseComponent {
 
     public void addExtra(BaseComponent component) {
         if (this.extra == null) {
-            this.extra = new ArrayList();
+            this.extra = new ArrayList<>();
         }
         component.parent = this;
         this.extra.add(component);

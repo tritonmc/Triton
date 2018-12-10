@@ -4,7 +4,8 @@ import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
-import com.rexcantor64.triton.scoreboard.TScoreboard;
+import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
+import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
 import com.rexcantor64.triton.storage.PlayerStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -26,13 +27,12 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private String lastTabFooter;
     private HashMap<UUID, String> bossBars = new HashMap<>();
 
-    private TScoreboard scoreboard = new TScoreboard();
-    private int lastTeamId = 0;
-    private boolean isScoreboardSetup = false;
+    private WrappedScoreboard scoreboard;
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
         load();
+        scoreboard = new WrappedScoreboard(new ProtocolLibBridge(this), this);
     }
 
     public Language getLang() {
@@ -52,24 +52,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         executeCommands();
     }
 
-    public TScoreboard getScoreboard() {
+    public WrappedScoreboard getScoreboard() {
         return scoreboard;
-    }
-
-    public boolean isScoreboardSetup() {
-        return isScoreboardSetup;
-    }
-
-    public void setScoreboardSetup(boolean scoreboardSetup) {
-        isScoreboardSetup = scoreboardSetup;
-    }
-
-    public int getLastTeamId() {
-        return lastTeamId;
-    }
-
-    public int increaseTeamId() {
-        return lastTeamId++;
     }
 
     public void refreshAll() {

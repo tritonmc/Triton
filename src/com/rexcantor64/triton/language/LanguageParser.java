@@ -386,9 +386,9 @@ public class LanguageParser {
         return builder.toString();
     }
 
-    public String[] toPacketFormatting(List<ScoreboardComponent> components, int score) {
+    public String[] toPacketFormatting(List<ScoreboardComponent> components) {
         String toString = scoreboardComponentToString(components);
-        if (toString.length() <= 38) return new String[]{"", toString + getColorSuffix(score), ""};
+        if (toString.length() <= 36) return new String[]{"", toString, ""};
         StringBuilder prefix = new StringBuilder();
         StringBuilder entry = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
@@ -424,16 +424,16 @@ public class LanguageParser {
                 if (status == 1) {
                     if (first) {
                         first = false;
-                        if (entry.length() + formatting.length() > 38) {
-                            entry.append(getColorSuffix(score));
+                        if (entry.length() + formatting.length() > 36) {
+                            entry.append("1234");
                             status = 2;
                             i--;
                             continue;
                         }
                         entry.append(formatting);
                     }
-                    if (entry.length() >= 38) {
-                        entry.append(getColorSuffix(score));
+                    if (entry.length() >= 36) {
+                        entry.append("1234");
                         status = 2;
                     } else
                         entry.append(c);
@@ -454,24 +454,5 @@ public class LanguageParser {
         return new String[]{prefix.toString(), entry.toString(), suffix.toString()};
     }
 
-    private String getColorSuffix(int score) {
-        if (score < 0)
-            return "§l";
-        if (score < 10)
-            return "§" + score;
-        if (score == 10)
-            return "§a";
-        if (score == 11)
-            return "§b";
-        if (score == 12)
-            return "§c";
-        if (score == 13)
-            return "§d";
-        if (score == 14)
-            return "§e";
-        if (score == 15)
-            return "§f";
-        return "§l";
-    }
 
 }
