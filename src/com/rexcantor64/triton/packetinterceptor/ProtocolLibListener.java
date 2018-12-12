@@ -238,7 +238,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (!main.getConf().isScoreboardsAdvanced()) return;
         int position = packet.getPacket().getIntegers().readSafely(0);
         String name = packet.getPacket().getStrings().readSafely(0);
-        if (position != 1) return;
+        if (position != 1 && position < 3) return;
         WrappedObjective obj = languagePlayer.getScoreboard().getObjective(name);
         if (obj == null) return;
         packet.setCancelled(true);
