@@ -2,10 +2,10 @@ package com.rexcantor64.triton;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.bridge.BungeeBridgeManager;
 import com.rexcantor64.triton.commands.bungee.MainCMD;
 import com.rexcantor64.triton.commands.bungee.TwinCMD;
-import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
@@ -24,7 +24,7 @@ import net.md_5.bungee.protocol.DefinedPacket;
 import java.io.File;
 import java.util.List;
 
-public class BungeeMLP extends MultiLanguagePlugin {
+public class BungeeMLP extends Triton {
 
     public BungeeMLP(PluginLoader loader) {
         super.loader = loader;
@@ -60,8 +60,8 @@ public class BungeeMLP extends MultiLanguagePlugin {
             ByteArrayDataOutput languageOut = ByteStreams.newDataOutput();
             // Action 0 (send config)
             languageOut.writeByte(0);
-            languageOut.writeUTF(MultiLanguagePlugin.get().getLanguageManager().getMainLanguage().getName());
-            List<Language> languageList = MultiLanguagePlugin.get().getLanguageManager().getAllLanguages();
+            languageOut.writeUTF(Triton.get().getLanguageManager().getMainLanguage().getName());
+            List<Language> languageList = Triton.get().getLanguageManager().getAllLanguages();
             languageOut.writeShort(languageList.size());
             for (Language language : languageList) {
                 languageOut.writeUTF(language.getName());
@@ -74,7 +74,7 @@ public class BungeeMLP extends MultiLanguagePlugin {
 
             // Send language files
             for (ServerInfo info : BungeeCord.getInstance().getServers().values()) {
-                List<LanguageItem> languageItems = MultiLanguagePlugin.get().getLanguageConfig().getItems();
+                List<LanguageItem> languageItems = Triton.get().getLanguageConfig().getItems();
                 int size = 0;
                 ByteArrayDataOutput languageItemsOut = ByteStreams.newDataOutput();
                 for (LanguageItem item : languageItems) {

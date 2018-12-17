@@ -2,7 +2,7 @@ package com.rexcantor64.triton.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
@@ -34,7 +34,7 @@ public class BungeeBridgeManager implements Listener {
         try {
             byte action = in.readByte();
             if (action == 0)
-                MultiLanguagePlugin.get().getPlayerManager().get(UUID.fromString(in.readUTF())).setLang(MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(in.readUTF(), true));
+                Triton.get().getPlayerManager().get(UUID.fromString(in.readUTF())).setLang(Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true));
             else if (action == 1) {
                 String server = ((Server) e.getSender()).getInfo().getName();
                 LanguageSign.SignLocation loc = new LanguageSign.SignLocation(server, in.readUTF(), in.readInt(), in.readInt(), in.readInt());
@@ -43,9 +43,9 @@ public class BungeeBridgeManager implements Listener {
                 if (add)
                     key = in.readUTF();
                 List<String> remove = new ArrayList<>();
-                for (LanguageItem li : MultiLanguagePlugin.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
+                for (LanguageItem li : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
                     if (((LanguageSign) li).hasLocation(loc, true)) remove.add(li.getKey());
-                JSONArray raw = MultiLanguagePlugin.get().getLanguageConfig().getRaw();
+                JSONArray raw = Triton.get().getLanguageConfig().getRaw();
                 for (int i = 0; i < raw.length(); i++) {
                     JSONObject obj = raw.optJSONObject(i);
                     if (obj == null || !obj.optString("type", "text").equals("sign")) continue;
@@ -68,19 +68,19 @@ public class BungeeBridgeManager implements Listener {
                         raw.put(i, obj);
                     }
                 }
-                MultiLanguagePlugin.get().getLanguageConfig().saveFromRaw(raw);
-                MultiLanguagePlugin.get().reload();
+                Triton.get().getLanguageConfig().saveFromRaw(raw);
+                Triton.get().reload();
             }
         } catch (Exception e1) {
-            MultiLanguagePlugin.get().logError("Failed to read plugin message: %1", e1.getMessage());
-            if (MultiLanguagePlugin.get().getConf().isDebug())
+            Triton.get().logError("Failed to read plugin message: %1", e1.getMessage());
+            if (Triton.get().getConf().isDebug())
                 e1.printStackTrace();
         }
     }
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        LanguagePlayer lp = MultiLanguagePlugin.get().getPlayerManager().get(event.getPlayer().getUniqueId());
+        LanguagePlayer lp = Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
         out.writeByte(1);
@@ -91,28 +91,28 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onLogin(LoginEvent event) {
-        if (!MultiLanguagePlugin.get().getConf().isKick()) return;
-        event.registerIntent(MultiLanguagePlugin.get().getLoader().asBungee());
-        BungeeLanguagePlayer lp = MultiLanguagePlugin.get().getPlayerManager().registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection()));
-        BungeeCord.getInstance().getScheduler().runAsync(MultiLanguagePlugin.get().getLoader().asBungee(), new Runnable() {
+        if (!Triton.get().getConf().isKick()) return;
+        event.registerIntent(Triton.get().getLoader().asBungee());
+        BungeeLanguagePlayer lp = Triton.get().getPlayerManager().registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection()));
+        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), new Runnable() {
             @Override
             public void run() {
                 if (event.getCancelReasonComponents() != null)
-                    event.setCancelReason(ComponentSerializer.parse(com.rexcantor64.triton.components.chat.ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseChat(lp, MultiLanguagePlugin.get().getConf().getKickSyntax(), com.rexcantor64.triton.components.chat.ComponentSerializer.parse(ComponentSerializer.toString(event.getCancelReasonComponents()))))));
-                event.completeIntent(MultiLanguagePlugin.get().getLoader().asBungee());
+                    event.setCancelReason(ComponentSerializer.parse(com.rexcantor64.triton.components.chat.ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(lp, Triton.get().getConf().getKickSyntax(), com.rexcantor64.triton.components.chat.ComponentSerializer.parse(ComponentSerializer.toString(event.getCancelReasonComponents()))))));
+                event.completeIntent(Triton.get().getLoader().asBungee());
             }
         });
     }
 
     @EventHandler
     public void onJoin(PostLoginEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(event.getPlayer().getUniqueId());
-        MultiLanguagePlugin.asBungee().setCustomUnsafe(lp);
+        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
+        Triton.asBungee().setCustomUnsafe(lp);
     }
 
     @EventHandler
     public void onLeave(PlayerDisconnectEvent event) {
-        MultiLanguagePlugin.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
+        Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
         //MultiLanguagePlugin.asBungee().setDefaultUnsafe(event.getPlayer());
     }
 

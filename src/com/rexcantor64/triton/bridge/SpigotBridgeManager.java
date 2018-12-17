@@ -2,7 +2,7 @@ package com.rexcantor64.triton.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.LanguageItem;
@@ -38,7 +38,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
             byte action = in.readByte();
             if (action == 0) {
                 try {
-                    MainConfig config = MultiLanguagePlugin.get().getConf();
+                    MainConfig config = Triton.get().getConf();
                     config.setMainLanguage(in.readUTF());
                     short languageSize = in.readShort();
                     JSONObject languages = new JSONObject();
@@ -58,7 +58,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         languages.put(name, lang);
                     }
                     config.setLanguages(languages);
-                    File file = new File(MultiLanguagePlugin.get().getDataFolder(), "cache.json");
+                    File file = new File(Triton.get().getDataFolder(), "cache.json");
                     Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     // Read language files
                     List<LanguageItem> languageItems = new ArrayList<>();
@@ -87,29 +87,29 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 languageItems.add(new LanguageSign(key, signLocations, signLines));
                                 break;
                             default:
-                                MultiLanguagePlugin.get().logDebugWarning("Received invalid type language item type while reading from BungeeCord: %1", type);
+                                Triton.get().logDebugWarning("Received invalid type language item type while reading from BungeeCord: %1", type);
                                 break;
                         }
                     }
-                    MultiLanguagePlugin.get().getLanguageConfig().setItems(languageItems).saveToCache();
-                    MultiLanguagePlugin.get().logDebug("Received config from BungeeCord and parsed it in %1ms!", System.currentTimeMillis() - start);
+                    Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
+                    Triton.get().logDebug("Received config from BungeeCord and parsed it in %1ms!", System.currentTimeMillis() - start);
                 } finally {
-                    MultiLanguagePlugin.get().getLanguageManager().setup();
-                    Bukkit.getScheduler().runTaskLater(MultiLanguagePlugin.get().getLoader().asSpigot(), () -> {
-                        for (LanguagePlayer lp : MultiLanguagePlugin.get().getPlayerManager().getAll())
+                    Triton.get().getLanguageManager().setup();
+                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
+                        for (LanguagePlayer lp : Triton.get().getPlayerManager().getAll())
                             ((SpigotLanguagePlayer) lp).refreshAll();
                     }, 10L);
                 }
             } else if (action == 1) {
                 final UUID uuid = UUID.fromString(in.readUTF());
-                final Language lang = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
-                Bukkit.getScheduler().runTaskLater(MultiLanguagePlugin.get().getLoader().asSpigot(), () -> ((SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(uuid)).setLang(lang, false), 10L);
+                final Language lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
+                Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false), 10L);
             } else if (action == 2) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
             }
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to parse plugin message: %1", e.getMessage());
-            if (MultiLanguagePlugin.get().getConf().isDebug())
+            Triton.get().logError("Failed to parse plugin message: %1", e.getMessage());
+            if (Triton.get().getConf().isDebug())
                 e.printStackTrace();
         }
     }
@@ -120,7 +120,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
         out.writeByte(0);
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
-        lp.toBukkit().sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
+        lp.toBukkit().sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
     }
 
 }

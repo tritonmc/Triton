@@ -2,7 +2,7 @@ package com.rexcantor64.triton.commands;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,14 +38,14 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 return entry.getValue().onCommand(s, cmd, label, args);
 
         if (!s.hasPermission("multilanguageplugin.help") && !s.hasPermission("triton.help")) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.help"));
+            s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.help"));
             return true;
         }
 
-        for (String str : MultiLanguagePlugin.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
+        for (String str : Triton.get().getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1", "&a---------MultiLanguagePlugin---------"))
             if (str.equalsIgnoreCase("%1"))
                 for (String command : subCommands.keySet())
-                    s.sendMessage(MultiLanguagePlugin.get().getMessage("help.menu-item", "&6/%1 %2 &e&l- &f%3", label, command, MultiLanguagePlugin.get().getMessage("command." + command, "Description not found. Please regenerate messages.yml!")));
+                    s.sendMessage(Triton.get().getMessage("help.menu-item", "&6/%1 %2 &e&l- &f%3", label, command, Triton.get().getMessage("command." + command, "Description not found. Please regenerate messages.yml!")));
             else
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
         return true;

@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.web;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
-import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,12 +13,12 @@ import java.nio.charset.Charset;
 
 public class TwinManager {
 
-    private final MultiLanguagePlugin main;
+    private final Triton main;
 
     private static final int TWIN_VERSION = 1;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
 
-    public TwinManager(MultiLanguagePlugin main) {
+    public TwinManager(Triton main) {
         this.main = main;
     }
 

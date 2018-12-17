@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.listeners;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,12 +11,12 @@ public class BukkitListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        ((SpigotLanguagePlayer) MultiLanguagePlugin.asSpigot().getPlayerManager().get(e.getPlayer().getUniqueId())).setInterceptor(MultiLanguagePlugin.get().getProtocolLibListener());
+        ((SpigotLanguagePlayer) Triton.asSpigot().getPlayerManager().get(e.getPlayer().getUniqueId())).setInterceptor(Triton.get().getProtocolLibListener());
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        MultiLanguagePlugin.get().getPlayerManager().unregisterPlayer(e.getPlayer().getUniqueId());
+        Triton.get().getPlayerManager().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
 }

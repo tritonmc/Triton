@@ -1,18 +1,26 @@
 package com.rexcantor64.triton;
 
 import com.comphenix.protocol.ProtocolLibrary;
+import com.rexcantor64.triton.api.LanguagePlayer;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.commands.MainCMD;
 import com.rexcantor64.triton.commands.TwinCMD;
+import com.rexcantor64.triton.guiapi.Gui;
+import com.rexcantor64.triton.guiapi.GuiButton;
 import com.rexcantor64.triton.guiapi.GuiManager;
+import com.rexcantor64.triton.guiapi.ScrollableGui;
+import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import org.bukkit.Bukkit;
 
 import java.io.File;
 
-public class SpigotMLP extends MultiLanguagePlugin {
+public class SpigotMLP extends Triton {
 
     private ProtocolLibListener protocolLibListener;
     private SpigotBridgeManager bridgeManager;
@@ -51,5 +59,20 @@ public class SpigotMLP extends MultiLanguagePlugin {
 
     public SpigotBridgeManager getBridgeManager() {
         return bridgeManager;
+    }
+
+    public void openLanguagesSelectionGUI(LanguagePlayer p) {
+        if (!(p instanceof SpigotLanguagePlayer)) return;
+
+        LanguageManager language = Triton.get().getLanguageManager();
+        Language pLang = p.getLang();
+        Gui gui = new ScrollableGui(Triton.get().getMessage("other.selector-gui-name", "&aSelect a language"));
+        for (Language lang : language.getAllLanguages())
+            gui.addButton(new GuiButton(ItemStackParser.bannerToItemStack(((com.rexcantor64.triton.language.Language) lang).getBanner(), pLang.equals(lang))).setListener(event -> {
+                p.setLang(lang);
+                ((SpigotLanguagePlayer) p).toBukkit().closeInventory();
+                ((SpigotLanguagePlayer) p).toBukkit().sendMessage(Triton.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
+            }));
+        gui.open(((SpigotLanguagePlayer) p).toBukkit());
     }
 }

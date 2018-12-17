@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.commands.bungee;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.packet.Chat;
@@ -11,7 +11,7 @@ public class ReloadCMD implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("multilanguageplugin.reload") && !s.hasPermission("triton.reload")) {
-            s.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.reload"));
+            s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.reload"));
             return;
         }
 
@@ -22,11 +22,11 @@ public class ReloadCMD implements CommandExecutor {
                 if (mode.equals("server") || mode.equals("s"))
                     return;
             } else if (!mode.equals("bungee") && !mode.equals("b")) {
-                s.sendMessage(MultiLanguagePlugin.get().getMessage("error.bungee-reload-invalid-mode", "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') or 'all' (or 'a').", mode));
+                s.sendMessage(Triton.get().getMessage("error.bungee-reload-invalid-mode", "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') or 'all' (or 'a').", mode));
                 return;
             }
         }
-        MultiLanguagePlugin.get().reload();
-        s.sendMessage(MultiLanguagePlugin.get().getMessage("success.bungee-reload", "&aBungeeCord config successfully reloaded."));
+        Triton.get().reload();
+        s.sendMessage(Triton.get().getMessage("success.bungee-reload", "&aBungeeCord config successfully reloaded."));
     }
 }

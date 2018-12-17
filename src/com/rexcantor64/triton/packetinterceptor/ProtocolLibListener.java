@@ -13,8 +13,9 @@ import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
-import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.SpigotMLP;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.components.api.chat.BaseComponent;
 import com.rexcantor64.triton.components.api.chat.TextComponent;
 import com.rexcantor64.triton.components.chat.ComponentSerializer;
@@ -26,7 +27,6 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.WrappedObjective;
 import com.rexcantor64.triton.scoreboard.WrappedTeam;
 import com.rexcantor64.triton.utils.NMSUtils;
-import com.rexcantor64.triton.wrappers.EntityType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -47,7 +47,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final int mcVersion;
     private final int mcVersionR;
 
-    private MultiLanguagePlugin main;
+    private Triton main;
 
     private HashMap<World, HashMap<Integer, Entity>> entities = new HashMap<>();
 
@@ -352,13 +352,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (!packet.isServerPacket()) return;
         SpigotLanguagePlayer languagePlayer;
         try {
-            languagePlayer = (SpigotLanguagePlayer) MultiLanguagePlugin.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
+            languagePlayer = (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
-            MultiLanguagePlugin.get().logDebugWarning("Failed to translate packet because UUID of the player is unknown (because the player hasn't joined yet).");
+            Triton.get().logDebugWarning("Failed to translate packet because UUID of the player is unknown (because the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            MultiLanguagePlugin.get().logDebugWarning("Language Player is null on packet sending");
+            Triton.get().logDebugWarning("Language Player is null on packet sending");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Server.CHAT) {

@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-public abstract class MultiLanguagePlugin {
+public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    static MultiLanguagePlugin instance;
+    static Triton instance;
     PluginLoader loader;
 
     // File-related variables
@@ -92,6 +92,10 @@ public abstract class MultiLanguagePlugin {
 
     public TwinManager getTwinManager() {
         return twinManager;
+    }
+
+    public static Triton get() {
+        return instance;
     }
 
     public abstract ProtocolLibListener getProtocolLibListener();
@@ -218,8 +222,7 @@ public abstract class MultiLanguagePlugin {
         return loader;
     }
 
-    public static MultiLanguagePlugin get() {
-        return instance;
+    public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.LanguagePlayer p) {
     }
 
     public static SpigotMLP asSpigot() {

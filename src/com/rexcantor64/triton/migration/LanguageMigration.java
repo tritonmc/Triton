@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.migration;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.LocationUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -20,13 +20,13 @@ public class LanguageMigration {
     private JSONArray languageArray = new JSONArray();
 
     public static void migrate() {
-        File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
+        File file = new File(Triton.get().getDataFolder(), "languages.json");
         if (file.exists()) return;
-        File languageFolder = MultiLanguagePlugin.get().getLanguageFolder();
+        File languageFolder = Triton.get().getLanguageFolder();
         if (!languageFolder.exists()) return;
         String[] files = languageFolder.list();
         if (files == null) return;
-        MultiLanguagePlugin.get().logInfo("Starting migration from legacy versions... No files will be deleted!");
+        Triton.get().logInfo("Starting migration from legacy versions... No files will be deleted!");
         HashSet<String> languageFiles = new HashSet<>();
         for (String f : files) {
             Matcher matcher = filePattern.matcher(f);
@@ -34,12 +34,12 @@ public class LanguageMigration {
                 languageFiles.add(matcher.group(1));
         }
         if (languageFiles.isEmpty()) {
-            MultiLanguagePlugin.get().logInfo("No legacy files found! Migration aborted.");
+            Triton.get().logInfo("No legacy files found! Migration aborted.");
             return;
         }
         LanguageMigration migration = new LanguageMigration(languageFiles);
         if (migration.finishMigration())
-            MultiLanguagePlugin.get().logInfo("Migration finished successfully!");
+            Triton.get().logInfo("Migration finished successfully!");
     }
 
     private LanguageMigration(HashSet<String> languageList) {
@@ -51,21 +51,21 @@ public class LanguageMigration {
 
     private void addLanguage(String languageName) {
         try {
-            MultiLanguagePlugin.get().logDebug("Migrating %1.language to the new system...", languageName);
-            File file = new File(MultiLanguagePlugin.get().getLanguageFolder(), languageName + ".language");
+            Triton.get().logDebug("Migrating %1.language to the new system...", languageName);
+            File file = new File(Triton.get().getLanguageFolder(), languageName + ".language");
             if (!file.exists()) return;
             ResourceBundle rb = new PropertyResourceBundle(new FileReader(file));
             for (String s : Collections.list(rb.getKeys())) addMessageToArray(languageName, s, rb.getString(s));
-            MultiLanguagePlugin.get().logDebug("Successfully migrated %1.language to the new system!", languageName);
+            Triton.get().logDebug("Successfully migrated %1.language to the new system!", languageName);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to migrate %1.language to the new system: %2", languageName, e.getMessage());
+            Triton.get().logError("Failed to migrate %1.language to the new system: %2", languageName, e.getMessage());
         }
     }
 
     private void addLanguageSign(String languageName) {
         try {
-            MultiLanguagePlugin.get().logDebug("Migrating %1.signs.json to the new system...", languageName);
-            File file = new File(MultiLanguagePlugin.get().getLanguageFolder(), languageName + ".signs.json");
+            Triton.get().logDebug("Migrating %1.signs.json to the new system...", languageName);
+            File file = new File(Triton.get().getLanguageFolder(), languageName + ".signs.json");
             if (!file.exists()) return;
             JSONArray signs = new JSONArray(IOUtils.toString(new FileReader(file)));
             for (int i = 0; i < signs.length(); i++) {
@@ -80,9 +80,9 @@ public class LanguageMigration {
                             lines[k] = "";
                 addSignToArray(languageName, sign.optInt("x", 0), sign.optInt("y", 0), sign.optInt("z", 0), sign.optString("world", "world"), lines);
             }
-            MultiLanguagePlugin.get().logDebug("Successfully migrated %1.signs.json to the new system!", languageName);
+            Triton.get().logDebug("Successfully migrated %1.signs.json to the new system!", languageName);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to migrate %1.signs.json to the new system: %2", languageName, e.getMessage());
+            Triton.get().logError("Failed to migrate %1.signs.json to the new system: %2", languageName, e.getMessage());
         }
     }
 
@@ -143,9 +143,9 @@ public class LanguageMigration {
 
     private boolean finishMigration() {
         try {
-            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
+            File file = new File(Triton.get().getDataFolder(), "languages.json");
             if (file.exists()) {
-                MultiLanguagePlugin.get().logDebugWarning("Failed to finish migration! languages.json already exists!");
+                Triton.get().logDebugWarning("Failed to finish migration! languages.json already exists!");
                 return false;
             }
             PrintWriter writer = new PrintWriter(file, "UTF-8");
@@ -153,7 +153,7 @@ public class LanguageMigration {
             writer.close();
             return true;
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to finish migration (writing out the file): %1", e.getMessage());
+            Triton.get().logError("Failed to finish migration (writing out the file): %1", e.getMessage());
             return false;
         }
     }

@@ -6,7 +6,7 @@ import com.rexcantor64.triton.components.api.ChatColor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Language {
+public class Language implements com.rexcantor64.triton.api.language.Language {
 
     private String name;
     private List<String> minecraftCode;

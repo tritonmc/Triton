@@ -1,8 +1,8 @@
 package com.rexcantor64.triton.player;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
-import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
 import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
@@ -47,8 +47,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.lang = lang;
         refreshAll();
         save();
-        if (sendToBungee && MultiLanguagePlugin.asSpigot().getBridgeManager() != null)
-            MultiLanguagePlugin.asSpigot().getBridgeManager().updatePlayerLanguage(this);
+        if (sendToBungee && Triton.asSpigot().getBridgeManager() != null)
+            Triton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
         executeCommands();
     }
 
@@ -63,9 +63,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         refreshEntities();
         refreshSigns();
         toBukkit().updateInventory();
-        if (interceptor != null && MultiLanguagePlugin.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+        if (interceptor != null && Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
             interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-        if (interceptor != null && MultiLanguagePlugin.get().getConf().isBossbars())
+        if (interceptor != null && Triton.get().getConf().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
     }
@@ -75,20 +75,20 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void refreshSigns() {
-        if (!MultiLanguagePlugin.get().getConf().isSigns())
+        if (!Triton.get().getConf().isSigns())
             return;
         if (interceptor != null)
             interceptor.refreshSigns(this);
     }
 
     private void refreshScoreboard() {
-        if (!MultiLanguagePlugin.get().getConf().isScoreboards())
+        if (!Triton.get().getConf().isScoreboards())
             return;
         interceptor.refreshScoreboard(this);
     }
 
     private void refreshEntities() {
-        if (MultiLanguagePlugin.get().getConf().getHolograms().size() == 0 && !MultiLanguagePlugin.get().getConf().isHologramsAll())
+        if (Triton.get().getConf().getHolograms().size() == 0 && !Triton.get().getConf().isHologramsAll())
             return;
         if (interceptor != null)
             interceptor.refreshEntities(this);
@@ -113,7 +113,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private void load() {
         lang = PlayerStorage.StorageManager.getCurrentStorage().getLanguage(this);
-        if (MultiLanguagePlugin.get().getConf().isRunLanguageCommandsOnLogin())
+        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
@@ -132,7 +132,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void executeCommands() {
-        for (ExecutableCommand cmd : lang.getCmds()) {
+        for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
             String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%", bukkit.getUniqueId().toString());
             if (cmd.getType() == ExecutableCommand.Type.SERVER)
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);

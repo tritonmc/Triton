@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.language;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
 import com.rexcantor64.triton.SpigotMLP;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.components.api.ChatColor;
 import com.rexcantor64.triton.components.api.chat.BaseComponent;
 import com.rexcantor64.triton.components.api.chat.HoverEvent;
@@ -293,7 +293,7 @@ public class LanguageParser {
             }
             arguments.add(cache);
         }
-        return replaceArguments(TextComponent.fromLegacyText(MultiLanguagePlugin.get().getLanguageManager().getText(p, messageCode)), arguments);
+        return replaceArguments(TextComponent.fromLegacyText(Triton.get().getLanguageManager().getText(p, messageCode)), arguments);
     }
 
     private BaseComponent replaceArguments(BaseComponent[] base, List<BaseComponent> args) {

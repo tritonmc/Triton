@@ -3,7 +3,7 @@ package com.rexcantor64.triton.commands;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.utils.LocationUtils;
@@ -33,29 +33,29 @@ public class SignCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("triton.sign")) {
-            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.sign"));
+            p.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.sign"));
             return true;
         }
 
         if (args.length < 2 || (!args[1].equalsIgnoreCase("set") && !args[1].equalsIgnoreCase("remove"))) {
-            p.sendMessage(MultiLanguagePlugin.get().getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group.", label));
+            p.sendMessage(Triton.get().getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group.", label));
             return true;
         }
 
         Block block = p.getTargetBlock((Set<Material>) null, 10);
         if (block.getType() != Material.SIGN && block.getType() != Material.SIGN_POST && block.getType() != Material.WALL_SIGN) {
-            p.sendMessage(MultiLanguagePlugin.get().getMessage("error.not-sign", "&cYou're not looking at a sign."));
+            p.sendMessage(Triton.get().getMessage("error.not-sign", "&cYou're not looking at a sign."));
             return true;
         }
 
         if (args[1].equalsIgnoreCase("set")) {
             if (args.length < 3) {
-                p.sendMessage(MultiLanguagePlugin.get().getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group.", label));
+                p.sendMessage(Triton.get().getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group.", label));
                 return true;
             }
             LanguageSign sign = null;
 
-            for (LanguageItem li : MultiLanguagePlugin.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
+            for (LanguageItem li : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
                 if (li.getKey().equals(args[2])) {
                     sign = (LanguageSign) li;
                     break;
@@ -63,10 +63,10 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             }
 
             if (sign == null) {
-                p.sendMessage(MultiLanguagePlugin.get().getMessage("error.sign-not-found", "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options.", args[2]));
+                p.sendMessage(Triton.get().getMessage("error.sign-not-found", "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options.", args[2]));
             }
 
-            if (MultiLanguagePlugin.get().getConf().isBungeecord()) {
+            if (Triton.get().getConf().isBungeecord()) {
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 // Action (1): sign management
                 out.writeByte(1);
@@ -76,13 +76,13 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 out.writeInt(block.getZ());
                 out.writeBoolean(true); // Set
                 out.writeUTF(args[2]);
-                p.sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
+                p.sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
             } else {
                 LanguageSign.SignLocation loc = new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
                 executeSignChange(true, args[2], loc);
             }
         } else {
-            if (MultiLanguagePlugin.get().getConf().isBungeecord()) {
+            if (Triton.get().getConf().isBungeecord()) {
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 // Action (1): sign management
                 out.writeByte(1);
@@ -91,12 +91,12 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 out.writeInt(block.getY());
                 out.writeInt(block.getZ());
                 out.writeBoolean(false); // Remove
-                p.sendPluginMessage(MultiLanguagePlugin.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
+                p.sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
             } else {
                 LanguageSign.SignLocation loc = new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block.getY(), block.getZ());
                 executeSignChange(false, null, loc);
             }
-            MultiLanguagePlugin.asSpigot().getProtocolLibListener().resetSign(p, new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
+            Triton.asSpigot().getProtocolLibListener().resetSign(p, new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
         }
 
 
@@ -105,9 +105,9 @@ public class SignCMD implements CommandExecutor, TabCompleter {
 
     private void executeSignChange(boolean add, String key, LanguageSign.SignLocation loc) {
         List<String> remove = new ArrayList<>();
-        for (LanguageItem li : MultiLanguagePlugin.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
+        for (LanguageItem li : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
             if (((LanguageSign) li).hasLocation(loc, false)) remove.add(li.getKey());
-        JSONArray raw = MultiLanguagePlugin.get().getLanguageConfig().getRaw();
+        JSONArray raw = Triton.get().getLanguageConfig().getRaw();
         for (int i = 0; i < raw.length(); i++) {
             JSONObject obj = raw.optJSONObject(i);
             if (obj == null || !obj.optString("type", "text").equals("sign")) continue;
@@ -130,8 +130,8 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 raw.put(i, obj);
             }
         }
-        MultiLanguagePlugin.get().getLanguageConfig().saveFromRaw(raw);
-        MultiLanguagePlugin.get().reload();
+        Triton.get().getLanguageConfig().saveFromRaw(raw);
+        Triton.get().reload();
     }
 
     @Override
@@ -144,7 +144,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 if (str.startsWith(args[1]))
                     tab.add(str);
         if (args.length == 3)
-            for (LanguageItem item : MultiLanguagePlugin.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
+            for (LanguageItem item : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
                 if (item.getKey().startsWith(args[2]))
                     tab.add(item.getKey());
         return tab;

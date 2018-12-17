@@ -2,12 +2,12 @@ package com.rexcantor64.triton.player;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.language.ExecutableCommand;
-import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.Connection;
@@ -64,7 +64,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
 
     public Language getLang() {
         if (language == null)
-            language = MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
+            language = Triton.get().getLanguageManager().getMainLanguage();
         return language;
     }
 
@@ -84,9 +84,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     public void refreshAll() {
         if (listener == null) return;
         listener.refreshTab();
-        if (MultiLanguagePlugin.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+        if (Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
             listener.refreshTabHeaderFooter(lastTabHeader, lastTabFooter);
-        if (MultiLanguagePlugin.get().getConf().isBossbars())
+        if (Triton.get().getConf().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 listener.refreshBossbar(entry.getKey(), entry.getValue());
     }
@@ -104,19 +104,19 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     private void load() {
-        Configuration config = MultiLanguagePlugin.get().loadYAML("players", "players");
-        language = MultiLanguagePlugin.get().getLanguageManager().getLanguageByName(config.getString(uuid.toString()), true);
-        if (MultiLanguagePlugin.get().getConf().isRunLanguageCommandsOnLogin())
+        Configuration config = Triton.get().loadYAML("players", "players");
+        language = Triton.get().getLanguageManager().getLanguageByName(config.getString(uuid.toString()), true);
+        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
     private void save() {
-        Configuration config = MultiLanguagePlugin.get().loadYAML("players", "players");
+        Configuration config = Triton.get().loadYAML("players", "players");
         config.set(uuid.toString(), language.getName());
         try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml"));
+            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(Triton.get().getDataFolder(), "players.yml"));
         } catch (IOException e) {
-            MultiLanguagePlugin.get().logError("Failed to save players.yml: %1", e.getMessage());
+            Triton.get().logError("Failed to save players.yml: %1", e.getMessage());
         }
     }
 
@@ -125,7 +125,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     private void executeCommands() {
-        for (ExecutableCommand cmd : language.getCmds()) {
+        for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
             String cmdText = cmd.getCmd().replace("%player%", parent.getName()).replace("%uuid%", parent.getUniqueId().toString());
             if (!cmd.isUniversal() && !cmd.getServers().contains(parent.getServer().getInfo().getName())) continue;
             if (cmd.getType() == ExecutableCommand.Type.SERVER) {

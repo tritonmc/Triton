@@ -1,14 +1,8 @@
 package com.rexcantor64.triton.player;
 
-import com.rexcantor64.triton.language.Language;
-
 import java.util.UUID;
 
-public interface LanguagePlayer {
-
-    Language getLang();
-
-    void setLang(Language language);
+public interface LanguagePlayer extends com.rexcantor64.triton.api.LanguagePlayer {
 
     void setBossbar(UUID uuid, String lastBossBar);
 
@@ -17,7 +11,5 @@ public interface LanguagePlayer {
     void setLastTabHeader(String lastTabHeader);
 
     void setLastTabFooter(String lastTabFooter);
-
-    void refreshAll();
 
 }

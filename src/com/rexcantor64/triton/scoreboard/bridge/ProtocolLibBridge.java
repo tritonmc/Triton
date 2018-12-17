@@ -6,7 +6,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.ScoreboardBridge;
@@ -46,7 +46,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send setEntryScore packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send setEntryScore packet: %1", e.getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
         }
     }
 
@@ -92,7 +92,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send addEntryToTeam packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send addEntryToTeam packet: %1", e.getMessage());
         }
     }
 
@@ -109,7 +109,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send addObjective packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send addObjective packet: %1", e.getMessage());
         }
         container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, true);
         container.getStrings().writeSafely(0, OBJECTIVE_NAME);
@@ -117,7 +117,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send displayObjective packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send displayObjective packet: %1", e.getMessage());
         }
         for (int i = 0; i < 15; i++) {
             container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
@@ -148,7 +148,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
             } catch (Exception e) {
-                MultiLanguagePlugin.get().logError("Failed to send createTeam packet: %1", e.getMessage());
+                Triton.get().logError("Failed to send createTeam packet: %1", e.getMessage());
             }
         }
     }
@@ -166,7 +166,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logError("Failed to send updateObjectiveTitle packet: %1", e.getMessage());
+            Triton.get().logError("Failed to send updateObjectiveTitle packet: %1", e.getMessage());
         }
     }
 

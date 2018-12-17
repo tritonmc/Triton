@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.storage;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
-import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -26,36 +26,36 @@ public interface PlayerStorage {
 
         @Override
         public Language getLanguage(SpigotLanguagePlayer lp) {
-            File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
+            File f = new File(Triton.get().getDataFolder(), "players.yml");
             if (!f.exists()) {
-                return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
+                return Triton.get().getLanguageManager().getMainLanguage();
             }
             YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
             if (players
                     .isString(
                             lp.getUUID()
                                     .toString()))
-                return MultiLanguagePlugin.get().getLanguageManager()
+                return Triton.get().getLanguageManager()
                         .getLanguageByName(players.getString(lp.getUUID().toString()), true);
-            return MultiLanguagePlugin.get().getLanguageManager().getMainLanguage();
+            return Triton.get().getLanguageManager().getMainLanguage();
         }
 
         @Override
         public void setLanguage(UUID uuid, Language newLanguage) {
             try {
-                MultiLanguagePlugin.get().logDebug("Saving language for %1...", uuid.toString());
-                File f = new File(MultiLanguagePlugin.get().getDataFolder(), "players.yml");
+                Triton.get().logDebug("Saving language for %1...", uuid.toString());
+                File f = new File(Triton.get().getDataFolder(), "players.yml");
                 if (!f.exists())
                     if (!f.createNewFile()) {
-                        MultiLanguagePlugin.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: File already exists", uuid.toString());
+                        Triton.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: File already exists", uuid.toString());
                         return;
                     }
                 YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
                 players.set(uuid.toString(), newLanguage.getName());
                 players.save(f);
-                MultiLanguagePlugin.get().logDebug("Saved!");
+                Triton.get().logDebug("Saved!");
             } catch (Exception e) {
-                MultiLanguagePlugin.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: %2", uuid.toString(), e.getMessage());
+                Triton.get().logDebugWarning("Failed to save language for %1! Could not create players.yml: %2", uuid.toString(), e.getMessage());
             }
         }
 

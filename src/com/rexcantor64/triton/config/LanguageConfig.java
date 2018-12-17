@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.config;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
@@ -36,19 +36,19 @@ public class LanguageConfig {
         items.clear();
         long timeStarted = System.currentTimeMillis();
         try {
-            File file = new File(MultiLanguagePlugin.get().getDataFolder(), useCache ? "languages.cache.json" : "languages.json");
+            File file = new File(Triton.get().getDataFolder(), useCache ? "languages.cache.json" : "languages.json");
             if (!file.exists()) {
                 try {
                     if (!useCache)
                         Files.write(file.toPath(), "[]".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
                 } catch (Exception e) {
-                    MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                    Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
                 }
                 return;
             }
             setup(new JSONArray(FileUtils.contentsToString(file)));
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logWarning("An error occurred while loading languages! Some language items may not have been loaded! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while loading languages! Some language items may not have been loaded! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Loaded");
         }
@@ -66,18 +66,18 @@ public class LanguageConfig {
     public void saveFromRaw(JSONArray raw) {
         long timeStarted = System.currentTimeMillis();
         try {
-            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.json");
+            File file = new File(Triton.get().getDataFolder(), "languages.json");
             Files.write(file.toPath(), raw.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             items.clear();
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logWarning("An error occurred while saving language items after sign update! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while saving language items after sign update! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved");
         }
     }
 
     private void logCount(long timeStarted, String action) {
-        MultiLanguagePlugin.get().logDebug(action + " %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
+        Triton.get().logDebug(action + " %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
     }
 
     public void saveToCache() {
@@ -108,10 +108,10 @@ public class LanguageConfig {
                 }
                 array.put(obj);
             }
-            File file = new File(MultiLanguagePlugin.get().getDataFolder(), "languages.cache.json");
+            File file = new File(Triton.get().getDataFolder(), "languages.cache.json");
             Files.write(file.toPath(), array.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception e) {
-            MultiLanguagePlugin.get().logWarning("An error occurred while saving language items to cache! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while saving language items to cache! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved");
         }

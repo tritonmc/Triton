@@ -24,8 +24,8 @@ public class LanguageSign extends LanguageItem {
         return locations;
     }
 
-    public boolean hasLocation(SignLocation loc) {
-        return hasLocation(loc, false);
+    public boolean hasLocation(com.rexcantor64.triton.api.language.SignLocation loc) {
+        return hasLocation((SignLocation) loc, false);
     }
 
     public boolean hasLocation(SignLocation loc, boolean checkServer) {
@@ -43,7 +43,7 @@ public class LanguageSign extends LanguageItem {
         return languages;
     }
 
-    public static class SignLocation {
+    public static class SignLocation implements com.rexcantor64.triton.api.language.SignLocation {
         private String server;
         private String world;
         private int x;

@@ -1,9 +1,10 @@
 package com.rexcantor64.triton.config;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.config.TritonConfig;
+import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.utils.FileUtils;
-import com.rexcantor64.triton.wrappers.EntityType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,17 +15,16 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainConfig {
+public class MainConfig implements TritonConfig {
 
-    private final MultiLanguagePlugin main;
+    private final Triton main;
 
-    public MainConfig(MultiLanguagePlugin main) {
+    public MainConfig(Triton main) {
         this.main = main;
     }
 
     private Configuration languages;
     private String mainLanguage;
-    private boolean forceLocale;
     private boolean runLanguageCommandsOnLogin;
     private boolean debug;
     private boolean bungeecord;
@@ -91,10 +91,6 @@ public class MainConfig {
 
     public void setMainLanguage(String mainLanguage) {
         this.mainLanguage = mainLanguage;
-    }
-
-    public boolean isForceLocale() {
-        return forceLocale;
     }
 
     public boolean isRunLanguageCommandsOnLogin() {
@@ -220,7 +216,6 @@ public class MainConfig {
             this.mainLanguage = section.getString("main-language", "en_GB");
         }
         this.twinToken = section.getString("twin-token", "");
-        this.forceLocale = section.getBoolean("force-minecraft-locale", false);
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.debug = section.getBoolean("debug", false);
         Configuration languageCreation = section.getSection("language-creation");
@@ -234,12 +229,12 @@ public class MainConfig {
     }
 
     private void setupFromCache() {
-        File file = new File(MultiLanguagePlugin.get().getDataFolder(), "cache.json");
+        File file = new File(Triton.get().getDataFolder(), "cache.json");
         if (!file.exists()) {
             try {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
-                MultiLanguagePlugin.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
             }
             return;
         }
@@ -247,7 +242,7 @@ public class MainConfig {
             JSONObject obj = new JSONObject(FileUtils.contentsToString(file));
             setLanguages(obj);
         } catch (JSONException e) {
-            MultiLanguagePlugin.get().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1", e.getMessage());
+            Triton.get().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1", e.getMessage());
         }
     }
 
@@ -309,7 +304,7 @@ public class MainConfig {
             }
     }
 
-    public static class FeatureSyntax {
+    public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private String lang;
         private String args;
         private String arg;
@@ -349,47 +344,5 @@ public class MainConfig {
             return interactive;
         }
     }
-
-    /*public JSONObject toJSON() {
-        JSONObject config = new JSONObject();
-        JSONObject parser = new JSONObject();
-        parser.put("chat", chat);
-        parser.put("actionbar", actionbars);
-        parser.put("titles", titles);
-        parser.put("guis", guis);
-        parser.put("scoreboards", scoreboards);
-        parser.put("scoreboardsAdvanced", scoreboards);
-        parser.put("hologramsAllowAll", hologramsAll);
-        parser.put("kick", kick);
-        parser.put("tab", tab);
-        parser.put("items", items);
-        parser.put("inventoryItems", inventoryItems);
-        parser.put("signs", signs);
-        parser.put("bossbars", bossbars);
-        JSONArray holograms = new JSONArray();
-        for (EntityType et : this.holograms)
-            holograms.put(et.toString());
-        parser.put("holograms", holograms);
-        parser.put("syntax", syntax);
-        parser.put("syntaxArgs", syntaxArgs);
-        parser.put("syntaxArg", syntaxArg);
-        parser.put("disabledLine", disabledLine);
-        config.put("parser", parser);
-        config.put("debug", debug);
-        config.put("forceLocale", forceLocale);
-        config.put("runLanguageCMDsOnLogin", runLanguageCommandsOnLogin);
-        config.put("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
-        JSONArray languages = new JSONArray();
-        for (Language language : main.getLanguageManager().getAllLanguages()) {
-            JSONObject lang = new JSONObject();
-            lang.put("name", language.getName());
-            lang.put("display", language.getRawDisplayName());
-            lang.put("flag", language.getFlagCode());
-            lang.put("codes", language.getMinecraftCodes());
-            languages.put(lang);
-        }
-        config.put("languages", languages);
-        return config;
-    }*/
 
 }

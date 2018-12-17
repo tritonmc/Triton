@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.scoreboard;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.components.api.chat.TextComponent;
 import com.rexcantor64.triton.components.chat.ComponentSerializer;
 import com.rexcantor64.triton.config.MainConfig;
@@ -36,7 +36,7 @@ public class WrappedScoreboard {
     public void rerender(boolean force) {
         if (sidebarObjective == null) return;
         if (force)
-            bridge.updateObjectiveTitle(bridge.useComponents() ? ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseChat(owner, MultiLanguagePlugin.get().getConf().getScoreboardSyntax(), sidebarObjective.getTitleComp())) : translate(owner, sidebarObjective.getTitle(), 32, MultiLanguagePlugin.get().getConf().getScoreboardSyntax()));
+            bridge.updateObjectiveTitle(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(owner, Triton.get().getConf().getScoreboardSyntax(), sidebarObjective.getTitleComp())) : translate(owner, sidebarObjective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
 
         if (sidebarObjective.hasChanges()) topEntries = sidebarObjective.getTopScores();
         sidebarObjective.resetModified();
@@ -61,10 +61,10 @@ public class WrappedScoreboard {
                     bridge.updateEntryScore(line.entry + ScoreboardUtils.getEntrySuffix(i), score);
                 continue;
             }
-            LanguageParser parser = MultiLanguagePlugin.get().getLanguageParser();
+            LanguageParser parser = Triton.get().getLanguageParser();
             if (!bridge.useComponents()) {
                 String text = parser.scoreboardComponentToString(parser.removeDummyColors(parser.toScoreboardComponents(team.getPrefix() + entry + team.getSuffix())));
-                String[] translated = parser.toPacketFormatting(parser.toScoreboardComponents(parser.replaceLanguages(text, owner, MultiLanguagePlugin.get().getConf().getScoreboardSyntax())));
+                String[] translated = parser.toPacketFormatting(parser.toScoreboardComponents(parser.replaceLanguages(text, owner, Triton.get().getConf().getScoreboardSyntax())));
                 if (translated[1].length() > 36)
                     translated[1] = translated[1].substring(0, translated[1].length() - 4);
                 if (!translated[1].equals(line.entry) || line.score == null || line.score != score) {
@@ -85,7 +85,7 @@ public class WrappedScoreboard {
                 line.score = score;
             } else {
                 String text = parser.scoreboardComponentToString(parser.removeDummyColors(parser.toScoreboardComponents(team.getPrefix() + entry + team.getSuffix())));
-                text = parser.replaceLanguages(text, owner, MultiLanguagePlugin.get().getConf().getScoreboardSyntax());
+                text = parser.replaceLanguages(text, owner, Triton.get().getConf().getScoreboardSyntax());
                 if (line.score == null || line.score != score)
                     bridge.updateEntryScore(ScoreboardUtils.getEntrySuffix(i), score);
                 bridge.updateTeamPrefixSuffix(ComponentSerializer.toString(TextComponent.fromLegacyText(text)), "{\"text\":\"\"}", i);
@@ -137,7 +137,7 @@ public class WrappedScoreboard {
     public void setSidebarObjective(WrappedObjective objective) {
         if (!initialized && objective != null) {
             initialized = true;
-            bridge.initializeScoreboard(bridge.useComponents() ? ComponentSerializer.toString(MultiLanguagePlugin.get().getLanguageParser().parseChat(owner, MultiLanguagePlugin.get().getConf().getScoreboardSyntax(), objective.getTitleComp())) : translate(owner, objective.getTitle(), 32, MultiLanguagePlugin.get().getConf().getScoreboardSyntax()));
+            bridge.initializeScoreboard(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(owner, Triton.get().getConf().getScoreboardSyntax(), objective.getTitleComp())) : translate(owner, objective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
         }
         this.sidebarObjective = objective;
     }
@@ -155,7 +155,7 @@ public class WrappedScoreboard {
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
-        String r = MultiLanguagePlugin.get().getLanguageParser().replaceLanguages(s, lp, syntax);
+        String r = Triton.get().getLanguageParser().replaceLanguages(s, lp, syntax);
         if (r.length() > max) return r.substring(0, max);
         return r;
     }

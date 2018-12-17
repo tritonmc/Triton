@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.banners;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +20,17 @@ public class Banner {
         }
         for (String s : strings) {
             if (s.length() != 2) {
-                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
+                Triton.get().logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
                 continue;
             }
             Colors color = Colors.getByCode(s.charAt(0));
             Patterns type = Patterns.getByCode(s.charAt(1));
             if (color == null) {
-                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
+                Triton.get().logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
                 continue;
             }
             if (type == null) {
-                MultiLanguagePlugin.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
+                Triton.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
                 continue;
             }
             layers.add(new Layer(color, type));

@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.MultiLanguagePlugin;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,7 +19,7 @@ public class LocationUtils {
         for (int i = 0; i < arr.length(); i++) {
             JSONObject obj = arr.optJSONObject(i);
             if (obj == null) {
-                MultiLanguagePlugin.get().logWarning("Found invalid location while reading sign! Make sure all locations are a JSONObject.");
+                Triton.get().logWarning("Found invalid location while reading sign! Make sure all locations are a JSONObject.");
                 continue;
             }
             result.add(jsonToLocation(obj));
