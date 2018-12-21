@@ -9,7 +9,6 @@ import java.util.HashMap;
 
 public abstract class LanguageItem {
 
-
     private final String key;
 
     public LanguageItem(String key) {
@@ -33,7 +32,7 @@ public abstract class LanguageItem {
                     if (a != null) map.put(lKey, a);
                 }
                 if (map.size() == 0) return null;
-                return new LanguageText(key, map, obj.optBoolean("universal", false), obj.optBoolean("blacklist", false), obj.optJSONArray("servers"));
+                return new LanguageText(key, map, obj.optBoolean("universal", true), obj.optBoolean("blacklist", false), obj.optJSONArray("servers"));
             case SIGN:
                 JSONArray loc = obj.optJSONArray("locations");
                 if (loc == null) return null;

@@ -1,8 +1,8 @@
 package com.rexcantor64.triton;
 
 import com.comphenix.protocol.ProtocolLibrary;
-import com.rexcantor64.triton.api.LanguagePlayer;
 import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.commands.MainCMD;
 import com.rexcantor64.triton.commands.TwinCMD;

@@ -222,7 +222,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return loader;
     }
 
-    public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.LanguagePlayer p) {
+    public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {
     }
 
     public static SpigotMLP asSpigot() {
