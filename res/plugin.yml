@@ -1,7 +1,7 @@
 name: Triton
 main: com.rexcantor64.triton.plugin.SpigotPlugin
-version: 1.0.0-BETA_5
-website: https://www.spigotmc.org/resources/triton.30331/
+version: 1.0.0
+website: https://triton.rexcantor64.com/
 author: Rexcantor64
 depend: [ProtocolLib]
 description: A plugin that replaces any message on your server, to the receiver's language, in real time!
