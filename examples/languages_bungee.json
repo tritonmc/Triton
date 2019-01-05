@@ -1,0 +1,56 @@
+[
+  {
+    "type": "text",
+    "key": "join.greetings",
+    "languages": {
+      "en_GB": "&6Welcome to the server!",
+      "pt_PT": "&6Bem vindo ao servidor!"
+    },
+    "universal": true
+  },
+  {
+    "type": "text",
+    "key": "economy.balance",
+    "languages": {
+      "en_GB": "&6Your balance: &e$%1",
+      "pt_PT": "&6O seu saldo: &e$%1"
+    },
+    "universal": false,
+    "servers": ["survival-1", "survival-2"]
+  },
+  {
+    "type": "text",
+    "key": "economy.send.money",
+    "languages": {
+      "en_GB": "&6You've just sent &e$%1 &6 to &e%2&6!",
+      "pt_PT": "&6Enviaste &e$%1 &6 para &e%2&6!"
+    },
+    "universal": false,
+    "servers": ["survival-3", "survival-4"]
+  },
+  {
+    "type": "sign",
+    "key": "sign.help",
+    "locations": [
+      {
+        "server": "hub-1",
+        "world": "world",
+        "x": 165,
+        "y": 66,
+        "z": -424
+      },
+      {
+        "server": "survival-1",
+        "world": "world",
+        "x": -762,
+        "y": 88,
+        "z": -525
+      }
+    ],
+    "lines": {
+      "en_GB": ["&4Welcome!", "&cType &b/help", "&cto get a list", "&cof commands!"],
+      "pt_PT": ["&4Bem-vindo!", "&cEscreve &b/help", "&cpara a lista", "&cde comandos!"]
+    }
+  }
+]
+
