@@ -15,7 +15,7 @@ help:
   menu-item: "&6/%1 %2 &e&l- &f%3"
   getflag: "&cUse /%1 getflag <language name>"
   setlanguage: "&cUse /%1 setlanguage [player] <language name>"
-  sign: "&cUse &4/%1 sign <add|remove> <group key>&c to add a sign to a group."
+  sign: "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group."
 command:
   help: "Displays this message"
   getflag: "Gives the flag (banner) of a language to you"
