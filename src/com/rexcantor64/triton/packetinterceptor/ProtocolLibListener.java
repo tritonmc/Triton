@@ -383,11 +383,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleScoreboardDisplayObjective(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT && main.getConf().isKick()) {
             handleKickDisconnect(packet, languagePlayer);
-        } else if (signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
+        } else if (existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
             handleUpdateSign(packet, languagePlayer);
-        } else if (!signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
+        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
             handleTileEntityData(packet, languagePlayer);
-        } else if (!signUpdateExists() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
+        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
             handleMapChunk(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS && main.getConf().isItems()) {
             handleWindowItems(packet, languagePlayer);
@@ -417,7 +417,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
                     if (lines == null) continue out;
                     packet.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(), location.getZ()));
-                    if (signUpdateExists()) {
+                    if (existsSignUpdatePacket()) {
                         WrappedChatComponent[] comps = new WrappedChatComponent[4];
                         for (int i = 0; i < 4; i++)
                             comps[i] = WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
@@ -538,7 +538,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         Sign sign = (Sign) block.getState();
         String[] lines = sign.getLines();
-        if (signUpdateExists()) {
+        if (existsSignUpdatePacket()) {
             PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN, true);
             container.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(), location.getZ()));
             container.getChatComponentArrays().writeSafely(0, new WrappedChatComponent[]{WrappedChatComponent.fromText(lines[0]), WrappedChatComponent.fromText(lines[1]), WrappedChatComponent.fromText(lines[2]), WrappedChatComponent.fromText(lines[3])});
@@ -571,7 +571,28 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE, PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, PacketType.Play.Server.OPEN_WINDOW, PacketType.Play.Server.ENTITY_METADATA, PacketType.Play.Server.PLAYER_INFO, PacketType.Play.Server.SCOREBOARD_OBJECTIVE, PacketType.Play.Server.SCOREBOARD_SCORE, PacketType.Play.Server.SCOREBOARD_TEAM, PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, PacketType.Play.Server.KICK_DISCONNECT, PacketType.Play.Server.UPDATE_SIGN, PacketType.Play.Server.MAP_CHUNK, PacketType.Play.Server.WINDOW_ITEMS, PacketType.Play.Server.SET_SLOT, PacketType.Login.Server.DISCONNECT, getMCVersion() >= 9 ? PacketType.Play.Server.BOSS : PacketType.Play.Server.CHAT).highest().build();
+        Collection<PacketType> types = new ArrayList<>();
+        types.add(PacketType.Play.Server.CHAT);
+        types.add(PacketType.Play.Server.TITLE);
+        types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+        types.add(PacketType.Play.Server.OPEN_WINDOW);
+        types.add(PacketType.Play.Server.ENTITY_METADATA);
+        types.add(PacketType.Play.Server.PLAYER_INFO);
+        types.add(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
+        types.add(PacketType.Play.Server.SCOREBOARD_SCORE);
+        types.add(PacketType.Play.Server.SCOREBOARD_TEAM);
+        types.add(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE);
+        types.add(PacketType.Play.Server.KICK_DISCONNECT);
+        if (existsSignUpdatePacket()) types.add(PacketType.Play.Server.UPDATE_SIGN);
+        else {
+            types.add(PacketType.Play.Server.MAP_CHUNK);
+            types.add(PacketType.Play.Server.TILE_ENTITY_DATA);
+        }
+        types.add(PacketType.Play.Server.WINDOW_ITEMS);
+        types.add(PacketType.Play.Server.SET_SLOT);
+        types.add(PacketType.Login.Server.DISCONNECT);
+        if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).highest().build();
     }
 
     @Override
@@ -607,7 +628,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return mcVersionR;
     }
 
-    private boolean signUpdateExists() {
+    private boolean existsSignUpdatePacket() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
     }
 

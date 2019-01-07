@@ -24,14 +24,14 @@ languages:
     # Available variables:
     # %player% - Replaced with the player's name.
     # %uuid% - Replaced with the player's UUID (with dashes).
-#    commands:
-#      - 'SERVER:say %player% (%uuid%) has just changed their language!'
+  #  commands:
+  #      - 'SERVER:say %player% (%uuid%) has just changed their language!'
   pt_PT:
     flag: bacLlt
     minecraft-code: [pt_PT]
     display-name: '&aPortuguese (Portugal)'
-#    commands:
-#      - 'SERVER:say %player% (%uuid%) has just changed their language!'
+  #  commands:
+  #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 
 # The main language is the fallback language. If some message is not found, it will try to get it from here before
 # returning an error message.
@@ -92,7 +92,7 @@ language-creation:
     # Also, you can also translate other's entities name, like villagers. Add their entity type on the list below.
     # Full list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
     types:
-    - ARMOR_STAND
+      - ARMOR_STAND
     # When enabled, the list above is ignored and all entities' names are checked and translated.
     allow-all: false
     syntax-lang: lang
