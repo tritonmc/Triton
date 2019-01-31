@@ -36,7 +36,7 @@ twin:
   no-internet: "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1"
   failed-fetch: "&cFailed to fetch the config: %1"
   failed-upload: "&cFailed to upload the config: %1"
-  incorrect-status: "&4status is not 202 (received &l%1&4)"
+  incorrect-status: "&4status is not 200 (received &l%1&4)"
   connecting: "&aConnecting to TWIN... Please wait"
   uploaded: "&aYour config is live! Start editing now at &6%1"
   failed-file-update: "&cError while writing to file '%1': %2"

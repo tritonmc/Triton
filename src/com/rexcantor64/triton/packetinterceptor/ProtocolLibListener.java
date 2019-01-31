@@ -63,8 +63,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         boolean ab = isActionbar(packet.getPacket());
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-            msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getActionbarSyntax())));
-            packet.getPacket().getChatComponents().writeSafely(0, msg);
+            if (msg != null) {
+                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseSimpleBaseComponent(languagePlayer, ComponentSerializer.parse(msg.getJson()), main.getConf().getActionbarSyntax())));
+                packet.getPacket().getChatComponents().writeSafely(0, msg);
+                return;
+            }
+            packet.getPacket().getModifier().writeSafely(1, toLegacy(main.getLanguageParser().parseChat(languagePlayer, main.getConf().getChatSyntax(), fromLegacy((net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1)))));
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
