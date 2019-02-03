@@ -1,4 +1,5 @@
 # Triton 1.0.1
+[![Release](https://jitpack.io/v/Rexcantor/Triton.svg)](https://jitpack.io/#Rexcantor/Triton)  
 _Translate your server! Sends the same message on different languages... Hooks into all plugins!_  
 This repository was previously called MultiLanguagePlugin.
 
