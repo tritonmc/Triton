@@ -12,7 +12,6 @@ import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.json.JSONArray;
@@ -98,7 +97,7 @@ public class BungeeBridgeManager implements Listener {
             @Override
             public void run() {
                 if (event.getCancelReasonComponents() != null)
-                    event.setCancelReason(ComponentSerializer.parse(com.rexcantor64.triton.components.chat.ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(lp, Triton.get().getConf().getKickSyntax(), com.rexcantor64.triton.components.chat.ComponentSerializer.parse(ComponentSerializer.toString(event.getCancelReasonComponents()))))));
+                    event.setCancelReason(Triton.get().getLanguageParser().parseComponent(lp, Triton.get().getConf().getKickSyntax(), event.getCancelReasonComponents()));
                 event.completeIntent(Triton.get().getLoader().asBungee());
             }
         });

@@ -5,12 +5,12 @@ import com.google.common.collect.Multimap;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
-import com.rexcantor64.triton.components.api.ChatColor;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.utils.YAMLUtils;
+import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             String msg = text.getMessage(language);
             if (msg == null) return getTextFromMain(code, args);
             for (int i = 0; i < args.length; i++)
-                msg = msg.replace("%" + Integer.toString(i + 1), args[i].toString());
+                msg = msg.replace("%" + (i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
         return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
@@ -45,7 +45,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             String msg = text.getMessage(mainLanguage.getName());
             if (msg == null) break;
             for (int i = 0; i < args.length; i++)
-                msg = msg.replace("%" + Integer.toString(i + 1), args[i].toString());
+                msg = msg.replace("%" + (i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
         return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);

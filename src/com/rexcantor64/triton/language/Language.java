@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.banners.Banner;
-import com.rexcantor64.triton.components.api.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
 import java.util.List;

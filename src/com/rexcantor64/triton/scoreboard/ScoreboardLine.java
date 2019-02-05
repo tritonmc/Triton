@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.scoreboard;
 
-import com.rexcantor64.triton.components.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 public class ScoreboardLine {
 

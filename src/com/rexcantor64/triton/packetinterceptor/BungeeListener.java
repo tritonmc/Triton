@@ -1,11 +1,11 @@
 package com.rexcantor64.triton.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.components.api.chat.BaseComponent;
-import com.rexcantor64.triton.components.chat.ComponentSerializer;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.NMSUtils;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.packet.*;
@@ -59,17 +59,13 @@ public class BungeeListener implements Connection.Unsafe {
         if ((type == 2 && !Triton.get().getConf().isActionbars()) || (type != 2 && !Triton.get().getConf().isChat()))
             return;
         BaseComponent[] text = ComponentSerializer.parse(p.getMessage());
-        if (type != 2) {
-            text = Triton.get().getLanguageParser().parseChat(owner, Triton.get().getConf().getChatSyntax(), text);
-        } else {
-            text = Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, text, Triton.get().getConf().getActionbarSyntax());
-        }
+        text = Triton.get().getLanguageParser().parseComponent(owner, type != 2 ? Triton.get().getConf().getChatSyntax() : Triton.get().getConf().getActionbarSyntax(), text);
         p.setMessage(ComponentSerializer.toString(text));
     }
 
     private void handleTitle(DefinedPacket packet) {
         Title p = (Title) packet;
-        p.setText(ComponentSerializer.toString(Triton.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getText()), Triton.get().getConf().getTitleSyntax())));
+        p.setText(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTitleSyntax(), ComponentSerializer.parse(p.getText()))));
     }
 
     private void handleBossbar(DefinedPacket packet) {
@@ -81,21 +77,21 @@ public class BungeeListener implements Connection.Unsafe {
         }
         if (p.getAction() != 0 && p.getAction() != 3) return;
         owner.setBossbar(uuid, p.getTitle());
-        p.setTitle(ComponentSerializer.toString(Triton.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(p.getTitle()), Triton.get().getConf().getBossbarSyntax())));
+        p.setTitle(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getBossbarSyntax(), ComponentSerializer.parse(p.getTitle()))));
     }
 
     private void handlePlayerListHeaderFooter(DefinedPacket packet) {
         PlayerListHeaderFooter p = (PlayerListHeaderFooter) packet;
         owner.setLastTabHeader(p.getHeader());
         owner.setLastTabFooter(p.getFooter());
-        p.setHeader(ComponentSerializer.toString(Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getHeader()), Triton.get().getConf().getTabSyntax())));
-        p.setFooter(ComponentSerializer.toString(Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getFooter()), Triton.get().getConf().getTabSyntax())));
+        p.setHeader(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTabSyntax(), ComponentSerializer.parse(p.getHeader()))));
+        p.setFooter(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTabSyntax(), ComponentSerializer.parse(p.getFooter()))));
     }
 
     private void handleKick(DefinedPacket packet) {
         Kick p = (Kick) packet;
         System.out.println(p);
-        p.setMessage(ComponentSerializer.toString(Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(p.getMessage()), Triton.get().getConf().getKickSyntax())));
+        p.setMessage(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getKickSyntax(), ComponentSerializer.parse(p.getMessage()))));
     }
 
     @Override
@@ -137,14 +133,14 @@ public class BungeeListener implements Connection.Unsafe {
     public void refreshBossbar(UUID uuid, String json) {
         if (owner.getParent().getPendingConnection().getVersion() < 107) return;
         BossBar p = new BossBar(uuid, 3);
-        p.setTitle(ComponentSerializer.toString(Triton.get().getLanguageParser().parseTitle(owner, ComponentSerializer.parse(json), Triton.get().getConf().getBossbarSyntax())));
+        p.setTitle(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getBossbarSyntax(), ComponentSerializer.parse(json))));
         send(p);
     }
 
     public void refreshTabHeaderFooter(String header, String footer) {
         PlayerListHeaderFooter p = new PlayerListHeaderFooter();
-        p.setHeader(ComponentSerializer.toString(Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(header), Triton.get().getConf().getTabSyntax())));
-        p.setFooter(ComponentSerializer.toString(Triton.get().getLanguageParser().parseSimpleBaseComponent(owner, ComponentSerializer.parse(footer), Triton.get().getConf().getTabSyntax())));
+        p.setHeader(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTabSyntax(), ComponentSerializer.parse(header))));
+        p.setFooter(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTabSyntax(), ComponentSerializer.parse(footer))));
         send(p);
     }
 

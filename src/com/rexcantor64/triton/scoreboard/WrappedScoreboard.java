@@ -1,13 +1,13 @@
 package com.rexcantor64.triton.scoreboard;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.components.api.chat.TextComponent;
-import com.rexcantor64.triton.components.chat.ComponentSerializer;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.ScoreboardUtils;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class WrappedScoreboard {
     public void rerender(boolean force) {
         if (sidebarObjective == null) return;
         if (force)
-            bridge.updateObjectiveTitle(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(owner, Triton.get().getConf().getScoreboardSyntax(), sidebarObjective.getTitleComp())) : translate(owner, sidebarObjective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
+            bridge.updateObjectiveTitle(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getScoreboardSyntax(), sidebarObjective.getTitleComp())) : translate(owner, sidebarObjective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
 
         if (sidebarObjective.hasChanges()) topEntries = sidebarObjective.getTopScores();
         sidebarObjective.resetModified();
@@ -137,7 +137,7 @@ public class WrappedScoreboard {
     public void setSidebarObjective(WrappedObjective objective) {
         if (!initialized && objective != null) {
             initialized = true;
-            bridge.initializeScoreboard(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseChat(owner, Triton.get().getConf().getScoreboardSyntax(), objective.getTitleComp())) : translate(owner, objective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
+            bridge.initializeScoreboard(bridge.useComponents() ? ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getScoreboardSyntax(), objective.getTitleComp())) : translate(owner, objective.getTitle(), 32, Triton.get().getConf().getScoreboardSyntax()));
         }
         this.sidebarObjective = objective;
     }

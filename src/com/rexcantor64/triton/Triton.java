@@ -2,7 +2,6 @@ package com.rexcantor64.triton;
 
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.bridge.SpigotBridgeManager;
-import com.rexcantor64.triton.components.api.ChatColor;
 import com.rexcantor64.triton.config.LanguageConfig;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
@@ -17,6 +16,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.web.TwinManager;
+import net.md_5.bungee.api.ChatColor;
 
 import java.io.*;
 import java.util.Arrays;

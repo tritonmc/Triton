@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.language.item;
 
-import com.rexcantor64.triton.components.api.ChatColor;
 import com.rexcantor64.triton.utils.LocationUtils;
+import net.md_5.bungee.api.ChatColor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
