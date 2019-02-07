@@ -13,6 +13,7 @@ import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
@@ -47,6 +48,10 @@ public class SpigotMLP extends Triton {
             loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "triton:main");
             loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "triton:main", bridgeManager = new SpigotBridgeManager());
         }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+            new TritonPlaceholderHook(this).register();
+
     }
 
     public ProtocolLibListener getProtocolLibListener() {

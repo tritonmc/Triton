@@ -4,6 +4,7 @@ version: 1.0.1
 website: https://triton.rexcantor64.com/
 author: Rexcantor64
 depend: [ProtocolLib]
+softdepend: [PlaceholderAPI]
 description: A plugin that replaces any message on your server, to the receiver's language, in real time!
 commands:
   triton:
