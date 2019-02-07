@@ -24,6 +24,7 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.WrappedObjective;
 import com.rexcantor64.triton.scoreboard.WrappedTeam;
 import com.rexcantor64.triton.utils.NMSUtils;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
@@ -63,11 +64,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer.parse(msg.getJson()))));
+                msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer.parse(msg.getJson())))));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
-            packet.getPacket().getModifier().writeSafely(1, main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getChatSyntax(), (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1)));
+            packet.getPacket().getModifier().writeSafely(1, mergeComponents(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getChatSyntax(), (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1))));
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
@@ -626,6 +627,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean existsSignUpdatePacket() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
+    }
+
+    private BaseComponent[] mergeComponents(BaseComponent... comps) {
+        return new BaseComponent[]{new TextComponent(TextComponent.toLegacyText(comps))};
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {

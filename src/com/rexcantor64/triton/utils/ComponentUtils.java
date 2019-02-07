@@ -3,11 +3,10 @@ package com.rexcantor64.triton.utils;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -114,22 +113,19 @@ public class ComponentUtils {
                     component.setStrikethrough(strikethrough);
                     component.setObfuscated(obfuscated);
                 }
-                switch (clickEventStatus) {
-                    case NONE:
-                        i++;
-                        currentClickComponent = new TextComponent("");
-                        writeTo = currentClickComponent;
-                        currentClickComponent.setClickEvent(new ClickEvent(decodeClickAction(Integer.parseInt(Character.toString(message.charAt(i)))), ""));
-                        clickEventStatus = InteractiveEventStatus.READING_VALUE;
-                        break;
-                    default:
-                        if (hoverEventStatus == InteractiveEventStatus.NONE)
-                            writeTo = master;
-                        else
-                            writeTo = currentHoverComponent;
-                        writeTo.addExtra(currentClickComponent);
-                        clickEventStatus = InteractiveEventStatus.NONE;
-                        break;
+                if (clickEventStatus == InteractiveEventStatus.NONE) {
+                    i++;
+                    currentClickComponent = new TextComponent("");
+                    writeTo = currentClickComponent;
+                    currentClickComponent.setClickEvent(new ClickEvent(decodeClickAction(Integer.parseInt(Character.toString(message.charAt(i)))), ""));
+                    clickEventStatus = InteractiveEventStatus.READING_VALUE;
+                } else {
+                    if (hoverEventStatus == InteractiveEventStatus.NONE)
+                        writeTo = master;
+                    else
+                        writeTo = currentHoverComponent;
+                    writeTo.addExtra(currentClickComponent);
+                    clickEventStatus = InteractiveEventStatus.NONE;
                 }
             } else if (c == '\uD806') {
                 if (builder.length() != 0) {
@@ -150,23 +146,65 @@ public class ComponentUtils {
                     component.setStrikethrough(strikethrough);
                     component.setObfuscated(obfuscated);
                 }
-                switch (hoverEventStatus) {
-                    case NONE:
-                        i++;
-                        currentHoverComponent = new TextComponent("");
-                        writeTo = currentHoverComponent;
-                        currentHoverComponent.setHoverEvent(new HoverEvent(decodeHoverAction(Integer.parseInt(Character.toString(message.charAt(i)))), null));
-                        hoverEventStatus = InteractiveEventStatus.READING_VALUE;
-                        break;
-                    default:
-                        if (clickEventStatus == InteractiveEventStatus.NONE)
-                            writeTo = master;
-                        else
-                            writeTo = currentClickComponent;
-                        writeTo.addExtra(currentHoverComponent);
-                        hoverEventStatus = InteractiveEventStatus.NONE;
-                        break;
+                if (hoverEventStatus == InteractiveEventStatus.NONE) {
+                    i++;
+                    currentHoverComponent = new TextComponent("");
+                    writeTo = currentHoverComponent;
+                    currentHoverComponent.setHoverEvent(new HoverEvent(decodeHoverAction(Integer.parseInt(Character.toString(message.charAt(i)))), null));
+                    hoverEventStatus = InteractiveEventStatus.READING_VALUE;
+                } else {
+                    if (clickEventStatus == InteractiveEventStatus.NONE)
+                        writeTo = master;
+                    else
+                        writeTo = currentClickComponent;
+                    writeTo.addExtra(currentHoverComponent);
+                    hoverEventStatus = InteractiveEventStatus.NONE;
                 }
+            } else if (c == '\uD807') {
+                i++;
+                StringBuilder key = new StringBuilder();
+                while (i < message.length() && message.charAt(i) != '\uD807') {
+                    key.append(message.charAt(i));
+                    i++;
+                }
+                i++;
+                StringBuilder uuid = new StringBuilder();
+                while (i < message.length() && message.charAt(i) != '\uD807') {
+                    uuid.append(message.charAt(i));
+                    i++;
+                }
+                if (builder.length() != 0) {
+                    component.setText(builder.toString());
+                    builder = new StringBuilder();
+                    ChatColor previousColor = component.getColorRaw();
+                    Boolean bold = component.isBoldRaw();
+                    Boolean italic = component.isItalicRaw();
+                    Boolean underline = component.isUnderlinedRaw();
+                    Boolean strikethrough = component.isStrikethroughRaw();
+                    Boolean obfuscated = component.isObfuscatedRaw();
+                    writeTo.addExtra(component);
+                    component = new TextComponent("");
+                    component.setColor(previousColor);
+                    component.setBold(bold);
+                    component.setItalic(italic);
+                    component.setUnderlined(underline);
+                    component.setStrikethrough(strikethrough);
+                    component.setObfuscated(obfuscated);
+                }
+                TranslatableComponent tc = new TranslatableComponent(key.toString());
+                tc.setColor(component.getColorRaw());
+                tc.setBold(component.isBoldRaw());
+                tc.setItalic(component.isItalicRaw());
+                tc.setUnderlined(component.isUnderlinedRaw());
+                tc.setStrikethrough(component.isStrikethroughRaw());
+                tc.setObfuscated(component.isObfuscatedRaw());
+                List<AdvancedComponent> argsAdvanced = advancedComponent.getTranslatableArguments(uuid.toString());
+                if (argsAdvanced != null)
+                    for (AdvancedComponent ac : argsAdvanced) {
+                        BaseComponent[] bc = fromLegacyText(ac);
+                        tc.addWith(bc == null ? new TextComponent("") : bc[0]);
+                    }
+                writeTo.addExtra(tc);
             } else {
                 builder.append(c);
             }
@@ -218,8 +256,22 @@ public class ComponentUtils {
             }
             if (comp instanceof TextComponent)
                 builder.append(((TextComponent) comp).getText());
+            if (comp instanceof TranslatableComponent) {
+                TranslatableComponent tc = (TranslatableComponent) comp;
+                UUID uuid = UUID.randomUUID();
+                builder.append("\uD807")
+                        .append(tc.getTranslate())
+                        .append("\uD807")
+                        .append(uuid)
+                        .append("\uD807");
+                List<AdvancedComponent> args = new ArrayList<>();
+                if (tc.getWith() != null)
+                    for (BaseComponent arg : tc.getWith())
+                        args.add(toLegacyText(arg));
+                advancedComponent.setTranslatableArguments(uuid, args);
+            }
             if (comp.getExtra() != null) {
-                AdvancedComponent component = toLegacyText(comp.getExtra().toArray(new BaseComponent[comp.getExtra().size()]));
+                AdvancedComponent component = toLegacyText(comp.getExtra().toArray(new BaseComponent[0]));
                 builder.append(component.getText());
                 for (Map.Entry<String, String> entry : component.getComponents().entrySet())
                     advancedComponent.setComponent(entry.getKey(), entry.getValue());
