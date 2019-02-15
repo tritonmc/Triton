@@ -1,6 +1,6 @@
 name: Triton
 main: com.rexcantor64.triton.plugin.BungeePlugin
-version: 1.0.1
+version: 1.1.0
 website: https://triton.rexcantor64.com/
 author: Rexcantor64
 description: A plugin that replaces any message on your server, to the receiver's language, in real time!

@@ -81,12 +81,12 @@ public class LanguageParser {
             String placeholder = input.substring(i[2], i[3]);
             Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
-                builder.append(SpigotMLP.get().getLanguageManager().getText(p, placeholder));
+                builder.append(SpigotMLP.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder)));
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
                 continue;
             }
-            String code = placeholder.substring(0, argsIndex[0]);
+            String code = ChatColor.stripColor(placeholder.substring(0, argsIndex[0]));
             String args = placeholder.substring(argsIndex[2], argsIndex[3]);
             List<Integer[]> argIndexList = getPatternIndexArray(args, syntax.getArg());
             Object[] argList = new Object[argIndexList.size()];
