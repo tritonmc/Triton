@@ -90,7 +90,6 @@ public class BungeeListener implements Connection.Unsafe {
 
     private void handleKick(DefinedPacket packet) {
         Kick p = (Kick) packet;
-        System.out.println(p);
         p.setMessage(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getKickSyntax(), ComponentSerializer.parse(p.getMessage()))));
     }
 

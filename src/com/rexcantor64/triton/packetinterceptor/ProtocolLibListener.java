@@ -103,7 +103,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer.parse(msg.getJson()))));
+        msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer.parse(msg.getJson())))));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
