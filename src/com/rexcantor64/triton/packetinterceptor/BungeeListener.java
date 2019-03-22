@@ -65,7 +65,8 @@ public class BungeeListener implements Connection.Unsafe {
 
     private void handleTitle(DefinedPacket packet) {
         Title p = (Title) packet;
-        p.setText(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTitleSyntax(), ComponentSerializer.parse(p.getText()))));
+        if (p.getText() != null)
+            p.setText(ComponentSerializer.toString(Triton.get().getLanguageParser().parseComponent(owner, Triton.get().getConf().getTitleSyntax(), ComponentSerializer.parse(p.getText()))));
     }
 
     private void handleBossbar(DefinedPacket packet) {
