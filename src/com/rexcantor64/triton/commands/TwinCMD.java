@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.commands;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.utils.JSONUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -90,20 +91,22 @@ public class TwinCMD implements CommandExecutor {
             for (int k = 0; k < storage.length(); k++) {
                 JSONObject obj = storage.optJSONObject(k);
                 if (obj == null) continue;
+                JSONObject twin = obj.optJSONObject("_twin");
+                if (twin == null) continue;
 
                 if (deleted != null)
                     for (int i = 0; i < deleted.length(); i++) {
                         String key = deleted.optString(i);
                         if (key.isEmpty()) continue;
-                        if (key.equals(obj.optString("key"))) {
+                        if (key.equals(twin.optString("id"))) {
                             storage.remove(k--);
                             continue storageLoop;
                         }
                     }
                 if (modified != null) {
-                    String key = obj.optString("key");
-                    if (!key.isEmpty() && modified.optJSONObject(key) != null)
-                        storage.put(k, modified.optJSONObject(key));
+                    String key = twin.optString("id");
+                    if (!key.isEmpty() && modified.optJSONArray(key) != null)
+                        JSONUtils.applyPatches(obj, modified.optJSONArray(key));
                 }
             }
             JSONArray added = responseJson.optJSONArray("added");
@@ -125,6 +128,4 @@ public class TwinCMD implements CommandExecutor {
             s.sendMessage(Triton.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1", e.getMessage()));
         }
     }
-
-
 }
