@@ -6,7 +6,6 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
-import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.connection.Server;
@@ -79,13 +78,15 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        LanguagePlayer lp = Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
+        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
         out.writeByte(1);
         out.writeUTF(event.getPlayer().getUniqueId().toString());
         out.writeUTF(lp.getLang().getName());
         event.getServer().sendData("triton:main", out.toByteArray());
+        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
+            lp.executeCommands(event.getServer());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
