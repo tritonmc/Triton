@@ -191,9 +191,17 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             strings.writeSafely(0, translate(languagePlayer, strings.readSafely(0), 40, main.getConf().getScoreboardSyntax()));
             return;
         }
-        WrappedObjective objective = languagePlayer.getScoreboard().getObjective(strings.readSafely(1));
-        if (objective == null) return;
-        objective.setScore(strings.readSafely(0), packet.getPacket().getScoreboardActions().readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket().getIntegers().readSafely(0) : null);
+        String objectiveString = strings.readSafely(1);
+        if (objectiveString.isEmpty()) {
+            for (WrappedObjective objective : languagePlayer.getScoreboard().getObjectives())
+                objective.setScore(strings.readSafely(0), packet.getPacket().getScoreboardActions().readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket().getIntegers().readSafely(0) : null);
+        } else {
+            WrappedObjective objective = languagePlayer.getScoreboard().getObjective(objectiveString);
+            if (objective == null) {
+                return;
+            }
+            objective.setScore(strings.readSafely(0), packet.getPacket().getScoreboardActions().readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket().getIntegers().readSafely(0) : null);
+        }
         languagePlayer.getScoreboard().rerender(false);
     }
 

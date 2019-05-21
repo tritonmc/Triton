@@ -108,6 +108,10 @@ public class WrappedScoreboard {
         return null;
     }
 
+    public List<WrappedObjective> getObjectives() {
+        return objectives;
+    }
+
     public WrappedObjective createObjective(String name) {
         WrappedObjective obj = new WrappedObjective(name);
         objectives.add(obj);
