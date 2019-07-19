@@ -53,6 +53,16 @@ public interface LanguageManager {
     Language getLanguageByName(String name, boolean fallback);
 
     /**
+     * Get a {@link Language language} by its name.
+     *
+     * @param locale   The name of the locale.
+     * @param fallback Whether to return the main language or not if no language is found with the provided name.
+     * @return The language with the provided name. If no language is found, the main language will be returned if fallback is true. Otherwise, null is returned.
+     * @since 1.3.0
+     */
+    Language getLanguageByLocale(String locale, boolean fallback);
+
+    /**
      * Get a list of all the {@link Language languages}.
      *
      * @return A list of all the {@link Language languages}.

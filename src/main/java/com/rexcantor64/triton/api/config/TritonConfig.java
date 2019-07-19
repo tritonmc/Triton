@@ -18,6 +18,12 @@ public interface TritonConfig {
     boolean isRunLanguageCommandsOnLogin();
 
     /**
+     * @return The value of "force-client-locale-on-join" in the config.
+     * @since 1.3.0
+     */
+    boolean isAlwaysCheckClientLocale();
+
+    /**
      * Spigot only
      *
      * @return The value of "bungeecord" in the config.
