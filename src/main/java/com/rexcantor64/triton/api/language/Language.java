@@ -28,7 +28,7 @@ public interface Language {
     String getDisplayName();
 
     /**
-     * @return The display name of the language in the GUIs and chat without the translated color codes, just (&).
+     * @return The display name of the language in the GUIs and chat without the translated color codes, just (&amp;).
      * @since 1.0.0
      */
     String getRawDisplayName();
