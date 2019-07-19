@@ -5,19 +5,25 @@ import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
+import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
+import com.rexcantor64.triton.utils.NMSUtils;
+import io.netty.channel.Channel;
 import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
+import net.md_5.bungee.netty.PipelineUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -108,6 +114,16 @@ public class BungeeBridgeManager implements Listener {
     public void onJoin(PostLoginEvent event) {
         BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
         Triton.asBungee().setCustomUnsafe(lp);
+        try {
+            ProxiedPlayer p = event.getPlayer();
+            Object ch =
+                    NMSUtils.getDeclaredField(p, "ch");
+            Method method = ch.getClass().getDeclaredMethod("getHandle");
+            Channel channel = (Channel) method.invoke(ch, new Object[0]);
+            channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
+        } catch (Exception e) {
+            System.out.println("[BungeePackets] Failed to inject client connection for " + event.getPlayer().getName());
+        }
     }
 
     @EventHandler

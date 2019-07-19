@@ -18,20 +18,14 @@ import java.util.List;
 public class MainConfig implements TritonConfig {
 
     private final Triton main;
-
-    public MainConfig(Triton main) {
-        this.main = main;
-    }
-
     private Configuration languages;
     private String mainLanguage;
     private boolean runLanguageCommandsOnLogin;
+    private boolean alwaysCheckClientLocale;
     private boolean debug;
     private boolean bungeecord;
     private String twinToken;
-
     private String disabledLine;
-
     private boolean chat;
     private FeatureSyntax chatSyntax;
     private boolean actionbars;
@@ -56,6 +50,10 @@ public class MainConfig implements TritonConfig {
     private boolean signs;
     private boolean bossbars;
     private FeatureSyntax bossbarSyntax;
+
+    public MainConfig(Triton main) {
+        this.main = main;
+    }
 
     public Configuration getLanguages() {
         return languages;
@@ -95,6 +93,10 @@ public class MainConfig implements TritonConfig {
 
     public boolean isRunLanguageCommandsOnLogin() {
         return runLanguageCommandsOnLogin;
+    }
+
+    public boolean isAlwaysCheckClientLocale() {
+        return alwaysCheckClientLocale;
     }
 
     public boolean isBungeecord() {
@@ -217,6 +219,7 @@ public class MainConfig implements TritonConfig {
         }
         this.twinToken = section.getString("twin-token", "");
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
+        this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
         this.debug = section.getBoolean("debug", false);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);

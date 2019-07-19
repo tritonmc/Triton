@@ -414,8 +414,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void onPacketReceiving(PacketEvent packetEvent) {
-
+    public void onPacketReceiving(PacketEvent packet) {
+        if (packet.isServerPacket()) return;
+        SpigotLanguagePlayer languagePlayer;
+        try {
+            languagePlayer = (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
+        } catch (Exception ignore) {
+            Triton.get().logDebugWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown (because the player hasn't joined yet).");
+            return;
+        }
+        if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
+            if (languagePlayer.isWaitingForClientLocale())
+                languagePlayer.setLang(Triton.get().getLanguageManager().getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true));
+        }
     }
 
     @Override
@@ -610,7 +621,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
-        return ListeningWhitelist.EMPTY_WHITELIST;
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS).highest().build();
     }
 
     @Override

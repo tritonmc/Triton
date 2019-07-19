@@ -88,6 +88,15 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return null;
     }
 
+    public Language getLanguageByLocale(String name, boolean fallback) {
+        if (name != null)
+            for (Language lang : languages)
+                if (lang.getMinecraftCodes().contains(name))
+                    return lang;
+        if (fallback) return mainLanguage;
+        return null;
+    }
+
     public List<com.rexcantor64.triton.api.language.Language> getAllLanguages() {
         return new ArrayList<>(languages);
     }

@@ -26,6 +26,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private String lastTabHeader;
     private String lastTabFooter;
     private HashMap<UUID, String> bossBars = new HashMap<>();
+    private boolean waitingForClientLocale = false;
 
     private WrappedScoreboard scoreboard;
 
@@ -45,11 +46,21 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public void setLang(Language lang, boolean sendToBungee) {
         this.lang = lang;
+        this.waitingForClientLocale = false;
         refreshAll();
         save();
         if (sendToBungee && Triton.asSpigot().getBridgeManager() != null)
             Triton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
         executeCommands();
+    }
+
+    @Override
+    public boolean isWaitingForClientLocale() {
+        return waitingForClientLocale;
+    }
+
+    public void waitForClientLocale() {
+        this.waitingForClientLocale = true;
     }
 
     public WrappedScoreboard getScoreboard() {

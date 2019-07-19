@@ -41,6 +41,12 @@ main-language: en_GB
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
+# When enabled, the plugin will set the player's Triton language to their game language every time.
+# By default, the plugin only does this when they join the server for the first time.
+# It it recommended to leave this off for user experience reasons.
+# Ignored when bungeecord is enabled.
+force-client-locale-on-join: false
+
 # Enable this if you're using the plugin on BungeeCord.
 # A restart of the server and BungeeCord might be required after changing this setting.
 bungeecord: false

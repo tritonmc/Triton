@@ -28,16 +28,17 @@ public interface PlayerStorage {
         public Language getLanguage(SpigotLanguagePlayer lp) {
             File f = new File(Triton.get().getDataFolder(), "players.yml");
             if (!f.exists()) {
+                if (!Triton.get().getConf().isBungeecord())
+                    lp.waitForClientLocale();
                 return Triton.get().getLanguageManager().getMainLanguage();
             }
             YamlConfiguration players = YamlConfiguration.loadConfiguration(f);
-            if (players
-                    .isString(
-                            lp.getUUID()
-                                    .toString()))
-                return Triton.get().getLanguageManager()
-                        .getLanguageByName(players.getString(lp.getUUID().toString()), true);
-            return Triton.get().getLanguageManager().getMainLanguage();
+            if (!Triton.get().getConf().isBungeecord() &&
+                    (!players.isString(lp.getUUID().toString())
+                            || (Triton.get().getConf().isAlwaysCheckClientLocale())))
+                lp.waitForClientLocale();
+            return Triton.get().getLanguageManager()
+                    .getLanguageByName(players.getString(lp.getUUID().toString()), true);
         }
 
         @Override

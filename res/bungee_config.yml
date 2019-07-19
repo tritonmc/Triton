@@ -44,6 +44,11 @@ main-language: en_GB
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
+# When enabled, the plugin will set the player's Triton language to their game language every time.
+# By default, the plugin only does this when they join the server for the first time.
+# It it recommended to leave this off for user experience reasons.
+force-client-locale-on-join: false
+
 # To access TWIN, you need a special token.
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
 twin-token: ""

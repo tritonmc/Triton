@@ -12,4 +12,6 @@ public interface LanguagePlayer extends com.rexcantor64.triton.api.players.Langu
 
     void setLastTabFooter(String lastTabFooter);
 
+    boolean isWaitingForClientLocale();
+
 }

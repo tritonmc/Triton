@@ -33,6 +33,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     private String lastTabHeader;
     private String lastTabFooter;
     private HashMap<UUID, String> bossBars = new HashMap<>();
+    private boolean waitingForClientLocale = false;
 
     public BungeeLanguagePlayer(UUID parent) {
         this.uuid = parent;
@@ -63,6 +64,11 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         this.lastTabFooter = lastTabFooter;
     }
 
+    @Override
+    public boolean isWaitingForClientLocale() {
+        return waitingForClientLocale;
+    }
+
     public Language getLang() {
         if (language == null)
             language = Triton.get().getLanguageManager().getMainLanguage();
@@ -71,6 +77,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
 
     public void setLang(Language language) {
         this.language = language;
+        this.waitingForClientLocale = false;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
         out.writeByte(1);
@@ -106,6 +113,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
 
     private void load() {
         Configuration config = Triton.get().loadYAML("players", "players");
+        if (!config.contains(uuid.toString()) || Triton.get().getConf().isAlwaysCheckClientLocale())
+            this.waitingForClientLocale = true;
         language = Triton.get().getLanguageManager().getLanguageByName(config.getString(uuid.toString()), true);
         if (parent != null && Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands(null);
