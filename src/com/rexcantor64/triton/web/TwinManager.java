@@ -9,15 +9,14 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class TwinManager {
 
-    private final Triton main;
-
     private static final int TWIN_VERSION = 2;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
+    private final Triton main;
 
     public TwinManager(Triton main) {
         this.main = main;
@@ -97,7 +96,7 @@ public class TwinManager {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
             DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-            os.write(encodedData.getBytes(Charset.defaultCharset()));
+            os.write(encodedData.getBytes(StandardCharsets.UTF_8));
             os.flush();
             os.close();
 
@@ -146,7 +145,7 @@ public class TwinManager {
                     is = conn.getInputStream();
                 else
                     is = conn.getErrorStream();
-                BufferedReader in = new BufferedReader(new InputStreamReader(is));
+                BufferedReader in = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 String inputLine;
                 StringBuilder response = new StringBuilder();
 

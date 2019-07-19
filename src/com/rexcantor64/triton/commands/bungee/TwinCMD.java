@@ -10,7 +10,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 @SuppressWarnings("deprecation")
 public class TwinCMD extends Command {
@@ -120,9 +122,8 @@ public class TwinCMD extends Command {
                     if (added.optJSONObject(k) != null) storage.put(added.optJSONObject(k));
 
             try {
-                FileWriter fileWriter = new FileWriter(new File(Triton.get().getDataFolder(), "languages.json"));
-                fileWriter.write(storage.toString(4));
-                fileWriter.flush();
+                File file = new File(Triton.get().getDataFolder(), "languages.json");
+                Files.write(file.toPath(), storage.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 s.sendMessage(Triton.get().getMessage("twin.failed-file-update", "&cError while writing to file '%1': %2", "languages.json", e.getMessage()));
             }
