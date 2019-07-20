@@ -55,7 +55,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return getSign(p.getLang().getName(), location);
     }
 
-    public String[] getSign(String language, SignLocation location) {
+    private String[] getSign(String language, SignLocation location) {
         if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
@@ -91,8 +91,9 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     public Language getLanguageByLocale(String name, boolean fallback) {
         if (name != null)
             for (Language lang : languages)
-                if (lang.getMinecraftCodes().contains(name))
-                    return lang;
+                for (String s : lang.getMinecraftCodes())
+                    if (s.equalsIgnoreCase(name))
+                        return lang;
         if (fallback) return mainLanguage;
         return null;
     }
