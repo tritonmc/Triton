@@ -10,6 +10,7 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -76,6 +77,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void setLang(Language language) {
+        if (this.waitingForClientLocale)
+            parent.sendMessage(TextComponent.fromLegacyText(Triton.get().getMessage("success.detected-language",
+                    "&aYour language has been automatically set to %1", language.getDisplayName())));
         this.language = language;
         this.waitingForClientLocale = false;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -124,7 +128,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         Configuration config = Triton.get().loadYAML("players", "players");
         config.set(uuid.toString(), language.getName());
         try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, new File(Triton.get().getDataFolder(), "players.yml"));
+            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config,
+                    new File(Triton.get().getDataFolder(), "players.yml"));
         } catch (IOException e) {
             Triton.get().logError("Failed to save players.yml: %1", e.getMessage());
         }
@@ -148,7 +153,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
             } else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
                 server.unsafe().sendPacket(new Chat("/" + cmdText));
             else if (cmd.getType() == ExecutableCommand.Type.BUNGEE)
-                BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(), cmdText);
+                BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(),
+                        cmdText);
             else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(getParent(), cmdText);
         }

@@ -8,10 +8,10 @@ error:
   sign-not-found: "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options."
 help:
   menu:
-  - "&a---------MultiLanguagePlugin---------"
-  - "&6Available commands:"
-  - "%1"
-  - "&a---------MultiLanguagePlugin---------"
+    - "&a---------MultiLanguagePlugin---------"
+    - "&6Available commands:"
+    - "%1"
+    - "&a---------MultiLanguagePlugin---------"
   menu-item: "&6/%1 %2 &e&l- &f%3"
   getflag: "&cUse /%1 getflag <language name>"
   setlanguage: "&cUse /%1 setlanguage [player] <language name>"
@@ -31,6 +31,7 @@ success:
   bungee-reload: "&aBungeeCord config successfully reloaded."
   setlanguage: "&aYour language has been changed to %1"
   setlanguage-others: "&a%1's language has been changed to %2"
+  detected-language: "&aYour language has been automatically set to %1"
 twin:
   failed-bungeecord: "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."
   no-internet: "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1"

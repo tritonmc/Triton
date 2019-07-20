@@ -45,6 +45,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public void setLang(Language lang, boolean sendToBungee) {
+        if (this.waitingForClientLocale)
+            bukkit.sendMessage(Triton.get().getMessage("success.detected-language",
+                    "&aYour language has been automatically set to %1", lang.getDisplayName()));
         this.lang = lang;
         this.waitingForClientLocale = false;
         refreshAll();
@@ -144,7 +147,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private void executeCommands() {
         for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
-            String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%", bukkit.getUniqueId().toString());
+            String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
+                    bukkit.getUniqueId().toString());
             if (cmd.getType() == ExecutableCommand.Type.SERVER)
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);
             else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
