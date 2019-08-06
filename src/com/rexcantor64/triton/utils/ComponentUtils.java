@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class ComponentUtils {
 
-    private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
+    private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
     public static BaseComponent[] fromLegacyText(AdvancedComponent advancedComponent) {
         String message = advancedComponent.getText();
@@ -43,7 +43,8 @@ public class ComponentUtils {
                     String value = advancedComponent.getComponent(builder.toString());
                     if (value == null)
                         return null;
-                    currentHoverComponent.setHoverEvent(new HoverEvent(writeTo.getHoverEvent().getAction(), TextComponent.fromLegacyText(value)));
+                    currentHoverComponent.setHoverEvent(new HoverEvent(writeTo.getHoverEvent().getAction(),
+                            TextComponent.fromLegacyText(value)));
                     builder = new StringBuilder();
                     hoverEventStatus = InteractiveEventStatus.READING_TEXT;
                     continue;

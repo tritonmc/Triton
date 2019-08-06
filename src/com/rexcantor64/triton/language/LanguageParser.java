@@ -11,6 +11,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,13 @@ public class LanguageParser {
 
         for (int i = 0; i < input.length(); i++) {
             char currentChar = input.charAt(i);
-            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1, i + 2 + pattern.length()).equals(pattern + "]")) {
+            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1,
+                    i + 2 + pattern.length()).equals(pattern + "]")) {
                 if (start == -1) start = i;
                 openedAmount++;
                 i += 1 + pattern.length();
-            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1, i + 3 + pattern.length()).equals("/" + pattern + "]")) {
+            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1,
+                    i + 3 + pattern.length()).equals("/" + pattern + "]")) {
                 openedAmount--;
                 if (openedAmount == 0) {
                     if (contentLength == 0) {
@@ -52,11 +55,13 @@ public class LanguageParser {
 
         for (int i = 0; i < input.length(); i++) {
             char currentChar = input.charAt(i);
-            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1, i + 2 + pattern.length()).equals(pattern + "]")) {
+            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1,
+                    i + 2 + pattern.length()).equals(pattern + "]")) {
                 if (start == -1) start = i;
                 openedAmount++;
                 i += 1 + pattern.length();
-            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1, i + 3 + pattern.length()).equals("/" + pattern + "]")) {
+            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1,
+                    i + 3 + pattern.length()).equals("/" + pattern + "]")) {
                 openedAmount--;
                 if (openedAmount == 0) {
                     if (contentLength == 0) {
@@ -115,6 +120,7 @@ public class LanguageParser {
     }
 
     public BaseComponent[] parseComponent(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
+        text = ComponentSerializer.parse(ComponentSerializer.toString(text));
         removeMLPLinks(text);
         AdvancedComponent advancedComponent = ComponentUtils.toLegacyText(text);
         String input = advancedComponent.getText();
@@ -127,7 +133,8 @@ public class LanguageParser {
             if (argsIndex == null) {
                 if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder).equals(Triton.get().getConf().getDisabledLine()))
                     return null;
-                AdvancedComponent result = ComponentUtils.toLegacyText(TextComponent.fromLegacyText(Triton.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder))));
+                AdvancedComponent result =
+                        ComponentUtils.toLegacyText(TextComponent.fromLegacyText(Triton.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 builder.append(result.getText());
                 builder.append(input.substring(i[1]));
@@ -144,7 +151,8 @@ public class LanguageParser {
                 Integer[] argIndex = argIndexList.get(k);
                 argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
             }
-            AdvancedComponent result = ComponentUtils.toLegacyText(TextComponent.fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
+            AdvancedComponent result =
+                    ComponentUtils.toLegacyText(TextComponent.fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
             advancedComponent.getComponents().putAll(result.getComponents());
             builder.append(result.getText());
             builder.append(input.substring(i[1]));
