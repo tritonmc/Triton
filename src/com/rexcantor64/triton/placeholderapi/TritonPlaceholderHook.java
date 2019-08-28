@@ -28,6 +28,11 @@ public class TritonPlaceholderHook extends PlaceholderExpansion {
     }
 
     @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
     public String onPlaceholderRequest(Player p, String params) {
         return triton.getLanguageManager().getText(triton.getPlayerManager().get(p.getUniqueId()), params);
     }
