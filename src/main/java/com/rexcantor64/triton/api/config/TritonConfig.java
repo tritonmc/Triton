@@ -127,6 +127,14 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
+     * @return The value of "language-creation.items.books" in the config.
+     * @since 1.4.0
+     */
+    boolean isBooks();
+
+    /**
+     * Spigot only
+     *
      * @return The value of "language-creation.signs.enabled" in the config.
      * @since 1.0.0
      */
@@ -139,19 +147,22 @@ public interface TritonConfig {
     boolean isBossbars();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getChatSyntax();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.actionbars" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .actionbars" in the config.
      * @since 1.0.0
      */
     FeatureSyntax getActionbarSyntax();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.title" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.title"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getTitleSyntax();
@@ -159,7 +170,8 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.guis" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.guis"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getGuiSyntax();
@@ -167,7 +179,8 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.scoreboards" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .scoreboards" in the config.
      * @since 1.0.0
      */
     FeatureSyntax getScoreboardSyntax();
@@ -175,19 +188,22 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.holograms" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .holograms" in the config.
      * @since 1.0.0
      */
     FeatureSyntax getHologramSyntax();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.kick" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.kick"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getKickSyntax();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.tab" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.tab"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getTabSyntax();
@@ -195,13 +211,15 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.items" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.items"
+     * in the config.
      * @since 1.0.0
      */
     FeatureSyntax getItemsSyntax();
 
     /**
-     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.bossbars" in the config.
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .bossbars" in the config.
      * @since 1.0.0
      */
     FeatureSyntax getBossbarSyntax();

@@ -122,6 +122,9 @@ language-creation:
     # When enabled, items in the player's own inventory will also be checked.
     # Items might permanently change names if the players are in creative mode.
     allow-in-inventory: false
+    # Enable translation of books.
+    # It is recommended to enable "allow-in-inventory" above if this is enabled.
+    books: false
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
