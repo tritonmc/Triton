@@ -30,12 +30,16 @@ public class AdvancedComponent {
         return components.get(uuid);
     }
 
-    public void setTranslatableArguments(UUID uuid, List<AdvancedComponent> list) {
-        translatableArguments.put(uuid.toString(), list);
+    public void setTranslatableArguments(String uuid, List<AdvancedComponent> list) {
+        translatableArguments.put(uuid, list);
     }
 
     public List<AdvancedComponent> getTranslatableArguments(String uuid) {
         return translatableArguments.get(uuid);
+    }
+
+    public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
+        return translatableArguments;
     }
 
     public HashMap<String, String> getComponents() {

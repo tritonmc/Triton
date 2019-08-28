@@ -269,13 +269,16 @@ public class ComponentUtils {
                 if (tc.getWith() != null)
                     for (BaseComponent arg : tc.getWith())
                         args.add(toLegacyText(arg));
-                advancedComponent.setTranslatableArguments(uuid, args);
+                advancedComponent.setTranslatableArguments(uuid.toString(), args);
             }
             if (comp.getExtra() != null) {
                 AdvancedComponent component = toLegacyText(comp.getExtra().toArray(new BaseComponent[0]));
                 builder.append(component.getText());
                 for (Map.Entry<String, String> entry : component.getComponents().entrySet())
                     advancedComponent.setComponent(entry.getKey(), entry.getValue());
+                for (Map.Entry<String, List<AdvancedComponent>> entry :
+                        component.getAllTranslatableArguments().entrySet())
+                    advancedComponent.setTranslatableArguments(entry.getKey(), entry.getValue());
             }
             if (hasHover)
                 builder.append("\uD806");

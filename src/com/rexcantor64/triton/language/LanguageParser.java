@@ -296,6 +296,4 @@ public class LanguageParser {
         }
         return new String[]{prefix.toString(), entry.toString(), suffix.toString()};
     }
-
-
 }
