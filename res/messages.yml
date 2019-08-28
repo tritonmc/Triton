@@ -3,6 +3,7 @@ error:
   message-not-found: "ERROR 404: Message not found: '%1'! Please notify the staff!"
   lang-not-found: "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages."
   player-not-found: "&cPlayer %1 not found!"
+  player-not-found-use-uuid: "&cPlayer %1 not found! Use UUID to search through offline players."
   bungee-reload-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') or 'all' (or 'a')."
   not-sign: "&cYou're not looking at a sign."
   sign-not-found: "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options."

@@ -59,7 +59,8 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     }
                     config.setLanguages(languages);
                     File file = new File(Triton.get().getDataFolder(), "cache.json");
-                    Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                    Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     // Read language files
                     List<LanguageItem> languageItems = new ArrayList<>();
                     int itemsSize = in.readInt();
@@ -78,21 +79,25 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 List<LanguageSign.SignLocation> signLocations = new ArrayList<>();
                                 short locSize = in.readShort();
                                 for (int k = 0; k < locSize; k++) {
-                                    signLocations.add(new LanguageSign.SignLocation(in.readUTF(), in.readInt(), in.readInt(), in.readInt()));
+                                    signLocations.add(new LanguageSign.SignLocation(in.readUTF(), in.readInt(),
+                                            in.readInt(), in.readInt()));
                                 }
                                 HashMap<String, String[]> signLines = new HashMap<>();
                                 short langSize = in.readShort();
                                 for (int k = 0; k < langSize; k++)
-                                    signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF(), in.readUTF()});
+                                    signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF()
+                                            , in.readUTF()});
                                 languageItems.add(new LanguageSign(key, signLocations, signLines));
                                 break;
                             default:
-                                Triton.get().logDebugWarning("Received invalid type language item type while reading from BungeeCord: %1", type);
+                                Triton.get().logDebugWarning("Received invalid type language item type while reading " +
+                                        "from BungeeCord: %1", type);
                                 break;
                         }
                     }
                     Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
-                    Triton.get().logDebug("Received config from BungeeCord and parsed it in %1ms!", System.currentTimeMillis() - start);
+                    Triton.get().logDebug("Received config from BungeeCord and parsed it in %1ms!",
+                            System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
                     Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
@@ -103,7 +108,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
             } else if (action == 1) {
                 final UUID uuid = UUID.fromString(in.readUTF());
                 final Language lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
-                Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false), 10L);
+                Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(),
+                        () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false)
+                        , 10L);
             } else if (action == 2) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
             }
@@ -120,7 +127,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
         out.writeByte(0);
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
-        lp.toBukkit().sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
+        Bukkit.getServer().sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
     }
 
 }
