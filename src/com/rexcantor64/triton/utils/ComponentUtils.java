@@ -224,8 +224,8 @@ public class ComponentUtils {
             boolean hasClick = false;
             boolean hasHover = false;
             if (comp.hasFormatting()) {
-                if (comp.getColor() != null)
-                    builder.append(comp.getColor().toString());
+                if (comp.getColorRaw() != null)
+                    builder.append(comp.getColorRaw().toString());
                 if (comp.isBold())
                     builder.append(ChatColor.BOLD.toString());
                 if (comp.isItalic())

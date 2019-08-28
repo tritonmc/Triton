@@ -13,6 +13,7 @@ import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+import com.comphenix.protocol.wrappers.nbt.NbtList;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
@@ -356,6 +357,28 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     meta.setLore(newLore);
                 }
                 item.setItemMeta(meta);
+                if (item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
+                    NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+                    NbtList<String> pages = compound.getList("pages");
+                    Collection<NbtBase<String>> pagesCollection = pages.asCollection();
+                    List<String> newPagesCollection = new ArrayList<>();
+                    for (NbtBase<String> page : pagesCollection) {
+                        if (page.getValue().startsWith("\""))
+                            newPagesCollection.add(
+                                    ComponentSerializer.toString(
+                                            TextComponent.fromLegacyText(
+                                                    main.getLanguageParser().replaceLanguages(page.getValue().substring(1
+                                                            , page.getValue().length() - 1),
+                                                            languagePlayer, main.getConf().getItemsSyntax()))));
+                        else {
+                            newPagesCollection.add(
+                                    ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
+                                            main.getConf().getItemsSyntax(),
+                                            ComponentSerializer.parse(page.getValue()))));
+                        }
+                    }
+                    compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
+                }
             }
         }
         if (getMCVersion() <= 10)
@@ -382,6 +405,27 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 meta.setLore(newLore);
             }
             item.setItemMeta(meta);
+            if (item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
+                NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+                NbtList<String> pages = compound.getList("pages");
+                Collection<NbtBase<String>> pagesCollection = pages.asCollection();
+                List<String> newPagesCollection = new ArrayList<>();
+                for (NbtBase<String> page : pagesCollection) {
+                    if (page.getValue().startsWith("\""))
+                        newPagesCollection.add(
+                                ComponentSerializer.toString(
+                                        TextComponent.fromLegacyText(
+                                                main.getLanguageParser().replaceLanguages(page.getValue().substring(1
+                                                        , page.getValue().length() - 1),
+                                                        languagePlayer, main.getConf().getItemsSyntax()))));
+                    else {
+                        newPagesCollection.add(
+                                ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
+                                        main.getConf().getItemsSyntax(), ComponentSerializer.parse(page.getValue()))));
+                    }
+                }
+                compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
+            }
         }
         packet.getPacket().getItemModifier().writeSafely(0, item);
     }

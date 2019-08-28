@@ -5,6 +5,7 @@ import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Language implements com.rexcantor64.triton.api.language.Language {
 
@@ -55,4 +56,13 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     public List<ExecutableCommand> getCmds() {
         return cmds;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Language language = (Language) o;
+        return Objects.equals(name, language.name);
+    }
+
 }

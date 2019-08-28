@@ -46,6 +46,7 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax tabSyntax;
     private boolean items;
     private boolean inventoryItems;
+    private boolean books;
     private FeatureSyntax itemsSyntax;
     private boolean signs;
     private boolean bossbars;
@@ -159,6 +160,10 @@ public class MainConfig implements TritonConfig {
         return inventoryItems;
     }
 
+    public boolean isBooks() {
+        return books;
+    }
+
     public boolean isSigns() {
         return signs;
     }
@@ -245,7 +250,8 @@ public class MainConfig implements TritonConfig {
             JSONObject obj = new JSONObject(FileUtils.contentsToString(file));
             setLanguages(obj);
         } catch (JSONException e) {
-            Triton.get().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1", e.getMessage());
+            Triton.get().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
+                    e.getMessage());
         }
     }
 
@@ -289,6 +295,7 @@ public class MainConfig implements TritonConfig {
         Configuration items = section.getSection("items");
         this.items = items.getBoolean("enabled", true);
         this.inventoryItems = items.getBoolean("allow-in-inventory", false);
+        this.books = items.getBoolean("books", false);
         this.itemsSyntax = FeatureSyntax.fromSection(items);
 
         Configuration signs = section.getSection("signs");
@@ -303,7 +310,8 @@ public class MainConfig implements TritonConfig {
             try {
                 this.holograms.add(EntityType.valueOf(hologram.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                main.logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! Please check your spelling and if you can't fix it, please contact the developer!", hologram);
+                main.logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! " +
+                        "Please check your spelling and if you can't fix it, please contact the developer!", hologram);
             }
     }
 
@@ -320,7 +328,8 @@ public class MainConfig implements TritonConfig {
         }
 
         private static FeatureSyntax fromSection(Configuration section) {
-            return new FeatureSyntax(section.getString("syntax-lang", "lang"), section.getString("syntax-args", "args"), section.getString("syntax-arg", "arg"));
+            return new FeatureSyntax(section.getString("syntax-lang", "lang"), section.getString("syntax-args", "args"
+            ), section.getString("syntax-arg", "arg"));
         }
 
         public String getLang() {
