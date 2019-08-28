@@ -46,8 +46,13 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public void setLang(Language lang, boolean sendToBungee) {
         if (this.waitingForClientLocale)
-            bukkit.sendMessage(Triton.get().getMessage("success.detected-language",
-                    "&aYour language has been automatically set to %1", lang.getDisplayName()));
+            try {
+                toBukkit().sendMessage(Triton.get().getMessage("success.detected-language",
+                        "&aYour language has been automatically set to %1", lang.getDisplayName()));
+            } catch (Exception e) {
+                Triton.get().logError("Failed to sent language changed message.");
+                e.printStackTrace();
+            }
         this.lang = lang;
         this.waitingForClientLocale = false;
         refreshAll();
@@ -131,7 +136,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
             executeCommands();
     }
 
-    void save() {
+    private void save() {
         PlayerStorage.StorageManager.getCurrentStorage().setLanguage(uuid, lang);
     }
 
