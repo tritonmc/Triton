@@ -5,26 +5,39 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class LanguageText extends LanguageItem {
 
+    private static final Pattern PATTERN = Pattern.compile("%(\\d+)");
+
     private HashMap<String, String> languages;
+    private HashMap<String, String> languagesRegex = new HashMap<>();
     private boolean universal;
     private boolean blacklist;
-    private List<String> servers;
+    private List<String> servers = new ArrayList<>();
+    private List<String> matches;
 
-    public LanguageText(String key, HashMap<String, String> languages, boolean universal, boolean blacklist, JSONArray servers) {
-        super(key);
-        this.languages = languages;
+    public LanguageText(String key, HashMap<String, String> languages, JSONArray matches, boolean universal,
+                        boolean blacklist, JSONArray servers) {
+        this(key, languages, jsonArrayToStringList(matches));
         this.universal = universal;
         this.blacklist = blacklist;
-        setServers(servers);
+        this.servers = jsonArrayToStringList(servers);
     }
 
-    public LanguageText(String key, HashMap<String, String> languages) {
+    public LanguageText(String key, HashMap<String, String> languages, List<String> matches) {
         super(key);
         this.languages = languages;
-        setServers(null);
+        this.matches = matches;
+    }
+
+    private static List<String> jsonArrayToStringList(JSONArray array) {
+        List<String> list = new ArrayList<>();
+        if (array != null)
+            for (Object obj : array)
+                list.add(obj.toString());
+        return list;
     }
 
     @Override
@@ -34,6 +47,15 @@ public class LanguageText extends LanguageItem {
 
     public String getMessage(String languageName) {
         return languages.get(languageName);
+    }
+
+    public String getMessageRegex(String languageName) {
+        if (languagesRegex.containsKey(languageName)) return languagesRegex.get(languageName);
+        String input = languages.get(languageName);
+        if (input == null) return null;
+        input = PATTERN.matcher(input.replace("$", "\\$")).replaceAll("\\$$1");
+        languagesRegex.put(languageName, input);
+        return input;
     }
 
     public HashMap<String, String> getLanguages() {
@@ -52,11 +74,7 @@ public class LanguageText extends LanguageItem {
         return servers;
     }
 
-    private void setServers(JSONArray array) {
-        List<String> list = new ArrayList<>();
-        if (array != null)
-            for (Object obj : array)
-                list.add(obj.toString());
-        this.servers = list;
+    public List<String> getMatches() {
+        return matches;
     }
 }

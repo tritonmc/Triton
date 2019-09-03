@@ -83,8 +83,8 @@ public class BungeeMLP extends Triton {
                             LanguageText text = (LanguageText) item;
                             if (!text.isUniversal() && (!text.isBlacklist() || text.getServers().contains(info.getName())) && (text.isBlacklist() || !text.getServers().contains(info.getName())))
                                 continue;
-                            // Send type (0)
-                            languageItemsOut.writeByte(0);
+                            // Send type (2) (type 0, but with matches data
+                            languageItemsOut.writeByte(2);
                             languageItemsOut.writeUTF(item.getKey());
                             short langSize2 = 0;
                             ByteArrayDataOutput langOut2 = ByteStreams.newDataOutput();
@@ -97,6 +97,9 @@ public class BungeeMLP extends Triton {
                             }
                             languageItemsOut.writeShort(langSize2);
                             languageItemsOut.write(langOut2.toByteArray());
+                            languageItemsOut.writeShort(text.getMatches().size());
+                            for (String s : text.getMatches())
+                                languageItemsOut.writeUTF(s);
                             break;
                         case SIGN:
                             // Send type (1)
@@ -142,7 +145,8 @@ public class BungeeMLP extends Triton {
                 info.sendData("triton:main", out.toByteArray());
             }
         } catch (Exception e) {
-            logError("Failed to send config and language items to other servers! Not everything might work as expected! Error: %1", e.getMessage());
+            logError("Failed to send config and language items to other servers! Not everything might work as " +
+                    "expected! Error: %1", e.getMessage());
         }
     }
 

@@ -13,13 +13,33 @@ import com.rexcantor64.triton.utils.YAMLUtils;
 import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LanguageManager implements com.rexcantor64.triton.api.language.LanguageManager {
 
     private List<Language> languages = new ArrayList<>();
     private Language mainLanguage;
     private Multimap<LanguageItem.LanguageItemType, LanguageItem> items = ArrayListMultimap.create();
+    private Map<Pattern, LanguageText> matches = new HashMap<>();
+
+    public String getMatch(String input, LanguagePlayer p) {
+        return getMatch(input, p.getLang().getName());
+    }
+
+    public String getMatch(String input, String language) {
+        for (Map.Entry<Pattern, LanguageText> entry : matches.entrySet()) {
+            String replacement = entry.getValue().getMessageRegex(language);
+            if (replacement == null) replacement = entry.getValue().getMessageRegex(mainLanguage.getName());
+            if (replacement == null) continue;
+            Matcher matcher = entry.getKey().matcher(input);
+            input = matcher.replaceAll(ChatColor.translateAlternateColorCodes('&', replacement));
+        }
+        return input;
+    }
 
     public String getText(LanguagePlayer p, String code, Object... args) {
         return getText(p.getLang().getName(), code, args);
@@ -35,7 +55,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                 msg = msg.replace("%" + (i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
-        return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
+        return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify " +
+                "the staff!", code);
     }
 
     public String getTextFromMain(String code, Object... args) {
@@ -48,7 +69,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                 msg = msg.replace("%" + (i + 1), args[i].toString());
             return ChatColor.translateAlternateColorCodes('&', msg);
         }
-        return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify the staff!", code);
+        return Triton.get().getMessage("error.message-not-found", "ERROR 404: Message not found: '%1'! Please notify " +
+                "the staff!", code);
     }
 
     public String[] getSign(LanguagePlayer p, SignLocation location) {
@@ -110,23 +132,38 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return mainLanguage;
     }
 
+    public void addMatchRegex(String regex, LanguageText item) {
+        matches.put(Pattern.compile(regex), item);
+    }
+
     public void setup() {
         languages.clear();
         mainLanguage = null;
         items.clear();
+        matches.clear();
         Triton.get().logDebug("Setting up language manager...");
         Configuration languages = Triton.get().getConf().getLanguages();
         if (languages != null) {
             for (String lang : languages.getKeys())
-                this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"), YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"), languages.getString(lang + ".display-name", "&4Unknown"), languages.getStringList(lang + ".commands")));
+                this.languages.add(mainLanguage = new Language(lang, languages.getString(lang + ".flag", "pa"),
+                        YAMLUtils.getStringOrStringList(languages, lang + ".minecraft-code"),
+                        languages.getString(lang + ".display-name", "&4Unknown"), languages.getStringList(lang +
+                        ".commands")));
             this.mainLanguage = getLanguageByName(Triton.get().getConf().getMainLanguage(), true);
         } else {
             this.mainLanguage = new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>());
             this.languages.add(this.mainLanguage);
         }
-        for (LanguageItem item : Triton.get().getLanguageConfig().getItems())
+        for (LanguageItem item : Triton.get().getLanguageConfig().getItems()) {
             items.put(item.getType(), item);
-        Triton.get().logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!", this.languages.size(), this.items.size());
+            if (item instanceof LanguageText) {
+                LanguageText itemText = (LanguageText) item;
+                for (String s : itemText.getMatches())
+                    addMatchRegex(s, itemText);
+            }
+        }
+        Triton.get().logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!",
+                this.languages.size(), this.items.size());
     }
 
 }

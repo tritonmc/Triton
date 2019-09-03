@@ -69,11 +69,18 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         String key = in.readUTF();
                         switch (type) {
                             case 0:
+                            case 2:
                                 HashMap<String, String> msgs = new HashMap<>();
                                 short langSize2 = in.readShort();
                                 for (int k = 0; k < langSize2; k++)
                                     msgs.put(in.readUTF(), in.readUTF());
-                                languageItems.add(new LanguageText(key, msgs));
+                                List<String> matches = new ArrayList<>();
+                                if (type != 0) {
+                                    short matchesSize = in.readShort();
+                                    for (int k = 0; k < matchesSize; k++)
+                                        matches.add(in.readUTF());
+                                }
+                                languageItems.add(new LanguageText(key, msgs, matches));
                                 break;
                             case 1:
                                 List<LanguageSign.SignLocation> signLocations = new ArrayList<>();

@@ -124,6 +124,7 @@ public class LanguageParser {
         removeMLPLinks(text);
         AdvancedComponent advancedComponent = ComponentUtils.toLegacyText(text);
         String input = advancedComponent.getText();
+        input = Triton.get().getLanguageManager().getMatch(input, p);
         Integer[] i;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             StringBuilder builder = new StringBuilder();

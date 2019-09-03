@@ -347,12 +347,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (item.hasItemMeta()) {
                 ItemMeta meta = item.getItemMeta();
                 if (meta.hasDisplayName())
-                    meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(),
+                    meta.setDisplayName(translate(meta.getDisplayName(),
                             languagePlayer, main.getConf().getItemsSyntax()));
                 if (meta.hasLore()) {
                     List<String> newLore = new ArrayList<>();
                     for (String lore : meta.getLore())
-                        newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer,
+                        newLore.add(translate(lore, languagePlayer,
                                 main.getConf().getItemsSyntax()));
                     meta.setLore(newLore);
                 }
@@ -367,7 +367,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             newPagesCollection.add(
                                     ComponentSerializer.toString(
                                             TextComponent.fromLegacyText(
-                                                    main.getLanguageParser().replaceLanguages(page.getValue().substring(1
+                                                    translate(page.getValue().substring(1
                                                             , page.getValue().length() - 1),
                                                             languagePlayer, main.getConf().getItemsSyntax()))));
                         else {
@@ -395,12 +395,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName())
-                meta.setDisplayName(main.getLanguageParser().replaceLanguages(meta.getDisplayName(), languagePlayer,
+                meta.setDisplayName(translate(meta.getDisplayName(), languagePlayer,
                         main.getConf().getItemsSyntax()));
             if (meta.hasLore()) {
                 List<String> newLore = new ArrayList<>();
                 for (String lore : meta.getLore())
-                    newLore.add(main.getLanguageParser().replaceLanguages(lore, languagePlayer,
+                    newLore.add(translate(lore, languagePlayer,
                             main.getConf().getItemsSyntax()));
                 meta.setLore(newLore);
             }
@@ -415,7 +415,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         newPagesCollection.add(
                                 ComponentSerializer.toString(
                                         TextComponent.fromLegacyText(
-                                                main.getLanguageParser().replaceLanguages(page.getValue().substring(1
+                                                translate(page.getValue().substring(1
                                                         , page.getValue().length() - 1),
                                                         languagePlayer, main.getConf().getItemsSyntax()))));
                     else {
@@ -770,6 +770,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         String r = main.getLanguageParser().replaceLanguages(s, lp, syntax);
         if (r.length() > max) return r.substring(0, max);
         return r;
+    }
+
+    private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
+        return main.getLanguageParser().replaceLanguages(main.getLanguageManager().getMatch(s, lp), lp, syntax);
     }
 
     public enum Action {

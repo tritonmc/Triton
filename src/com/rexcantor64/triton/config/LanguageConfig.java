@@ -41,15 +41,18 @@ public class LanguageConfig {
             if (!file.exists()) {
                 try {
                     if (!useCache)
-                        Files.write(file.toPath(), "[]".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+                        Files.write(file.toPath(), "[]".getBytes(StandardCharsets.UTF_8),
+                                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
                 } catch (Exception e) {
-                    Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                    Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(),
+                            e.getMessage());
                 }
                 return;
             }
             setup(new JSONArray(FileUtils.contentsToString(file)));
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while loading languages! Some language items may not have been loaded! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while loading languages! Some language items may not have been" +
+                    " loaded! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Loaded");
         }
@@ -68,17 +71,20 @@ public class LanguageConfig {
         long timeStarted = System.currentTimeMillis();
         try {
             File file = new File(Triton.get().getDataFolder(), "languages.json");
-            Files.write(file.toPath(), raw.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            Files.write(file.toPath(), raw.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             items.clear();
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while saving language items after sign update! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while saving language items after sign update! Some items may " +
+                    "not be saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved");
         }
     }
 
     private void logCount(long timeStarted, String action) {
-        Triton.get().logDebug(action + " %1 language items in %2 ms!", items.size(), System.currentTimeMillis() - timeStarted);
+        Triton.get().logDebug(action + " %1 language items in %2 ms!", items.size(),
+                System.currentTimeMillis() - timeStarted);
     }
 
     public void saveToCache() {
@@ -92,6 +98,7 @@ public class LanguageConfig {
                     LanguageText lt = (LanguageText) item;
                     obj.put("type", "text");
                     obj.put("languages", lt.getLanguages());
+                    obj.put("matches", lt.getMatches());
                 } else if (item.getType() == LanguageItem.LanguageItemType.SIGN) {
                     LanguageSign ls = (LanguageSign) item;
                     obj.put("type", "sign");
@@ -110,9 +117,11 @@ public class LanguageConfig {
                 array.put(obj);
             }
             File file = new File(Triton.get().getDataFolder(), "languages.cache.json");
-            Files.write(file.toPath(), array.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            Files.write(file.toPath(), array.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while saving language items to cache! Some items may not be saved if there is a server shutdown! Error: %1", e.getMessage());
+            Triton.get().logWarning("An error occurred while saving language items to cache! Some items may not be " +
+                    "saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved");
         }
