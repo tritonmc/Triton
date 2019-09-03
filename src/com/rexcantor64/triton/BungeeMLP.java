@@ -47,6 +47,7 @@ public class BungeeMLP extends Triton {
         BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new TwinCMD());
 
         sendConfigToEveryone();
+
     }
 
     @Override
@@ -142,7 +143,8 @@ public class BungeeMLP extends Triton {
                 info.sendData("triton:main", out.toByteArray());
             }
         } catch (Exception e) {
-            logError("Failed to send config and language items to other servers! Not everything might work as expected! Error: %1", e.getMessage());
+            logError("Failed to send config and language items to other servers! Not everything might work as " +
+                    "expected! Error: %1", e.getMessage());
         }
     }
 
@@ -156,6 +158,11 @@ public class BungeeMLP extends Triton {
 
     public void setCustomUnsafe(BungeeLanguagePlayer p) {
         NMSUtils.setPrivateFinalField(p.getParent(), "unsafe", new BungeeListener(p));
+    }
+
+    @Override
+    public String getVersion() {
+        return loader.asBungee().getDescription().getVersion();
     }
 
     public void setDefaultUnsafe(ProxiedPlayer p) {

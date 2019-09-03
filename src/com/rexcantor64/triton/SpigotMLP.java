@@ -45,8 +45,10 @@ public class SpigotMLP extends Triton {
             ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
 
         if (getConf().isBungeecord()) {
-            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "triton:main");
-            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "triton:main", bridgeManager = new SpigotBridgeManager());
+            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "triton" +
+                    ":main");
+            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "triton" +
+                    ":main", bridgeManager = new SpigotBridgeManager());
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
@@ -76,8 +78,14 @@ public class SpigotMLP extends Triton {
             gui.addButton(new GuiButton(ItemStackParser.bannerToItemStack(((com.rexcantor64.triton.language.Language) lang).getBanner(), pLang.equals(lang))).setListener(event -> {
                 p.setLang(lang);
                 ((SpigotLanguagePlayer) p).toBukkit().closeInventory();
-                ((SpigotLanguagePlayer) p).toBukkit().sendMessage(Triton.get().getMessage("success.selector", "&aLanguage changed to %1", lang.getDisplayName()));
+                ((SpigotLanguagePlayer) p).toBukkit().sendMessage(Triton.get().getMessage("success.selector",
+                        "&aLanguage changed to %1", lang.getDisplayName()));
             }));
         gui.open(((SpigotLanguagePlayer) p).toBukkit());
+    }
+
+    @Override
+    public String getVersion() {
+        return loader.asSpigot().getDescription().getVersion();
     }
 }
