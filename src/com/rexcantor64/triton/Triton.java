@@ -28,22 +28,35 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     // Main instances
     static Triton instance;
     PluginLoader loader;
-
+    GuiManager guiManager;
     // File-related variables
     private File languageFolder;
-
     // Configs
     private Configuration configYAML;
     private MainConfig config;
     private LanguageConfig languageConfig;
     private Configuration messagesConfig;
-
     // Managers
     private LanguageManager languageManager;
     private LanguageParser languageParser;
-    GuiManager guiManager;
     private TwinManager twinManager;
     private PlayerManager playerManager;
+
+    public static boolean isBungee() {
+        return instance instanceof BungeeMLP;
+    }
+
+    public static Triton get() {
+        return instance;
+    }
+
+    public static SpigotMLP asSpigot() {
+        return (SpigotMLP) instance;
+    }
+
+    public static BungeeMLP asBungee() {
+        return (BungeeMLP) instance;
+    }
 
     public void reload() {
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
@@ -53,10 +66,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         languageManager.setup();
         for (LanguagePlayer lp : playerManager.getAll())
             lp.refreshAll();
-    }
-
-    public static boolean isBungee() {
-        return instance instanceof BungeeMLP;
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {
@@ -94,9 +103,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return twinManager;
     }
 
-    public static Triton get() {
-        return instance;
-    }
+    public abstract String getVersion();
 
     public abstract ProtocolLibListener getProtocolLibListener();
 
@@ -190,7 +197,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     void onEnable() {
-        languageFolder = new File(getDataFolder().getParentFile(), "MultiLanguagePlugin" + File.separator + "languages");
+        languageFolder = new File(getDataFolder().getParentFile(), "MultiLanguagePlugin" + File.separator +
+                "languages");
         // Setup config.yml
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
         (config = new MainConfig(this)).setup();
@@ -208,7 +216,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     public void saveConfig() {
         try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(configYAML, new File(getDataFolder(), "config.yml"));
+            ConfigurationProvider.getProvider(YamlConfiguration.class).save(configYAML, new File(getDataFolder(),
+                    "config.yml"));
         } catch (IOException e) {
             logError("Failed to save config.yml! Cause: %1", e.getMessage());
         }
@@ -223,14 +232,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {
-    }
-
-    public static SpigotMLP asSpigot() {
-        return (SpigotMLP) instance;
-    }
-
-    public static BungeeMLP asBungee() {
-        return (BungeeMLP) instance;
     }
 
     public PlayerManager getPlayerManager() {

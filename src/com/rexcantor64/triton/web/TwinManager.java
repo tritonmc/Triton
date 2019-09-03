@@ -30,7 +30,7 @@ public class TwinManager {
             JSONObject data = new JSONObject();
             data.put("tritonv", TWIN_VERSION);
             data.put("user", "%%__USER__%%");
-            data.put("resource", "%%__RESOURCE__%%");
+            data.put("resource", "%%__RESOURCE__%%-" + main.getVersion());
             data.put("nonce", "%%__NONCE__%%");
             data.put("bungee", main.getLoader().getType() == PluginLoader.PluginType.BUNGEE);
             JSONArray languages = new JSONArray();
