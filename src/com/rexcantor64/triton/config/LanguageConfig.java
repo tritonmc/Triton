@@ -6,6 +6,7 @@ import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.utils.FileUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -17,7 +18,6 @@ import java.util.List;
 
 public class LanguageConfig {
 
-    private JSONArray raw;
     private List<LanguageItem> items = new ArrayList<>();
 
     public List<LanguageItem> getItems() {
@@ -29,61 +29,80 @@ public class LanguageConfig {
         return this;
     }
 
-    public JSONArray getRaw() {
-        return raw;
-    }
-
     public void setup(boolean useCache) {
         items.clear();
         long timeStarted = System.currentTimeMillis();
         try {
-            File file = new File(Triton.get().getDataFolder(), useCache ? "languages.cache.json" : "languages.json");
-            if (!file.exists()) {
-                try {
-                    if (!useCache)
-                        Files.write(file.toPath(), "[]".getBytes(StandardCharsets.UTF_8),
-                                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-                } catch (Exception e) {
-                    Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(),
-                            e.getMessage());
+            if (useCache) {
+                File cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
+                if (cacheFile.exists()) {
+                    setup(null, new JSONArray(FileUtils.contentsToString(cacheFile)), "cache");
                 }
-                return;
+            } else {
+                File translationFolder = Triton.get().getTranslationsFolder();
+                if (!translationFolder.isDirectory()) {
+                    if (translationFolder.mkdirs()) {
+                        File defaultFile = new File(translationFolder, "default.json");
+                        Files.write(defaultFile.toPath(), "[]".getBytes(StandardCharsets.UTF_8),
+                                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+                    }
+                }
+                File[] files = translationFolder.listFiles();
+                if (files != null) {
+                    Triton.get().logDebug("Found %1 translation files.", files.length);
+                    for (File f : files)
+                        setupFromFile(f);
+                }
             }
-            setup(new JSONArray(FileUtils.contentsToString(file)));
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while loading languages! Some language items may not have been" +
+            Triton.get().logWarning("An error occurred while loading translations! Some translation items may not " +
+                    "have been" +
                     " loaded! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Loaded");
         }
     }
 
-    private void setup(JSONArray raw) {
-        this.raw = raw;
+    private void setupFromFile(File file) {
+        String contents = FileUtils.contentsToString(file);
+        JSONArray items = null;
+        JSONObject metadata = null;
+        try {
+            JSONObject content = new JSONObject(contents);
+            metadata = content.optJSONObject("metadata");
+            items = content.optJSONArray("items");
+        } catch (JSONException ignore) {
+            try {
+                items = new JSONArray(contents);
+            } catch (JSONException ignore2) {
+                Triton.get().logWarning("Failed to load translations from file %1! Make sure it has a valid JSON " +
+                        "syntax.", file.getName());
+            }
+        }
+        setup(metadata, items, com.google.common.io.Files.getNameWithoutExtension(file.getName()));
+    }
+
+    private void setup(JSONObject metadata, JSONArray raw, String fileName) {
+        if (metadata == null) metadata = new JSONObject();
+        boolean defaultUniversal = metadata.optBoolean("universal", true);
+        boolean defaultBlacklist = metadata.optBoolean("blacklist", false);
+        JSONArray defaultServers = metadata.optJSONArray("servers");
         for (int i = 0; i < raw.length(); i++) {
-            LanguageItem item = LanguageItem.fromJSON(raw.optJSONObject(i));
+            JSONObject obj = raw.optJSONObject(i);
+            if (Triton.isBungee()) {
+                if (!obj.has("universal")) obj.put("universal", defaultUniversal);
+                if (!obj.has("blacklist")) obj.put("blacklist", defaultBlacklist);
+                if (!obj.has("servers")) obj.put("servers", defaultServers);
+            }
+            obj.put("fileName", fileName);
+            LanguageItem item = LanguageItem.fromJSON(obj);
             if (item == null) continue;
             items.add(item);
         }
     }
 
-    public void saveFromRaw(JSONArray raw) {
-        long timeStarted = System.currentTimeMillis();
-        try {
-            File file = new File(Triton.get().getDataFolder(), "languages.json");
-            Files.write(file.toPath(), raw.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-            items.clear();
-        } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while saving language items after sign update! Some items may " +
-                    "not be saved if there is a server shutdown! Error: %1", e.getMessage());
-        } finally {
-            logCount(timeStarted, "Saved");
-        }
-    }
-
     private void logCount(long timeStarted, String action) {
-        Triton.get().logDebug(action + " %1 language items in %2 ms!", items.size(),
+        Triton.get().logDebug(action + " %1 translation items in %2 ms!", items.size(),
                 System.currentTimeMillis() - timeStarted);
     }
 
@@ -116,11 +135,12 @@ public class LanguageConfig {
                 }
                 array.put(obj);
             }
-            File file = new File(Triton.get().getDataFolder(), "languages.cache.json");
+            File file = new File(Triton.get().getDataFolder(), "translations.cache.json");
             Files.write(file.toPath(), array.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
                     StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while saving language items to cache! Some items may not be " +
+            Triton.get().logWarning("An error occurred while saving translations items to cache! Some items may not " +
+                    "be " +
                     "saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved");
