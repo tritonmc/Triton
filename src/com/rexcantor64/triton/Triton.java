@@ -30,7 +30,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     PluginLoader loader;
     GuiManager guiManager;
     // File-related variables
-    private File languageFolder;
+    private File translationsFolder;
     // Configs
     private Configuration configYAML;
     private MainConfig config;
@@ -123,8 +123,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return result;
     }
 
-    public File getLanguageFolder() {
-        return languageFolder;
+    public File getTranslationsFolder() {
+        return translationsFolder;
     }
 
     public void logInfo(String info, Object... arguments) {
@@ -197,14 +197,13 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     void onEnable() {
-        languageFolder = new File(getDataFolder().getParentFile(), "MultiLanguagePlugin" + File.separator +
-                "languages");
+        translationsFolder = new File(getDataFolder(), "translations");
         // Setup config.yml
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
         (config = new MainConfig(this)).setup();
         // Setup messages.yml
         messagesConfig = loadYAML("messages", "messages");
-        // Start migration. Remove on v1.1.0.
+        // Start migration from v1 to v2.
         LanguageMigration.migrate();
         // Setup more classes
         (languageConfig = new LanguageConfig()).setup(config.isBungeecord());
