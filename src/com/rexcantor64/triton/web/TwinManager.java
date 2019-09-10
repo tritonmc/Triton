@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class TwinManager {
 
-    private static final int TWIN_VERSION = 3;
+    private static final int TWIN_VERSION = 4;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
     private final Triton main;
 
@@ -32,7 +32,7 @@ public class TwinManager {
             data.put("user", "%%__USER__%%");
             data.put("resource", "%%__RESOURCE__%%-" + main.getVersion());
             data.put("nonce", "%%__NONCE__%%");
-            data.put("bungee", main.getLoader().getType() == PluginLoader.PluginType.BUNGEE);
+            data.put("bungee", Triton.isBungee());
             JSONArray languages = new JSONArray();
             for (Language lang : main.getLanguageManager().getAllLanguages())
                 languages.put(lang.getName());
@@ -89,7 +89,8 @@ public class TwinManager {
             }
 
             data.put("data", items);
-
+            if (Triton.isBungee())
+                data.put("metadata", main.getLanguageConfig().getMetadataList());
 
             String encodedData = data.toString();
             URL u = new URL(BASE_URL + "/api/v1/upload");

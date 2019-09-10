@@ -130,7 +130,7 @@ public class TwinCMD extends Command {
                     if (added.optJSONObject(k) != null) storage.put(added.optJSONObject(k));
 
             try {
-                Triton.get().getLanguageConfig().saveFromRaw(storage);
+                Triton.get().getLanguageConfig().saveFromRaw(storage, responseJson.optJSONObject("metadata"));
             } catch (Exception e) {
                 s.sendMessage(Triton.get().getMessage("twin.failed-file-update", "&cError while writing to file '%1':" +
                         " %2", "languages.json", e.getMessage()));

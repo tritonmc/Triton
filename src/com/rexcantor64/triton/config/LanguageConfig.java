@@ -34,6 +34,10 @@ public class LanguageConfig {
         return raw;
     }
 
+    public JSONObject getMetadataList() {
+        return metadataList;
+    }
+
     public void setup(boolean useCache) {
         items.clear();
         raw = new JSONArray();
