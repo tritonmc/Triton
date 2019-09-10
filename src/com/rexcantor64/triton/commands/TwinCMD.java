@@ -10,27 +10,25 @@ import org.bukkit.command.CommandSender;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-
 public class TwinCMD implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             if (!s.hasPermission("twin.upload")) {
-                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.upload"));
+                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: " +
+                        "&4%1", "twin.upload"));
                 return true;
             }
             Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> upload(s));
         } else {
             if (!s.hasPermission("twin.download")) {
-                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "twin.download"));
+                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: " +
+                        "&4%1", "twin.download"));
                 return true;
             }
-            Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> download(s, args[0]));
+            Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> download(s,
+                    args[0]));
         }
         return true;
     }
@@ -41,26 +39,32 @@ public class TwinCMD implements CommandExecutor {
         TwinManager.HttpResponse response = Triton.get().getTwinManager().upload();
 
         if (response == null) {
-            s.sendMessage(Triton.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."));
+            s.sendMessage(Triton.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you " +
+                    "have BungeeCord enabled on config! Please execute this command through BungeeCord."));
             return;
         }
 
         if (response.getStatusCode() == 0) {
-            s.sendMessage(Triton.get().getMessage("twin.no-internet", "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            s.sendMessage(Triton.get().getMessage("twin.no-internet", "&4Failed to upload config. Please check your " +
+                    "internet connection and/or firewall! Error description: %1", response.getPage()));
             return;
         }
 
         if (response.getStatusCode() == 401) {
-            s.sendMessage(Triton.get().getMessage("twin.no-token", "&4Invalid token! Please check if you have setup TWIN correctly on config."));
+            s.sendMessage(Triton.get().getMessage("twin.no-token", "&4Invalid token! Please check if you have setup " +
+                    "TWIN correctly on config."));
             return;
         }
 
         if (response.getStatusCode() != 200) {
-            s.sendMessage(Triton.get().getMessage("twin.failed-upload", "&cFailed to upload the config: %1", Triton.get().getMessage("twin.incorrect-status", "&4status is not 200 (received &l%1&4)", response.getStatusCode())));
+            s.sendMessage(Triton.get().getMessage("twin.failed-upload", "&cFailed to upload the config: %1",
+                    Triton.get().getMessage("twin.incorrect-status", "&4status is not 200 (received &l%1&4)",
+                            response.getStatusCode())));
             return;
         }
 
-        s.sendMessage(Triton.get().getMessage("twin.uploaded", "&aYour config is live! Start editing now at &6%1", "https://twin.rexcantor64.com/" + response.getPage()));
+        s.sendMessage(Triton.get().getMessage("twin.uploaded", "&aYour config is live! Start editing now at &6%1",
+                "https://twin.rexcantor64.com/" + response.getPage()));
     }
 
     private void download(CommandSender s, String id) {
@@ -69,17 +73,21 @@ public class TwinCMD implements CommandExecutor {
         TwinManager.HttpResponse response = Triton.get().getTwinManager().download(id);
 
         if (response == null) {
-            s.sendMessage(Triton.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."));
+            s.sendMessage(Triton.get().getMessage("twin.failed-bungeecord", "&cCan't upload the config because you " +
+                    "have BungeeCord enabled on config! Please execute this command through BungeeCord."));
             return;
         }
 
         if (response.getStatusCode() == 0) {
-            s.sendMessage(Triton.get().getMessage("twin.no-internet", "&4please check your internet connection and/or firewall! Error description: %1", response.getPage()));
+            s.sendMessage(Triton.get().getMessage("twin.no-internet", "&4please check your internet connection and/or" +
+                    " firewall! Error description: %1", response.getPage()));
             return;
         }
 
         if (response.getStatusCode() != 200) {
-            s.sendMessage(Triton.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1", Triton.get().getMessage("twin.incorrect-status", "&4status is not 200 (received &l%1&4)", response.getStatusCode())));
+            s.sendMessage(Triton.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1",
+                    Triton.get().getMessage("twin.incorrect-status", "&4status is not 200 (received &l%1&4)",
+                            response.getStatusCode())));
             return;
         }
 
@@ -118,15 +126,17 @@ public class TwinCMD implements CommandExecutor {
                     if (added.optJSONObject(k) != null) storage.put(added.optJSONObject(k));
 
             try {
-                File file = new File(Triton.get().getDataFolder(), "languages.json");
-                Files.write(file.toPath(), storage.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                Triton.get().getLanguageConfig().saveFromRaw(storage);
             } catch (Exception e) {
-                s.sendMessage(Triton.get().getMessage("twin.failed-file-update", "&cError while writing to file '%1': %2", "languages.json", e.getMessage()));
+                s.sendMessage(Triton.get().getMessage("twin.failed-file-update", "&cError while writing to file '%1':" +
+                        " %2", "languages.json", e.getMessage()));
             }
             Triton.get().reload();
-            s.sendMessage(Triton.get().getMessage("twin.success", "&aSuccessfully fetched the config from TWIN and applied it into the server!"));
+            s.sendMessage(Triton.get().getMessage("twin.success", "&aSuccessfully fetched the config from TWIN and " +
+                    "applied it into the server!"));
         } catch (Exception e) {
-            s.sendMessage(Triton.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1", e.getMessage()));
+            s.sendMessage(Triton.get().getMessage("twin.failed-fetch", "&cFailed to fetch the config: %1",
+                    e.getMessage()));
         }
     }
 }

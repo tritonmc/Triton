@@ -13,11 +13,12 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class LanguageConfig {
 
+    private JSONArray raw = new JSONArray();
+    private JSONObject metadataList = new JSONObject();
     private List<LanguageItem> items = new ArrayList<>();
 
     public List<LanguageItem> getItems() {
@@ -29,8 +30,14 @@ public class LanguageConfig {
         return this;
     }
 
+    public JSONArray getRaw() {
+        return raw;
+    }
+
     public void setup(boolean useCache) {
         items.clear();
+        raw = new JSONArray();
+        metadataList = new JSONObject();
         long timeStarted = System.currentTimeMillis();
         try {
             if (useCache) {
@@ -51,7 +58,8 @@ public class LanguageConfig {
                 if (files != null) {
                     Triton.get().logDebug("Found %1 translation files.", files.length);
                     for (File f : files)
-                        setupFromFile(f);
+                        if (f.getName().endsWith(".json"))
+                            setupFromFile(f);
                 }
             }
         } catch (Exception e) {
@@ -59,7 +67,7 @@ public class LanguageConfig {
                     "have been" +
                     " loaded! Error: %1", e.getMessage());
         } finally {
-            logCount(timeStarted, "Loaded");
+            logCount(timeStarted, "Loaded", items.size());
         }
     }
 
@@ -84,25 +92,78 @@ public class LanguageConfig {
 
     private void setup(JSONObject metadata, JSONArray raw, String fileName) {
         if (metadata == null) metadata = new JSONObject();
+        metadataList.put(fileName, metadata);
         boolean defaultUniversal = metadata.optBoolean("universal", true);
         boolean defaultBlacklist = metadata.optBoolean("blacklist", false);
         JSONArray defaultServers = metadata.optJSONArray("servers");
         for (int i = 0; i < raw.length(); i++) {
             JSONObject obj = raw.optJSONObject(i);
-            if (Triton.isBungee()) {
-                if (!obj.has("universal")) obj.put("universal", defaultUniversal);
-                if (!obj.has("blacklist")) obj.put("blacklist", defaultBlacklist);
-                if (!obj.has("servers")) obj.put("servers", defaultServers);
-            }
             obj.put("fileName", fileName);
-            LanguageItem item = LanguageItem.fromJSON(obj);
+            this.raw.put(obj);
+            LanguageItem item = LanguageItem.fromJSON(obj, defaultUniversal, defaultBlacklist, defaultServers);
             if (item == null) continue;
             items.add(item);
         }
     }
 
-    private void logCount(long timeStarted, String action) {
-        Triton.get().logDebug(action + " %1 translation items in %2 ms!", items.size(),
+    public void saveFromRaw(JSONArray raw) {
+        saveFromRaw(raw, metadataList);
+    }
+
+    public void saveFromRaw(JSONArray raw, JSONObject metadataList) {
+        if (metadataList == null) metadataList = new JSONObject();
+        long timeStarted = System.currentTimeMillis();
+        HashMap<String, JSONArray> fileMap = new HashMap<>();
+        for (int i = 0; i < raw.length(); i++) {
+            try {
+                JSONObject obj = raw.optJSONObject(i);
+                if (obj == null) continue;
+                obj = new JSONObject(obj, Objects.requireNonNull(JSONObject.getNames(obj)));
+                String fileDestination = obj.optString("fileName", "default");
+                JSONObject metadata = metadataList.optJSONObject(fileDestination);
+                if (metadata != null) {
+                    if (obj.has("universal") && metadata.optBoolean("universal", true) == obj.optBoolean("universal"))
+                        obj.remove("universal");
+                    if (obj.has("blacklist") && metadata.optBoolean("blacklist", true) == obj.optBoolean("blacklist"))
+                        obj.remove("blacklist");
+                    if (obj.has("servers") && metadata.optJSONArray("servers").equals(obj.optJSONArray("servers")))
+                        obj.remove("servers");
+                }
+                obj.remove("fileName");
+                if (!fileMap.containsKey(fileDestination)) fileMap.put(fileDestination, new JSONArray());
+                JSONArray target = fileMap.get(fileDestination);
+                target.put(obj);
+            } catch (NullPointerException ignore) {
+                Triton.get().logDebugWarning("NullPointerException while setting up from raw. One or more translation" +
+                        " items are empty");
+            }
+        }
+        for (Map.Entry<String, JSONArray> entry : fileMap.entrySet()) {
+            try {
+                JSONObject metadata = metadataList.optJSONObject(entry.getKey());
+                String content;
+                if (Triton.isBungee() && metadata != null) {
+                    JSONObject obj = new JSONObject();
+                    obj.put("metadata", metadata);
+                    obj.put("items", entry.getValue());
+                    content = obj.toString(2);
+                } else {
+                    content = entry.getValue().toString(2);
+                }
+                File file = new File(Triton.get().getTranslationsFolder(), entry.getKey() + ".json");
+                Files.write(file.toPath(), content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                items.clear();
+            } catch (Exception e) {
+                Triton.get().logWarning("An error occurred while saving language items ! Some items may " +
+                        "not be saved if there is a server shutdown! Error: %1", e.getMessage());
+            }
+        }
+        logCount(timeStarted, "Saved", raw.length());
+    }
+
+    private void logCount(long timeStarted, String action, int amount) {
+        Triton.get().logDebug(action + " %1 translation items in %2 ms!", amount,
                 System.currentTimeMillis() - timeStarted);
     }
 
@@ -143,7 +204,7 @@ public class LanguageConfig {
                     "be " +
                     "saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
-            logCount(timeStarted, "Saved");
+            logCount(timeStarted, "Saved", items.size());
         }
     }
 }

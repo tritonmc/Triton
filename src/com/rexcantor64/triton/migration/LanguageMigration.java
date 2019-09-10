@@ -37,11 +37,11 @@ public class LanguageMigration {
                 metadataDefault.put("blacklist", false);
                 defaultData.put("metadata", metadataDefault);
                 defaultData.put("items", items);
-                Files.write(defaultFile.toPath(), defaultData.toString(4).getBytes(StandardCharsets.UTF_8),
+                Files.write(defaultFile.toPath(), defaultData.toString(2).getBytes(StandardCharsets.UTF_8),
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             } else {
-                Files.write(defaultFile.toPath(), items.toString(4).getBytes(StandardCharsets.UTF_8),
+                Files.write(defaultFile.toPath(), items.toString(2).getBytes(StandardCharsets.UTF_8),
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             }

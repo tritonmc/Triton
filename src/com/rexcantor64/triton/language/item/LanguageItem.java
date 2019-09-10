@@ -15,7 +15,8 @@ public abstract class LanguageItem {
         this.key = key;
     }
 
-    public static LanguageItem fromJSON(JSONObject obj) {
+    public static LanguageItem fromJSON(JSONObject obj, boolean defaultUniversal, boolean defaultBlacklist,
+                                        JSONArray defaultServers) {
         if (obj == null) return null;
         if (obj.optBoolean("archived", false)) return null;
         LanguageItemType type = LanguageItemType.getType(obj.optString("type", ""));
@@ -32,8 +33,11 @@ public abstract class LanguageItem {
                     if (a != null) map.put(lKey, a);
                 }
                 if (map.size() == 0) return null;
-                return new LanguageText(key, map, obj.optJSONArray("matches"), obj.optBoolean("universal", true),
-                        obj.optBoolean("blacklist", false), obj.optJSONArray("servers"));
+                JSONArray servers = obj.optJSONArray("servers");
+                if (servers == null) servers = defaultServers;
+                return new LanguageText(key, map, obj.optJSONArray("matches"), obj.optBoolean("universal",
+                        defaultUniversal),
+                        obj.optBoolean("blacklist", defaultBlacklist), servers);
             case SIGN:
                 JSONArray loc = obj.optJSONArray("locations");
                 if (loc == null) return null;
