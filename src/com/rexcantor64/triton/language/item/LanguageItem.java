@@ -35,7 +35,7 @@ public abstract class LanguageItem {
                 if (map.size() == 0) return null;
                 JSONArray servers = obj.optJSONArray("servers");
                 if (servers == null) servers = defaultServers;
-                return new LanguageText(key, map, obj.optJSONArray("matches"), obj.optBoolean("universal",
+                return new LanguageText(key, map, obj.optJSONArray("patterns"), obj.optBoolean("universal",
                         defaultUniversal),
                         obj.optBoolean("blacklist", defaultBlacklist), servers);
             case SIGN:

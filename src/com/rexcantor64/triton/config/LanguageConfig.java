@@ -182,7 +182,7 @@ public class LanguageConfig {
                     LanguageText lt = (LanguageText) item;
                     obj.put("type", "text");
                     obj.put("languages", lt.getLanguages());
-                    obj.put("matches", lt.getMatches());
+                    obj.put("patterns", lt.getPatterns());
                 } else if (item.getType() == LanguageItem.LanguageItemType.SIGN) {
                     LanguageSign ls = (LanguageSign) item;
                     obj.put("type", "sign");

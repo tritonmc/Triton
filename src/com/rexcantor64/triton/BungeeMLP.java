@@ -98,8 +98,8 @@ public class BungeeMLP extends Triton {
                             }
                             languageItemsOut.writeShort(langSize2);
                             languageItemsOut.write(langOut2.toByteArray());
-                            languageItemsOut.writeShort(text.getMatches().size());
-                            for (String s : text.getMatches())
+                            languageItemsOut.writeShort(text.getPatterns().size());
+                            for (String s : text.getPatterns())
                                 languageItemsOut.writeUTF(s);
                             break;
                         case SIGN:

@@ -773,7 +773,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
-        return main.getLanguageParser().replaceLanguages(main.getLanguageManager().getMatch(s, lp), lp, syntax);
+        return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
     }
 
     public enum Action {

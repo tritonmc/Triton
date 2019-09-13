@@ -16,20 +16,20 @@ public class LanguageText extends LanguageItem {
     private boolean universal;
     private boolean blacklist;
     private List<String> servers = new ArrayList<>();
-    private List<String> matches;
+    private List<String> patterns;
 
-    public LanguageText(String key, HashMap<String, String> languages, JSONArray matches, boolean universal,
+    public LanguageText(String key, HashMap<String, String> languages, JSONArray patterns, boolean universal,
                         boolean blacklist, JSONArray servers) {
-        this(key, languages, jsonArrayToStringList(matches));
+        this(key, languages, jsonArrayToStringList(patterns));
         this.universal = universal;
         this.blacklist = blacklist;
         this.servers = jsonArrayToStringList(servers);
     }
 
-    public LanguageText(String key, HashMap<String, String> languages, List<String> matches) {
+    public LanguageText(String key, HashMap<String, String> languages, List<String> patterns) {
         super(key);
         this.languages = languages;
-        this.matches = matches;
+        this.patterns = patterns;
     }
 
     private static List<String> jsonArrayToStringList(JSONArray array) {
@@ -74,7 +74,7 @@ public class LanguageText extends LanguageItem {
         return servers;
     }
 
-    public List<String> getMatches() {
-        return matches;
+    public List<String> getPatterns() {
+        return patterns;
     }
 }

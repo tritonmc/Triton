@@ -26,11 +26,11 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     private Multimap<LanguageItem.LanguageItemType, LanguageItem> items = ArrayListMultimap.create();
     private Map<Pattern, LanguageText> matches = new HashMap<>();
 
-    public String getMatch(String input, LanguagePlayer p) {
-        return getMatch(input, p.getLang().getName());
+    public String matchPattern(String input, LanguagePlayer p) {
+        return matchPattern(input, p.getLang().getName());
     }
 
-    public String getMatch(String input, String language) {
+    private String matchPattern(String input, String language) {
         for (Map.Entry<Pattern, LanguageText> entry : matches.entrySet()) {
             String replacement = entry.getValue().getMessageRegex(language);
             if (replacement == null) replacement = entry.getValue().getMessageRegex(mainLanguage.getName());
@@ -158,7 +158,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             items.put(item.getType(), item);
             if (item instanceof LanguageText) {
                 LanguageText itemText = (LanguageText) item;
-                for (String s : itemText.getMatches())
+                for (String s : itemText.getPatterns())
                     addMatchRegex(s, itemText);
             }
         }

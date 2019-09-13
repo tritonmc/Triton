@@ -170,7 +170,8 @@ public class BungeeListener implements Connection.Unsafe {
     }
 
     private String translate(String s, MainConfig.FeatureSyntax syntax) {
-        return Triton.get().getLanguageParser().replaceLanguages(Triton.get().getLanguageManager().getMatch(s, owner)
+        return Triton.get().getLanguageParser().replaceLanguages(Triton.get().getLanguageManager().matchPattern(s,
+                owner)
                 , owner, syntax);
     }
 
