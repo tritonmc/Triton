@@ -94,13 +94,16 @@ public enum EntityType {
     TROPICAL_FISH,
     DROWNED,
     DOLPHIN,
-    LINGERING_POTION,
+    CAT,
+    PANDA,
+    PILLAGER,
+    RAVAGER,
+    TRADER_LLAMA,
+    WANDERING_TRADER,
+    FOX,
     FISHING_HOOK,
     LIGHTNING,
-    WEATHER,
     PLAYER,
-    COMPLEX_PART,
-    TIPPED_ARROW,
     UNKNOWN;
 
     public static EntityType fromBukkit(Object type) {
