@@ -60,7 +60,6 @@ public class BungeeMLP extends Triton {
         try {
             ByteArrayDataOutput languageOut = ByteStreams.newDataOutput();
             // Action 0 (send config)
-            languageOut.writeByte(0);
             languageOut.writeUTF(Triton.get().getLanguageManager().getMainLanguage().getName());
             List<Language> languageList = Triton.get().getLanguageManager().getAllLanguages();
             languageOut.writeShort(languageList.size());
@@ -75,10 +74,34 @@ public class BungeeMLP extends Triton {
 
             // Send language files
             for (ServerInfo info : BungeeCord.getInstance().getServers().values()) {
+                boolean firstSend = true;
                 List<LanguageItem> languageItems = Triton.get().getLanguageConfig().getItems();
                 int size = 0;
                 ByteArrayDataOutput languageItemsOut = ByteStreams.newDataOutput();
                 for (LanguageItem item : languageItems) {
+                    if (languageItemsOut.toByteArray().length > 29000) {
+                        if (firstSend) {
+                            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                            out.writeByte(0);
+                            out.writeBoolean(true);
+                            out.write(languageOut.toByteArray());
+                            out.writeInt(size);
+                            out.write(languageItemsOut.toByteArray());
+                            info.sendData("triton:main", out.toByteArray());
+                            languageItemsOut = ByteStreams.newDataOutput();
+                            size = 0;
+                            firstSend = false;
+                        } else {
+                            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                            out.writeByte(0);
+                            out.writeBoolean(false);
+                            out.writeInt(size);
+                            out.write(languageItemsOut.toByteArray());
+                            info.sendData("triton:main", out.toByteArray());
+                            languageItemsOut = ByteStreams.newDataOutput();
+                            size = 0;
+                        }
+                    }
                     switch (item.getType()) {
                         case TEXT:
                             LanguageText text = (LanguageText) item;
@@ -140,7 +163,10 @@ public class BungeeMLP extends Triton {
                     size++;
                 }
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
-                out.write(languageOut.toByteArray());
+                out.writeByte(0);
+                out.writeBoolean(firstSend);
+                if (firstSend)
+                    out.write(languageOut.toByteArray());
                 out.writeInt(size);
                 out.write(languageItemsOut.toByteArray());
                 info.sendData("triton:main", out.toByteArray());

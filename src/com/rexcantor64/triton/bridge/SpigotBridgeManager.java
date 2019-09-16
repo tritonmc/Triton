@@ -38,29 +38,32 @@ public class SpigotBridgeManager implements PluginMessageListener {
             byte action = in.readByte();
             if (action == 0) {
                 try {
-                    MainConfig config = Triton.get().getConf();
-                    config.setMainLanguage(in.readUTF());
-                    short languageSize = in.readShort();
-                    JSONObject languages = new JSONObject();
-                    for (int i = 0; i < languageSize; i++) {
-                        String name = in.readUTF();
-                        String displayName = in.readUTF();
-                        String flag = in.readUTF();
-                        List<String> minecraftCodes = new ArrayList<>();
-                        short mcSize = in.readShort();
-                        for (int k = 0; k < mcSize; k++)
-                            minecraftCodes.add(in.readUTF());
-                        JSONObject lang = new JSONObject();
-                        lang.put("flag", flag);
-                        lang.put("minecraft-code", minecraftCodes);
-                        lang.put("display-name", displayName);
-                        lang.put("main", name.equals(config.getMainLanguage()));
-                        languages.put(name, lang);
+                    boolean firstSend = in.readBoolean();
+                    if (firstSend) {
+                        MainConfig config = Triton.get().getConf();
+                        config.setMainLanguage(in.readUTF());
+                        short languageSize = in.readShort();
+                        JSONObject languages = new JSONObject();
+                        for (int i = 0; i < languageSize; i++) {
+                            String name = in.readUTF();
+                            String displayName = in.readUTF();
+                            String flag = in.readUTF();
+                            List<String> minecraftCodes = new ArrayList<>();
+                            short mcSize = in.readShort();
+                            for (int k = 0; k < mcSize; k++)
+                                minecraftCodes.add(in.readUTF());
+                            JSONObject lang = new JSONObject();
+                            lang.put("flag", flag);
+                            lang.put("minecraft-code", minecraftCodes);
+                            lang.put("display-name", displayName);
+                            lang.put("main", name.equals(config.getMainLanguage()));
+                            languages.put(name, lang);
+                        }
+                        config.setLanguages(languages);
+                        File file = new File(Triton.get().getDataFolder(), "cache.json");
+                        Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE,
+                                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     }
-                    config.setLanguages(languages);
-                    File file = new File(Triton.get().getDataFolder(), "cache.json");
-                    Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE,
-                            StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     // Read language files
                     List<LanguageItem> languageItems = new ArrayList<>();
                     int itemsSize = in.readInt();
@@ -102,7 +105,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 break;
                         }
                     }
-                    Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
+                    if (firstSend)
+                        Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
+                    else
+                        Triton.get().getLanguageConfig().addItems(languageItems).saveToCache();
                     Triton.get().logDebug("Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {

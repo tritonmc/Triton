@@ -30,6 +30,11 @@ public class LanguageConfig {
         return this;
     }
 
+    public LanguageConfig addItems(List<LanguageItem> items) {
+        this.items.addAll(items);
+        return this;
+    }
+
     public JSONArray getRaw() {
         return raw;
     }
