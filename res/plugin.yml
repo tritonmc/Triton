@@ -1,6 +1,6 @@
 name: Triton
 main: com.rexcantor64.triton.plugin.SpigotPlugin
-version: 2.0.0
+version: 2.0.1
 website: https://triton.rexcantor64.com/
 author: Rexcantor64
 depend: [ProtocolLib]
