@@ -9,6 +9,7 @@ import com.rexcantor64.triton.commands.bungee.TwinCMD;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
+import com.rexcantor64.triton.metrics.MetricsBungee;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
@@ -34,6 +35,10 @@ public class BungeeMLP extends Triton {
     public void onEnable() {
         instance = this;
         super.onEnable();
+
+        MetricsBungee metrics = new MetricsBungee(loader.asBungee());
+        metrics.addCustomChart(new MetricsBungee.SingleLineChart("active_placeholders",
+                () -> Triton.get().getLanguageConfig().getItems().size()));
 
         BungeeCord.getInstance().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());
         BungeeCord.getInstance().registerChannel("triton:main");

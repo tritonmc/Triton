@@ -12,6 +12,7 @@ import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.listeners.BukkitListener;
+import com.rexcantor64.triton.metrics.MetricsSpigot;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -34,6 +35,13 @@ public class SpigotMLP extends Triton {
     public void onEnable() {
         instance = this;
         super.onEnable();
+
+        if (!getConf().isBungeecord()) {
+            MetricsSpigot metrics = new MetricsSpigot(loader.asSpigot());
+            metrics.addCustomChart(new MetricsSpigot.SingleLineChart("active_placeholders",
+                    () -> Triton.get().getLanguageConfig().getItems().size()));
+        }
+
         // Setup commands
         loader.asSpigot().getCommand("triton").setExecutor(new MainCMD());
         loader.asSpigot().getCommand("twin").setExecutor(new TwinCMD());
