@@ -9,10 +9,10 @@ error:
   sign-not-found: "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options."
 help:
   menu:
-    - "&a---------MultiLanguagePlugin---------"
+    - "&a---------Triton---------"
     - "&6Available commands:"
     - "%1"
-    - "&a---------MultiLanguagePlugin---------"
+    - "&a---------Triton---------"
   menu-item: "&6/%1 %2 &e&l- &f%3"
   getflag: "&cUse /%1 getflag <language name>"
   setlanguage: "&cUse /%1 setlanguage [player] <language name>"
