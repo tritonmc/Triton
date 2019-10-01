@@ -36,11 +36,9 @@ public class SpigotMLP extends Triton {
         instance = this;
         super.onEnable();
 
-        if (!getConf().isBungeecord()) {
-            MetricsSpigot metrics = new MetricsSpigot(loader.asSpigot());
-            metrics.addCustomChart(new MetricsSpigot.SingleLineChart("active_placeholders",
-                    () -> Triton.get().getLanguageConfig().getItems().size()));
-        }
+        MetricsSpigot metrics = new MetricsSpigot(loader.asSpigot());
+        metrics.addCustomChart(new MetricsSpigot.SingleLineChart("active_placeholders",
+                () -> Triton.get().getLanguageConfig().getItems().size()));
 
         // Setup commands
         loader.asSpigot().getCommand("triton").setExecutor(new MainCMD());
@@ -83,7 +81,9 @@ public class SpigotMLP extends Triton {
         Language pLang = p.getLang();
         Gui gui = new ScrollableGui(Triton.get().getMessage("other.selector-gui-name", "&aSelect a language"));
         for (Language lang : language.getAllLanguages())
-            gui.addButton(new GuiButton(ItemStackParser.bannerToItemStack(((com.rexcantor64.triton.language.Language) lang).getBanner(), pLang.equals(lang))).setListener(event -> {
+            gui.addButton(new GuiButton(ItemStackParser
+                    .bannerToItemStack(((com.rexcantor64.triton.language.Language) lang).getBanner(), pLang
+                            .equals(lang))).setListener(event -> {
                 p.setLang(lang);
                 ((SpigotLanguagePlayer) p).toBukkit().closeInventory();
                 ((SpigotLanguagePlayer) p).toBukkit().sendMessage(Triton.get().getMessage("success.selector",
