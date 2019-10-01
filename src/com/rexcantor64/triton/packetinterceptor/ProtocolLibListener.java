@@ -24,6 +24,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.WrappedObjective;
 import com.rexcantor64.triton.scoreboard.WrappedTeam;
+import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -44,13 +45,11 @@ import java.util.*;
 
 @SuppressWarnings("deprecation")
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
-
     private final int mcVersion;
     private final int mcVersionR;
-
     private Triton main;
-
-    private HashMap<World, HashMap<Integer, Entity>> entities = new HashMap<>();
+    private HashMap<World, HashMap<Integer, String>> entities = new HashMap<>();
+    private HashMap<World, HashMap<Integer, Entity>> players = new HashMap<>();
 
     public ProtocolLibListener(SpigotMLP main) {
         this.main = main;
@@ -65,18 +64,23 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer.parse(msg.getJson())))));
+                msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser()
+                        .parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer
+                                .parse(msg.getJson())))));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
             packet.getPacket().getModifier().writeSafely(1,
                     mergeComponents(main.getLanguageParser().parseComponent(languagePlayer,
                             main.getConf().getChatSyntax(),
-                            (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1))));
+                            (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier()
+                                    .readSafely(1))));
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(net.md_5.bungee.chat.ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getChatSyntax(), net.md_5.bungee.chat.ComponentSerializer.parse(msg.getJson()))));
+                msg.setJson(net.md_5.bungee.chat.ComponentSerializer.toString(main.getLanguageParser()
+                        .parseComponent(languagePlayer, main.getConf()
+                                .getChatSyntax(), net.md_5.bungee.chat.ComponentSerializer.parse(msg.getJson()))));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
@@ -112,37 +116,95 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer.parse(msg.getJson())))));
+        msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser()
+                .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer
+                        .parse(msg.getJson())))));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
+    }
+
+    private void handleNamedEntitySpawn(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if ((!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
+                .contains(EntityType.PLAYER)))
+            return;
+        Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
+        addPlayer(packet.getPlayer().getWorld(), e.getEntityId(), e);
+    }
+
+    private void handleSpawnEntityLiving(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        int entityId = packet.getPacket().getIntegers().readSafely(0);
+        int type = packet.getPacket().getIntegers().readSafely(1);
+        EntityType et = EntityTypeUtils.getEntityTypeById(type);
+        if ((!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
+                .contains(et)))
+            return;
+        if (et == EntityType.PLAYER)
+            return;
+        // Clone the data watcher, so we don't edit the display name permanently
+        WrappedDataWatcher dataWatcher = new WrappedDataWatcher(new ArrayList<>(packet.getPacket()
+                .getDataWatcherModifier()
+                .readSafely(0).asMap().values()));
+        WrappedWatchableObject watchableObject = dataWatcher.getWatchableObject(2);
+        if (watchableObject == null) return;
+        if (getMCVersion() >= 13) {
+            Optional optional = (Optional) watchableObject.getValue();
+            if (optional.isPresent()) {
+                String displayName = WrappedChatComponent.fromHandle(optional.get()).getJson();
+                addEntity(packet.getPlayer().getWorld(), entityId, displayName);
+                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
+                        Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                                .toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
+                                        .getHologramSyntax(), ComponentSerializer
+                                        .parse(displayName))))
+                                .getHandle())));
+            }
+        } else if (getMCVersion() >= 9) {
+            addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue());
+            dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
+                    main.getLanguageParser().replaceLanguages((String) watchableObject.getValue(), languagePlayer,
+                            main.getConf().getHologramSyntax())));
+        } else {
+            addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue());
+            dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getIndex(),
+                    main.getLanguageParser().replaceLanguages((String) watchableObject.getValue(), languagePlayer,
+                            main.getConf().getHologramSyntax())));
+        }
+        packet.getPacket().getDataWatcherModifier().writeSafely(0, dataWatcher);
     }
 
     private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
-        if (e == null || (!main.getConf().isHologramsAll() && !main.getConf().getHolograms().contains(EntityType.fromBukkit(e.getType()))))
+        if (e == null || (!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
+                .contains(EntityType.fromBukkit(e.getType()))))
             return;
-        if (e.getType() == org.bukkit.entity.EntityType.PLAYER) {
-            for (Player p : Bukkit.getOnlinePlayers())
-                if (p.getUniqueId().equals(e.getUniqueId()))
-                    return;
-        }
-        addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers().readSafely(0), e);
+        if (e.getType() == org.bukkit.entity.EntityType.PLAYER)
+            return;
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
         List<WrappedWatchableObject> dwn = new ArrayList<>();
         for (WrappedWatchableObject obj : dw)
             if (obj.getIndex() == 2)
-                if (getMCVersion() < 9)
+                if (getMCVersion() < 9) {
+                    addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
+                            .readSafely(0), (String) obj.getValue());
                     dwn.add(new WrappedWatchableObject(obj.getIndex(),
                             main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer,
                                     main.getConf().getHologramSyntax())));
-                else if (getMCVersion() < 13)
+                } else if (getMCVersion() < 13) {
+                    addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
+                            .readSafely(0), (String) obj.getValue());
                     dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
                             main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer,
                                     main.getConf().getHologramSyntax())));
-                else {
+                } else {
                     Optional optional = (Optional) obj.getValue();
                     if (optional.isPresent()) {
+                        addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
+                                .readSafely(0), WrappedChatComponent.fromHandle(optional.get()).getJson());
                         dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
-                                Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getHologramSyntax(), ComponentSerializer.parse(WrappedChatComponent.fromHandle(optional.get()).getJson())))).getHandle())));
+                                Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                                        .toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
+                                                .getHologramSyntax(), ComponentSerializer
+                                                .parse(WrappedChatComponent.fromHandle(optional.get()).getJson()))))
+                                        .getHandle())));
                     } else dwn.add(obj);
                 }
             else
@@ -180,7 +242,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         packet.getPacket().getStrings().readSafely(1), 32, main.getConf().getScoreboardSyntax()));
             else
                 packet.getPacket().getChatComponents().writeSafely(0,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer.parse(packet.getPacket().getChatComponents().readSafely(0).getJson())))));
+                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
+                                .parseComponent(languagePlayer, main.getConf()
+                                        .getScoreboardSyntax(), ComponentSerializer
+                                        .parse(packet.getPacket().getChatComponents().readSafely(0).getJson())))));
         }
         if (mode == 1) {
             languagePlayer.getScoreboard().removeObjective(name);
@@ -199,8 +264,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             languagePlayer.getScoreboard().getBridge().updateObjectiveTitle(translate(languagePlayer,
                     objective.getTitle(), 32, main.getConf().getScoreboardSyntax()));
         } else {
-            objective.setTitleComp(ComponentSerializer.parse(packet.getPacket().getChatComponents().readSafely(0).getJson()));
-            languagePlayer.getScoreboard().getBridge().updateObjectiveTitle(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), objective.getTitleComp())));
+            objective.setTitleComp(ComponentSerializer
+                    .parse(packet.getPacket().getChatComponents().readSafely(0).getJson()));
+            languagePlayer.getScoreboard().getBridge().updateObjectiveTitle(ComponentSerializer
+                    .toString(main.getLanguageParser()
+                            .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), objective
+                                    .getTitleComp())));
         }
     }
 
@@ -215,7 +284,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (objectiveString.isEmpty()) {
             for (WrappedObjective objective : languagePlayer.getScoreboard().getObjectives())
                 objective.setScore(strings.readSafely(0),
-                        packet.getPacket().getScoreboardActions().readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket().getIntegers().readSafely(0) : null);
+                        packet.getPacket().getScoreboardActions()
+                                .readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket()
+                                .getIntegers().readSafely(0) : null);
         } else {
             WrappedObjective objective = languagePlayer.getScoreboard().getObjective(objectiveString);
             if (objective == null) {
@@ -240,9 +311,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         main.getConf().getScoreboardSyntax()));
             } else {
                 components.writeSafely(1,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer.parse(components.readSafely(1).getJson())))));
+                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
+                                .parseComponent(languagePlayer, main.getConf()
+                                        .getScoreboardSyntax(), ComponentSerializer
+                                        .parse(components.readSafely(1).getJson())))));
                 components.writeSafely(2,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer.parse(components.readSafely(2).getJson())))));
+                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
+                                .parseComponent(languagePlayer, main.getConf()
+                                        .getScoreboardSyntax(), ComponentSerializer
+                                        .parse(components.readSafely(2).getJson())))));
             }
             return;
         }
@@ -270,7 +347,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (mode == 0 || mode == 3)
             team.addEntry((Collection<String>) packet.getPacket().getSpecificModifier(Collection.class).readSafely(0));
         if (mode == 4)
-            team.removeEntry((Collection<String>) packet.getPacket().getSpecificModifier(Collection.class).readSafely(0));
+            team.removeEntry((Collection<String>) packet.getPacket().getSpecificModifier(Collection.class)
+                    .readSafely(0));
         languagePlayer.getScoreboard().rerender(false);
     }
 
@@ -336,7 +414,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils.getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main.getConf().isInventoryItems())
+        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils
+                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main
+                .getConf().isInventoryItems())
             return;
 
         List<ItemStack> items = getMCVersion() <= 10 ?
@@ -388,7 +468,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils.getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main.getConf().isInventoryItems())
+        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils
+                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main
+                .getConf().isInventoryItems())
             return;
 
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
@@ -465,29 +547,44 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleChat(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.TITLE && main.getConf().isTitles()) {
             handleTitle(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf().isTab()) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf()
+                .isTab()) {
             handlePlayerListHeaderFooter(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
             handleOpenWindow(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && (main.getConf().isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.NAMED_ENTITY_SPAWN && (main.getConf()
+                .isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
+            handleNamedEntitySpawn(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING && (main.getConf()
+                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
+            handleSpawnEntityLiving(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && (main.getConf()
+                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
             handleEntityMetadata(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_INFO && (main.getConf().isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_INFO && (main.getConf()
+                .isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
             handlePlayerInfo(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf().isScoreboards()) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf()
+                .isScoreboards()) {
             handleScoreboardObjective(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_SCORE && main.getConf().isScoreboards()) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_SCORE && main.getConf()
+                .isScoreboards()) {
             handleScoreboardScore(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM && main.getConf().isScoreboards()) {
             handleScoreboardTeam(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE && main.getConf().isScoreboards()) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE && main.getConf()
+                .isScoreboards()) {
             handleScoreboardDisplayObjective(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT && main.getConf().isKick()) {
             handleKickDisconnect(packet, languagePlayer);
-        } else if (existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main.getConf().isSigns()) {
+        } else if (existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main
+                .getConf().isSigns()) {
             handleUpdateSign(packet, languagePlayer);
-        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
+        } else if (!existsSignUpdatePacket() && packet
+                .getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
             handleTileEntityData(packet, languagePlayer);
-        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main.getConf().isSigns()) {
+        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main
+                .getConf().isSigns()) {
             handleMapChunk(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS && main.getConf().isItems()) {
             handleWindowItems(packet, languagePlayer);
@@ -514,7 +611,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
             if (languagePlayer.isWaitingForClientLocale())
-                languagePlayer.setLang(Triton.get().getLanguageManager().getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true));
+                languagePlayer.setLang(Triton.get().getLanguageManager()
+                        .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true));
         }
     }
 
@@ -536,7 +634,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         WrappedChatComponent[] comps = new WrappedChatComponent[4];
                         for (int i = 0; i < 4; i++)
                             comps[i] =
-                                    WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                                    WrappedChatComponent.fromJson(ComponentSerializer
+                                            .toString(TextComponent.fromLegacyText(lines[i])));
                         packet.getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(),
                                 BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(),
                                         BukkitConverters.getWrappedChatComponentConverter())).writeSafely(0,
@@ -565,64 +664,85 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
         if (entities.containsKey(player.toBukkit().getWorld()))
-            entityLoop:for (Map.Entry<Integer, Entity> entry : entities.get(player.toBukkit().getWorld()).entrySet()) {
-                if (entry.getValue().getType() == org.bukkit.entity.EntityType.PLAYER) {
-                    Player p = (Player) entry.getValue();
-                    for (Player op : Bukkit.getOnlinePlayers())
-                        if (op.getUniqueId().equals(p.getUniqueId())) continue entityLoop;
-                    List<PlayerInfoData> dataList = new ArrayList<>();
-                    dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50,
-                            EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()),
-                            WrappedChatComponent.fromText(p.getPlayerListName())));
-                    PacketContainer packetRemove =
-                            ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
-                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
-                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
-
-                    PacketContainer packetAdd =
-                            ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
-                    packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
-                    packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
-
-                    PacketContainer packetDestroy =
-                            ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
-                    packetDestroy.getIntegerArrays().writeSafely(0, new int[]{p.getEntityId()});
-
-                    PacketContainer packetSpawn =
-                            ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
-                    packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
-                    packetSpawn.getUUIDs().writeSafely(0, p.getUniqueId());
-                    packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1,
-                            p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
-                    packetSpawn.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F)).writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
-                    packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
-
-                    PacketContainer packetRotation =
-                            ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
-                    packetRotation.getIntegers().writeSafely(0, p.getEntityId());
-                    packetRotation.getBytes().writeSafely(0, (byte) p.getLocation().getYaw());
-
-                    try {
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRemove, true);
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetDestroy, true);
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetSpawn, true);
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRotation, true);
-                    } catch (InvocationTargetException e) {
-                        main.logError("Failed to send player entity update packet: %1", e.getMessage());
-                    }
-                    continue;
-                }
-                if (entry.getValue().getCustomName() == null) continue;
+            for (Map.Entry<Integer, String> entry : entities.get(player.toBukkit().getWorld())
+                    .entrySet()) {
                 PacketContainer packet =
                         ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().writeSafely(0, entry.getKey());
-                WrappedDataWatcher dw = WrappedDataWatcher.getEntityWatcher(entry.getValue());
-                packet.getWatchableCollectionModifier().writeSafely(0, dw.getWatchableObjects());
+                Object value;
+                if (getMCVersion() >= 13)
+                    value = Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                            .toString(main.getLanguageParser().parseComponent(player, main.getConf()
+                                    .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()))))
+                            .getHandle());
+                else
+                    value = main.getLanguageParser().replaceLanguages(entry.getValue(), player,
+                            main.getConf().getHologramSyntax());
+                WrappedWatchableObject watchableObject;
+                if (getMCVersion() >= 9)
+                    watchableObject = new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(2,
+                            getMCVersion() >= 13 ? WrappedDataWatcher.Registry
+                                    .getChatComponentSerializer(true) : WrappedDataWatcher.Registry
+                                    .get(String.class)), value);
+                else
+                    watchableObject = new WrappedWatchableObject(2, value);
+                packet.getWatchableCollectionModifier().writeSafely(0, Collections.singletonList(watchableObject));
                 try {
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                 } catch (InvocationTargetException e) {
                     main.logError("Failed to send entity update packet: %1", e.getMessage());
+                }
+            }
+
+        if (players.containsKey(player.toBukkit().getWorld()))
+            playerLoop:for (Map.Entry<Integer, Entity> entry : players.get(player.toBukkit().getWorld())
+                    .entrySet()) {
+                Player p = (Player) entry.getValue();
+                for (Player op : Bukkit.getOnlinePlayers())
+                    if (op.getUniqueId().equals(p.getUniqueId())) continue playerLoop;
+                List<PlayerInfoData> dataList = new ArrayList<>();
+                dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50,
+                        EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()),
+                        WrappedChatComponent.fromText(p.getPlayerListName())));
+                PacketContainer packetRemove =
+                        ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
+                packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                PacketContainer packetAdd =
+                        ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
+                packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
+                packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+
+                PacketContainer packetDestroy =
+                        ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+                packetDestroy.getIntegerArrays().writeSafely(0, new int[]{p.getEntityId()});
+
+                PacketContainer packetSpawn =
+                        ProtocolLibrary.getProtocolManager()
+                                .createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+                packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
+                packetSpawn.getUUIDs().writeSafely(0, p.getUniqueId());
+                packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1,
+                        p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
+                packetSpawn.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F))
+                        .writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
+                packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
+
+                PacketContainer packetRotation =
+                        ProtocolLibrary.getProtocolManager()
+                                .createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+                packetRotation.getIntegers().writeSafely(0, p.getEntityId());
+                packetRotation.getBytes().writeSafely(0, (byte) p.getLocation().getYaw());
+
+                try {
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRemove, true);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetDestroy, true);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetSpawn, true);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRotation, true);
+                } catch (InvocationTargetException e) {
+                    main.logError("Failed to send player entity update packet: %1", e.getMessage());
                 }
             }
     }
@@ -664,7 +784,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
-        if (block.getType() != Material.SIGN && block.getType() != Material.SIGN_POST && block.getType() != Material.WALL_SIGN)
+        if (block.getType() != Material.SIGN && block.getType() != Material.SIGN_POST && block
+                .getType() != Material.WALL_SIGN)
             return;
         Sign sign = (Sign) block.getState();
         String[] lines = sign.getLines();
@@ -701,10 +822,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
     }
 
-    private void addEntity(World world, int id, Entity entity) {
+    private void addEntity(World world, int id, String displayName) {
         if (!entities.containsKey(world))
             entities.put(world, new HashMap<>());
-        entities.get(world).put(id, entity);
+        entities.get(world).put(id, displayName);
+    }
+
+    private void addPlayer(World world, int id, Entity player) {
+        if (!players.containsKey(world))
+            players.put(world, new HashMap<>());
+        players.get(world).put(id, player);
     }
 
     @Override
@@ -715,6 +842,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         types.add(PacketType.Play.Server.OPEN_WINDOW);
         types.add(PacketType.Play.Server.ENTITY_METADATA);
+        types.add(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
+        types.add(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
         types.add(PacketType.Play.Server.PLAYER_INFO);
         types.add(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
         types.add(PacketType.Play.Server.SCOREBOARD_SCORE);
@@ -735,7 +864,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS)
+                .highest().build();
     }
 
     @Override
