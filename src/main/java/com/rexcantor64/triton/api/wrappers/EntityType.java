@@ -107,6 +107,7 @@ public enum EntityType {
     UNKNOWN;
 
     public static EntityType fromBukkit(Object type) {
+        if (type == null) return UNKNOWN;
         for (EntityType t : values())
             if (t.toString().equals(type.toString())) return t;
         return UNKNOWN;
