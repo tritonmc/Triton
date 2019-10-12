@@ -723,8 +723,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                 .createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
                 packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
                 packetSpawn.getUUIDs().writeSafely(0, p.getUniqueId());
-                packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1,
-                        p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
+                // Location in 1.8 is integer only
+                if (getMCVersion() < 9)
+                    packetSpawn.getIntegers()
+                            .writeSafely(1, (int) Math.floor(p.getLocation().getX() * 32.00D))
+                            .writeSafely(2, (int) Math.floor(p.getLocation().getY() * 32.00D))
+                            .writeSafely(3, (int) Math.floor(p.getLocation().getZ() * 32.00D));
+                else
+                    packetSpawn.getDoubles().writeSafely(0, p.getLocation().getX()).writeSafely(1,
+                            p.getLocation().getY()).writeSafely(2, p.getLocation().getZ());
                 packetSpawn.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F))
                         .writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
                 packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
@@ -737,8 +744,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
                 try {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRemove, true);
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetDestroy, true);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetSpawn, true);
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetRotation, true);
                 } catch (InvocationTargetException e) {
