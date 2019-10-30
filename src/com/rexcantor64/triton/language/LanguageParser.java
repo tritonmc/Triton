@@ -106,13 +106,11 @@ public class LanguageParser {
         return input;
     }
 
-    public boolean hasLanguages(String input, FeatureSyntax syntax) {
-        return getPatternIndex(input, syntax.getLang()) != null;
-    }
-
     private void removeMLPLinks(BaseComponent[] baseComponents) {
         for (BaseComponent component : baseComponents) {
-            if (component.getClickEvent() != null && component.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL && !ComponentUtils.isLink(component.getClickEvent().getValue()))
+            if (component.getClickEvent() != null && component.getClickEvent()
+                    .getAction() == ClickEvent.Action.OPEN_URL && !ComponentUtils
+                    .isLink(component.getClickEvent().getValue()))
                 component.setClickEvent(null);
             if (component.getExtra() != null)
                 removeMLPLinks(component.getExtra().toArray(new BaseComponent[0]));
@@ -122,7 +120,7 @@ public class LanguageParser {
     public BaseComponent[] parseComponent(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
         text = ComponentSerializer.parse(ComponentSerializer.toString(text));
         removeMLPLinks(text);
-        AdvancedComponent advancedComponent = ComponentUtils.toLegacyText(text);
+        AdvancedComponent advancedComponent = AdvancedComponent.fromBaseComponent(text);
         String input = advancedComponent.getText();
         input = Triton.get().getLanguageManager().matchPattern(input, p);
         Integer[] i;
@@ -132,10 +130,13 @@ public class LanguageParser {
             String placeholder = input.substring(i[2], i[3]);
             Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
-                if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder).equals(Triton.get().getConf().getDisabledLine()))
+                if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
+                        .equals(Triton.get().getConf().getDisabledLine()))
                     return null;
                 AdvancedComponent result =
-                        ComponentUtils.toLegacyText(TextComponent.fromLegacyText(Triton.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder))));
+                        AdvancedComponent
+                                .fromBaseComponent(TextComponent.fromLegacyText(Triton.get().getLanguageManager()
+                                        .getText(p, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 builder.append(result.getText());
                 builder.append(input.substring(i[1]));
@@ -143,7 +144,8 @@ public class LanguageParser {
                 continue;
             }
             String code = ChatColor.stripColor(placeholder.substring(0, argsIndex[0]));
-            if (!Triton.get().getConf().getDisabledLine().isEmpty() && code.equals(Triton.get().getConf().getDisabledLine()))
+            if (!Triton.get().getConf().getDisabledLine().isEmpty() && code
+                    .equals(Triton.get().getConf().getDisabledLine()))
                 return null;
             String args = placeholder.substring(argsIndex[2], argsIndex[3]);
             List<Integer[]> argIndexList = getPatternIndexArray(args, syntax.getArg());
@@ -153,7 +155,8 @@ public class LanguageParser {
                 argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
             }
             AdvancedComponent result =
-                    ComponentUtils.toLegacyText(TextComponent.fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
+                    AdvancedComponent.fromBaseComponent(TextComponent
+                            .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
             advancedComponent.getComponents().putAll(result.getComponents());
             builder.append(result.getText());
             builder.append(input.substring(i[1]));
@@ -162,7 +165,7 @@ public class LanguageParser {
         advancedComponent.setText(input);
         for (Map.Entry<String, String> entry : advancedComponent.getComponents().entrySet())
             advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), p, syntax));
-        return ComponentUtils.fromLegacyText(advancedComponent);
+        return advancedComponent.toBaseComponent();
     }
 
     /* Scoreboard stuff */
