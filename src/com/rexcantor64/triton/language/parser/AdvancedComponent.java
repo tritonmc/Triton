@@ -145,7 +145,7 @@ public class AdvancedComponent {
                     BaseComponent previousComponent = component;
                     list.add(component);
                     component = new TextComponent("");
-                    component.copyFormatting(previousComponent, ComponentBuilder.FormatRetention.FORMATTING, false);
+                    ComponentUtils.copyFormatting(previousComponent, component);
                 }
                 ClickEvent.Action action = ComponentUtils
                         .decodeClickAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
@@ -165,7 +165,7 @@ public class AdvancedComponent {
                 BaseComponent previousComponent = component;
                 list.add(component);
                 component = new TextComponent("");
-                component.copyFormatting(previousComponent, ComponentBuilder.FormatRetention.FORMATTING, false);
+                ComponentUtils.copyFormatting(previousComponent, component);
             } else if (c == '\uE500') {
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
@@ -173,7 +173,7 @@ public class AdvancedComponent {
                     BaseComponent previousComponent = component;
                     list.add(component);
                     component = new TextComponent("");
-                    component.copyFormatting(previousComponent, ComponentBuilder.FormatRetention.FORMATTING, false);
+                    ComponentUtils.copyFormatting(previousComponent, component);
                 }
                 HoverEvent.Action action = ComponentUtils
                         .decodeHoverAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
@@ -193,7 +193,7 @@ public class AdvancedComponent {
                 BaseComponent previousComponent = component;
                 list.add(component);
                 component = new TextComponent("");
-                component.copyFormatting(previousComponent, ComponentBuilder.FormatRetention.FORMATTING, false);
+                ComponentUtils.copyFormatting(previousComponent, component);
             } else if (c == '\uE600') {
                 i++;
                 StringBuilder key = new StringBuilder();
@@ -213,10 +213,10 @@ public class AdvancedComponent {
                     BaseComponent previousComponent = component;
                     list.add(component);
                     component = new TextComponent("");
-                    component.copyFormatting(previousComponent, ComponentBuilder.FormatRetention.FORMATTING, false);
+                    ComponentUtils.copyFormatting(previousComponent, component);
                 }
                 TranslatableComponent tc = new TranslatableComponent(key.toString());
-                tc.copyFormatting(component, ComponentBuilder.FormatRetention.FORMATTING, false);
+                ComponentUtils.copyFormatting(component, tc);
                 List<AdvancedComponent> argsAdvanced = this.getTranslatableArguments(uuid.toString());
                 if (argsAdvanced != null)
                     for (AdvancedComponent ac : argsAdvanced) {

@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.utils;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 
@@ -75,6 +76,16 @@ public class ComponentUtils {
 
     public static boolean isLink(String text) {
         return url.matcher(text).find();
+    }
+
+    public static void copyFormatting(BaseComponent origin, BaseComponent target) {
+        target.setColor(origin.getColorRaw());
+        target.setBold(origin.isBoldRaw());
+        target.setItalic(origin.isItalicRaw());
+        target.setUnderlined(origin.isUnderlinedRaw());
+        target.setStrikethrough(origin.isStrikethroughRaw());
+        target.setObfuscated(origin.isObfuscatedRaw());
+        target.setInsertion(origin.getInsertion());
     }
 
 }
