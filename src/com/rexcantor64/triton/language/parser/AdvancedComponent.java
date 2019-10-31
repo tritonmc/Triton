@@ -138,7 +138,7 @@ public class AdvancedComponent {
                         component.setColor(format);
                         break;
                 }
-            } else if (c == '\uE400') {
+            } else if (c == '\uE400' || c == '\uE500') {
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
@@ -147,45 +147,24 @@ public class AdvancedComponent {
                     component = new TextComponent("");
                     ComponentUtils.copyFormatting(previousComponent, component);
                 }
-                ClickEvent.Action action = ComponentUtils
-                        .decodeClickAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
                 String uuid = text.substring(i + 2, i + 2 + 36);
-                component.setClickEvent(new ClickEvent(action, this.getComponent(uuid)));
+                if (c == '\uE400') {
+                    ClickEvent.Action action = ComponentUtils
+                            .decodeClickAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
+                    component.setClickEvent(new ClickEvent(action, this.getComponent(uuid)));
+                } else { // c == '\uE500'
+                    HoverEvent.Action action = ComponentUtils
+                            .decodeHoverAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
+                    component.setHoverEvent(new HoverEvent(action, TextComponent
+                            .fromLegacyText(this.getComponent(uuid))));
+                }
                 i += 2 + 36;
                 int deep = 0;
                 StringBuilder content = new StringBuilder();
-                while (text.charAt(i) != '\uE401' || deep != 0) {
+                while (text.charAt(i) != c + 1 || deep != 0) {
                     char c1 = text.charAt(i);
-                    if (c1 == '\uE400') deep++;
-                    if (c1 == '\uE401') deep--;
-                    content.append(c1);
-                    i++;
-                }
-                component.setExtra(toBaseComponent(content.toString()));
-                BaseComponent previousComponent = component;
-                list.add(component);
-                component = new TextComponent("");
-                ComponentUtils.copyFormatting(previousComponent, component);
-            } else if (c == '\uE500') {
-                if (builder.length() != 0) {
-                    component.setText(builder.toString());
-                    builder = new StringBuilder();
-                    BaseComponent previousComponent = component;
-                    list.add(component);
-                    component = new TextComponent("");
-                    ComponentUtils.copyFormatting(previousComponent, component);
-                }
-                HoverEvent.Action action = ComponentUtils
-                        .decodeHoverAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
-                String uuid = text.substring(i + 2, i + 2 + 36);
-                component.setHoverEvent(new HoverEvent(action, TextComponent.fromLegacyText(this.getComponent(uuid))));
-                i += 2 + 36;
-                int deep = 0;
-                StringBuilder content = new StringBuilder();
-                while (text.charAt(i) != '\uE501' || deep != 0) {
-                    char c1 = text.charAt(i);
-                    if (c1 == '\uE500') deep++;
-                    if (c1 == '\uE501') deep--;
+                    if (c1 == c) deep++; // c == \uE400 || c == \uE500
+                    if (c1 == c + 1) deep--; // c + 1 == \uE401 || c + 1 == \uE501
                     content.append(c1);
                     i++;
                 }
@@ -242,7 +221,7 @@ public class AdvancedComponent {
         this.text = text;
     }
 
-    public void setComponent(UUID uuid, String text) {
+    private void setComponent(UUID uuid, String text) {
         components.put(uuid.toString(), text);
     }
 
@@ -250,19 +229,19 @@ public class AdvancedComponent {
         components.put(uuid, text);
     }
 
-    public String getComponent(String uuid) {
+    private String getComponent(String uuid) {
         return components.get(uuid);
     }
 
-    public void setTranslatableArguments(String uuid, List<AdvancedComponent> list) {
+    private void setTranslatableArguments(String uuid, List<AdvancedComponent> list) {
         translatableArguments.put(uuid, list);
     }
 
-    public List<AdvancedComponent> getTranslatableArguments(String uuid) {
+    private List<AdvancedComponent> getTranslatableArguments(String uuid) {
         return translatableArguments.get(uuid);
     }
 
-    public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
+    private HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
         return translatableArguments;
     }
 
