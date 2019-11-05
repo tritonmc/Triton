@@ -44,6 +44,7 @@ twin:
   failed-file-update: "&cError while writing to file '%1': %2"
   success: "&aSuccessfully fetched the config from TWIN and applied it into the server!"
   no-token: "&4Invalid token! Please check if you have setup TWIN correctly on config."
+  repeated-download: "&c&lWARNING &cYou're trying to download the same config twice! This might break the translation files. If you want to bypass this message, just execute the same command again."
 other:
   selector-gui-name: "&aSelect a language"
   selector-gui-prev: "&aPrevious"
