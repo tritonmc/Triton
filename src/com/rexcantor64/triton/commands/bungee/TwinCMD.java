@@ -12,6 +12,8 @@ import org.json.JSONObject;
 @SuppressWarnings("deprecation")
 public class TwinCMD extends Command {
 
+    private String lastDownload = "";
+
     public TwinCMD() {
         super("twin");
 
@@ -72,6 +74,15 @@ public class TwinCMD extends Command {
     }
 
     private void download(CommandSender s, String id) {
+        if (id.equals(lastDownload)) {
+            s.sendMessage(Triton.get()
+                    .getMessage("twin.repeated-download", "&c&lWARNING &cYou're trying to download the same config " +
+                            "twice! This might break the translation files. If you want to bypass this message, just " +
+                            "execute the same command again."));
+            lastDownload = "";
+            return;
+        }
+
         s.sendMessage(Triton.get().getMessage("twin.connecting", "&aConnecting to TWIN... Please wait"));
 
         TwinManager.HttpResponse response = Triton.get().getTwinManager().download(id);
@@ -94,6 +105,8 @@ public class TwinCMD extends Command {
                             response.getStatusCode())));
             return;
         }
+
+        lastDownload = id;
 
         try {
             JSONObject responseJson = new JSONObject(response.getPage());
