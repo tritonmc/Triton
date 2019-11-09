@@ -59,6 +59,19 @@ public interface LanguageManager {
     String[] getSign(LanguagePlayer player, SignLocation location);
 
     /**
+     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     *
+     * @param player       The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
+     *                     {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
+     * @param location     The location of the sign.
+     * @param defaultLines The lines of the sign before translation.
+     * @return The message in the player's language. If no translatable sign is found on that location, null is
+     * returned.
+     * @since 2.3.0
+     */
+    String[] getSign(LanguagePlayer player, SignLocation location, String[] defaultLines);
+
+    /**
      * Get a {@link Language language} by its name.
      *
      * @param name     The name of the {@link Language language}.
