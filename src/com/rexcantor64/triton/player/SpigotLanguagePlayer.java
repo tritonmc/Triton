@@ -8,6 +8,8 @@ import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
 import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
 import com.rexcantor64.triton.storage.PlayerStorage;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -29,6 +31,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private boolean waitingForClientLocale = false;
 
     private WrappedScoreboard scoreboard;
+
+    private HashMap<World, HashMap<Integer, String>> entities = new HashMap<>();
+    private HashMap<World, HashMap<Integer, Entity>> players = new HashMap<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -159,5 +164,13 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
             else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
                 Bukkit.dispatchCommand(bukkit, cmdText);
         }
+    }
+
+    public HashMap<World, HashMap<Integer, String>> getEntitiesMap() {
+        return entities;
+    }
+
+    public HashMap<World, HashMap<Integer, Entity>> getPlayersMap() {
+        return players;
     }
 }
