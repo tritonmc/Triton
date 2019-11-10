@@ -45,7 +45,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return getText(p.getLang().getName(), code, args);
     }
 
-    private String getText(String language, String code, Object... args) {
+    String getText(String language, String code, Object... args) {
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.TEXT)) {
             LanguageText text = (LanguageText) item;
             if (!text.getKey().equals(code)) continue;
@@ -74,16 +74,27 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String[] getSign(LanguagePlayer p, SignLocation location) {
-        return getSign(p.getLang().getName(), location);
+        return getSign(p, location, new String[4]);
     }
 
-    private String[] getSign(String language, SignLocation location) {
+    public String[] getSign(LanguagePlayer p, SignLocation location, String[] defaultLines) {
+        return getSign(p.getLang().getName(), location, defaultLines);
+    }
+
+    private String[] getSign(String language, SignLocation location, String[] defaultLines) {
         if (location == null) return null;
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
             if (!sign.hasLocation(location)) continue;
             String[] lines = sign.getLines(language);
-            if (lines == null) return getSignFromMain(location);
+            if (lines == null) lines = getSignFromMain(location);
+            if (lines == null) return null;
+            lines = lines.clone();
+            for (int i = 0; i < 4; ++i)
+                if (lines[i].equals("%use_line_default%") && defaultLines[i] != null)
+                    lines[i] = Triton.get().getLanguageParser()
+                            .replaceLanguages(matchPattern(defaultLines[i], language), language, Triton.get().getConf()
+                                    .getSignsSyntax());
             return lines;
         }
         return null;

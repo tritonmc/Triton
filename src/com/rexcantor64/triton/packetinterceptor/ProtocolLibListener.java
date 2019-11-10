@@ -8,7 +8,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
@@ -20,6 +19,7 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
+import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.scoreboard.WrappedObjective;
@@ -30,9 +30,11 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -378,29 +380,44 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleUpdateSign(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        BlockPosition pos = packet.getPacket().getBlockPositionModifier().readSafely(0);
+        PacketContainer newPacket = packet.getPacket().shallowClone();
+        BlockPosition pos = newPacket.getBlockPositionModifier().readSafely(0);
+        StructureModifier<WrappedChatComponent[]> linesModifier = newPacket.getChatComponentArrays();
+        WrappedChatComponent[] defaultLinesWrapped = linesModifier.readSafely(0);
+        String[] defaultLines = new String[4];
+        for (int i = 0; i < 4; i++)
+            defaultLines[i] =
+                    AdvancedComponent.fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
+                            .getText();
         String[] lines = main.getLanguageManager().getSign(languagePlayer,
                 new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(),
-                        pos.getZ()));
+                        pos.getZ()), defaultLines);
         if (lines == null) return;
         WrappedChatComponent[] comps = new WrappedChatComponent[4];
         for (int i = 0; i < 4; i++)
             comps[i] =
                     WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-        packet.getPacket().getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(),
-                BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(),
-                        BukkitConverters.getWrappedChatComponentConverter())).writeSafely(0, Arrays.asList(comps));
+        linesModifier.writeSafely(0, comps);
+        packet.setPacket(newPacket);
     }
 
     private void handleTileEntityData(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (packet.getPacket().getIntegers().readSafely(0) == 9) {
-            NbtCompound nbt = NbtFactory.asCompound(packet.getPacket().getNbtModifier().readSafely(0));
+            PacketContainer newPacket = packet.getPacket().deepClone();
+            NbtCompound nbt = NbtFactory.asCompound(newPacket.getNbtModifier().readSafely(0));
+            String[] defaultLines = new String[4];
+            for (int i = 0; i < 4; i++)
+                defaultLines[i] = AdvancedComponent
+                        .fromBaseComponent(ComponentSerializer.parse(nbt.getStringOrDefault("Text" + (i + 1))))
+                        .getText();
             LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(),
                     nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-            String[] sign = main.getLanguageManager().getSign(languagePlayer, l);
-            if (sign != null)
+            String[] sign = main.getLanguageManager().getSign(languagePlayer, l, defaultLines);
+            if (sign != null) {
                 for (int i = 0; i < 4; i++)
                     nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+                packet.setPacket(newPacket);
+            }
         }
     }
 
@@ -409,9 +426,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         for (NbtBase<?> entity : entities) {
             NbtCompound nbt = NbtFactory.asCompound(entity);
             if (nbt.getString("id").equals(getMCVersion() <= 10 ? "Sign" : "minecraft:sign")) {
+                String[] defaultLines = new String[4];
+                for (int i = 0; i < 4; i++)
+                    defaultLines[i] = AdvancedComponent
+                            .fromBaseComponent(ComponentSerializer.parse(nbt.getStringOrDefault("Text" + (i + 1))))
+                            .getText();
                 LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(),
                         nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                String[] sign = main.getLanguageManager().getSign(languagePlayer, l);
+                String[] sign = main.getLanguageManager().getSign(languagePlayer, l, defaultLines);
                 if (sign != null)
                     for (int i = 0; i < 4; i++)
                         nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
@@ -637,6 +659,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     String[] lines = sign.getLines(player.getLang().getName());
                     if (lines == null) lines = sign.getLines(main.getLanguageManager().getMainLanguage().getName());
                     if (lines == null) continue out;
+                    String[] defaultLines = getSignLinesFromLocation(location);
+                    lines = lines.clone();
+                    for (int i = 0; i < 4; ++i)
+                        if (lines[i].equals("%use_line_default%") && defaultLines[i] != null)
+                            lines[i] = Triton.get().getLanguageParser()
+                                    .replaceLanguages(Triton.get().getLanguageManager()
+                                            .matchPattern(defaultLines[i], player), player, Triton.get()
+                                            .getConf()
+                                            .getSignsSyntax());
                     packet.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(),
                             location.getY(), location.getZ()));
                     if (existsSignUpdatePacket()) {
@@ -645,10 +676,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             comps[i] =
                                     WrappedChatComponent.fromJson(ComponentSerializer
                                             .toString(TextComponent.fromLegacyText(lines[i])));
-                        packet.getModifier().withType(MinecraftReflection.getIChatBaseComponentArrayClass(),
-                                BukkitConverters.getArrayConverter(MinecraftReflection.getIChatBaseComponentClass(),
-                                        BukkitConverters.getWrappedChatComponentConverter())).writeSafely(0,
-                                Arrays.asList(comps));
+                        packet.getChatComponentArrays().writeSafely(0, comps);
                     } else {
                         packet.getIntegers().writeSafely(0, 9);
                         NbtCompound compound = NbtFactory.ofCompound(null);
@@ -805,11 +833,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
-        if (block.getType() != Material.SIGN && block.getType() != Material.SIGN_POST && block
-                .getType() != Material.WALL_SIGN)
+        BlockState state = block.getState();
+        if (!(state instanceof Sign))
             return;
-        Sign sign = (Sign) block.getState();
-        String[] lines = sign.getLines();
+        String[] lines = ((Sign) state).getLines();
         if (existsSignUpdatePacket()) {
             PacketContainer container =
                     ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN, true);
@@ -931,6 +958,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
         return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
+    }
+
+    private String[] getSignLinesFromLocation(LanguageSign.SignLocation loc) {
+        World w = Bukkit.getWorld(loc.getWorld());
+        if (w == null) return new String[4];
+        Location l = new Location(w, loc.getX(), loc.getY(), loc.getZ());
+        BlockState state = l.getBlock().getState();
+        if (!(state instanceof Sign))
+            return new String[4];
+        return ((Sign) state).getLines();
     }
 
     public enum Action {

@@ -79,6 +79,10 @@ public class LanguageParser {
     }
 
     public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
+        return replaceLanguages(input, p.getLang().getName(), syntax);
+    }
+
+    String replaceLanguages(String input, String p, FeatureSyntax syntax) {
         Integer[] i;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             StringBuilder builder = new StringBuilder();

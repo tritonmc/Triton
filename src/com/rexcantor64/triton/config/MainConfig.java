@@ -49,6 +49,7 @@ public class MainConfig implements TritonConfig {
     private boolean books;
     private FeatureSyntax itemsSyntax;
     private boolean signs;
+    private FeatureSyntax signsSyntax;
     private boolean bossbars;
     private FeatureSyntax bossbarSyntax;
 
@@ -212,6 +213,10 @@ public class MainConfig implements TritonConfig {
         return itemsSyntax;
     }
 
+    public FeatureSyntax getSignsSyntax() {
+        return signsSyntax;
+    }
+
     public FeatureSyntax getBossbarSyntax() {
         return bossbarSyntax;
     }
@@ -300,6 +305,7 @@ public class MainConfig implements TritonConfig {
 
         Configuration signs = section.getSection("signs");
         this.signs = signs.getBoolean("enabled", true);
+        this.signsSyntax = FeatureSyntax.fromSection(signs);
 
         Configuration bossbars = section.getSection("bossbars");
         this.bossbars = bossbars.getBoolean("enabled", true);
