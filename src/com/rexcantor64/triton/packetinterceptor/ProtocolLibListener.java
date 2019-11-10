@@ -161,12 +161,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else if (getMCVersion() >= 9) {
             addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue(), languagePlayer);
             dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
-                    main.getLanguageParser().replaceLanguages((String) watchableObject.getValue(), languagePlayer,
+                    main.getLanguageParser().replaceLanguages(main.getLanguageManager()
+                                    .matchPattern((String) watchableObject.getValue(), languagePlayer), languagePlayer,
                             main.getConf().getHologramSyntax())));
         } else {
             addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue(), languagePlayer);
             dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getIndex(),
-                    main.getLanguageParser().replaceLanguages((String) watchableObject.getValue(), languagePlayer,
+                    main.getLanguageParser().replaceLanguages(main.getLanguageManager()
+                                    .matchPattern((String) watchableObject.getValue(), languagePlayer), languagePlayer,
                             main.getConf().getHologramSyntax())));
         }
         packet.getPacket().getDataWatcherModifier().writeSafely(0, dataWatcher);
@@ -187,13 +189,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
                             .readSafely(0), (String) obj.getValue(), languagePlayer);
                     dwn.add(new WrappedWatchableObject(obj.getIndex(),
-                            main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer,
+                            main.getLanguageParser().replaceLanguages(main.getLanguageManager()
+                                            .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
                                     main.getConf().getHologramSyntax())));
                 } else if (getMCVersion() < 13) {
                     addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
                             .readSafely(0), (String) obj.getValue(), languagePlayer);
                     dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
-                            main.getLanguageParser().replaceLanguages((String) obj.getValue(), languagePlayer,
+                            main.getLanguageParser().replaceLanguages(main.getLanguageManager()
+                                            .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
                                     main.getConf().getHologramSyntax())));
                 } else {
                     Optional optional = (Optional) obj.getValue();
@@ -713,7 +717,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()))))
                             .getHandle());
                 else
-                    value = main.getLanguageParser().replaceLanguages(entry.getValue(), player,
+                    value = main.getLanguageParser().replaceLanguages(main.getLanguageManager()
+                                    .matchPattern(entry.getValue(), player), player,
                             main.getConf().getHologramSyntax());
                 WrappedWatchableObject watchableObject;
                 if (getMCVersion() >= 9)
