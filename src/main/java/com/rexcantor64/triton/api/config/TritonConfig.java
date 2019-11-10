@@ -218,6 +218,15 @@ public interface TritonConfig {
     FeatureSyntax getItemsSyntax();
 
     /**
+     * Spigot only
+     *
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.signs"
+     * in the config.
+     * @since 2.3.0
+     */
+    FeatureSyntax getSignsSyntax();
+
+    /**
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
      * .bossbars" in the config.
      * @since 1.0.0
