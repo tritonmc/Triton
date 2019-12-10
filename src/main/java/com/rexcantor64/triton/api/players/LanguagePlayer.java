@@ -29,10 +29,19 @@ public interface LanguagePlayer {
     void setLang(Language language);
 
     /**
-     * Refresh the player's translated messages. This includes scoreboard, tab, bossbars, entities, etc. Does not affect chat.
+     * Refresh the player's translated messages. This includes scoreboard, tab, bossbars, entities, etc. Does not
+     * affect chat.
      * This is automatically invoked when using {@link #setLang(Language)}.
      *
      * @since 1.0.0
      */
     void refreshAll();
+
+    /**
+     * Get the UUID of the player.
+     *
+     * @return The UUID of the player.
+     * @since 2.4.0
+     */
+    UUID getUUID();
 }
