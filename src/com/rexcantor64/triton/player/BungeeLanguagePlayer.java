@@ -3,6 +3,7 @@ package com.rexcantor64.triton.player;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.events.PlayerChangeLanguageBungeeEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
@@ -77,10 +78,13 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void setLang(Language language) {
+        PlayerChangeLanguageBungeeEvent event = new PlayerChangeLanguageBungeeEvent(this, this.language, language);
+        BungeeCord.getInstance().getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
         if (this.waitingForClientLocale)
             parent.sendMessage(TextComponent.fromLegacyText(Triton.get().getMessage("success.detected-language",
                     "&aYour language has been automatically set to %1", language.getDisplayName())));
-        this.language = language;
+        this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
@@ -101,6 +105,11 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         if (Triton.get().getConf().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 listener.refreshBossbar(entry.getKey(), entry.getValue());
+    }
+
+    @Override
+    public UUID getUUID() {
+        return this.uuid;
     }
 
     public ProxiedPlayer getParent() {

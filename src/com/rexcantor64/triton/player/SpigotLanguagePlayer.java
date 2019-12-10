@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.player;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
@@ -50,6 +51,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public void setLang(Language lang, boolean sendToBungee) {
+        PlayerChangeLanguageSpigotEvent event = new PlayerChangeLanguageSpigotEvent(this, this.lang, lang);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
         if (this.waitingForClientLocale)
             try {
                 toBukkit().sendMessage(Triton.get().getMessage("success.detected-language",
@@ -58,7 +62,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                 Triton.get().logError("Failed to sent language changed message.");
                 e.printStackTrace();
             }
-        this.lang = lang;
+        this.lang = event.getNewLanguage();
         this.waitingForClientLocale = false;
         refreshAll();
         save();
@@ -151,6 +155,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         return bukkit;
     }
 
+    @Override
     public UUID getUUID() {
         return uuid;
     }
