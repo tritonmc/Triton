@@ -646,8 +646,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
             if (languagePlayer.isWaitingForClientLocale())
-                languagePlayer.setLang(Triton.get().getLanguageManager()
-                        .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true));
+                Bukkit.getScheduler().runTask(Triton.get().getLoader().asSpigot(), () -> languagePlayer
+                        .setLang(Triton.get().getLanguageManager()
+                                .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
+
         }
     }
 
