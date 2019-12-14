@@ -90,6 +90,9 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(true, args[2], loc);
             }
+            p.sendMessage(Triton.get()
+                    .getMessage("success.sign-set", "&aSign successfully added to group &6%1&a.", args[2]));
+
         } else {
             if (Triton.get().getConf().isBungeecord()) {
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -109,6 +112,8 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             Triton.asSpigot().getProtocolLibListener()
                     .resetSign(p, new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block
                             .getY(), block.getZ()));
+            p.sendMessage(Triton.get()
+                    .getMessage("success.sign-remove", "&aSuccessfully removed sign from all groups."));
         }
 
 
