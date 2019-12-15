@@ -72,6 +72,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 p.sendMessage(Triton.get()
                         .getMessage("error.sign-not-found", "&cSign group %1 not found! Note: It's case sensitive. " +
                                 "Use TAB to all the available options.", args[2]));
+                return true;
             }
 
             if (Triton.get().getConf().isBungeecord()) {
@@ -161,7 +162,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             for (String str : new String[]{"set", "remove"})
                 if (str.startsWith(args[1]))
                     tab.add(str);
-        if (args.length == 3)
+        if (args.length == 3 && args[1].equals("set"))
             for (LanguageItem item : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
                 if (item.getKey().startsWith(args[2]))
                     tab.add(item.getKey());
