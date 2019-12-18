@@ -132,6 +132,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSpawnEntityLiving(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (getMCVersion() >= 15) return; // DataWatcher is not sent on 1.15 anymore in this packet
         int entityId = packet.getPacket().getIntegers().readSafely(0);
         int type = packet.getPacket().getIntegers().readSafely(1);
         EntityType et = EntityTypeUtils.getEntityTypeById(type);
