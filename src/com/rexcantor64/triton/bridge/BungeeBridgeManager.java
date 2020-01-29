@@ -38,16 +38,19 @@ public class BungeeBridgeManager implements Listener {
         try {
             byte action = in.readByte();
             if (action == 0)
-                Triton.get().getPlayerManager().get(UUID.fromString(in.readUTF())).setLang(Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true));
+                Triton.get().getPlayerManager().get(UUID.fromString(in.readUTF()))
+                        .setLang(Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true));
             else if (action == 1) {
                 String server = ((Server) e.getSender()).getInfo().getName();
-                LanguageSign.SignLocation loc = new LanguageSign.SignLocation(server, in.readUTF(), in.readInt(), in.readInt(), in.readInt());
+                LanguageSign.SignLocation loc = new LanguageSign.SignLocation(server, in.readUTF(), in.readInt(), in
+                        .readInt(), in.readInt());
                 boolean add = in.readBoolean();
                 String key = "";
                 if (add)
                     key = in.readUTF();
                 List<String> remove = new ArrayList<>();
-                for (LanguageItem li : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
+                for (LanguageItem li : Triton.get().getLanguageManager()
+                        .getAllItems(LanguageItem.LanguageItemType.SIGN))
                     if (((LanguageSign) li).hasLocation(loc, true)) remove.add(li.getKey());
                 JSONArray raw = Triton.get().getLanguageConfig().getRaw();
                 for (int i = 0; i < raw.length(); i++) {
@@ -58,7 +61,9 @@ public class BungeeBridgeManager implements Listener {
                         if (locs == null) continue;
                         for (int k = 0; k < locs.length(); k++) {
                             JSONObject l = locs.optJSONObject(k);
-                            if (l != null && l.optString("server").equals(server) && l.optString("world").equals(loc.getWorld()) && l.optInt("x") == loc.getX() && l.optInt("y") == loc.getY() && l.optInt("z") == loc.getZ())
+                            if (l != null && l.optString("server").equals(server) && l.optString("world")
+                                    .equals(loc.getWorld()) && l.optInt("x") == loc.getX() && l.optInt("y") == loc
+                                    .getY() && l.optInt("z") == loc.getZ())
                                 locs.remove(k--);
                         }
                         obj.put("locations", locs);
@@ -67,7 +72,8 @@ public class BungeeBridgeManager implements Listener {
                     if (add && obj.optString("key").equals(key)) {
                         JSONArray locs = obj.optJSONArray("locations");
                         if (locs == null) locs = new JSONArray();
-                        locs.put(LocationUtils.locationToJSON(loc.getX(), loc.getY(), loc.getZ(), loc.getWorld()).put("server", server));
+                        locs.put(LocationUtils.locationToJSON(loc.getX(), loc.getY(), loc.getZ(), loc.getWorld())
+                                .put("server", server));
                         obj.put("locations", locs);
                         raw.put(i, obj);
                     }
@@ -84,7 +90,8 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
+        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
+                .get(event.getPlayer().getUniqueId());
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         // Action 1
         out.writeByte(1);
@@ -99,20 +106,23 @@ public class BungeeBridgeManager implements Listener {
     public void onLogin(LoginEvent event) {
         if (!Triton.get().getConf().isKick()) return;
         event.registerIntent(Triton.get().getLoader().asBungee());
-        BungeeLanguagePlayer lp = Triton.get().getPlayerManager().registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection()));
-        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), new Runnable() {
-            @Override
-            public void run() {
-                if (event.getCancelReasonComponents() != null)
-                    event.setCancelReason(Triton.get().getLanguageParser().parseComponent(lp, Triton.get().getConf().getKickSyntax(), event.getCancelReasonComponents()));
-                event.completeIntent(Triton.get().getLoader().asBungee());
-            }
+        BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
+                .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
+                        .getUniqueId(), event.getConnection()));
+        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), () -> {
+            if (event.getCancelReasonComponents() != null)
+                event.setCancelReason(Triton.get().getLanguageParser()
+                        .parseComponent(lp, Triton.get().getConf().getKickSyntax(), event
+                                .getCancelReasonComponents()));
+
+            event.completeIntent(Triton.get().getLoader().asBungee());
         });
     }
 
     @EventHandler
     public void onJoin(PostLoginEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
+        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
+                .get(event.getPlayer().getUniqueId());
         Triton.asBungee().setCustomUnsafe(lp);
         try {
             ProxiedPlayer p = event.getPlayer();

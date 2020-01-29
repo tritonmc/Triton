@@ -7,6 +7,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
+import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
@@ -39,6 +40,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
@@ -48,6 +50,8 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"deprecation"})
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
+    private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
+    private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
     private final int mcVersion;
     private final int mcVersionR;
     private Triton main;
@@ -58,6 +62,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         String[] s = a.substring(a.lastIndexOf('.') + 1).split("_");
         mcVersion = Integer.parseInt(s[1]);
         mcVersionR = Integer.parseInt(s[2].substring(1));
+        MERCHANT_RECIPE_LIST_CLASS = mcVersion >= 14 ? NMSUtils.getNMSClass("MerchantRecipeList") : null;
+        CRAFT_MERCHANT_RECIPE_LIST_CLASS = mcVersion >= 14 ? NMSUtils
+                .getCraftbukkitClass("inventory.CraftMerchantRecipe") : null;
     }
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -455,45 +462,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         List<ItemStack> items = getMCVersion() <= 10 ?
                 Arrays.asList(packet.getPacket().getItemArrayModifier().readSafely(0)) :
                 packet.getPacket().getItemListModifier().readSafely(0);
-        for (ItemStack item : items) {
-            if (item == null) continue;
-            if (item.hasItemMeta()) {
-                ItemMeta meta = item.getItemMeta();
-                if (meta.hasDisplayName())
-                    meta.setDisplayName(translate(meta.getDisplayName(),
-                            languagePlayer, main.getConf().getItemsSyntax()));
-                if (meta.hasLore()) {
-                    List<String> newLore = new ArrayList<>();
-                    for (String lore : meta.getLore())
-                        newLore.add(translate(lore, languagePlayer,
-                                main.getConf().getItemsSyntax()));
-                    meta.setLore(newLore);
-                }
-                item.setItemMeta(meta);
-                if (item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
-                    NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
-                    NbtList<String> pages = compound.getList("pages");
-                    Collection<NbtBase<String>> pagesCollection = pages.asCollection();
-                    List<String> newPagesCollection = new ArrayList<>();
-                    for (NbtBase<String> page : pagesCollection) {
-                        if (page.getValue().startsWith("\""))
-                            newPagesCollection.add(
-                                    ComponentSerializer.toString(
-                                            TextComponent.fromLegacyText(
-                                                    translate(page.getValue().substring(1
-                                                            , page.getValue().length() - 1),
-                                                            languagePlayer, main.getConf().getItemsSyntax()))));
-                        else {
-                            newPagesCollection.add(
-                                    ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                                            main.getConf().getItemsSyntax(),
-                                            ComponentSerializer.parse(page.getValue()))));
-                        }
-                    }
-                    compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
-                }
-            }
-        }
+        for (ItemStack item : items)
+            translateItemStack(item, languagePlayer, true);
         if (getMCVersion() <= 10)
             packet.getPacket().getItemArrayModifier().writeSafely(0, items.toArray(new ItemStack[0]));
         else
@@ -558,6 +528,29 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()))));
         packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+    }
+
+    private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        try {
+            ArrayList<?> recipes = (ArrayList<?>) packet.getPacket()
+                    .getSpecificModifier(MERCHANT_RECIPE_LIST_CLASS).readSafely(0);
+            ArrayList<Object> newRecipes = (ArrayList<Object>) MERCHANT_RECIPE_LIST_CLASS.newInstance();
+            for (Object recipeObject : recipes) {
+                MerchantRecipe recipe = (MerchantRecipe) NMSUtils.getMethod(recipeObject, "asBukkit");
+                MerchantRecipe newRecipe = new MerchantRecipe(translateItemStack(recipe.getResult()
+                        .clone(), languagePlayer, false), recipe.getUses(), recipe.getMaxUses(), recipe
+                        .hasExperienceReward());
+                for (ItemStack ingredient : recipe.getIngredients())
+                    newRecipe.addIngredient(translateItemStack(ingredient.clone(), languagePlayer, false));
+                Object newCraftRecipe = MethodUtils
+                        .invokeExactStaticMethod(CRAFT_MERCHANT_RECIPE_LIST_CLASS, "fromBukkit", newRecipe);
+                Object newNMSRecipe = MethodUtils.invokeExactMethod(newCraftRecipe, "toMinecraft", null);
+                newRecipes.add(newNMSRecipe);
+            }
+            packet.getPacket().getModifier().writeSafely(1, newRecipes);
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -630,6 +623,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleBoss(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Login.Server.DISCONNECT && main.getConf().isKick()) {
             handleKickDisconnect(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW_MERCHANT && main.getConf().isItems()) {
+            handleMerchantItems(packet, languagePlayer);
         }
     }
 
@@ -643,6 +638,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } catch (Exception ignore) {
             Triton.get().logDebugWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
                     "(because the player hasn't joined yet).");
+            return;
+        }
+        if (languagePlayer == null) {
+            Triton.get().logDebugWarning("Language Player is null on packet receiving");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
@@ -920,6 +919,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Play.Server.SET_SLOT);
         types.add(PacketType.Login.Server.DISCONNECT);
         if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
+        if (getMCVersion() >= 14) types.add(PacketType.Play.Server.OPEN_WINDOW_MERCHANT);
         return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).highest().build();
     }
 
@@ -965,6 +965,47 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
         return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
+    }
+
+    private ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
+        if (item == null) return null;
+        if (item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasDisplayName())
+                meta.setDisplayName(translate(meta.getDisplayName(),
+                        languagePlayer, main.getConf().getItemsSyntax()));
+            if (meta.hasLore()) {
+                List<String> newLore = new ArrayList<>();
+                for (String lore : meta.getLore())
+                    newLore.add(translate(lore, languagePlayer,
+                            main.getConf().getItemsSyntax()));
+                meta.setLore(newLore);
+            }
+            item.setItemMeta(meta);
+            if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
+                NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+                NbtList<String> pages = compound.getList("pages");
+                Collection<NbtBase<String>> pagesCollection = pages.asCollection();
+                List<String> newPagesCollection = new ArrayList<>();
+                for (NbtBase<String> page : pagesCollection) {
+                    if (page.getValue().startsWith("\""))
+                        newPagesCollection.add(
+                                ComponentSerializer.toString(
+                                        TextComponent.fromLegacyText(
+                                                translate(page.getValue().substring(1
+                                                        , page.getValue().length() - 1),
+                                                        languagePlayer, main.getConf().getItemsSyntax()))));
+                    else {
+                        newPagesCollection.add(
+                                ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
+                                        main.getConf().getItemsSyntax(),
+                                        ComponentSerializer.parse(page.getValue()))));
+                    }
+                }
+                compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
+            }
+        }
+        return item;
     }
 
     private String[] getSignLinesFromLocation(LanguageSign.SignLocation loc) {

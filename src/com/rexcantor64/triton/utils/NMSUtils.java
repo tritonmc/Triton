@@ -141,4 +141,15 @@ public class NMSUtils {
         }
     }
 
+    public static Class<?> getCraftbukkitClass(String className) {
+        String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
+        try {
+            Class<?> c = Class.forName("org.bukkit.craftbukkit." + version + "." + className);
+            return c;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
 }
