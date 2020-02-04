@@ -139,7 +139,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSpawnEntityLiving(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (getMCVersion() >= 15) return; // DataWatcher is not sent on 1.15 anymore in this packet
         int entityId = packet.getPacket().getIntegers().readSafely(0);
         int type = packet.getPacket().getIntegers().readSafely(1);
         EntityType et = EntityTypeUtils.getEntityTypeById(type);
@@ -148,6 +147,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         if (et == EntityType.PLAYER)
             return;
+        addEntity(packet.getPlayer().getWorld(), entityId, null, languagePlayer);
+        if (getMCVersion() >= 15) return; // DataWatcher is not sent on 1.15 anymore in this packet
         // Clone the data watcher, so we don't edit the display name permanently
         WrappedDataWatcher dataWatcher = new WrappedDataWatcher(new ArrayList<>(packet.getPacket()
                 .getDataWatcherModifier()
@@ -182,27 +183,42 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getDataWatcherModifier().writeSafely(0, dataWatcher);
     }
 
+    private void handleSpawnEntity(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        int entityId = packet.getPacket().getIntegers().readSafely(0);
+        EntityType et;
+        if (getMCVersion() >= 14)
+            et = EntityType.fromBukkit(packet.getPacket().getEntityTypeModifier().readSafely(0));
+        else if (getMCVersion() >= 9)
+            et = EntityTypeUtils.getEntityTypeByObjectId(packet.getPacket().getIntegers().readSafely(6));
+        else
+            et = EntityTypeUtils.getEntityTypeByObjectId(packet.getPacket().getIntegers().readSafely(9));
+        if ((!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
+                .contains(et)))
+            return;
+        if (et == EntityType.PLAYER)
+            return;
+        addEntity(packet.getPlayer().getWorld(), entityId, null, languagePlayer);
+    }
+
     private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
-        if (e == null || (!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
-                .contains(EntityType.fromBukkit(e.getType()))))
+        int entityId = packet.getPacket().getIntegers().readSafely(0);
+
+        HashMap<Integer, String> worldEntitesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
+        if (worldEntitesMap == null || !worldEntitesMap.containsKey(entityId))
             return;
-        if (e.getType() == org.bukkit.entity.EntityType.PLAYER)
-            return;
+
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
         List<WrappedWatchableObject> dwn = new ArrayList<>();
         for (WrappedWatchableObject obj : dw)
             if (obj.getIndex() == 2)
                 if (getMCVersion() < 9) {
-                    addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
-                            .readSafely(0), (String) obj.getValue(), languagePlayer);
+                    addEntity(packet.getPlayer().getWorld(), entityId, (String) obj.getValue(), languagePlayer);
                     dwn.add(new WrappedWatchableObject(obj.getIndex(),
                             main.getLanguageParser().replaceLanguages(main.getLanguageManager()
                                             .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
                                     main.getConf().getHologramSyntax())));
                 } else if (getMCVersion() < 13) {
-                    addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
-                            .readSafely(0), (String) obj.getValue(), languagePlayer);
+                    addEntity(packet.getPlayer().getWorld(), entityId, (String) obj.getValue(), languagePlayer);
                     dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
                             main.getLanguageParser().replaceLanguages(main.getLanguageManager()
                                             .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
@@ -210,8 +226,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 } else {
                     Optional optional = (Optional) obj.getValue();
                     if (optional.isPresent()) {
-                        addEntity(packet.getPlayer().getWorld(), packet.getPacket().getIntegers()
-                                .readSafely(0), WrappedChatComponent.fromHandle(optional.get())
+                        addEntity(packet.getPlayer().getWorld(), entityId, WrappedChatComponent
+                                .fromHandle(optional.get())
                                 .getJson(), languagePlayer);
                         dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
                                 Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
@@ -584,6 +600,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else if (packet.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING && (main.getConf()
                 .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
             handleSpawnEntityLiving(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY && (main.getConf()
+                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
+            handleSpawnEntity(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && (main.getConf()
                 .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
             handleEntityMetadata(packet, languagePlayer);
@@ -708,6 +727,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (player.getEntitiesMap().containsKey(player.toBukkit().getWorld()))
             for (Map.Entry<Integer, String> entry : player.getEntitiesMap().get(player.toBukkit().getWorld())
                     .entrySet()) {
+                if (entry.getValue() == null) continue;
                 PacketContainer packet =
                         ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().writeSafely(0, entry.getKey());
@@ -901,6 +921,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         types.add(PacketType.Play.Server.OPEN_WINDOW);
         types.add(PacketType.Play.Server.ENTITY_METADATA);
+        types.add(PacketType.Play.Server.SPAWN_ENTITY);
         types.add(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
         types.add(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
         types.add(PacketType.Play.Server.ENTITY_DESTROY);
