@@ -29,7 +29,8 @@ public class BungeeListener implements Connection.Unsafe {
         PlayerListItem p = (PlayerListItem) packet;
         List<PlayerListItem.Item> items = new ArrayList<>();
         for (PlayerListItem.Item i : p.getItems()) {
-            if (p.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME || p.getAction() == PlayerListItem.Action.ADD_PLAYER) {
+            if (p.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME || p
+                    .getAction() == PlayerListItem.Action.ADD_PLAYER) {
                 if (i.getDisplayName() != null) {
                     try {
                         String original = new JSONObject(i.getDisplayName()).getString("text");

@@ -110,7 +110,9 @@ public class BungeeMLP extends Triton {
                     switch (item.getType()) {
                         case TEXT:
                             LanguageText text = (LanguageText) item;
-                            if (!text.isUniversal() && (!text.isBlacklist() || text.getServers().contains(info.getName())) && (text.isBlacklist() || !text.getServers().contains(info.getName())))
+                            if (!text.isUniversal() && (!text.isBlacklist() || text.getServers()
+                                    .contains(info.getName())) && (text.isBlacklist() || !text.getServers()
+                                    .contains(info.getName())))
                                 continue;
                             // Send type (2) (type 0, but with matches data
                             languageItemsOut.writeByte(2);
