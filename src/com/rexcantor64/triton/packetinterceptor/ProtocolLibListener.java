@@ -493,41 +493,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
 
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta.hasDisplayName())
-                meta.setDisplayName(translate(meta.getDisplayName(), languagePlayer,
-                        main.getConf().getItemsSyntax()));
-            if (meta.hasLore()) {
-                List<String> newLore = new ArrayList<>();
-                for (String lore : meta.getLore())
-                    newLore.add(translate(lore, languagePlayer,
-                            main.getConf().getItemsSyntax()));
-                meta.setLore(newLore);
-            }
-            item.setItemMeta(meta);
-            if (item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
-                NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
-                NbtList<String> pages = compound.getList("pages");
-                Collection<NbtBase<String>> pagesCollection = pages.asCollection();
-                List<String> newPagesCollection = new ArrayList<>();
-                for (NbtBase<String> page : pagesCollection) {
-                    if (page.getValue().startsWith("\""))
-                        newPagesCollection.add(
-                                ComponentSerializer.toString(
-                                        TextComponent.fromLegacyText(
-                                                translate(page.getValue().substring(1
-                                                        , page.getValue().length() - 1),
-                                                        languagePlayer, main.getConf().getItemsSyntax()))));
-                    else {
-                        newPagesCollection.add(
-                                ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                                        main.getConf().getItemsSyntax(), ComponentSerializer.parse(page.getValue()))));
-                    }
-                }
-                compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
-            }
-        }
+        translateItemStack(item, languagePlayer, true);
         packet.getPacket().getItemModifier().writeSafely(0, item);
     }
 
@@ -990,6 +956,34 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
         if (item == null) return null;
+        NbtCompound compound;
+        try {
+            compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+        } catch (IllegalArgumentException e) {
+            return item;
+        }
+        if (compound.containsKey("BlockEntityTag")) {
+            NbtCompound blockEntityTag = compound.getCompoundOrDefault("BlockEntityTag");
+            if (blockEntityTag.containsKey("Items")) {
+                NbtList<?> items = blockEntityTag.getList("Items");
+                Collection<? extends NbtBase<?>> itemsCollection = items.asCollection();
+                for (NbtBase<?> base : itemsCollection) {
+                    NbtCompound invItem = NbtFactory.asCompound(base);
+                    if (!invItem.containsKey("tag")) continue;
+                    NbtCompound tag = invItem.getCompoundOrDefault("tag");
+                    if (!tag.containsKey("display")) continue;
+                    NbtCompound display = tag.getCompoundOrDefault("display");
+                    if (!display.containsKey("Name")) continue;
+                    String name = display.getStringOrDefault("Name");
+                    if (getMCVersion() >= 13)
+                        display.put("Name", ComponentSerializer.toString(main.getLanguageParser()
+                                .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                        .parse(name))));
+                    else
+                        display.put("Name", translate(name, languagePlayer, main.getConf().getItemsSyntax()));
+                }
+            }
+        }
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName())
@@ -1004,7 +998,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
             item.setItemMeta(meta);
             if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
-                NbtCompound compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
                 NbtList<String> pages = compound.getList("pages");
                 Collection<NbtBase<String>> pagesCollection = pages.asCollection();
                 List<String> newPagesCollection = new ArrayList<>();
