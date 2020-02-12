@@ -84,7 +84,16 @@ public class LanguageParser {
 
     String replaceLanguages(String input, String p, FeatureSyntax syntax) {
         Integer[] i;
+        int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
+            safeCounter++;
+            if (safeCounter > 10) {
+                Triton.get()
+                        .logError("The maximum attempts to translate a message have been exceeded. To prevent the " +
+                                "server from crashing, the message might not have been translated. If using " +
+                                "BungeeCord, restarting your proxy might fix the problem.");
+                break;
+            }
             StringBuilder builder = new StringBuilder();
             builder.append(input, 0, i[0]);
             String placeholder = input.substring(i[2], i[3]);
