@@ -24,6 +24,7 @@ public class MainConfig implements TritonConfig {
     private boolean alwaysCheckClientLocale;
     private boolean debug;
     private boolean bungeecord;
+    private int configAutoRefresh;
     private String twinToken;
     private String disabledLine;
     private boolean chat;
@@ -103,6 +104,10 @@ public class MainConfig implements TritonConfig {
 
     public boolean isBungeecord() {
         return bungeecord;
+    }
+
+    public int getConfigAutoRefresh() {
+        return configAutoRefresh;
     }
 
     public String getTwinToken() {
@@ -231,6 +236,7 @@ public class MainConfig implements TritonConfig {
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
         this.debug = section.getBoolean("debug", false);
+        this.configAutoRefresh = section.getInt("config-auto-refresh-interval", -1);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
     }

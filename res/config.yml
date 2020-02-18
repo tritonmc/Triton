@@ -47,6 +47,11 @@ run-language-commands-on-join: false
 # Ignored when bungeecord is enabled.
 force-client-locale-on-join: false
 
+# Automatically reload the plugin (equivalent to /twin reload) every X seconds.
+# Might be useful if you're editing the translations folder with symlinks or another program.
+# Set to -1 to disable (default)
+config-auto-refresh-interval: -1
+
 # Enable this if you're using the plugin on BungeeCord.
 # A restart of the server and BungeeCord might be required after changing this setting.
 bungeecord: false

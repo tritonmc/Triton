@@ -19,13 +19,17 @@ import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class BungeeMLP extends Triton {
+
+    private ScheduledTask configRefreshTask;
 
     public BungeeMLP(PluginLoader loader) {
         super.loader = loader;
@@ -59,6 +63,14 @@ public class BungeeMLP extends Triton {
     public void reload() {
         super.reload();
         sendConfigToEveryone();
+    }
+
+    @Override
+    protected void startConfigRefreshTask() {
+        if (configRefreshTask != null) configRefreshTask.cancel();
+        if (getConf().getConfigAutoRefresh() <= 0) return;
+        configRefreshTask = BungeeCord.getInstance().getScheduler()
+                .schedule(loader.asBungee(), this::reload, getConf().getConfigAutoRefresh(), TimeUnit.SECONDS);
     }
 
     private void sendConfigToEveryone() {

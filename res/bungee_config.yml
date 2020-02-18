@@ -49,6 +49,11 @@ run-language-commands-on-join: false
 # It it recommended to leave this off for user experience reasons.
 force-client-locale-on-join: false
 
+# Automatically reload the plugin (equivalent to /twin reload) every X seconds.
+# Might be useful if you're editing the translations folder with symlinks or another program.
+# Set to -1 to disable (default)
+config-auto-refresh-interval: -1
+
 # To access TWIN, you need a special token.
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
 twin-token: ""

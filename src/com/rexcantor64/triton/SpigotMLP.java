@@ -26,6 +26,7 @@ public class SpigotMLP extends Triton {
 
     private ProtocolLibListener protocolLibListener;
     private SpigotBridgeManager bridgeManager;
+    private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
         super.loader = loader;
@@ -60,6 +61,14 @@ public class SpigotMLP extends Triton {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
             new TritonPlaceholderHook(this).register();
 
+    }
+
+    @Override
+    protected void startConfigRefreshTask() {
+        if (refreshTaskId != -1) Bukkit.getScheduler().cancelTask(refreshTaskId);
+        if (getConf().getConfigAutoRefresh() <= 0) return;
+        refreshTaskId = Bukkit.getScheduler()
+                .scheduleSyncDelayedTask(loader.asSpigot(), this::reload, getConf().getConfigAutoRefresh() * 20L);
     }
 
     public ProtocolLibListener getProtocolLibListener() {

@@ -66,6 +66,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         languageManager.setup();
         for (LanguagePlayer lp : playerManager.getAll())
             lp.refreshAll();
+        startConfigRefreshTask();
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {
@@ -106,6 +107,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public abstract String getVersion();
 
     public abstract ProtocolLibListener getProtocolLibListener();
+
+    protected abstract void startConfigRefreshTask();
 
     public String getMessage(String code, String def, Object... args) {
         String s = ChatColor.translateAlternateColorCodes('&',
