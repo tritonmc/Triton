@@ -44,4 +44,12 @@ public interface Triton {
      */
     void openLanguagesSelectionGUI(LanguagePlayer player);
 
+    /**
+     * Reload the config, messages, translations and player data.
+     * Should not be abused.
+     *
+     * @since 2.5.0
+     */
+    void reload();
+
 }
