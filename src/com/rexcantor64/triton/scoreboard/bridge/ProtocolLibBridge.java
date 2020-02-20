@@ -36,13 +36,16 @@ public class ProtocolLibBridge implements ScoreboardBridge {
 
     @Override
     public void updateEntryScore(String entry, Integer score) {
-        PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_SCORE, true);
+        PacketContainer container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_SCORE, true);
         StructureModifier<String> strings = container.getStrings();
         strings.writeSafely(0, entry);
         strings.writeSafely(1, OBJECTIVE_NAME);
         if (score != null)
             container.getIntegers().writeSafely(0, score);
-        container.getScoreboardActions().writeSafely(0, score == null ? EnumWrappers.ScoreboardAction.REMOVE : EnumWrappers.ScoreboardAction.CHANGE);
+        container.getScoreboardActions()
+                .writeSafely(0, score == null ? EnumWrappers.ScoreboardAction.REMOVE :
+                        EnumWrappers.ScoreboardAction.CHANGE);
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
@@ -52,7 +55,8 @@ public class ProtocolLibBridge implements ScoreboardBridge {
 
     @Override
     public void updateTeamPrefixSuffix(String prefix, String suffix, int index) {
-        PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
+        PacketContainer container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
         StructureModifier<String> strings = container.getStrings();
         strings.writeSafely(0, TEAM_PREFIX + index);
         StructureModifier<Integer> integers = container.getIntegers();
@@ -79,39 +83,43 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
+            Triton.get().logDebugWarning("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
         }
     }
 
     @Override
     public void addEntryToTeam(String entry, int index) {
-        PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
+        PacketContainer container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
         container.getIntegers().writeSafely(1, 3);
         container.getStrings().writeSafely(0, TEAM_PREFIX + index);
         container.getSpecificModifier(Collection.class).writeSafely(0, Collections.singleton(entry));
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send addEntryToTeam packet: %1", e.getMessage());
+            Triton.get().logDebugWarning("Failed to send addEntryToTeam packet: %1", e.getMessage());
         }
     }
 
     @Override
     public void initializeScoreboard(String title) {
-        PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, true);
+        PacketContainer container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, true);
         container.getStrings().writeSafely(0, OBJECTIVE_NAME);
         if (useComponents())
             container.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(title));
         else
             container.getStrings().writeSafely(1, title);
-        container.getEnumModifier(ProtocolLibListener.EnumScoreboardHealthDisplay.class, 2).writeSafely(0, ProtocolLibListener.EnumScoreboardHealthDisplay.INTEGER);
+        container.getEnumModifier(ProtocolLibListener.EnumScoreboardHealthDisplay.class, 2)
+                .writeSafely(0, ProtocolLibListener.EnumScoreboardHealthDisplay.INTEGER);
         container.getIntegers().writeSafely(0, 0);
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
             Triton.get().logError("Failed to send addObjective packet: %1", e.getMessage());
         }
-        container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, true);
+        container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, true);
         container.getStrings().writeSafely(0, OBJECTIVE_NAME);
         container.getIntegers().writeSafely(0, 1);
         try {
@@ -144,7 +152,8 @@ public class ProtocolLibBridge implements ScoreboardBridge {
                 integers.writeSafely(1, 0);
                 integers.writeSafely(2, 0);
             }
-            container.getSpecificModifier(Collection.class).writeSafely(0, useComponents() ? Collections.singleton(ScoreboardUtils.getEntrySuffix(i)) : Collections.emptyList());
+            container.getSpecificModifier(Collection.class).writeSafely(0, useComponents() ? Collections
+                    .singleton(ScoreboardUtils.getEntrySuffix(i)) : Collections.emptyList());
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
             } catch (Exception e) {
@@ -155,13 +164,15 @@ public class ProtocolLibBridge implements ScoreboardBridge {
 
     @Override
     public void updateObjectiveTitle(String title) {
-        PacketContainer container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, true);
+        PacketContainer container = ProtocolLibrary.getProtocolManager()
+                .createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, true);
         container.getStrings().writeSafely(0, OBJECTIVE_NAME);
         if (useComponents())
             container.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(title));
         else
             container.getStrings().writeSafely(1, title);
-        container.getEnumModifier(ProtocolLibListener.EnumScoreboardHealthDisplay.class, 2).writeSafely(0, ProtocolLibListener.EnumScoreboardHealthDisplay.INTEGER);
+        container.getEnumModifier(ProtocolLibListener.EnumScoreboardHealthDisplay.class, 2)
+                .writeSafely(0, ProtocolLibListener.EnumScoreboardHealthDisplay.INTEGER);
         container.getIntegers().writeSafely(0, 2);
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
