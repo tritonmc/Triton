@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 
+import java.lang.reflect.Field;
 import java.util.regex.Pattern;
 
 public class ComponentUtils {
@@ -86,6 +87,25 @@ public class ComponentUtils {
         target.setStrikethrough(origin.isStrikethroughRaw());
         target.setObfuscated(origin.isObfuscatedRaw());
         target.setInsertion(origin.getInsertion());
+    }
+
+    public static BaseComponent[] removeEmptyExtras(BaseComponent... comps) {
+        for (BaseComponent comp : comps) {
+            if (comp.getExtra() == null)
+                continue;
+            if (comp.getExtra().isEmpty()) {
+                try {
+                    Field f = BaseComponent.class.getDeclaredField("extra");
+                    f.setAccessible(true);
+                    f.set(comp, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                continue;
+            }
+            removeEmptyExtras(comp.getExtra().toArray(new BaseComponent[0]));
+        }
+        return comps;
     }
 
 }

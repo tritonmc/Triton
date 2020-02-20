@@ -3,6 +3,7 @@ package com.rexcantor64.triton.packetinterceptor;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.Connection;
@@ -66,7 +67,7 @@ public class BungeeListener implements Connection.Unsafe {
         BaseComponent[] text = ComponentSerializer.parse(p.getMessage());
         text = Triton.get().getLanguageParser().parseComponent(owner, type != 2 ?
                 Triton.get().getConf().getChatSyntax() : Triton.get().getConf().getActionbarSyntax(), text);
-        p.setMessage(ComponentSerializer.toString(text));
+        p.setMessage(ComponentSerializer.toString(ComponentUtils.removeEmptyExtras(text)));
     }
 
     private void handleTitle(DefinedPacket packet) {
