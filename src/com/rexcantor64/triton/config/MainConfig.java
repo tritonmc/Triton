@@ -287,7 +287,7 @@ public class MainConfig implements TritonConfig {
         this.guiSyntax = FeatureSyntax.fromSection(guis);
 
         Configuration scoreboards = section.getSection("scoreboards");
-        this.scoreboards = scoreboards.getBoolean("enabled", true);
+        this.scoreboards = scoreboards.getBoolean("enabled", false);
         this.scoreboardsAdvanced = scoreboards.getBoolean("advanced", false);
         this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
 
