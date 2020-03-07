@@ -10,22 +10,25 @@ import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.metrics.MetricsBungee;
+import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.utils.NMSUtils;
+import io.netty.channel.Channel;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
-import net.md_5.bungee.netty.ChannelWrapper;
-import net.md_5.bungee.protocol.DefinedPacket;
+import net.md_5.bungee.netty.PipelineUtils;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class BungeeMLP extends Triton {
 
@@ -49,7 +52,7 @@ public class BungeeMLP extends Triton {
 
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
             BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
-            setCustomUnsafe(lp);
+            injectPipeline(lp, p);
         }
 
         BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new MainCMD());
@@ -204,22 +207,24 @@ public class BungeeMLP extends Triton {
         return loader.asBungee().getDataFolder();
     }
 
-    public void setCustomUnsafe(BungeeLanguagePlayer p) {
-        NMSUtils.setPrivateFinalField(p.getParent(), "unsafe", new BungeeListener(p));
-    }
-
     @Override
     public String getVersion() {
         return loader.asBungee().getDescription().getVersion();
     }
 
-    public void setDefaultUnsafe(ProxiedPlayer p) {
-        NMSUtils.setPrivateFinalField(p, "unsafe", new Connection.Unsafe() {
-            @Override
-            public void sendPacket(DefinedPacket p) {
-                ((ChannelWrapper) NMSUtils.getDeclaredField(p, "ch")).write(p);
-            }
-        });
+    public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
+        try {
+            Object ch = NMSUtils.getDeclaredField(p, "ch");
+            Method method = ch.getClass().getDeclaredMethod("getHandle");
+            Channel channel = (Channel) method.invoke(ch, new Object[0]);
+            channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
+            channel.pipeline()
+                    .addAfter(PipelineUtils.PACKET_ENCODER, "triton-custom-encoder", new BungeeListener(lp));
+        } catch (Exception e) {
+            BungeeCord.getInstance().getLogger()
+                    .log(Level.SEVERE, "[BungeePackets] Failed to inject client connection for " + lp.getUUID()
+                            .toString());
+        }
     }
 
 }

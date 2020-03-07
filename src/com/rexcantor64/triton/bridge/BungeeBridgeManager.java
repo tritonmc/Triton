@@ -2,28 +2,25 @@ package com.rexcantor64.triton.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
-import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
-import com.rexcantor64.triton.utils.NMSUtils;
-import io.netty.channel.Channel;
-import net.md_5.bungee.BungeeCord;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.*;
+import net.md_5.bungee.api.event.LoginEvent;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import net.md_5.bungee.netty.PipelineUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -102,45 +99,18 @@ public class BungeeBridgeManager implements Listener {
             lp.executeCommands(event.getServer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onLogin(LoginEvent event) {
         if (!Triton.get().getConf().isKick()) return;
-        event.registerIntent(Triton.get().getLoader().asBungee());
         BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
                 .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
                         .getUniqueId(), event.getConnection()));
-        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), () -> {
-            if (event.getCancelReasonComponents() != null)
-                event.setCancelReason(Triton.get().getLanguageParser()
-                        .parseComponent(lp, Triton.get().getConf().getKickSyntax(), event
-                                .getCancelReasonComponents()));
-
-            event.completeIntent(Triton.get().getLoader().asBungee());
-        });
-    }
-
-    @EventHandler
-    public void onJoin(PostLoginEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
-                .get(event.getPlayer().getUniqueId());
-        Triton.asBungee().setCustomUnsafe(lp);
-        try {
-            ProxiedPlayer p = event.getPlayer();
-            Object ch =
-                    NMSUtils.getDeclaredField(p, "ch");
-            Method method = ch.getClass().getDeclaredMethod("getHandle");
-            Channel channel = (Channel) method.invoke(ch, new Object[0]);
-            channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
-        } catch (Exception e) {
-            System.out.println("[BungeePackets] Failed to inject client connection for " + event.getPlayer().getName());
-        }
+        BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
     }
 
     @EventHandler
     public void onLeave(PlayerDisconnectEvent event) {
         Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
-        //MultiLanguagePlugin.asBungee().setDefaultUnsafe(event.getPlayer());
     }
-
 
 }
