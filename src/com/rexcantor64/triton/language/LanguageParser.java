@@ -11,6 +11,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
@@ -78,6 +79,16 @@ public class LanguageParser {
         return result;
     }
 
+    public boolean hasTranslatableComponent(BaseComponent... comps) {
+        for (BaseComponent c : comps) {
+            if (c instanceof TranslatableComponent)
+                return true;
+            if (c.getExtra() != null && hasTranslatableComponent(c.getExtra().toArray(new BaseComponent[0])))
+                return true;
+        }
+        return false;
+    }
+
     public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
         return replaceLanguages(input, p.getLang().getName(), syntax);
     }
@@ -135,6 +146,8 @@ public class LanguageParser {
         removeMLPLinks(text);
         AdvancedComponent advancedComponent = AdvancedComponent.fromBaseComponent(text);
         String input = advancedComponent.getText();
+        while (input.startsWith(ChatColor.RESET.toString()))
+            input = input.substring(2);
         input = Triton.get().getLanguageManager().matchPattern(input, p);
         Integer[] i;
         int safeCounter = 0;
@@ -160,6 +173,8 @@ public class LanguageParser {
                                 .fromBaseComponent(TextComponent.fromLegacyText(Triton.get().getLanguageManager()
                                         .getText(p, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
+                while (result.getText().startsWith(ChatColor.RESET.toString()))
+                    result.setText(result.getText().substring(2));
                 builder.append(result.getText());
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
@@ -179,6 +194,8 @@ public class LanguageParser {
             AdvancedComponent result =
                     AdvancedComponent.fromBaseComponent(TextComponent
                             .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
+            while (result.getText().startsWith(ChatColor.RESET.toString()))
+                result.setText(result.getText().substring(2));
             advancedComponent.getComponents().putAll(result.getComponents());
             builder.append(result.getText());
             builder.append(input.substring(i[1]));

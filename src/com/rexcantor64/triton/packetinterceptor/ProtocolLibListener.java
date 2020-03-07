@@ -941,7 +941,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private BaseComponent[] mergeComponents(BaseComponent... comps) {
-        return new BaseComponent[]{new TextComponent(TextComponent.toLegacyText(comps))};
+        if (getMCVersion() > 12)
+            return comps;
+        if (main.getLanguageParser().hasTranslatableComponent(comps))
+            return comps;
+        return new BaseComponent[]{new TextComponent(AdvancedComponent.fromBaseComponent(true, comps).getText())};
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {

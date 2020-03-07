@@ -14,14 +14,17 @@ public class AdvancedComponent {
     private HashMap<String, List<AdvancedComponent>> translatableArguments = new HashMap<>();
 
     public static AdvancedComponent fromBaseComponent(BaseComponent... components) {
+        return fromBaseComponent(false, components);
+    }
+
+    public static AdvancedComponent fromBaseComponent(boolean onlyText, BaseComponent... components) {
         AdvancedComponent advancedComponent = new AdvancedComponent();
         StringBuilder builder = new StringBuilder();
         for (BaseComponent comp : components) {
             boolean hasClick = false;
             boolean hasHover = false;
+            builder.append(ComponentUtils.getColorFromBaseComponent(comp).toString());
             if (comp.hasFormatting()) {
-                if (comp.getColorRaw() != null)
-                    builder.append(comp.getColorRaw().toString());
                 if (comp.isBold())
                     builder.append(ChatColor.BOLD.toString());
                 if (comp.isItalic())
@@ -32,27 +35,31 @@ public class AdvancedComponent {
                     builder.append(ChatColor.STRIKETHROUGH.toString());
                 if (comp.isObfuscated())
                     builder.append(ChatColor.MAGIC.toString());
-                if (comp.getClickEvent() != null && !comp.getClickEvent().getValue()
-                        .endsWith("[/" + Triton.get().getConf().getChatSyntax().getLang() + "]")) {
-                    builder.append("\uE400");
-                    builder.append(ComponentUtils.encodeClickAction(comp.getClickEvent().getAction()));
-                    UUID uuid = UUID.randomUUID();
-                    advancedComponent.setComponent(uuid, comp.getClickEvent().getValue());
-                    builder.append(uuid.toString());
-                    hasClick = true;
-                }
-                if (comp.getHoverEvent() != null) {
-                    builder.append("\uE500");
-                    builder.append(ComponentUtils.encodeHoverAction(comp.getHoverEvent().getAction()));
-                    UUID uuid = UUID.randomUUID();
-                    advancedComponent.setComponent(uuid, TextComponent.toLegacyText(comp.getHoverEvent().getValue()));
-                    builder.append(uuid.toString());
-                    hasHover = true;
+                if (!onlyText) {
+                    if (comp.getClickEvent() != null && !comp.getClickEvent().getValue()
+                            .endsWith("[/" + Triton.get().getConf().getChatSyntax().getLang() + "]")) {
+                        builder.append("\uE400");
+                        builder.append(ComponentUtils.encodeClickAction(comp.getClickEvent().getAction()));
+                        UUID uuid = UUID.randomUUID();
+                        advancedComponent.setComponent(uuid, comp.getClickEvent().getValue());
+                        builder.append(uuid.toString());
+                        hasClick = true;
+                    }
+                    if (comp.getHoverEvent() != null) {
+                        builder.append("\uE500");
+                        builder.append(ComponentUtils.encodeHoverAction(comp.getHoverEvent().getAction()));
+                        UUID uuid = UUID.randomUUID();
+                        advancedComponent
+                                .setComponent(uuid, TextComponent.toLegacyText(comp.getHoverEvent().getValue()));
+                        builder.append(uuid.toString());
+                        hasHover = true;
+                    }
                 }
             }
             if (comp instanceof TextComponent)
                 builder.append(((TextComponent) comp).getText());
-            if (comp instanceof TranslatableComponent) {
+
+            if (!onlyText && comp instanceof TranslatableComponent) {
                 TranslatableComponent tc = (TranslatableComponent) comp;
                 UUID uuid = UUID.randomUUID();
                 builder.append("\uE600")
@@ -63,11 +70,12 @@ public class AdvancedComponent {
                 List<AdvancedComponent> args = new ArrayList<>();
                 if (tc.getWith() != null)
                     for (BaseComponent arg : tc.getWith())
-                        args.add(fromBaseComponent(arg));
+                        args.add(fromBaseComponent(false, arg));
                 advancedComponent.setTranslatableArguments(uuid.toString(), args);
             }
             if (comp.getExtra() != null) {
-                AdvancedComponent component = fromBaseComponent(comp.getExtra().toArray(new BaseComponent[0]));
+                AdvancedComponent component = fromBaseComponent(onlyText, comp.getExtra()
+                        .toArray(new BaseComponent[0]));
                 builder.append(component.getText());
                 for (Map.Entry<String, String> entry : component.getComponents().entrySet())
                     advancedComponent.setComponent(entry.getKey(), entry.getValue());
@@ -130,9 +138,6 @@ public class AdvancedComponent {
                         break;
                     case MAGIC:
                         component.setObfuscated(true);
-                        break;
-                    case RESET:
-                        component.setColor(ChatColor.WHITE);
                         break;
                     default:
                         component.setColor(format);

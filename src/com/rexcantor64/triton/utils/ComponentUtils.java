@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.utils;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -10,12 +11,6 @@ import java.util.regex.Pattern;
 public class ComponentUtils {
 
     private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
-
-    private static final String a =
-            "\uD8053384d6b5d-bfc3-4468-aec8-d53cacea4ad7\uD805\uD806078216435-427d-443e-9e05-37c5d2c1d369\uD806" +
-                    "\u00A73\uD80538781338d-8b60-456e-b3aa-4e6cddd5d30d\uD805\uD806063fc0542-c0d5-41cd-875b" +
-                    "-48279ca4b667\uD806> \uD806\uD805\u00A7a\uD80539e70301e-93cd-4338-b714-836c90293d67\uD805" +
-                    "\uD80600a38746c-5821-4295-a6f3-e319bc0cd1dd\uD806/lp deletegroup <group>\uD806\uD805\uD806\uD805";
 
     public static int encodeClickAction(ClickEvent.Action action) {
         switch (action) {
@@ -106,6 +101,14 @@ public class ComponentUtils {
             removeEmptyExtras(comp.getExtra().toArray(new BaseComponent[0]));
         }
         return comps;
+    }
+
+    public static ChatColor getColorFromBaseComponent(BaseComponent bc) {
+        if (bc.getColorRaw() != null)
+            return bc.getColorRaw();
+        Object parent = NMSUtils.getDeclaredField(bc, "parent");
+        return !(parent instanceof BaseComponent) ? ChatColor.RESET :
+                getColorFromBaseComponent((BaseComponent) parent);
     }
 
 }

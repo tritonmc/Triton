@@ -138,7 +138,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         bossBars.remove(uuid);
     }
 
-
     private void load() {
         lang = PlayerStorage.StorageManager.getCurrentStorage().getLanguage(this);
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
@@ -150,6 +149,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public Player toBukkit() {
+        if (bukkit != null && !bukkit.isOnline())
+            bukkit = null;
         if (bukkit == null)
             bukkit = Bukkit.getPlayer(uuid);
         return bukkit;
