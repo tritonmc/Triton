@@ -29,6 +29,7 @@ import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -72,29 +73,47 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser()
+                BaseComponent[] result = main.getLanguageParser()
                         .parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer
-                                .parse(msg.getJson())))));
+                                .parse(msg.getJson()));
+                if (result == null) {
+                    packet.setCancelled(true);
+                    return;
+                }
+                msg.setJson(ComponentSerializer.toString(mergeComponents(result)));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
+                return;
+            }
+            BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
+                    main.getConf().getActionbarSyntax(),
+                    (BaseComponent[]) packet.getPacket().getModifier().readSafely(1));
+            if (bc == null) {
+                packet.setCancelled(true);
                 return;
             }
             packet.getPacket().getModifier().writeSafely(1,
-                    mergeComponents(main.getLanguageParser().parseComponent(languagePlayer,
-                            main.getConf().getChatSyntax(),
-                            (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier()
-                                    .readSafely(1))));
+                    mergeComponents(bc));
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                msg.setJson(net.md_5.bungee.chat.ComponentSerializer.toString(main.getLanguageParser()
+                BaseComponent[] result = main.getLanguageParser()
                         .parseComponent(languagePlayer, main.getConf()
-                                .getChatSyntax(), net.md_5.bungee.chat.ComponentSerializer.parse(msg.getJson()))));
+                                .getChatSyntax(), net.md_5.bungee.chat.ComponentSerializer.parse(msg.getJson()));
+                if (result == null) {
+                    packet.setCancelled(true);
+                    return;
+                }
+                msg.setJson(net.md_5.bungee.chat.ComponentSerializer.toString(result));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
-            net.md_5.bungee.api.chat.BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
+            BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
                     main.getConf().getChatSyntax(),
-                    (net.md_5.bungee.api.chat.BaseComponent[]) packet.getPacket().getModifier().readSafely(1));
+                    (BaseComponent[]) packet.getPacket().getModifier().readSafely(1));
+            if (bc == null) {
+                packet.setCancelled(true);
+                return;
+            }
             packet.getPacket().getModifier().writeSafely(1, bc);
         }
     }
@@ -102,21 +121,32 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         if (msg == null) return;
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()))));
+        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
+                main.getConf().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()));
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+        msg.setJson(ComponentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
         String headerJson = header.getJson();
-        header.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(header.getJson()))));
+        BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
+                main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
+        if (resultHeader == null)
+            resultHeader = new BaseComponent[]{new TranslatableComponent("")};
+        header.setJson(ComponentSerializer.toString(resultHeader));
         packet.getPacket().getChatComponents().writeSafely(0, header);
         WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
         String footerJson = footer.getJson();
-        footer.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(footer.getJson()))));
+        BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
+                main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
+        if (resultFooter == null)
+            resultFooter = new BaseComponent[]{new TranslatableComponent("")};
+        footer.setJson(ComponentSerializer.toString(resultFooter));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
         languagePlayer.setLastTabFooter(footerJson);
@@ -124,9 +154,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(mergeComponents(main.getLanguageParser()
+        BaseComponent[] result = main.getLanguageParser()
                 .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer
-                        .parse(msg.getJson())))));
+                        .parse(msg.getJson()));
+        if (result == null)
+            result = new BaseComponent[]{new TextComponent("")};
+        msg.setJson(ComponentSerializer.toString(mergeComponents(result)));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -155,30 +188,56 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 .readSafely(0).asMap().values()));
         WrappedWatchableObject watchableObject = dataWatcher.getWatchableObject(2);
         if (watchableObject == null) return;
+        boolean forceHideCustomName = false;
         if (getMCVersion() >= 13) {
             Optional optional = (Optional) watchableObject.getValue();
             if (optional.isPresent()) {
                 String displayName = WrappedChatComponent.fromHandle(optional.get()).getJson();
                 addEntity(packet.getPlayer().getWorld(), entityId, displayName, languagePlayer);
-                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
-                        Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                                .toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
-                                        .getHologramSyntax(), ComponentSerializer
-                                        .parse(displayName))))
-                                .getHandle())));
+                BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
+                        .getHologramSyntax(), ComponentSerializer
+                        .parse(displayName));
+                if (result != null)
+                    dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
+                            Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                                    .toString(result))
+                                    .getHandle())));
+                else {
+                    dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
+                            Optional.empty()));
+                    forceHideCustomName = true;
+                }
             }
         } else if (getMCVersion() >= 9) {
             addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue(), languagePlayer);
-            dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
-                    main.getLanguageParser().replaceLanguages(main.getLanguageManager()
-                                    .matchPattern((String) watchableObject.getValue(), languagePlayer), languagePlayer,
-                            main.getConf().getHologramSyntax())));
+            String result = translate((String) watchableObject.getValue(), languagePlayer, main.getConf()
+                    .getHologramSyntax());
+            if (result != null)
+                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(), result));
+            else {
+                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
+                        ""));
+                forceHideCustomName = true;
+            }
         } else {
             addEntity(packet.getPlayer().getWorld(), entityId, (String) watchableObject.getValue(), languagePlayer);
-            dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getIndex(),
-                    main.getLanguageParser().replaceLanguages(main.getLanguageManager()
-                                    .matchPattern((String) watchableObject.getValue(), languagePlayer), languagePlayer,
-                            main.getConf().getHologramSyntax())));
+            String result = translate((String) watchableObject.getValue(), languagePlayer, main.getConf()
+                    .getHologramSyntax());
+            if (result != null)
+                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getIndex(), result));
+            else {
+                dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getIndex(),
+                        ""));
+                forceHideCustomName = true;
+            }
+        }
+        if (forceHideCustomName) {
+            WrappedWatchableObject isCustomName = dataWatcher.getWatchableObject(3);
+            if (isCustomName != null)
+                if (getMCVersion() >= 9)
+                    dataWatcher.setObject(3, new WrappedWatchableObject(isCustomName.getWatcherObject(), false));
+                else
+                    dataWatcher.setObject(3, new WrappedWatchableObject(isCustomName.getIndex(), (byte) 0));
         }
         packet.getPacket().getDataWatcherModifier().writeSafely(0, dataWatcher);
     }
@@ -209,35 +268,56 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
         List<WrappedWatchableObject> dwn = new ArrayList<>();
+        boolean forceHideCustomName = false;
         for (WrappedWatchableObject obj : dw)
             if (obj.getIndex() == 2)
                 if (getMCVersion() < 9) {
                     addEntity(packet.getPlayer().getWorld(), entityId, (String) obj.getValue(), languagePlayer);
-                    dwn.add(new WrappedWatchableObject(obj.getIndex(),
-                            main.getLanguageParser().replaceLanguages(main.getLanguageManager()
-                                            .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
-                                    main.getConf().getHologramSyntax())));
+                    String result = translate((String) obj.getValue(), languagePlayer, main.getConf()
+                            .getHologramSyntax());
+                    if (result != null)
+                        dwn.add(new WrappedWatchableObject(obj.getIndex(), result));
+                    else {
+                        dwn.add(new WrappedWatchableObject(obj.getIndex(), ""));
+                        forceHideCustomName = true;
+                    }
                 } else if (getMCVersion() < 13) {
                     addEntity(packet.getPlayer().getWorld(), entityId, (String) obj.getValue(), languagePlayer);
-                    dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
-                            main.getLanguageParser().replaceLanguages(main.getLanguageManager()
-                                            .matchPattern((String) obj.getValue(), languagePlayer), languagePlayer,
-                                    main.getConf().getHologramSyntax())));
+                    String result = translate((String) obj.getValue(), languagePlayer, main.getConf()
+                            .getHologramSyntax());
+                    if (result != null)
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), result));
+                    else {
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), ""));
+                        forceHideCustomName = true;
+                    }
                 } else {
                     Optional optional = (Optional) obj.getValue();
                     if (optional.isPresent()) {
                         addEntity(packet.getPlayer().getWorld(), entityId, WrappedChatComponent
                                 .fromHandle(optional.get())
                                 .getJson(), languagePlayer);
-                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
-                                Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                                        .toString(main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
-                                                .getHologramSyntax(), ComponentSerializer
-                                                .parse(WrappedChatComponent.fromHandle(optional.get()).getJson()))))
-                                        .getHandle())));
+                        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer, main.getConf()
+                                .getHologramSyntax(), ComponentSerializer
+                                .parse(WrappedChatComponent.fromHandle(optional.get()).getJson()));
+                        if (result != null)
+                            dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
+                                    Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                                            .toString(result))
+                                            .getHandle())));
+                        else {
+                            dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), Optional.empty()));
+                            forceHideCustomName = true;
+                        }
                     } else dwn.add(obj);
                 }
-            else
+            else if (obj.getIndex() == 3) {
+                if (forceHideCustomName) {
+                    if (getMCVersion() >= 9)
+                        dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), false));
+                    else dwn.add(new WrappedWatchableObject(obj.getIndex(), (byte) 0));
+                } else dwn.add(obj);
+            } else
                 dwn.add(obj);
         packet.getPacket().getWatchableCollectionModifier().writeSafely(0, dwn);
     }
@@ -260,9 +340,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     main.getConf().getHologramSyntax()));
             newGP.getProperties().putAll(oldGP.getProperties());
             WrappedChatComponent msg = data.getDisplayName();
-            if (msg != null)
-                msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                        main.getConf().getHologramSyntax(), ComponentSerializer.parse(msg.getJson()))));
+            if (msg != null) {
+                BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
+                        main.getConf().getHologramSyntax(), ComponentSerializer.parse(msg.getJson()));
+                if (result == null)
+                    msg = null;
+                else
+                    msg.setJson(ComponentSerializer.toString(result));
+            }
             dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
         }
         packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
@@ -402,8 +487,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        msg.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getKickSyntax(), ComponentSerializer.parse(msg.getJson()))));
+        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
+                main.getConf().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
+        if (result == null)
+            result = new BaseComponent[]{new TextComponent("")};
+        msg.setJson(ComponentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -507,8 +595,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (action != Action.ADD && action != Action.UPDATE_NAME) return;
         WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
         languagePlayer.setBossbar(uuid, bossbar.getJson());
-        bossbar.setJson(ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()))));
+        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
+                main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
+        if (result == null)
+            result = new BaseComponent[]{new TranslatableComponent("")};
+        bossbar.setJson(ComponentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, bossbar);
     }
 
@@ -697,16 +788,29 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 PacketContainer packet =
                         ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().writeSafely(0, entry.getKey());
+                boolean forceHideCustomName = false;
                 Object value;
-                if (getMCVersion() >= 13)
-                    value = Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                            .toString(main.getLanguageParser().parseComponent(player, main.getConf()
-                                    .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()))))
-                            .getHandle());
-                else
+                if (getMCVersion() >= 13) {
+                    BaseComponent[] result = main.getLanguageParser().parseComponent(player, main.getConf()
+                            .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()));
+                    if (result != null)
+                        value = Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
+                                .toString(result))
+                                .getHandle());
+                    else {
+                        value = Optional.empty();
+                        forceHideCustomName = true;
+                    }
+                } else {
                     value = main.getLanguageParser().replaceLanguages(main.getLanguageManager()
                                     .matchPattern(entry.getValue(), player), player,
                             main.getConf().getHologramSyntax());
+                    if (value == null) {
+                        value = "";
+                        forceHideCustomName = true;
+                    }
+                }
+                List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
                 WrappedWatchableObject watchableObject;
                 if (getMCVersion() >= 9)
                     watchableObject = new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(2,
@@ -715,7 +819,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .get(String.class)), value);
                 else
                     watchableObject = new WrappedWatchableObject(2, value);
-                packet.getWatchableCollectionModifier().writeSafely(0, Collections.singletonList(watchableObject));
+                watchableObjects.add(watchableObject);
+                if (forceHideCustomName) {
+                    WrappedWatchableObject customNameVisibility;
+                    if (getMCVersion() >= 9)
+                        customNameVisibility =
+                                new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject(3,
+                                        WrappedDataWatcher.Registry
+                                                .get(Boolean.class)), false);
+                    else
+                        customNameVisibility = new WrappedWatchableObject(3, (byte) 0);
+                    watchableObjects.add(customNameVisibility);
+                }
+                packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
                 try {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                 } catch (InvocationTargetException e) {
@@ -941,17 +1057,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private BaseComponent[] mergeComponents(BaseComponent... comps) {
-        if (getMCVersion() > 12)
-            return comps;
         if (main.getLanguageParser().hasTranslatableComponent(comps))
             return comps;
         return new BaseComponent[]{new TextComponent(AdvancedComponent.fromBaseComponent(true, comps).getText())};
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
-        if (s == null) return null;
-        String r = main.getLanguageParser().replaceLanguages(s, lp, syntax);
-        if (r.length() > max) return r.substring(0, max);
+        String r = translate(s, lp, syntax);
+        if (r != null && r.length() > max) return r.substring(0, max);
         return r;
     }
 
@@ -981,12 +1094,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     NbtCompound display = tag.getCompoundOrDefault("display");
                     if (!display.containsKey("Name")) continue;
                     String name = display.getStringOrDefault("Name");
-                    if (getMCVersion() >= 13)
-                        display.put("Name", ComponentSerializer.toString(main.getLanguageParser()
+                    if (getMCVersion() >= 13) {
+                        BaseComponent[] result = main.getLanguageParser()
                                 .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
-                                        .parse(name))));
-                    else
-                        display.put("Name", translate(name, languagePlayer, main.getConf().getItemsSyntax()));
+                                        .parse(name));
+                        if (result == null)
+                            display.remove("Name");
+                        else
+                            display.put("Name", ComponentSerializer.toString(result));
+                    } else {
+                        String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
+                        if (result == null)
+                            display.remove("Name");
+                        else
+                            display.put("Name", result);
+                    }
                 }
             }
         }
@@ -997,29 +1119,35 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         languagePlayer, main.getConf().getItemsSyntax()));
             if (meta.hasLore()) {
                 List<String> newLore = new ArrayList<>();
-                for (String lore : meta.getLore())
-                    newLore.add(translate(lore, languagePlayer,
-                            main.getConf().getItemsSyntax()));
+                for (String lore : meta.getLore()) {
+                    String result = translate(lore, languagePlayer,
+                            main.getConf().getItemsSyntax());
+                    if (result != null)
+                        newLore.add(result);
+                }
                 meta.setLore(newLore);
             }
             item.setItemMeta(meta);
             if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
+                compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
                 NbtList<String> pages = compound.getList("pages");
                 Collection<NbtBase<String>> pagesCollection = pages.asCollection();
                 List<String> newPagesCollection = new ArrayList<>();
                 for (NbtBase<String> page : pagesCollection) {
-                    if (page.getValue().startsWith("\""))
-                        newPagesCollection.add(
-                                ComponentSerializer.toString(
-                                        TextComponent.fromLegacyText(
-                                                translate(page.getValue().substring(1
-                                                        , page.getValue().length() - 1),
-                                                        languagePlayer, main.getConf().getItemsSyntax()))));
-                    else {
-                        newPagesCollection.add(
-                                ComponentSerializer.toString(main.getLanguageParser().parseComponent(languagePlayer,
-                                        main.getConf().getItemsSyntax(),
-                                        ComponentSerializer.parse(page.getValue()))));
+                    if (page.getValue().startsWith("\"")) {
+                        String result = translate(page.getValue()
+                                .substring(1, page.getValue().length() - 1), languagePlayer, main.getConf()
+                                .getItemsSyntax());
+                        if (result != null)
+                            newPagesCollection.add(
+                                    ComponentSerializer.toString(
+                                            TextComponent.fromLegacyText(result)));
+                    } else {
+                        BaseComponent[] result = main.getLanguageParser()
+                                .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                        .parse(page.getValue()));
+                        if (result != null)
+                            newPagesCollection.add(ComponentSerializer.toString(result));
                     }
                 }
                 compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));

@@ -91,10 +91,13 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             if (lines == null) return null;
             lines = lines.clone();
             for (int i = 0; i < 4; ++i)
-                if (lines[i].equals("%use_line_default%") && defaultLines[i] != null)
+                if (lines[i].equals("%use_line_default%") && defaultLines[i] != null) {
                     lines[i] = Triton.get().getLanguageParser()
                             .replaceLanguages(matchPattern(defaultLines[i], language), language, Triton.get().getConf()
                                     .getSignsSyntax());
+                    while (lines[i].startsWith(ChatColor.RESET.toString()))
+                        lines[i] = lines[i].substring(2);
+                }
             return lines;
         }
         return null;

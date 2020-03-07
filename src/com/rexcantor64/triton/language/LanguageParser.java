@@ -109,6 +109,9 @@ public class LanguageParser {
             StringBuilder builder = new StringBuilder();
             builder.append(input, 0, i[0]);
             String placeholder = input.substring(i[2], i[3]);
+            if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
+                    .equals(Triton.get().getConf().getDisabledLine()))
+                return null;
             Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
                 builder.append(SpigotMLP.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder)));
@@ -123,6 +126,8 @@ public class LanguageParser {
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
                 argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
+                if (argList[k] == null)
+                    return null;
             }
             builder.append(SpigotMLP.get().getLanguageManager().getText(p, code, argList));
             builder.append(input.substring(i[1]));
