@@ -949,12 +949,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
+        if (s == null) return null;
         String r = main.getLanguageParser().replaceLanguages(s, lp, syntax);
         if (r.length() > max) return r.substring(0, max);
         return r;
     }
 
     private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
+        if (s == null) return null;
         return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
     }
 

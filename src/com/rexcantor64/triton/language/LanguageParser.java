@@ -90,6 +90,7 @@ public class LanguageParser {
     }
 
     public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
+        if (input == null) return null;
         return replaceLanguages(input, p.getLang().getName(), syntax);
     }
 
