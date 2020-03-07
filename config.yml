@@ -1,7 +1,7 @@
 # This will be ignored if 'bungeecord' is enabled.
 languages:
-  # The language name. This will influence the language file name.
-  # i.e. If the name is en_GB, the language file name will be located at languages/en_GB.language
+  # The language name. This will influence the language key in the translation files.
+  # It's recommended to follow this syntax: xx_XX
   # It's also not recommended to change this after someone has joined your server,
   # as their language will reset to default.
   en_GB:
@@ -14,7 +14,7 @@ languages:
     # https://minecraft.gamepedia.com/Language
     minecraft-code: [en_GB]
     # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
-    # Feel free to use colours here! You shouldn't use per-language here, as item names aren't translated yet.
+    # Feel free to use colours here!
     display-name: '&aEnglish (UK)'
     # Use this to run commands on language change.
     # The commands must not start with a slash.
@@ -89,9 +89,12 @@ language-creation:
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
+  # Due to the complexity of scoreboards, this is now deprecated (since v2.5.1).
+  # Seek to use PlaceholderAPI instead if the scoreboard plugin supports it.
+  # https://triton.rexcantor64.com/docs/placeholderapi/
   scoreboards:
     # Should the plugin check for placeholders in scoreboards?
-    enabled: true
+    enabled: false
     # This adds support for custom scoreboard plugins. Most advanced scoreboard plugins will need this enabled to work.
     advanced: false
     syntax-lang: lang
