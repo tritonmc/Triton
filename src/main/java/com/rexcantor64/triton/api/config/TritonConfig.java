@@ -147,6 +147,12 @@ public interface TritonConfig {
     boolean isBossbars();
 
     /**
+     * @return The value of "language-creation.terminal" in the config.
+     * @since 2.6.0
+     */
+    boolean isTerminal();
+
+    /**
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat"
      * in the config.
      * @since 1.0.0

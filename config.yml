@@ -153,3 +153,7 @@ language-creation:
   # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
   # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
   disabled-line: ''
+  # Translate messages that go through console to the default language.
+  # For UX reasons, messages that contain disabled line placeholders aren't touched.
+  # Changing this requires a full server restart.
+  terminal: false
