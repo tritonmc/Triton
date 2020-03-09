@@ -5,9 +5,6 @@ import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageBungeeEvent;
 import com.rexcantor64.triton.api.language.Language;
-import com.rexcantor64.triton.config.interfaces.Configuration;
-import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
-import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import net.md_5.bungee.BungeeCord;
@@ -17,8 +14,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.protocol.packet.Chat;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -69,6 +64,11 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     @Override
     public boolean isWaitingForClientLocale() {
         return waitingForClientLocale;
+    }
+
+    @Override
+    public void waitForClientLocale() {
+        this.waitingForClientLocale = true;
     }
 
     public Language getLang() {
@@ -125,23 +125,16 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     private void load() {
-        Configuration config = Triton.get().loadYAML("players", "players");
-        if (!config.contains(uuid.toString()) || Triton.get().getConf().isAlwaysCheckClientLocale())
-            this.waitingForClientLocale = true;
-        language = Triton.get().getLanguageManager().getLanguageByName(config.getString(uuid.toString()), true);
+        language = Triton.get().getPlayerStorage().getLanguage(this);
         if (parent != null && Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands(null);
     }
 
     private void save() {
-        Configuration config = Triton.get().loadYAML("players", "players");
-        config.set(uuid.toString(), language.getName());
-        try {
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(config,
-                    new File(Triton.get().getDataFolder(), "players.yml"));
-        } catch (IOException e) {
-            Triton.get().logError("Failed to save players.yml: %1", e.getMessage());
-        }
+        String ip = null;
+        if (parent != null)
+            ip = parent.getAddress().getAddress().getHostAddress();
+        Triton.get().getPlayerStorage().setLanguage(uuid, ip, language);
     }
 
     public void setListener(BungeeListener listener) {

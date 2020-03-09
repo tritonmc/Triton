@@ -3,7 +3,6 @@ package com.rexcantor64.triton.commands;
 import com.google.common.collect.Lists;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
-import com.rexcantor64.triton.storage.PlayerStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -83,7 +82,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         if (target instanceof Player)
             Triton.get().getPlayerManager().get(target.getUniqueId()).setLang(lang);
         else
-            PlayerStorage.StorageManager.getCurrentStorage().setLanguage(target.getUniqueId(), lang);
+            Triton.get().getPlayerStorage().setLanguage(target.getUniqueId(), null, lang);
         if (target == s)
             s.sendMessage(Triton.get().getMessage("success.setlanguage", "&aYour language has been changed to %1",
                     lang.getDisplayName()));
@@ -99,7 +98,8 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         List<String> tab = Lists.newArrayList();
         if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage"))
             return tab;
-        if (args.length == 2 || (args.length == 3) && (s.hasPermission("multilanguageplugin.setlanguage.others") || s.hasPermission("triton.setlanguage.others")))
+        if (args.length == 2 || (args.length == 3) && (s.hasPermission("multilanguageplugin.setlanguage.others") || s
+                .hasPermission("triton.setlanguage.others")))
             for (Language lang : Triton.get().getLanguageManager().getAllLanguages())
                 if (lang.getName().toLowerCase().startsWith(args[1].toLowerCase()))
                     tab.add(lang.getName());

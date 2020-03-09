@@ -7,7 +7,6 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
 import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
-import com.rexcantor64.triton.storage.PlayerStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -139,13 +138,16 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void load() {
-        lang = PlayerStorage.StorageManager.getCurrentStorage().getLanguage(this);
+        lang = Triton.get().getPlayerStorage().getLanguage(this);
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
     private void save() {
-        PlayerStorage.StorageManager.getCurrentStorage().setLanguage(uuid, lang);
+        String ip = null;
+        if (toBukkit() != null)
+            ip = toBukkit().getAddress().getAddress().getHostAddress();
+        Triton.get().getPlayerStorage().setLanguage(uuid, ip, lang);
     }
 
     public Player toBukkit() {

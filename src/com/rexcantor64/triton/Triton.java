@@ -15,6 +15,8 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.storage.PlayerStorage;
+import com.rexcantor64.triton.storage.YamlStorage;
 import com.rexcantor64.triton.web.TwinManager;
 import net.md_5.bungee.api.ChatColor;
 
@@ -41,6 +43,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private LanguageParser languageParser;
     private TwinManager twinManager;
     private PlayerManager playerManager;
+    private PlayerStorage playerStorage;
 
     public static boolean isBungee() {
         return instance instanceof BungeeMLP;
@@ -61,6 +64,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public void reload() {
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
         config.setup();
+        setupStorage();
         messagesConfig = loadYAML("messages", "messages");
         languageConfig.setup(config.isBungeecord());
         languageManager.setup();
@@ -102,6 +106,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     public TwinManager getTwinManager() {
         return twinManager;
+    }
+
+    public PlayerStorage getPlayerStorage() {
+        return playerStorage;
     }
 
     public abstract String getVersion();
@@ -209,11 +217,16 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         // Start migration from v1 to v2.
         LanguageMigration.migrate();
         // Setup more classes
+        setupStorage();
         (languageConfig = new LanguageConfig()).setup(config.isBungeecord());
         (languageManager = new LanguageManager()).setup();
         languageParser = new LanguageParser();
         playerManager = new PlayerManager();
         twinManager = new TwinManager(this);
+    }
+
+    private void setupStorage() {
+        this.playerStorage = new YamlStorage();
     }
 
     public void saveConfig() {

@@ -14,4 +14,6 @@ public interface LanguagePlayer extends com.rexcantor64.triton.api.players.Langu
 
     boolean isWaitingForClientLocale();
 
+    void waitForClientLocale();
+
 }
