@@ -57,6 +57,14 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax motdSyntax;
     private boolean terminal;
 
+    private boolean mysql = false;
+    private String mysqlHost;
+    private int mysqlPort;
+    private String mysqlDatabase;
+    private String mysqlUser;
+    private String mysqlPassword;
+    private String mysqlTablePrefix;
+
     public MainConfig(Triton main) {
         this.main = main;
     }
@@ -194,6 +202,34 @@ public class MainConfig implements TritonConfig {
         return debug;
     }
 
+    public boolean isMysql() {
+        return mysql;
+    }
+
+    public String getMysqlHost() {
+        return mysqlHost;
+    }
+
+    public int getMysqlPort() {
+        return mysqlPort;
+    }
+
+    public String getMysqlDatabase() {
+        return mysqlDatabase;
+    }
+
+    public String getMysqlUser() {
+        return mysqlUser;
+    }
+
+    public String getMysqlPassword() {
+        return mysqlPassword;
+    }
+
+    public String getMysqlTablePrefix() {
+        return mysqlTablePrefix;
+    }
+
     public FeatureSyntax getChatSyntax() {
         return chatSyntax;
     }
@@ -248,6 +284,15 @@ public class MainConfig implements TritonConfig {
         if (!this.bungeecord) {
             this.languages = section.getSection("languages");
             this.mainLanguage = section.getString("main-language", "en_GB");
+
+            Configuration database = section.getSection("database");
+            mysql = database.getBoolean("enabled", false);
+            mysqlHost = database.getString("host", "localhost");
+            mysqlPort = database.getInt("port", 3306);
+            mysqlDatabase = database.getString("database", "triton");
+            mysqlUser = database.getString("username", "root");
+            mysqlPassword = database.getString("password", "");
+            mysqlTablePrefix = database.getString("table-prefix", "triton_");
         }
         this.twinToken = section.getString("twin-token", "");
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);

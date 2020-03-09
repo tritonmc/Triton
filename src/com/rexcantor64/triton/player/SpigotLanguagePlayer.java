@@ -42,6 +42,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public Language getLang() {
+        if (lang == null)
+            lang = Triton.get().getLanguageManager().getMainLanguage();
         return lang;
     }
 
@@ -138,19 +140,25 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void load() {
-        lang = Triton.get().getPlayerStorage().getLanguage(this);
-        if (toBukkit() != null)
-            Triton.get().getPlayerStorage()
-                    .setLanguage(null, toBukkit().getAddress().getAddress().getHostAddress(), lang);
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
-            executeCommands();
+        Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> {
+            lang = Triton.get().getPlayerStorage().getLanguage(this);
+            if (toBukkit() != null)
+                Triton.get().getPlayerStorage()
+                        .setLanguage(null, toBukkit().getAddress().getAddress().getHostAddress(), lang);
+            if (lang != null)
+                refreshAll();
+            if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
+                executeCommands();
+        });
     }
 
     private void save() {
-        String ip = null;
-        if (toBukkit() != null)
-            ip = toBukkit().getAddress().getAddress().getHostAddress();
-        Triton.get().getPlayerStorage().setLanguage(uuid, ip, lang);
+        Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> {
+            String ip = null;
+            if (toBukkit() != null)
+                ip = toBukkit().getAddress().getAddress().getHostAddress();
+            Triton.get().getPlayerStorage().setLanguage(uuid, ip, lang);
+        });
     }
 
     public Player toBukkit() {

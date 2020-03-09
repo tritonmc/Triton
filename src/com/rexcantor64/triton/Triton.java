@@ -15,6 +15,7 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.PlayerStorage;
 import com.rexcantor64.triton.storage.YamlStorage;
 import com.rexcantor64.triton.web.TwinManager;
@@ -226,6 +227,15 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     private void setupStorage() {
+        if (config.isMysql()) {
+            MysqlStorage mysqlStorage = new MysqlStorage(config.getMysqlHost(), config.getMysqlPort(), config
+                    .getMysqlDatabase(), config.getMysqlUser(), config.getMysqlPassword(), config
+                    .getMysqlTablePrefix());
+            this.playerStorage = mysqlStorage;
+            if (mysqlStorage.setup()) return;
+            logError("Failed to connect to database, falling back to YAML storage!");
+
+        }
         this.playerStorage = new YamlStorage();
     }
 

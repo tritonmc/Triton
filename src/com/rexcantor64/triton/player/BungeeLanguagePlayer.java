@@ -36,7 +36,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         this.uuid = parent;
         this.parent = BungeeCord.getInstance().getPlayer(parent);
         this.currentConnection = this.parent;
-        load();
+        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), this::load);
     }
 
     public BungeeLanguagePlayer(UUID uuid, Connection connection) {
@@ -129,15 +129,15 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         if (currentConnection != null)
             Triton.get().getPlayerStorage()
                     .setLanguage(null, currentConnection.getAddress().getAddress().getHostAddress(), language);
-        if (getParent() != null && Triton.get().getConf().isRunLanguageCommandsOnLogin())
-            executeCommands(null);
     }
 
     private void save() {
-        String ip = null;
-        if (parent != null)
-            ip = parent.getAddress().getAddress().getHostAddress();
-        Triton.get().getPlayerStorage().setLanguage(uuid, ip, language);
+        BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), () -> {
+            String ip = null;
+            if (parent != null)
+                ip = parent.getAddress().getAddress().getHostAddress();
+            Triton.get().getPlayerStorage().setLanguage(uuid, ip, language);
+        });
     }
 
     public void setListener(BungeeListener listener) {

@@ -8,11 +8,13 @@ import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.json.JSONArray;
@@ -101,11 +103,15 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onLogin(LoginEvent event) {
-        if (!Triton.get().getConf().isKick()) return;
-        BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
-                .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
-                        .getUniqueId(), event.getConnection()));
-        BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
+        Plugin plugin = Triton.get().getLoader().asBungee();
+        event.registerIntent(plugin);
+        BungeeCord.getInstance().getScheduler().runAsync(plugin, () -> {
+            BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
+                    .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
+                            .getUniqueId(), event.getConnection()));
+            BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
+            event.completeIntent(plugin);
+        });
     }
 
     @EventHandler
@@ -115,13 +121,20 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onMotd(ProxyPingEvent event) {
-        if (Triton.get().getConf().isMotd())
-            event.getResponse()
-                    .setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
-                            .parseComponent(Triton.get().getPlayerStorage()
-                                    .getLanguageFromIp(event.getConnection().getAddress().getAddress().getHostAddress())
-                                    .getName(), Triton.get().getConf()
-                                    .getMotdSyntax(), event.getResponse().getDescriptionComponent())));
+        Plugin plugin = Triton.get().getLoader().asBungee();
+        event.registerIntent(plugin);
+        BungeeCord.getInstance().getScheduler().runAsync(plugin, () -> {
+            if (Triton.get().getConf().isMotd())
+                event.getResponse()
+                        .setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
+                                .parseComponent(Triton.get().getPlayerStorage()
+                                        .getLanguageFromIp(event.getConnection().getAddress().getAddress()
+                                                .getHostAddress())
+                                        .getName(), Triton.get().getConf()
+                                        .getMotdSyntax(), event.getResponse().getDescriptionComponent())));
+            event.completeIntent(plugin);
+        });
+
     }
 
     private BaseComponent componentArrayToSingle(BaseComponent... c) {
