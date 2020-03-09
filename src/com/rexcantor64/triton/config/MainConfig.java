@@ -53,6 +53,8 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax signsSyntax;
     private boolean bossbars;
     private FeatureSyntax bossbarSyntax;
+    private boolean motd;
+    private FeatureSyntax motdSyntax;
     private boolean terminal;
 
     public MainConfig(Triton main) {
@@ -179,6 +181,11 @@ public class MainConfig implements TritonConfig {
         return bossbars;
     }
 
+    @Override
+    public boolean isMotd() {
+        return motd;
+    }
+
     public boolean isTerminal() {
         return terminal;
     }
@@ -229,6 +236,11 @@ public class MainConfig implements TritonConfig {
 
     public FeatureSyntax getBossbarSyntax() {
         return bossbarSyntax;
+    }
+
+    @Override
+    public FeatureSyntax getMotdSyntax() {
+        return motdSyntax;
     }
 
     private void setup(Configuration section) {
@@ -322,6 +334,10 @@ public class MainConfig implements TritonConfig {
         Configuration bossbars = section.getSection("bossbars");
         this.bossbars = bossbars.getBoolean("enabled", true);
         this.bossbarSyntax = FeatureSyntax.fromSection(bossbars);
+
+        Configuration motd = section.getSection("motd");
+        this.motd = motd.getBoolean("enabled", true);
+        this.motdSyntax = FeatureSyntax.fromSection(motd);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)

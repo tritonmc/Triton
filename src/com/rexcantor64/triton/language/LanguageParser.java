@@ -148,13 +148,17 @@ public class LanguageParser {
     }
 
     public BaseComponent[] parseComponent(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
+        return parseComponent(p.getLang().getName(), syntax, text);
+    }
+
+    public BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... text) {
         text = ComponentSerializer.parse(ComponentSerializer.toString(text));
         removeMLPLinks(text);
         AdvancedComponent advancedComponent = AdvancedComponent.fromBaseComponent(text);
         String input = advancedComponent.getText();
         while (input.startsWith(ChatColor.RESET.toString()))
             input = input.substring(2);
-        input = Triton.get().getLanguageManager().matchPattern(input, p);
+        input = Triton.get().getLanguageManager().matchPattern(input, language);
         Integer[] i;
         int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
@@ -177,7 +181,7 @@ public class LanguageParser {
                 AdvancedComponent result =
                         AdvancedComponent
                                 .fromBaseComponent(TextComponent.fromLegacyText(Triton.get().getLanguageManager()
-                                        .getText(p, ChatColor.stripColor(placeholder))));
+                                        .getText(language, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 while (result.getText().startsWith(ChatColor.RESET.toString()))
                     result.setText(result.getText().substring(2));
@@ -195,11 +199,11 @@ public class LanguageParser {
             Object[] argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
-                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
+                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
             }
             AdvancedComponent result =
                     AdvancedComponent.fromBaseComponent(TextComponent
-                            .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(p, code, argList)));
+                            .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(language, code, argList)));
             while (result.getText().startsWith(ChatColor.RESET.toString()))
                 result.setText(result.getText().substring(2));
             advancedComponent.getComponents().putAll(result.getComponents());
@@ -209,7 +213,7 @@ public class LanguageParser {
         }
         advancedComponent.setText(input);
         for (Map.Entry<String, String> entry : advancedComponent.getComponents().entrySet())
-            advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), p, syntax));
+            advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), language, syntax));
         return advancedComponent.toBaseComponent();
     }
 

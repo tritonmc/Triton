@@ -29,10 +29,13 @@ public class YamlStorage implements PlayerStorage {
 
     @Override
     public void setLanguage(UUID uuid, String ip, Language newLanguage) {
+        String entity = uuid != null ? uuid.toString() : ip;
         try {
-            Triton.get().logDebug("Saving language for %1...", uuid.toString());
+            if (uuid == null && ip == null) return;
+            Triton.get().logDebug("Saving language for %1...", entity);
             Configuration config = Triton.get().loadYAML("players", "players");
-            config.set(uuid.toString(), newLanguage.getName());
+            if (uuid != null)
+                config.set(uuid.toString(), newLanguage.getName());
             if (ip != null)
                 config.set(ip.replace(".", "-"), newLanguage.getName());
             ConfigurationProvider.getProvider(com.rexcantor64.triton.config.interfaces.YamlConfiguration.class)
@@ -40,8 +43,8 @@ public class YamlStorage implements PlayerStorage {
                             new File(Triton.get().getDataFolder(), "players.yml"));
             Triton.get().logDebug("Saved!");
         } catch (Exception e) {
-            Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", uuid
-                    .toString(), e.getMessage());
+            Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
+                    .getMessage());
         }
     }
 

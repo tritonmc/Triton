@@ -8,11 +8,10 @@ import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.LoginEvent;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
@@ -22,6 +21,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -113,4 +113,21 @@ public class BungeeBridgeManager implements Listener {
         Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onMotd(ProxyPingEvent event) {
+        if (Triton.get().getConf().isMotd())
+            event.getResponse()
+                    .setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
+                            .parseComponent(Triton.get().getPlayerStorage()
+                                    .getLanguageFromIp(event.getConnection().getAddress().getAddress().getHostAddress())
+                                    .getName(), Triton.get().getConf()
+                                    .getMotdSyntax(), event.getResponse().getDescriptionComponent())));
+    }
+
+    private BaseComponent componentArrayToSingle(BaseComponent... c) {
+        if (c.length == 1) return c[0];
+        BaseComponent result = new TextComponent("");
+        result.setExtra(Arrays.asList(c));
+        return result;
+    }
 }

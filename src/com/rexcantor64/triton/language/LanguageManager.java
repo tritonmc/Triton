@@ -30,7 +30,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return matchPattern(input, p.getLang().getName());
     }
 
-    private String matchPattern(String input, String language) {
+    String matchPattern(String input, String language) {
         for (Map.Entry<Pattern, LanguageText> entry : matches.entrySet()) {
             String replacement = entry.getValue().getMessageRegex(language);
             if (replacement == null) replacement = entry.getValue().getMessageRegex(mainLanguage.getName());
