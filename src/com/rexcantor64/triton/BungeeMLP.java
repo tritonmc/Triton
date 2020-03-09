@@ -15,6 +15,7 @@ import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.terminal.BungeeTerminalFormatter;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
 import net.md_5.bungee.BungeeCord;
@@ -22,12 +23,14 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import net.md_5.bungee.log.ColouredWriter;
 import net.md_5.bungee.netty.PipelineUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 public class BungeeMLP extends Triton {
@@ -60,6 +63,10 @@ public class BungeeMLP extends Triton {
 
         sendConfigToEveryone();
 
+        if (getConf().isTerminal())
+            for (Handler h : BungeeCord.getInstance().getLogger().getHandlers())
+                if (h instanceof ColouredWriter)
+                    h.setFormatter(new BungeeTerminalFormatter());
     }
 
     @Override

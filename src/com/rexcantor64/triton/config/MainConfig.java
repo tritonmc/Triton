@@ -53,6 +53,7 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax signsSyntax;
     private boolean bossbars;
     private FeatureSyntax bossbarSyntax;
+    private boolean terminal;
 
     public MainConfig(Triton main) {
         this.main = main;
@@ -178,6 +179,10 @@ public class MainConfig implements TritonConfig {
         return bossbars;
     }
 
+    public boolean isTerminal() {
+        return terminal;
+    }
+
     public boolean isDebug() {
         return debug;
     }
@@ -268,6 +273,7 @@ public class MainConfig implements TritonConfig {
 
     private void setupLanguageCreation(Configuration section) {
         disabledLine = section.getString("disabled-line", "");
+        terminal = section.getBoolean("terminal", false);
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);

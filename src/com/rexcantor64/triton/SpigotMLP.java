@@ -17,10 +17,13 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.terminal.SpigotTerminalFormatter;
+import com.rexcantor64.triton.terminal.TranslatablePrintStream;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import org.bukkit.Bukkit;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 public class SpigotMLP extends Triton {
 
@@ -61,6 +64,10 @@ public class SpigotMLP extends Triton {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
             new TritonPlaceholderHook(this).register();
 
+        if (getConf().isTerminal()) {
+            System.setOut(new TranslatablePrintStream(System.out));
+            Logger.getLogger("Minecraft").getParent().getHandlers()[0].setFormatter(new SpigotTerminalFormatter());
+        }
     }
 
     @Override
