@@ -642,6 +642,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             Triton.get().logDebugWarning("Language Player is null on packet sending");
             return;
         }
+        if (packet.getPacketType() == PacketType.Login.Server.SUCCESS)
+            languagePlayer.setInterceptor(this);
         if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
             handleChat(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.TITLE && main.getConf().isTitles()) {
@@ -998,6 +1000,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public ListeningWhitelist getSendingWhitelist() {
         Collection<PacketType> types = new ArrayList<>();
+        types.add(PacketType.Login.Server.SUCCESS);
         types.add(PacketType.Play.Server.CHAT);
         types.add(PacketType.Play.Server.TITLE);
         types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
