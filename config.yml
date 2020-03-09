@@ -61,6 +61,19 @@ bungeecord: false
 # If you've enabled "bungeecord" above, there is no need to put your token here. You just need it on your BungeeCord config.
 twin-token: ""
 
+# Enable this to use a MySQL/MariaDB database to store player's languages.
+# The tables will be created automatically for you.
+# NOTE: translations are still saved locally, no matter what.
+# This is ignored when "bungeecord" is enabled above.
+database:
+  enabled: false
+  host: "localhost"
+  port: 3306
+  database: "triton"
+  username: "root"
+  password: ""
+  table-prefix: "triton_"
+
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.

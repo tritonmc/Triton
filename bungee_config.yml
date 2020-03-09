@@ -58,6 +58,18 @@ config-auto-refresh-interval: -1
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
 twin-token: ""
 
+# Enable this to use a MySQL/MariaDB database to store player's languages.
+# The tables will be created automatically for you.
+# NOTE: translations are still saved locally, no matter what.
+database:
+  enabled: false
+  host: "localhost"
+  port: 3306
+  database: "triton"
+  username: "root"
+  password: ""
+  table-prefix: "triton_"
+
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.

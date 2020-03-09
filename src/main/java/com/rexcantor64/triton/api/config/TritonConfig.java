@@ -147,6 +147,15 @@ public interface TritonConfig {
     boolean isBossbars();
 
     /**
+     * This only returns whether database storage is enabled or not. It is not possible to get the MySQL credentials
+     * from the API, due to security reasons.
+     *
+     * @return The value of "database.enabled" in the config.
+     * @since 2.6.0
+     */
+    boolean isMysql();
+
+    /**
      * @return The value of "language-creation.motd.enabled" in the config.
      * @since 2.6.0
      */
