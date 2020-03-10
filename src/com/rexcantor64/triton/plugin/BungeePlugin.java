@@ -2,12 +2,11 @@ package com.rexcantor64.triton.plugin;
 
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.terminal.BungeeTerminalManager;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.log.ColouredWriter;
-import net.md_5.bungee.log.ConciseFormatter;
 
-import java.util.logging.Handler;
+import java.util.logging.Level;
 
 public class BungeePlugin extends Plugin implements PluginLoader {
 
@@ -19,10 +18,14 @@ public class BungeePlugin extends Plugin implements PluginLoader {
     @Override
     public void onDisable() {
         // Set the formatter back to default
-        if (Triton.get().getConf().isTerminal())
-            for (Handler h : BungeeCord.getInstance().getLogger().getHandlers())
-                if (h instanceof ColouredWriter)
-                    h.setFormatter(new ConciseFormatter());
+        try {
+            if (Triton.get().getConf().isTerminal())
+                BungeeTerminalManager.uninjectTerminalFormatter();
+        } catch (NoClassDefFoundError e) {
+            getLogger().log(Level.SEVERE, "Failed to uninject terminal translations. It's a known issue that forked " +
+                    "BungeeCord servers might" +
+                    " not work correctly. To hide this message, disable terminal translation on config.");
+        }
     }
 
     @Override
