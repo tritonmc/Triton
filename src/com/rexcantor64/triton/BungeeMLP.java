@@ -64,7 +64,7 @@ public class BungeeMLP extends Triton {
         try {
             if (getConf().isTerminal())
                 BungeeTerminalManager.injectTerminalFormatter();
-        } catch (NoClassDefFoundError e) {
+        } catch (Error | Exception e) {
             logError("Failed to inject terminal translations. It's a known issue that forked BungeeCord servers might" +
                     " not work correctly. To hide this message, disable terminal translation on config.");
         }

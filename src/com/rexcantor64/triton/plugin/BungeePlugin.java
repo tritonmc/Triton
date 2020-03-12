@@ -21,7 +21,7 @@ public class BungeePlugin extends Plugin implements PluginLoader {
         try {
             if (Triton.get().getConf().isTerminal())
                 BungeeTerminalManager.uninjectTerminalFormatter();
-        } catch (NoClassDefFoundError e) {
+        } catch (Error | Exception e) {
             getLogger().log(Level.SEVERE, "Failed to uninject terminal translations. It's a known issue that forked " +
                     "BungeeCord servers might" +
                     " not work correctly. To hide this message, disable terminal translation on config.");
