@@ -18,7 +18,8 @@ public abstract class LanguageItem {
     public static LanguageItem fromJSON(JSONObject obj, boolean defaultUniversal, boolean defaultBlacklist,
                                         JSONArray defaultServers) {
         if (obj == null) return null;
-        if (obj.optBoolean("archived", false)) return null;
+        if (obj.optBoolean("archived", false) || (obj.optJSONObject("_twin") != null && obj.optJSONObject("_twin")
+                .optBoolean("archived", false))) return null;
         LanguageItemType type = LanguageItemType.getType(obj.optString("type", ""));
         if (type == null) return null;
         String key = obj.optString("key");
