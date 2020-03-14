@@ -118,7 +118,7 @@ public class AdvancedComponent {
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
-                    ChatColor previousColor = component.getColor();
+                    ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
                     list.add(component);
                     component = new TextComponent("");
                     component.setColor(previousColor);
