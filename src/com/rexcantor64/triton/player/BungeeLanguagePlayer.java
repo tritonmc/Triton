@@ -91,7 +91,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         out.writeByte(1);
         out.writeUTF(uuid.toString());
         out.writeUTF(language.getName());
-        getParent().getServer().sendData("triton:main", out.toByteArray());
+        if (getParent() != null)
+            getParent().getServer().sendData("triton:main", out.toByteArray());
         save();
         refreshAll();
         executeCommands(null);

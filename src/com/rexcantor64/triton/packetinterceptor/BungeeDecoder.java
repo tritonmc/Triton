@@ -19,11 +19,17 @@ public class BungeeDecoder extends MessageToMessageDecoder<PacketWrapper> {
 
     @Override
     protected void decode(ChannelHandlerContext chx, PacketWrapper wrapper, List<Object> out) throws Exception {
-        if (wrapper.packet instanceof ClientSettings) {
-            ClientSettings packet = (ClientSettings) wrapper.packet;
-            if (lp.isWaitingForClientLocale())
-                lp.setLang(Triton.get().getLanguageManager().getLanguageByLocale(packet.getLocale(), true));
+        try {
+            if (wrapper.packet instanceof ClientSettings) {
+                ClientSettings packet = (ClientSettings) wrapper.packet;
+                if (lp.isWaitingForClientLocale())
+                    lp.setLang(Triton.get().getLanguageManager().getLanguageByLocale(packet.getLocale(), true));
+            }
+            out.add(wrapper);
+        } catch (NullPointerException e) {
+            Triton.get().logError("Failed to fetch a player's locale!");
+            if (Triton.get().getConf().isDebug())
+                e.printStackTrace();
         }
-        out.add(wrapper);
     }
 }
