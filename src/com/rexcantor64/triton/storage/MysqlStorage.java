@@ -16,8 +16,6 @@ public class MysqlStorage implements PlayerStorage {
     private String password;
     private String tablePrefix;
 
-    private Connection connection;
-
     private IpCache ipCache;
 
     public MysqlStorage(String host, int port, String database, String user, String password, String tablePrefix) {
@@ -31,32 +29,22 @@ public class MysqlStorage implements PlayerStorage {
         this.ipCache = new IpCache();
     }
 
-    private void openConnection() throws SQLException, ClassNotFoundException {
-        if (connection != null && !connection.isClosed()) {
-            return;
-        }
-
+    private Connection openConnection() throws SQLException, ClassNotFoundException {
         synchronized (this) {
-            if (connection != null && !connection.isClosed()) {
-                return;
-            }
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager
+            return DriverManager
                     .getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL" +
-                                    "=false", this.user,
-                            this.password);
+                            "=false", this.user, this.password);
         }
     }
 
     public boolean setup() {
-        try {
-            openConnection();
+        try (Connection connection = openConnection()) {
             Statement stmt = connection.createStatement();
             stmt.execute("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "player_data` ( `key` VARCHAR(39) NOT NULL , " +
                     "`value` " +
                     "VARCHAR(100) NOT NULL, PRIMARY KEY (`key`) );");
             stmt.close();
-            connection.close();
             return true;
         } catch (SQLException e) {
             Triton.get().logError("Error connecting to database: %1", e.getMessage());
@@ -90,10 +78,9 @@ public class MysqlStorage implements PlayerStorage {
     @Override
     public void setLanguage(UUID uuid, String ip, Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
-        try {
-            if (uuid == null && ip == null) return;
-            Triton.get().logDebug("Saving language for %1...", entity);
-            openConnection();
+        if (uuid == null && ip == null) return;
+        Triton.get().logDebug("Saving language for %1...", entity);
+        try (Connection connection = openConnection()) {
             PreparedStatement stmt = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "player_data` (`key`, `value`) VALUES (?, ?) ON" +
                             " DUPLICATE KEY UPDATE value=VALUES(value)");
@@ -112,18 +99,12 @@ public class MysqlStorage implements PlayerStorage {
             e.printStackTrace();
             Triton.get().logError("Failed to save language for %1! Could not insert into database: %2", entity, e
                     .getMessage());
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException ignored) {
-            }
         }
     }
 
     private String getValueFromStorage(String key) {
         String result = null;
-        try {
-            openConnection();
+        try (Connection connection = openConnection()) {
             PreparedStatement stmt = connection
                     .prepareStatement("SELECT `value` FROM `" + tablePrefix + "player_data` WHERE `key`=?");
             stmt.setString(1, key);
@@ -134,11 +115,6 @@ public class MysqlStorage implements PlayerStorage {
             stmt.close();
         } catch (SQLException | ClassNotFoundException e) {
             Triton.get().logError("Failed to get value from the database: %1", e.getMessage());
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException ignored) {
-            }
         }
         return result;
     }
