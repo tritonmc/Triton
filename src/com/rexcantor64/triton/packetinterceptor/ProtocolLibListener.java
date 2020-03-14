@@ -644,7 +644,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (packet.getPacketType() == PacketType.Login.Server.SUCCESS)
             languagePlayer.setInterceptor(this);
-        if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
+        else if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
             handleChat(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.TITLE && main.getConf().isTitles()) {
             handleTitle(packet, languagePlayer);
@@ -1023,7 +1023,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         types.add(PacketType.Play.Server.WINDOW_ITEMS);
         types.add(PacketType.Play.Server.SET_SLOT);
-        types.add(PacketType.Login.Server.DISCONNECT);
         if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
         if (getMCVersion() >= 14) types.add(PacketType.Play.Server.OPEN_WINDOW_MERCHANT);
         return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).highest().build();
