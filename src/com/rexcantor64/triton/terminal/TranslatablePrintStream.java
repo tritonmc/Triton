@@ -24,10 +24,12 @@ public class TranslatablePrintStream extends PrintStream {
     }
 
     private String translate(String input) {
-        String result = Triton.get().getLanguageParser()
-                .replaceLanguages(input, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                        .get().getConf().getChatSyntax());
-        if (result != null) return result;
+        if (Triton.get().getLanguageManager().getMainLanguage() != null) {
+            String result = Triton.get().getLanguageParser()
+                    .replaceLanguages(input, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
+                            .get().getConf().getChatSyntax());
+            if (result != null) return result;
+        }
         return input;
     }
 

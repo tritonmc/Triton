@@ -18,10 +18,12 @@ public class SpigotTerminalFormatter extends SimpleFormatter {
     }
 
     private String handleString(String superResult) {
-        String result = Triton.get().getLanguageParser()
-                .replaceLanguages(superResult, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                        .get().getConf().getChatSyntax());
-        if (result != null) return result;
+        if (Triton.get().getLanguageManager().getMainLanguage() != null) {
+            String result = Triton.get().getLanguageParser()
+                    .replaceLanguages(superResult, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
+                            .get().getConf().getChatSyntax());
+            if (result != null) return result;
+        }
         return superResult;
     }
 }

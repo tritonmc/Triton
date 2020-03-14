@@ -10,10 +10,12 @@ public class BungeeTerminalFormatter extends ConciseFormatter {
     @Override
     public String format(LogRecord record) {
         String superResult = super.format(record);
-        String result = Triton.get().getLanguageParser()
-                .replaceLanguages(superResult, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                        .get().getConf().getChatSyntax());
-        if (result != null) return result;
+        if (Triton.get().getLanguageManager().getMainLanguage() != null) {
+            String result = Triton.get().getLanguageParser()
+                    .replaceLanguages(superResult, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
+                            .get().getConf().getChatSyntax());
+            if (result != null) return result;
+        }
         return superResult;
     }
 }
