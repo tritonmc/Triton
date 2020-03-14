@@ -113,7 +113,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private void refreshScoreboard() {
         if (!Triton.get().getConf().isScoreboards())
             return;
-        interceptor.refreshScoreboard(this);
+        if (interceptor != null)
+            interceptor.refreshScoreboard(this);
     }
 
     private void refreshEntities() {
