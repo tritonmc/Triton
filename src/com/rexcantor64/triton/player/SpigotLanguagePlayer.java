@@ -146,7 +146,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                 Triton.get().getPlayerStorage()
                         .setLanguage(null, toBukkit().getAddress().getAddress().getHostAddress(), lang);
             if (lang != null)
-                refreshAll();
+                Bukkit.getScheduler().runTask(Triton.get().getLoader().asSpigot(), this::refreshAll);
             if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
                 executeCommands();
         });
