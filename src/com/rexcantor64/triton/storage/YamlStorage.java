@@ -11,6 +11,12 @@ import java.util.UUID;
 
 public class YamlStorage implements PlayerStorage {
 
+    private Configuration configuration;
+
+    public YamlStorage() {
+        configuration = Triton.get().loadYAML("players", "players");
+    }
+
     @Override
     public Language getLanguageFromIp(String ip) {
         String lang = getValueFromStorage(ip.replace(".", "-"));
@@ -33,14 +39,20 @@ public class YamlStorage implements PlayerStorage {
         try {
             if (uuid == null && ip == null) return;
             Triton.get().logDebug("Saving language for %1...", entity);
-            Configuration config = Triton.get().loadYAML("players", "players");
             if (uuid != null)
-                config.set(uuid.toString(), newLanguage.getName());
+                configuration.set(uuid.toString(), newLanguage.getName());
             if (ip != null)
-                config.set(ip.replace(".", "-"), newLanguage.getName());
-            ConfigurationProvider.getProvider(com.rexcantor64.triton.config.interfaces.YamlConfiguration.class)
-                    .save(config,
-                            new File(Triton.get().getDataFolder(), "players.yml"));
+                configuration.set(ip.replace(".", "-"), newLanguage.getName());
+            Triton.get().runSync(() -> {
+                try {
+                    ConfigurationProvider.getProvider(com.rexcantor64.triton.config.interfaces.YamlConfiguration.class)
+                            .save(configuration,
+                                    new File(Triton.get().getDataFolder(), "players.yml"));
+                } catch (Exception e) {
+                    Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
+                            .getMessage());
+                }
+            });
             Triton.get().logDebug("Saved!");
         } catch (Exception e) {
             Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
@@ -49,8 +61,7 @@ public class YamlStorage implements PlayerStorage {
     }
 
     private String getValueFromStorage(String key) {
-        Configuration config = Triton.get().loadYAML("players", "players");
-        return config.getString(key, null);
+        return configuration.getString(key, null);
     }
 
 }

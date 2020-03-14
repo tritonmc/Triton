@@ -119,6 +119,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     protected abstract void startConfigRefreshTask();
 
+    public abstract void runSync(Runnable runnable);
+
     public String getMessage(String code, String def, Object... args) {
         String s = ChatColor.translateAlternateColorCodes('&',
                 messagesConfig.getString(code, def));

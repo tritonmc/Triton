@@ -235,4 +235,8 @@ public class BungeeMLP extends Triton {
         }
     }
 
+    @Override
+    public void runSync(Runnable runnable) {
+        runnable.run();
+    }
 }

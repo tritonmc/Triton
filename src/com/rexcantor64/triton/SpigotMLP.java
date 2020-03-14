@@ -112,4 +112,9 @@ public class SpigotMLP extends Triton {
     public String getVersion() {
         return loader.asSpigot().getDescription().getVersion();
     }
+
+    @Override
+    public void runSync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(loader.asSpigot(), runnable);
+    }
 }
