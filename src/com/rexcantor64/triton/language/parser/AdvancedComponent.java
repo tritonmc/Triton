@@ -153,13 +153,12 @@ public class AdvancedComponent {
                     ComponentUtils.copyFormatting(previousComponent, component);
                 }
                 String uuid = text.substring(i + 2, i + 2 + 36);
+                int actionCode = Integer.parseInt(Character.toString(text.charAt(i + 1)));
                 if (c == '\uE400') {
-                    ClickEvent.Action action = ComponentUtils
-                            .decodeClickAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
+                    ClickEvent.Action action = ComponentUtils.decodeClickAction(actionCode);
                     component.setClickEvent(new ClickEvent(action, this.getComponent(uuid)));
                 } else { // c == '\uE500'
-                    HoverEvent.Action action = ComponentUtils
-                            .decodeHoverAction(Integer.parseInt(Character.toString(text.charAt(i + 1))));
+                    HoverEvent.Action action = ComponentUtils.decodeHoverAction(actionCode);
                     component.setHoverEvent(new HoverEvent(action, TextComponent
                             .fromLegacyText(this.getComponent(uuid))));
                 }
@@ -173,7 +172,9 @@ public class AdvancedComponent {
                     content.append(c1);
                     i++;
                 }
-                component.setExtra(toBaseComponent(content.toString()));
+                List<BaseComponent> extra = toBaseComponent(content.toString());
+                if (extra.size() > 0)
+                    component.setExtra(extra);
                 BaseComponent previousComponent = component;
                 list.add(component);
                 component = new TextComponent("");

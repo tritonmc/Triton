@@ -3,7 +3,6 @@ package com.rexcantor64.triton.packetinterceptor;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
-import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -71,7 +70,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 Triton.get().getConf().getChatSyntax() : Triton.get().getConf().getActionbarSyntax(), text);
         if (text == null)
             return false;
-        p.setMessage(ComponentSerializer.toString(ComponentUtils.removeEmptyExtras(text)));
+        p.setMessage(ComponentSerializer.toString(text));
         return true;
     }
 
