@@ -56,6 +56,7 @@ public class MainConfig implements TritonConfig {
     private boolean motd;
     private FeatureSyntax motdSyntax;
     private boolean terminal;
+    private boolean terminalAnsi;
 
     private boolean mysql = false;
     private String mysqlHost;
@@ -198,6 +199,10 @@ public class MainConfig implements TritonConfig {
         return terminal;
     }
 
+    public boolean isTerminalAnsi() {
+        return terminalAnsi;
+    }
+
     public boolean isDebug() {
         return debug;
     }
@@ -331,6 +336,7 @@ public class MainConfig implements TritonConfig {
     private void setupLanguageCreation(Configuration section) {
         disabledLine = section.getString("disabled-line", "");
         terminal = section.getBoolean("terminal", false);
+        terminalAnsi = section.getBoolean("terminalAnsi", true);
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);

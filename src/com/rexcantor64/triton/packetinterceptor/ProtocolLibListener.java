@@ -98,12 +98,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (msg != null) {
                 BaseComponent[] result = main.getLanguageParser()
                         .parseComponent(languagePlayer, main.getConf()
-                                .getChatSyntax(), net.md_5.bungee.chat.ComponentSerializer.parse(msg.getJson()));
+                                .getChatSyntax(), ComponentSerializer.parse(msg.getJson()));
                 if (result == null) {
                     packet.setCancelled(true);
                     return;
                 }
-                msg.setJson(net.md_5.bungee.chat.ComponentSerializer.toString(result));
+                msg.setJson(ComponentSerializer.toString(result));
                 packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
