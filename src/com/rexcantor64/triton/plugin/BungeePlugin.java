@@ -3,6 +3,7 @@ package com.rexcantor64.triton.plugin;
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.terminal.BungeeTerminalManager;
+import com.rexcantor64.triton.terminal.Log4jInjector;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -22,9 +23,15 @@ public class BungeePlugin extends Plugin implements PluginLoader {
             if (Triton.get().getConf().isTerminal())
                 BungeeTerminalManager.uninjectTerminalFormatter();
         } catch (Error | Exception e) {
-            getLogger().log(Level.SEVERE, "Failed to uninject terminal translations. It's a known issue that forked " +
-                    "BungeeCord servers might" +
-                    " not work correctly. To hide this message, disable terminal translation on config.");
+            try {
+                if (Triton.get().getConf().isTerminal())
+                    Log4jInjector.uninjectAppender();
+            } catch (Error | Exception ignored) {
+                getLogger()
+                        .log(Level.SEVERE, "Failed to uninject terminal translations. Some forked BungeeCord servers " +
+                                "might not work correctly. To hide this message, disable terminal translation on " +
+                                "config.");
+            }
         }
     }
 

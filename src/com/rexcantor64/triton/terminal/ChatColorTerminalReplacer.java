@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.terminal;
 
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.fusesource.jansi.Ansi;
 
 import java.util.EnumMap;

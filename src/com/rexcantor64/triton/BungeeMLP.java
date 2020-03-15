@@ -16,6 +16,7 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.terminal.BungeeTerminalManager;
+import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
 import net.md_5.bungee.BungeeCord;
@@ -65,8 +66,13 @@ public class BungeeMLP extends Triton {
             if (getConf().isTerminal())
                 BungeeTerminalManager.injectTerminalFormatter();
         } catch (Error | Exception e) {
-            logError("Failed to inject terminal translations. It's a known issue that forked BungeeCord servers might" +
-                    " not work correctly. To hide this message, disable terminal translation on config.");
+            try {
+                if (getConf().isTerminal())
+                    Log4jInjector.injectAppender();
+            } catch (Error | Exception ignored) {
+                logError("Failed to inject terminal translations. Some forked BungeeCord servers might not work " +
+                        "correctly. To hide this message, disable terminal translation on config.");
+            }
         }
     }
 

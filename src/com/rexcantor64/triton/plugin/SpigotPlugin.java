@@ -2,9 +2,7 @@ package com.rexcantor64.triton.plugin;
 
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.config.Configuration;
+import com.rexcantor64.triton.terminal.Log4jInjector;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -19,14 +17,8 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
 
     @Override
     public void onDisable() {
-        if (Triton.get().getConf().isTerminal()) {
-            Logger logger = (Logger) LogManager.getRootLogger();
-            Configuration config = logger.getContext().getConfiguration();
-            if (logger.getAppenders().containsKey("TritonTerminalTranslation")) {
-                logger.removeAppender(logger.getAppenders().get("TritonTerminalTranslation"));
-                logger.addAppender(config.getAppenders().get("TerminalConsole"));
-            }
-        }
+        if (Triton.get().getConf().isTerminal())
+            Log4jInjector.uninjectAppender();
     }
 
     @Override

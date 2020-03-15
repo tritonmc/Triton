@@ -17,14 +17,8 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import com.rexcantor64.triton.terminal.TritonTerminalRewrite;
-import com.rexcantor64.triton.utils.AppenderRefFactory;
+import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.appender.rewrite.RewriteAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.bukkit.Bukkit;
 
 import java.io.File;
@@ -68,25 +62,8 @@ public class SpigotMLP extends Triton {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
             new TritonPlaceholderHook(this).register();
 
-        if (getConf().isTerminal()) {
-            Logger logger = (Logger) LogManager.getRootLogger();
-            Configuration config = logger.getContext().getConfiguration();
-
-            AppenderRef appenderRef = AppenderRefFactory.getAppenderRef("TerminalConsole");
-
-            if (appenderRef != null) {
-                RewriteAppender appender = RewriteAppender.createAppender("TritonTerminalTranslation",
-                        "false",
-                        new AppenderRef[]{appenderRef},
-                        config,
-                        TritonTerminalRewrite.createPolicy(),
-                        null);
-                appender.start();
-                logger.addAppender(appender);
-                logger.removeAppender(logger.getAppenders().get("TerminalConsole"));
-            }
-
-        }
+        if (getConf().isTerminal())
+            Log4jInjector.injectAppender();
     }
 
     @Override
