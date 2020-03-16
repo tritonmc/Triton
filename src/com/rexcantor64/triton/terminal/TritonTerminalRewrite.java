@@ -15,7 +15,10 @@ public final class TritonTerminalRewrite implements RewritePolicy {
     ChatColorTerminalReplacer chatColorTerminalReplacer;
 
     public TritonTerminalRewrite() {
-        this.chatColorTerminalReplacer = new ChatColorTerminalReplacer();
+        try {
+            this.chatColorTerminalReplacer = new ChatColorTerminalReplacer();
+        } catch (Exception | Error ignored) {
+        }
     }
 
     @PluginFactory
@@ -32,7 +35,7 @@ public final class TritonTerminalRewrite implements RewritePolicy {
                         .getChatSyntax());
         if (translated == null)
             return event;
-        if (Triton.get().getConf().isTerminalAnsi())
+        if (chatColorTerminalReplacer != null && Triton.get().getConf().isTerminalAnsi())
             translated = chatColorTerminalReplacer.parseMessage(translated);
 
         try {
