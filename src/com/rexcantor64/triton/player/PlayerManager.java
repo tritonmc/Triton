@@ -26,6 +26,11 @@ public class PlayerManager implements com.rexcantor64.triton.api.players.PlayerM
         players.remove(p);
     }
 
+    public SpigotLanguagePlayer registerSpigot(UUID uuid, SpigotLanguagePlayer slp) {
+        players.put(uuid, slp);
+        return slp;
+    }
+
     public BungeeLanguagePlayer registerBungee(UUID uuid, BungeeLanguagePlayer blp) {
         players.put(uuid, blp);
         return blp;

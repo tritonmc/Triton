@@ -115,7 +115,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     Triton.get().getLanguageManager().setup();
                     Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
                         for (LanguagePlayer lp : Triton.get().getPlayerManager().getAll())
-                            ((SpigotLanguagePlayer) lp).refreshAll();
+                            lp.refreshAll();
                     }, 10L);
                 }
             } else if (action == 1) {
