@@ -7,6 +7,10 @@ import java.util.logging.LogRecord;
 
 public class BungeeTerminalFormatter extends ConciseFormatter {
 
+    public BungeeTerminalFormatter() {
+        super(true);
+    }
+
     @Override
     public String format(LogRecord record) {
         String superResult = super.format(record);
