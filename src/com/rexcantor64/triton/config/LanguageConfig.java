@@ -135,7 +135,7 @@ public class LanguageConfig {
                         obj.remove("universal");
                     if (obj.has("blacklist") && metadata.optBoolean("blacklist", true) == obj.optBoolean("blacklist"))
                         obj.remove("blacklist");
-                    if (obj.has("servers") && metadata.optJSONArray("servers").equals(obj.optJSONArray("servers")))
+                    if (obj.has("servers") && obj.optJSONArray("servers").equals(metadata.optJSONArray("servers")))
                         obj.remove("servers");
                 }
                 obj.remove("fileName");
