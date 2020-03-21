@@ -1132,27 +1132,29 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             item.setItemMeta(meta);
             if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
                 compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
-                NbtList<String> pages = compound.getList("pages");
-                Collection<NbtBase<String>> pagesCollection = pages.asCollection();
-                List<String> newPagesCollection = new ArrayList<>();
-                for (NbtBase<String> page : pagesCollection) {
-                    if (page.getValue().startsWith("\"")) {
-                        String result = translate(page.getValue()
-                                .substring(1, page.getValue().length() - 1), languagePlayer, main.getConf()
-                                .getItemsSyntax());
-                        if (result != null)
-                            newPagesCollection.add(
-                                    ComponentSerializer.toString(
-                                            TextComponent.fromLegacyText(result)));
-                    } else {
-                        BaseComponent[] result = main.getLanguageParser()
-                                .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
-                                        .parse(page.getValue()));
-                        if (result != null)
-                            newPagesCollection.add(ComponentSerializer.toString(result));
+                if (compound.containsKey("pages")) {
+                    NbtList<String> pages = compound.getList("pages");
+                    Collection<NbtBase<String>> pagesCollection = pages.asCollection();
+                    List<String> newPagesCollection = new ArrayList<>();
+                    for (NbtBase<String> page : pagesCollection) {
+                        if (page.getValue().startsWith("\"")) {
+                            String result = translate(page.getValue()
+                                    .substring(1, page.getValue().length() - 1), languagePlayer, main.getConf()
+                                    .getItemsSyntax());
+                            if (result != null)
+                                newPagesCollection.add(
+                                        ComponentSerializer.toString(
+                                                TextComponent.fromLegacyText(result)));
+                        } else {
+                            BaseComponent[] result = main.getLanguageParser()
+                                    .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                            .parse(page.getValue()));
+                            if (result != null)
+                                newPagesCollection.add(ComponentSerializer.toString(result));
+                        }
                     }
+                    compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
                 }
-                compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
             }
         }
         return item;
