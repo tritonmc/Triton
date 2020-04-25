@@ -41,7 +41,7 @@ public abstract class LanguageItem {
                         obj.optBoolean("blacklist", defaultBlacklist), servers);
             case SIGN:
                 JSONArray loc = obj.optJSONArray("locations");
-                if (loc == null) return null;
+                if (loc == null) loc = new JSONArray();
                 JSONObject signLanguages = obj.optJSONObject("lines");
                 if (signLanguages == null) return null;
                 HashMap<String, String[]> signMap = new HashMap<>();
