@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 
@@ -29,6 +30,15 @@ public class BukkitListener implements Listener {
         SpigotLanguagePlayer lp = Triton.get().getPlayerManager()
                 .registerSpigot(e.getUniqueId(), new SpigotLanguagePlayer(e.getUniqueId()));
         if (e.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
+            e.setKickMessage(Triton.get().getLanguageParser()
+                    .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onLoginSync(PlayerLoginEvent e) {
+        SpigotLanguagePlayer lp = Triton.get().getPlayerManager()
+                .registerSpigot(e.getPlayer().getUniqueId(), new SpigotLanguagePlayer(e.getPlayer().getUniqueId()));
+        if (e.getResult() != PlayerLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
     }
