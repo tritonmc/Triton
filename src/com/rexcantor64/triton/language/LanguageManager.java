@@ -45,7 +45,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return getText(p.getLang().getName(), code, args);
     }
 
-    String getText(String language, String code, Object... args) {
+    public String getText(String language, String code, Object... args) {
         for (LanguageItem item : items.get(LanguageItem.LanguageItemType.TEXT)) {
             LanguageText text = (LanguageText) item;
             if (!text.getKey().equals(code)) continue;
