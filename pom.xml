@@ -6,16 +6,16 @@
 
     <groupId>com.rexcantor64.triton</groupId>
     <artifactId>api</artifactId>
-    <version>2.6.0</version>
+    <version>2.7.0</version>
     <properties>
         <build.number/>
         <plugin.version>${project.version}-${build.number}</plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <scm>
-        <connection>scm:git:git@github.com:Rexcantor/Triton.git</connection>
-        <developerConnection>scm:git:git@github.com:Rexcantor/Triton.git</developerConnection>
-        <url>https://github.com/Rexcantor/Triton</url>
+        <connection>scm:git:git@github.com:tritonmc/Triton.git</connection>
+        <developerConnection>scm:git:git@github.com:tritonmc/Triton.git</developerConnection>
+        <url>https://github.com/tritonmc/Triton</url>
         <tag>HEAD</tag>
     </scm>
     <repositories>

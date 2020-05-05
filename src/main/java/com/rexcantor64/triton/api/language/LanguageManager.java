@@ -36,6 +36,18 @@ public interface LanguageManager {
     String getText(LanguagePlayer player, String code, Object... args);
 
     /**
+     * Get a message from its code in a player's language.
+     *
+     * @param language The name of the {@link Language Language} to get the message from.
+     * @param code     The code of the message to get.
+     * @param args     (optional) The variables to replace in the message.
+     * @return The message in the player's language. If no message is found with the provided code, a standard 404
+     * message will be returned.
+     * @since 2.7.0
+     */
+    String getText(String language, String code, Object... args);
+
+    /**
      * Get a message from its code in the main language.
      *
      * @param code The code of the message to get.
