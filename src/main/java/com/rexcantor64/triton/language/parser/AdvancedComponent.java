@@ -103,7 +103,7 @@ public class AdvancedComponent {
         TextComponent component = new TextComponent("");
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (c == '§') {
+            if (c == '\u00A7') {
                 i++;
                 if (i >= text.length()) {
                     builder.append(c);

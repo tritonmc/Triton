@@ -4,23 +4,22 @@ import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class NMSUtils {
 
-    public static Object getHandle(@Nonnull Player target) {
+    public static Object getHandle(Player target) {
         return getMethod(target, "getHandle", new Class[0], new Object[0]);
     }
 
-    public static Object getMethod(@Nonnull Object target, @Nonnull String methodName) {
+    public static Object getMethod(Object target, String methodName) {
         return getMethod(target, methodName, new Class[0], new Object[0]);
     }
 
-    public static Object getMethod(@Nonnull Object target, @Nonnull String methodName, @Nonnull Class<?>[] paramTypes,
-                                   @Nonnull Object[] params) {
+    public static Object getMethod(Object target, String methodName, Class<?>[] paramTypes,
+                                   Object[] params) {
         Preconditions.checkNotNull(target, "Target is null");
         Preconditions.checkNotNull(methodName, "Method name is null");
 

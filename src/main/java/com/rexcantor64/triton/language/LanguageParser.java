@@ -225,7 +225,7 @@ public class LanguageParser {
         ScoreboardComponent current = new ScoreboardComponent();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (c == '§' && i + 1 != text.length()) {
+            if (c == '\u00A7' && i + 1 != text.length()) {
                 i++;
                 ChatColor cc = ChatColor.getByChar(text.charAt(i));
                 if (cc == null) continue;

@@ -15,7 +15,7 @@ import java.util.Collections;
 public class ItemStackParser {
 
     public static ItemStack bannerToItemStack(Banner banner, boolean active) {
-        ItemStack is = new ItemStack(Material.BANNER);
+        ItemStack is = new ItemStack(Material.WHITE_BANNER);
         BannerMeta bm = (BannerMeta) is.getItemMeta();
         for (Banner.Layer layer : banner.getLayers())
             bm.addPattern(new Pattern(DyeColor.valueOf(layer.getColor().getColor()), PatternType

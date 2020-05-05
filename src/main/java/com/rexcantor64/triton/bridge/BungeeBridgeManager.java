@@ -8,7 +8,6 @@ import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.LocationUtils;
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Server;
@@ -105,7 +104,7 @@ public class BungeeBridgeManager implements Listener {
     public void onLogin(LoginEvent event) {
         Plugin plugin = Triton.get().getLoader().asBungee();
         event.registerIntent(plugin);
-        BungeeCord.getInstance().getScheduler().runAsync(plugin, () -> {
+        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
                     .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
                             .getUniqueId(), event.getConnection()));
@@ -123,7 +122,7 @@ public class BungeeBridgeManager implements Listener {
     public void onMotd(ProxyPingEvent event) {
         Plugin plugin = Triton.get().getLoader().asBungee();
         event.registerIntent(plugin);
-        BungeeCord.getInstance().getScheduler().runAsync(plugin, () -> {
+        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             if (Triton.get().getConf().isMotd())
                 event.getResponse()
                         .setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()

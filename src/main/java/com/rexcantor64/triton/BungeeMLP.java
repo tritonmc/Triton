@@ -19,7 +19,7 @@ import com.rexcantor64.triton.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
-import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -49,16 +49,16 @@ public class BungeeMLP extends Triton {
         metrics.addCustomChart(new MetricsBungee.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageConfig().getItems().size()));
 
-        BungeeCord.getInstance().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());
-        BungeeCord.getInstance().registerChannel("triton:main");
+        getBungeeCord().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());
+        getBungeeCord().registerChannel("triton:main");
 
-        for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
+        for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
             BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
             injectPipeline(lp, p);
         }
 
-        BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new MainCMD());
-        BungeeCord.getInstance().getPluginManager().registerCommand(loader.asBungee(), new TwinCMD());
+        getBungeeCord().getPluginManager().registerCommand(loader.asBungee(), new MainCMD());
+        getBungeeCord().getPluginManager().registerCommand(loader.asBungee(), new TwinCMD());
 
         sendConfigToEveryone();
 
@@ -86,7 +86,7 @@ public class BungeeMLP extends Triton {
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConf().getConfigAutoRefresh() <= 0) return;
-        configRefreshTask = BungeeCord.getInstance().getScheduler()
+        configRefreshTask = getBungeeCord().getScheduler()
                 .schedule(loader.asBungee(), this::reload, getConf().getConfigAutoRefresh(), TimeUnit.SECONDS);
     }
 
@@ -107,7 +107,7 @@ public class BungeeMLP extends Triton {
             }
 
             // Send language files
-            for (ServerInfo info : BungeeCord.getInstance().getServers().values()) {
+            for (ServerInfo info : getBungeeCord().getServers().values()) {
                 boolean firstSend = true;
                 List<LanguageItem> languageItems = Triton.get().getLanguageConfig().getItems();
                 int size = 0;
@@ -235,7 +235,7 @@ public class BungeeMLP extends Triton {
             channel.pipeline()
                     .addAfter(PipelineUtils.PACKET_ENCODER, "triton-custom-encoder", new BungeeListener(lp));
         } catch (Exception e) {
-            BungeeCord.getInstance().getLogger()
+            getBungeeCord().getLogger()
                     .log(Level.SEVERE, "[BungeePackets] Failed to inject client connection for " + lp.getUUID()
                             .toString());
         }
@@ -248,6 +248,10 @@ public class BungeeMLP extends Triton {
 
     @Override
     public void runAsync(Runnable runnable) {
-        BungeeCord.getInstance().getScheduler().runAsync(loader.asBungee(), runnable);
+        getBungeeCord().getScheduler().runAsync(loader.asBungee(), runnable);
+    }
+
+    public ProxyServer getBungeeCord() {
+        return loader.asBungee().getProxy();
     }
 }

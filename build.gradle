@@ -1,0 +1,118 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
+    id 'net.minecrell.plugin-yml.bungee' version '0.3.0'
+}
+
+String bungeeVersion = project.property("bungeeVersion")
+String spigotVersion = project.property("spigotVersion")
+String pluginDescription = project.property("pluginDescription")
+String pluginWebsite = project.property("pluginWebsite")
+String pluginAuthor = project.property("pluginAuthor")
+String pluginApiVersion = project.property("pluginApiVersion")
+String pluginName = project.property("pluginName")
+
+group 'com.rexcantor64.triton'
+version '3.0.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://repo.dmulloy2.net/nexus/repository/public/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven {
+        name 'CodeMC'
+        url 'https://repo.codemc.org/repository/maven-public'
+    }
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:' + spigotVersion + '-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-api:' + bungeeVersion + '-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-proxy:' + bungeeVersion + '-SNAPSHOT'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:4.5.0'
+    compileOnly 'me.clip:placeholderapi:2.10.6'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.13.2'
+    implementation 'com.github.diogotcorreia:Triton:v2.6.0' // Triton API
+    implementation 'org.bstats:bstats-bukkit:1.7'
+    implementation 'org.bstats:bstats-bungeecord:1.7'
+}
+
+bukkit {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    website = pluginWebsite
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
+    apiVersion = pluginApiVersion
+
+    depend = ['ProtocolLib']
+    softDepend = ['PlaceholderAPI']
+
+    commands {
+        triton {
+            description = 'The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.'
+            aliases = ['mlp', 'ml', 'multilanguage', 'language', 'lang', 'multilanguageplugin']
+        }
+        twin {
+            description = 'Upload and download your config to/from the Triton Web INterface.'
+            aliases = ['tritonweb', 'tweb', 'twebinterface', 'tritonwebinterface']
+            usage = '/twin [code]'
+        }
+    }
+
+    permissions {
+        'triton.getflag' {
+            setDefault('OP')
+        }
+        'triton.setlanguage' {
+            setDefault('TRUE')
+        }
+        'triton.setlanguage.others' {
+            setDefault('OP')
+        }
+        'triton.openselector' {
+            setDefault('TRUE')
+        }
+        'triton.reload' {
+            setDefault('OP')
+        }
+        'triton.help' {
+            setDefault('TRUE')
+        }
+        'triton.sign' {
+            setDefault('OP')
+        }
+        'twin.upload' {
+            setDefault('OP')
+        }
+        'twin.download' {
+            setDefault('OP')
+        }
+    }
+}
+
+bungee {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.BungeePlugin'
+}
+
+shadowJar {
+    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
+}
