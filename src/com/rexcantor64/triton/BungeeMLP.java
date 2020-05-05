@@ -245,4 +245,9 @@ public class BungeeMLP extends Triton {
     public void runSync(Runnable runnable) {
         runnable.run();
     }
+
+    @Override
+    public void runAsync(Runnable runnable) {
+        BungeeCord.getInstance().getScheduler().runAsync(loader.asBungee(), runnable);
+    }
 }

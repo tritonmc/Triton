@@ -17,7 +17,7 @@ public class BungeeTerminalManager {
     public static void uninjectTerminalFormatter() {
         for (Handler h : BungeeCord.getInstance().getLogger().getHandlers())
             if (h instanceof ColouredWriter)
-                h.setFormatter(new ConciseFormatter());
+                h.setFormatter(new ConciseFormatter(true));
     }
 
 }

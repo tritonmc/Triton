@@ -39,21 +39,40 @@ public class YamlStorage implements PlayerStorage {
         try {
             if (uuid == null && ip == null) return;
             Triton.get().logDebug("Saving language for %1...", entity);
-            if (uuid != null)
-                configuration.set(uuid.toString(), newLanguage.getName());
-            if (ip != null)
-                configuration.set(ip.replace(".", "-"), newLanguage.getName());
-            Triton.get().runSync(() -> {
-                try {
-                    ConfigurationProvider.getProvider(com.rexcantor64.triton.config.interfaces.YamlConfiguration.class)
-                            .save(configuration,
-                                    new File(Triton.get().getDataFolder(), "players.yml"));
-                } catch (Exception e) {
-                    Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
-                            .getMessage());
+
+            boolean changed = false;
+            if (uuid != null) {
+                String formattedUuid = uuid.toString();
+                if (!newLanguage.getName().equals(configuration.getString(formattedUuid))) {
+                    configuration.set(uuid.toString(), newLanguage.getName());
+                    changed = true;
                 }
-            });
-            Triton.get().logDebug("Saved!");
+            }
+            if (ip != null) {
+                String formattedIp = ip.replace(".", "-");
+                if (!newLanguage.getName().equals(configuration.getString(formattedIp))) {
+                    configuration.set(formattedIp, newLanguage.getName());
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                Triton.get().runAsync(() -> {
+                    try {
+                        ConfigurationProvider
+                                .getProvider(com.rexcantor64.triton.config.interfaces.YamlConfiguration.class)
+                                .save(configuration,
+                                        new File(Triton.get().getDataFolder(), "players.yml"));
+                    } catch (Exception e) {
+                        Triton.get()
+                                .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
+                                        .getMessage());
+                    }
+                });
+                Triton.get().logDebug("Saved!");
+            } else {
+                Triton.get().logDebug("Skipped saving because there were no changes.");
+            }
         } catch (Exception e) {
             Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
                     .getMessage());
