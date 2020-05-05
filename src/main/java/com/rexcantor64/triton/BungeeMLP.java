@@ -9,7 +9,6 @@ import com.rexcantor64.triton.commands.bungee.TwinCMD;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
-import com.rexcantor64.triton.metrics.MetricsBungee;
 import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
@@ -25,6 +24,7 @@ import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
+import org.bstats.bungeecord.Metrics;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -45,8 +45,8 @@ public class BungeeMLP extends Triton {
         instance = this;
         super.onEnable();
 
-        MetricsBungee metrics = new MetricsBungee(loader.asBungee());
-        metrics.addCustomChart(new MetricsBungee.SingleLineChart("active_placeholders",
+        Metrics metrics = new Metrics(loader.asBungee(), 5607);
+        metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageConfig().getItems().size()));
 
         getBungeeCord().getPluginManager().registerListener(loader.asBungee(), new BungeeBridgeManager());

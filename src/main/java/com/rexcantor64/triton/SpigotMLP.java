@@ -12,13 +12,13 @@ import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.listeners.BukkitListener;
-import com.rexcantor64.triton.metrics.MetricsSpigot;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 
 import java.io.File;
@@ -38,8 +38,8 @@ public class SpigotMLP extends Triton {
         instance = this;
         super.onEnable();
 
-        MetricsSpigot metrics = new MetricsSpigot(loader.asSpigot());
-        metrics.addCustomChart(new MetricsSpigot.SingleLineChart("active_placeholders",
+        Metrics metrics = new Metrics(loader.asSpigot(), 5606);
+        metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageConfig().getItems().size()));
 
         // Setup commands
