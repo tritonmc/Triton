@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+}
+
+group 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-api:1.15-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-proxy:1.15-SNAPSHOT'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:4.5.0'
+    compileOnly 'me.clip:placeholderapi:2.10.6'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.13.2'
+    implementation 'org.bstats:bstats-bukkit:1.7'
+    implementation 'org.bstats:bstats-bungeecord:1.7'
+}
+
+
+shadowJar {
+    getArchiveClassifier().set("core")
+    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
+}
