@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group 'com.rexcantor64.triton.v1_15'
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile project(path: ":core", configuration: "shadow")
+}
+
+task v1_15Jar(type: Jar, dependsOn: shadowJar) {
+    getArchiveBaseName().set(rootProject.name)
+    getArchiveClassifier().set("1.15")
+    from zipTree(shadowJar.getArchiveFile().get())
+}
+
+bukkit {
+    apiVersion = "1.15"
+}

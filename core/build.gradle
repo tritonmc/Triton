@@ -15,7 +15,6 @@ dependencies {
     implementation 'org.bstats:bstats-bungeecord:1.7'
 }
 
-
 shadowJar {
     getArchiveClassifier().set("core")
     relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
