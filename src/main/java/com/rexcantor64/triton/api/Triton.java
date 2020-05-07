@@ -21,6 +21,15 @@ public interface Triton {
     TritonConfig getConf();
 
     /**
+     * Get the {@link TritonConfig config}.
+     * Alias of {@link Triton#getConf()}
+     *
+     * @return The {@link TritonConfig config}.
+     * @since 3.0.0
+     */
+    TritonConfig getConfig();
+
+    /**
      * Get the {@link LanguageManager language manager}.
      *
      * @return The {@link LanguageManager language manager}.
