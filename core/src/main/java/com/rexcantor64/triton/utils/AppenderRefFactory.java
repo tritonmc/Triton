@@ -17,7 +17,7 @@ public class AppenderRefFactory {
                         .getMethod("createAppenderRef", String.class, String.class, Filter.class);
                 return (AppenderRef) method.invoke(null, appender, null, null);
             } catch (Exception | Error ignore) {
-                Triton.get().logError("Failed to inject terminal translations!");
+                Triton.get().getLogger().logError("Failed to inject terminal translations!");
                 return null;
             }
         }

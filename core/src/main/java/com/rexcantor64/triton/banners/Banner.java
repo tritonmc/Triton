@@ -20,18 +20,20 @@ public class Banner {
         }
         for (String s : strings) {
             if (s.length() != 2) {
-                Triton.get()
+                Triton.get().getLogger()
                         .logError("Can't load layer %1 for banner %2 because it has an invalid format!", s, encoded);
                 continue;
             }
             Colors color = Colors.getByCode(s.charAt(0));
             Patterns type = Patterns.getByCode(s.charAt(1));
             if (color == null) {
-                Triton.get().logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
+                Triton.get().getLogger()
+                        .logError("Can't load layer %1 for banner %2 because the color is invalid!", s, encoded);
                 continue;
             }
             if (type == null) {
-                Triton.get().logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
+                Triton.get().getLogger()
+                        .logError("Can't load layer %1 for banner %2 because the pattern is invalid!", s, encoded);
                 continue;
             }
             layers.add(new Layer(color, type));

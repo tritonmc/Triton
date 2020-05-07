@@ -17,6 +17,7 @@ public class JSONUtils {
                 Object target = getFromPath(obj, path);
                 if (target == null) {
                     Triton.get()
+                            .getLogger()
                             .logError("Failed to apply patch to language item: array was given a non-numeric index" +
                                     ".\nPatch: %1\nItem: %2", patch
                                     .toString(), obj.toString());
@@ -30,6 +31,7 @@ public class JSONUtils {
                         ((JSONArray) target).put(pathInt, patch.opt("value"));
                     } catch (NumberFormatException e) {
                         Triton.get()
+                                .getLogger()
                                 .logError("Failed to apply patch to language item: array was given a non-numeric " +
                                         "index.\nPatch: %1\nItem: %2", patch
                                         .toString(), obj.toString());
@@ -41,6 +43,7 @@ public class JSONUtils {
                 Object target = getFromPath(obj, path);
                 if (target == null) {
                     Triton.get()
+                            .getLogger()
                             .logError("Failed to apply patch to language item: array was given a non-numeric index" +
                                     ".\nPatch: %1\nItem: %2", patch
                                     .toString(), obj.toString());
@@ -54,6 +57,7 @@ public class JSONUtils {
                         ((JSONArray) target).remove(pathInt);
                     } catch (NumberFormatException e) {
                         Triton.get()
+                                .getLogger()
                                 .logError("Failed to apply patch to language item: array was given a non-numeric " +
                                         "index.\nPatch: %1\nItem: %2", patch
                                         .toString(), obj.toString());
@@ -62,6 +66,7 @@ public class JSONUtils {
                 }
             } else {
                 Triton.get()
+                        .getLogger()
                         .logError("Failed to apply patch to language item: unknown operation.\nPatch: %1\nItem: %2",
                                 patch
                                         .toString(), obj.toString());

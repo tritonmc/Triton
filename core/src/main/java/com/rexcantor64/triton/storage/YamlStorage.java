@@ -38,7 +38,7 @@ public class YamlStorage implements PlayerStorage {
         String entity = uuid != null ? uuid.toString() : ip;
         try {
             if (uuid == null && ip == null) return;
-            Triton.get().logDebug("Saving language for %1...", entity);
+            Triton.get().getLogger().logDebug("Saving language for %1...", entity);
 
             boolean changed = false;
             if (uuid != null) {
@@ -65,17 +65,19 @@ public class YamlStorage implements PlayerStorage {
                                         new File(Triton.get().getDataFolder(), "players.yml"));
                     } catch (Exception e) {
                         Triton.get()
+                                .getLogger()
                                 .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
                                         .getMessage());
                     }
                 });
-                Triton.get().logDebug("Saved!");
+                Triton.get().getLogger().logDebug("Saved!");
             } else {
-                Triton.get().logDebug("Skipped saving because there were no changes.");
+                Triton.get().getLogger().logDebug("Skipped saving because there were no changes.");
             }
         } catch (Exception e) {
-            Triton.get().logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
-                    .getMessage());
+            Triton.get().getLogger()
+                    .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
+                            .getMessage());
         }
     }
 

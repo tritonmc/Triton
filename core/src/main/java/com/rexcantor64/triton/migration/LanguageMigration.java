@@ -19,12 +19,13 @@ public class LanguageMigration {
         if (!file.exists()) return;
         File translationsFolder = Triton.get().getTranslationsFolder();
         if (translationsFolder.exists()) return;
-        Triton.get().logInfo("[Migration] Starting migration from Triton v1... No files will be deleted!");
+        Triton.get().getLogger().logInfo("[Migration] Starting migration from Triton v1... No files will be deleted!");
         try {
             JSONArray items = new JSONArray(FileUtils.contentsToString(file));
             if (!translationsFolder.mkdir()) {
-                Triton.get().logError("[Migration] Aborting... Failed to create the translations folder. Make sure " +
-                        "the server has enough write permissions.");
+                Triton.get().getLogger()
+                        .logError("[Migration] Aborting... Failed to create the translations folder. Make sure " +
+                                "the server has enough write permissions.");
                 return;
             }
             File defaultFile = new File(translationsFolder, "default.json");
@@ -45,13 +46,15 @@ public class LanguageMigration {
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             }
-            Triton.get().logInfo("[Migration] Finished successfully!");
-            Triton.get().logInfo("[Migration] Feel free to delete languages.json and languages.cache.json!");
+            Triton.get().getLogger().logInfo("[Migration] Finished successfully!");
+            Triton.get().getLogger()
+                    .logInfo("[Migration] Feel free to delete languages.json and languages.cache.json!");
         } catch (JSONException e) {
-            Triton.get().logError("[Migration] Aborting... Failed to load languages.json: bad syntax. %1",
+            Triton.get().getLogger().logError("[Migration] Aborting... Failed to load languages.json: bad syntax. %1",
                     e.getMessage());
         } catch (IOException | SecurityException e) {
-            Triton.get().logError("[Migration] Aborting... Failed to create default.json: " + e.getMessage());
+            Triton.get().getLogger()
+                    .logError("[Migration] Aborting... Failed to create default.json: " + e.getMessage());
         }
     }
 

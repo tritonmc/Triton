@@ -21,6 +21,7 @@ public class LocationUtils {
             JSONObject obj = arr.optJSONObject(i);
             if (obj == null) {
                 Triton.get()
+                        .getLogger()
                         .logWarning("Found invalid location while reading sign! Make sure all locations are a " +
                                 "JSONObject.");
                 continue;

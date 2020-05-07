@@ -80,7 +80,7 @@ public class BungeeBridgeManager implements Listener {
                 Triton.get().reload();
             }
         } catch (Exception e1) {
-            Triton.get().logError("Failed to read plugin message: %1", e1.getMessage());
+            Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());
             if (Triton.get().getConf().isDebug())
                 e1.printStackTrace();
         }

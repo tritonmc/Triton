@@ -100,8 +100,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 languageItems.add(new LanguageSign(key, signLocations, signLines));
                                 break;
                             default:
-                                Triton.get().logDebugWarning("Received invalid type language item type while reading " +
-                                        "from BungeeCord: %1", type);
+                                Triton.get().getLogger()
+                                        .logDebugWarning("Received invalid type language item type while reading " +
+                                                "from BungeeCord: %1", type);
                                 break;
                         }
                     }
@@ -109,7 +110,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
                     else
                         Triton.get().getLanguageConfig().addItems(languageItems).saveToCache();
-                    Triton.get().logDebug("Received config from BungeeCord and parsed it in %1ms!",
+                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
@@ -128,7 +129,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
             }
         } catch (Exception e) {
-            Triton.get().logError("Failed to parse plugin message: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
             if (Triton.get().getConf().isDebug())
                 e.printStackTrace();
         }

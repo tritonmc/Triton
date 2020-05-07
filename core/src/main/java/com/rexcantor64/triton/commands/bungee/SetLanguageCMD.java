@@ -78,7 +78,7 @@ public class SetLanguageCMD implements CommandExecutor {
                 ConfigurationProvider.getProvider(YamlConfiguration.class).save(config,
                         new File(Triton.get().getDataFolder(), "players.yml"));
             } catch (IOException e) {
-                Triton.get().logError("Failed to save players.yml: %1", e.getMessage());
+                Triton.get().getLogger().logError("Failed to save players.yml: %1", e.getMessage());
             }
         }
         if (target == s)

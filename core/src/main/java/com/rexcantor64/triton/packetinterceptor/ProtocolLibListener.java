@@ -634,12 +634,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             languagePlayer =
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
-            Triton.get().logDebugWarning("Failed to translate packet because UUID of the player is unknown (because " +
-                    "the player hasn't joined yet).");
+            Triton.get().getLogger()
+                    .logDebugWarning("Failed to translate packet because UUID of the player is unknown (because " +
+                            "the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().logDebugWarning("Language Player is null on packet sending");
+            Triton.get().getLogger().logDebugWarning("Language Player is null on packet sending");
             return;
         }
         if (packet.getPacketType() == PacketType.Login.Server.SUCCESS)
@@ -714,12 +715,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             languagePlayer =
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
-            Triton.get().logDebugWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
-                    "(because the player hasn't joined yet).");
+            Triton.get().getLogger()
+                    .logDebugWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
+                            "(because the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().logDebugWarning("Language Player is null on packet receiving");
+            Triton.get().getLogger().logDebugWarning("Language Player is null on packet receiving");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
@@ -775,7 +777,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     try {
                         ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                     } catch (InvocationTargetException e) {
-                        main.logError("Failed to send sign update packet: %1", e.getMessage());
+                        main.getLogger().logError("Failed to send sign update packet: %1", e.getMessage());
                     }
                 }
         }
@@ -837,7 +839,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 try {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                 } catch (InvocationTargetException e) {
-                    main.logError("Failed to send entity update packet: %1", e.getMessage());
+                    main.getLogger().logError("Failed to send entity update packet: %1", e.getMessage());
                 }
             }
 
@@ -900,7 +902,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .sendServerPacket(player.toBukkit(), packetSpawn, false);
                             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, false);
                         } catch (InvocationTargetException e) {
-                            main.logError("Failed to send player entity update packet: %1", e.getMessage());
+                            main.getLogger().logError("Failed to send player entity update packet: %1", e.getMessage());
                         }
                     }
 
@@ -915,7 +917,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
         } catch (InvocationTargetException e) {
-            main.logError("Failed to send tab update packet: %1", e.getMessage());
+            main.getLogger().logError("Failed to send tab update packet: %1", e.getMessage());
         }
     }
 
@@ -929,7 +931,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
         } catch (InvocationTargetException e) {
-            main.logError("Failed to send bossbar update packet: %1", e.getMessage());
+            main.getLogger().logError("Failed to send bossbar update packet: %1", e.getMessage());
         }
     }
 
@@ -959,7 +961,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
-                main.logError("Failed refresh sign: %1", e.getMessage());
+                main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
             }
         } else {
             PacketContainer container =
@@ -975,7 +977,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
-                main.logError("Failed refresh sign: %1", e.getMessage());
+                main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
             }
         }
     }

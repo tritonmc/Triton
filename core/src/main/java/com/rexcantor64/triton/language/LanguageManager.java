@@ -155,7 +155,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         mainLanguage = null;
         items.clear();
         matches.clear();
-        Triton.get().logDebug("Setting up language manager...");
+        Triton.get().getLogger().logDebug("Setting up language manager...");
         Configuration languages = Triton.get().getConf().getLanguages();
         if (languages != null) {
             for (String lang : languages.getKeys())
@@ -176,8 +176,9 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                     addMatchRegex(s, itemText);
             }
         }
-        Triton.get().logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!",
-                this.languages.size(), this.items.size());
+        Triton.get().getLogger()
+                .logDebug("Successfully setup the language manager! %1 languages and %2 language items loaded!",
+                        this.languages.size(), this.items.size());
     }
 
 }

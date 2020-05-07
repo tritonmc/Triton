@@ -47,9 +47,9 @@ public class MysqlStorage implements PlayerStorage {
             stmt.close();
             return true;
         } catch (SQLException e) {
-            Triton.get().logError("Error connecting to database: %1", e.getMessage());
+            Triton.get().getLogger().logError("Error connecting to database: %1", e.getMessage());
         } catch (ClassNotFoundException e) {
-            Triton.get().logError("Failed to find mysql driver!");
+            Triton.get().getLogger().logError("Failed to find mysql driver!");
         }
         return false;
     }
@@ -79,7 +79,7 @@ public class MysqlStorage implements PlayerStorage {
     public void setLanguage(UUID uuid, String ip, Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
         if (uuid == null && ip == null) return;
-        Triton.get().logDebug("Saving language for %1...", entity);
+        Triton.get().getLogger().logDebug("Saving language for %1...", entity);
         try (Connection connection = openConnection()) {
             PreparedStatement stmt = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "player_data` (`key`, `value`) VALUES (?, ?) ON" +
@@ -94,11 +94,12 @@ public class MysqlStorage implements PlayerStorage {
                 stmt.executeUpdate();
             }
             stmt.close();
-            Triton.get().logDebug("Saved!");
+            Triton.get().getLogger().logDebug("Saved!");
         } catch (Exception e) {
             e.printStackTrace();
-            Triton.get().logError("Failed to save language for %1! Could not insert into database: %2", entity, e
-                    .getMessage());
+            Triton.get().getLogger()
+                    .logError("Failed to save language for %1! Could not insert into database: %2", entity, e
+                            .getMessage());
         }
     }
 
@@ -114,7 +115,7 @@ public class MysqlStorage implements PlayerStorage {
             rs.close();
             stmt.close();
         } catch (SQLException | ClassNotFoundException e) {
-            Triton.get().logError("Failed to get value from the database: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to get value from the database: %1", e.getMessage());
         }
         return result;
     }

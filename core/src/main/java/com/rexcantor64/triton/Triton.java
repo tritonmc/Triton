@@ -10,6 +10,7 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.logger.Logger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.LanguagePlayer;
@@ -19,13 +20,14 @@ import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.PlayerStorage;
 import com.rexcantor64.triton.storage.YamlStorage;
 import com.rexcantor64.triton.web.TwinManager;
+import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
+@Getter
 public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
@@ -45,6 +47,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private TwinManager twinManager;
     private PlayerManager playerManager;
     private PlayerStorage playerStorage;
+    private Logger logger;
 
     public static boolean isBungee() {
         return instance instanceof BungeeMLP;
@@ -62,9 +65,27 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return (BungeeMLP) instance;
     }
 
+    void onEnable() {
+        translationsFolder = new File(getDataFolder(), "translations");
+
+        logger = new Logger(loader.getLogger());
+
+        config = new MainConfig(this);
+        languageConfig = new LanguageConfig();
+        languageManager = new LanguageManager();
+        playerManager = new PlayerManager();
+        reload();
+
+        LanguageMigration.migrate();
+
+        languageParser = new LanguageParser();
+        twinManager = new TwinManager(this);
+    }
+
     public void reload() {
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
         config.setup();
+        logger.setDebug(config.isDebug());
         setupStorage();
         messagesConfig = loadYAML("messages", "messages");
         languageConfig.setup(config.isBungeecord());
@@ -79,8 +100,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         try {
             return ConfigurationProvider.getProvider(YamlConfiguration.class).load(f);
         } catch (Exception e) {
-            logError("Failed to load %1.yml: %2", fileName, e.getMessage());
-            logError("You'll likely receive more errors on console until the next restart.");
+            logger.logError("Failed to load %1.yml: %2", fileName, e.getMessage());
+            logger.logError("You'll likely receive more errors on console until the next restart.");
         }
         return null;
     }
@@ -89,37 +110,11 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return config;
     }
 
-    public LanguageConfig getLanguageConfig() {
-        return languageConfig;
-    }
-
-    public LanguageManager getLanguageManager() {
-        return languageManager;
-    }
-
-    public LanguageParser getLanguageParser() {
-        return languageParser;
-    }
-
-    public GuiManager getGuiManager() {
-        return guiManager;
-    }
-
-    public TwinManager getTwinManager() {
-        return twinManager;
-    }
-
-    public PlayerStorage getPlayerStorage() {
-        return playerStorage;
-    }
-
     public abstract String getVersion();
 
     public abstract ProtocolLibListener getProtocolLibListener();
 
     protected abstract void startConfigRefreshTask();
-
-    public abstract void runSync(Runnable runnable);
 
     public abstract void runAsync(Runnable runnable);
 
@@ -139,68 +134,18 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return result;
     }
 
-    public File getTranslationsFolder() {
-        return translationsFolder;
-    }
-
-    public void logInfo(String info, Object... arguments) {
-        if (info == null) return;
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i] != null)
-                info = info.replace("%" + Integer.toString(i + 1), arguments[i].toString());
-        loader.getLogger().log(Level.INFO, info);
-    }
-
-    public void logWarning(String warning, Object... arguments) {
-        if (warning == null) return;
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i] != null)
-                warning = warning.replace("%" + Integer.toString(i + 1), arguments[i].toString());
-        loader.getLogger().log(Level.WARNING, warning);
-    }
-
-    public void logError(String error, Object... arguments) {
-        if (error == null) return;
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i] != null)
-                error = error.replace("%" + Integer.toString(i + 1), arguments[i].toString());
-        loader.getLogger().log(Level.SEVERE, error);
-    }
-
-    public void logDebug(String info, Object... arguments) {
-        if (info == null) return;
-        if (!config.isDebug()) return;
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i] != null)
-                info = info.replace("%" + Integer.toString(i + 1), arguments[i].toString());
-        loader.getLogger().log(Level.INFO, "[DEBUG] " + info);
-    }
-
-    public void logDebugWarning(String warning, Object... arguments) {
-        if (!config.isDebug()) return;
-        if (warning == null) return;
-        for (int i = 0; i < arguments.length; i++)
-            if (arguments[i] != null)
-                warning = warning.replace("%" + Integer.toString(i + 1), arguments[i].toString());
-        loader.getLogger().log(Level.WARNING, "[DEBUG] " + warning);
-    }
-
     public abstract File getDataFolder();
-
-    public Configuration getConfig() {
-        return configYAML;
-    }
 
     public File getResource(String fileName, String internalFileName) {
         File folder = getDataFolder();
         if (!folder.exists())
             if (!folder.mkdirs())
-                logError("Failed to create plugin folder!");
+                logger.logError("Failed to create plugin folder!");
         File resourceFile = new File(folder, fileName);
         try {
             if (!resourceFile.exists()) {
                 if (!resourceFile.createNewFile())
-                    logError("Failed to create the file %1!", fileName);
+                    logger.logError("Failed to create the file %1!", fileName);
                 try (InputStream in = loader.getResourceAsStream(internalFileName);
                      OutputStream out = new FileOutputStream(resourceFile)) {
                     ByteStreams.copy(in, out);
@@ -212,24 +157,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return resourceFile;
     }
 
-    void onEnable() {
-        translationsFolder = new File(getDataFolder(), "translations");
-        // Setup config.yml
-        configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
-        (config = new MainConfig(this)).setup();
-        // Setup messages.yml
-        messagesConfig = loadYAML("messages", "messages");
-        // Start migration from v1 to v2.
-        LanguageMigration.migrate();
-        // Setup more classes
-        setupStorage();
-        (languageConfig = new LanguageConfig()).setup(config.isBungeecord());
-        (languageManager = new LanguageManager()).setup();
-        languageParser = new LanguageParser();
-        playerManager = new PlayerManager();
-        twinManager = new TwinManager(this);
-    }
-
     private void setupStorage() {
         if (config.isMysql()) {
             MysqlStorage mysqlStorage = new MysqlStorage(config.getMysqlHost(), config.getMysqlPort(), config
@@ -237,7 +164,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
                     .getMysqlTablePrefix());
             this.playerStorage = mysqlStorage;
             if (mysqlStorage.setup()) return;
-            logError("Failed to connect to database, falling back to YAML storage!");
+            logger.logError("Failed to connect to database, falling back to YAML storage!");
 
         }
         this.playerStorage = new YamlStorage();
@@ -248,7 +175,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
             ConfigurationProvider.getProvider(YamlConfiguration.class).save(configYAML, new File(getDataFolder(),
                     "config.yml"));
         } catch (IOException e) {
-            logError("Failed to save config.yml! Cause: %1", e.getMessage());
+            logger.logError("Failed to save config.yml! Cause: %1", e.getMessage());
         }
     }
 
@@ -256,15 +183,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return null;
     }
 
-    public PluginLoader getLoader() {
-        return loader;
-    }
-
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {
-    }
-
-    public PlayerManager getPlayerManager() {
-        return playerManager;
     }
 
 }

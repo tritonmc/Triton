@@ -110,11 +110,6 @@ public class SpigotMLP extends Triton {
     }
 
     @Override
-    public void runSync(Runnable runnable) {
-        Bukkit.getScheduler().runTask(loader.asSpigot(), runnable);
-    }
-
-    @Override
     public void runAsync(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(loader.asSpigot(), runnable);
     }

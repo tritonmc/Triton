@@ -65,16 +65,17 @@ public class LanguageConfig {
                 }
                 File[] files = translationFolder.listFiles();
                 if (files != null) {
-                    Triton.get().logDebug("Found %1 translation files.", files.length);
+                    Triton.get().getLogger().logDebug("Found %1 translation files.", files.length);
                     for (File f : files)
                         if (f.getName().endsWith(".json"))
                             setupFromFile(f);
                 }
             }
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while loading translations! Some translation items may not " +
-                    "have been" +
-                    " loaded! Error: %1", e.getMessage());
+            Triton.get().getLogger()
+                    .logWarning("An error occurred while loading translations! Some translation items may not " +
+                            "have been" +
+                            " loaded! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Loaded", items.size());
         }
@@ -92,8 +93,9 @@ public class LanguageConfig {
             try {
                 items = new JSONArray(contents);
             } catch (JSONException ignore2) {
-                Triton.get().logWarning("Failed to load translations from file %1! Make sure it has a valid JSON " +
-                        "syntax.", file.getName());
+                Triton.get().getLogger()
+                        .logWarning("Failed to load translations from file %1! Make sure it has a valid JSON " +
+                                "syntax.", file.getName());
             }
         }
         setup(metadata, items, com.google.common.io.Files.getNameWithoutExtension(file.getName()));
@@ -143,8 +145,9 @@ public class LanguageConfig {
                 JSONArray target = fileMap.get(fileDestination);
                 target.put(obj);
             } catch (NullPointerException ignore) {
-                Triton.get().logDebugWarning("NullPointerException while setting up from raw. One or more translation" +
-                        " items are empty");
+                Triton.get().getLogger()
+                        .logDebugWarning("NullPointerException while setting up from raw. One or more translation" +
+                                " items are empty");
             }
         }
         for (Map.Entry<String, JSONArray> entry : fileMap.entrySet()) {
@@ -164,7 +167,7 @@ public class LanguageConfig {
                         StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                 items.clear();
             } catch (Exception e) {
-                Triton.get().logWarning("An error occurred while saving language items ! Some items may " +
+                Triton.get().getLogger().logWarning("An error occurred while saving language items ! Some items may " +
                         "not be saved if there is a server shutdown! Error: %1", e.getMessage());
             }
         }
@@ -172,7 +175,7 @@ public class LanguageConfig {
     }
 
     private void logCount(long timeStarted, String action, int amount) {
-        Triton.get().logDebug(action + " %1 translation items in %2 ms!", amount,
+        Triton.get().getLogger().logDebug(action + " %1 translation items in %2 ms!", amount,
                 System.currentTimeMillis() - timeStarted);
     }
 
@@ -209,9 +212,10 @@ public class LanguageConfig {
             Files.write(file.toPath(), array.toString(4).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
                     StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
         } catch (Exception e) {
-            Triton.get().logWarning("An error occurred while saving translations items to cache! Some items may not " +
-                    "be " +
-                    "saved if there is a server shutdown! Error: %1", e.getMessage());
+            Triton.get().getLogger()
+                    .logWarning("An error occurred while saving translations items to cache! Some items may not " +
+                            "be " +
+                            "saved if there is a server shutdown! Error: %1", e.getMessage());
         } finally {
             logCount(timeStarted, "Saved", items.size());
         }

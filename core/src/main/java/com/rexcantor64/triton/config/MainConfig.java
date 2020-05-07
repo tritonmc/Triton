@@ -5,6 +5,9 @@ import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.utils.FileUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +18,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class MainConfig implements TritonConfig {
 
     private final Triton main;
@@ -70,10 +74,6 @@ public class MainConfig implements TritonConfig {
         this.main = main;
     }
 
-    public Configuration getLanguages() {
-        return languages;
-    }
-
     public void setLanguages(Configuration languages) {
         this.languages = languages;
     }
@@ -98,190 +98,8 @@ public class MainConfig implements TritonConfig {
         this.languages = configuration;
     }
 
-    public String getMainLanguage() {
-        return mainLanguage;
-    }
-
     public void setMainLanguage(String mainLanguage) {
         this.mainLanguage = mainLanguage;
-    }
-
-    public boolean isRunLanguageCommandsOnLogin() {
-        return runLanguageCommandsOnLogin;
-    }
-
-    public boolean isAlwaysCheckClientLocale() {
-        return alwaysCheckClientLocale;
-    }
-
-    public boolean isBungeecord() {
-        return bungeecord;
-    }
-
-    public int getConfigAutoRefresh() {
-        return configAutoRefresh;
-    }
-
-    public String getTwinToken() {
-        return twinToken;
-    }
-
-    public String getDisabledLine() {
-        return disabledLine;
-    }
-
-    public boolean isChat() {
-        return chat;
-    }
-
-    public boolean isActionbars() {
-        return actionbars;
-    }
-
-    public boolean isTitles() {
-        return titles;
-    }
-
-    public boolean isGuis() {
-        return guis;
-    }
-
-    public boolean isScoreboards() {
-        return scoreboards;
-    }
-
-    public boolean isScoreboardsAdvanced() {
-        return scoreboardsAdvanced;
-    }
-
-    public List<EntityType> getHolograms() {
-        return holograms;
-    }
-
-    public boolean isHologramsAll() {
-        return hologramsAll;
-    }
-
-    public boolean isKick() {
-        return kick;
-    }
-
-    public boolean isTab() {
-        return tab;
-    }
-
-    public boolean isItems() {
-        return items;
-    }
-
-    public boolean isInventoryItems() {
-        return inventoryItems;
-    }
-
-    public boolean isBooks() {
-        return books;
-    }
-
-    public boolean isSigns() {
-        return signs;
-    }
-
-    public boolean isBossbars() {
-        return bossbars;
-    }
-
-    @Override
-    public boolean isMotd() {
-        return motd;
-    }
-
-    public boolean isTerminal() {
-        return terminal;
-    }
-
-    public boolean isTerminalAnsi() {
-        return terminalAnsi;
-    }
-
-    public boolean isDebug() {
-        return debug;
-    }
-
-    public boolean isMysql() {
-        return mysql;
-    }
-
-    public String getMysqlHost() {
-        return mysqlHost;
-    }
-
-    public int getMysqlPort() {
-        return mysqlPort;
-    }
-
-    public String getMysqlDatabase() {
-        return mysqlDatabase;
-    }
-
-    public String getMysqlUser() {
-        return mysqlUser;
-    }
-
-    public String getMysqlPassword() {
-        return mysqlPassword;
-    }
-
-    public String getMysqlTablePrefix() {
-        return mysqlTablePrefix;
-    }
-
-    public FeatureSyntax getChatSyntax() {
-        return chatSyntax;
-    }
-
-    public FeatureSyntax getActionbarSyntax() {
-        return actionbarSyntax;
-    }
-
-    public FeatureSyntax getTitleSyntax() {
-        return titleSyntax;
-    }
-
-    public FeatureSyntax getGuiSyntax() {
-        return guiSyntax;
-    }
-
-    public FeatureSyntax getScoreboardSyntax() {
-        return scoreboardSyntax;
-    }
-
-    public FeatureSyntax getHologramSyntax() {
-        return hologramSyntax;
-    }
-
-    public FeatureSyntax getKickSyntax() {
-        return kickSyntax;
-    }
-
-    public FeatureSyntax getTabSyntax() {
-        return tabSyntax;
-    }
-
-    public FeatureSyntax getItemsSyntax() {
-        return itemsSyntax;
-    }
-
-    public FeatureSyntax getSignsSyntax() {
-        return signsSyntax;
-    }
-
-    public FeatureSyntax getBossbarSyntax() {
-        return bossbarSyntax;
-    }
-
-    @Override
-    public FeatureSyntax getMotdSyntax() {
-        return motdSyntax;
     }
 
     private void setup(Configuration section) {
@@ -309,7 +127,7 @@ public class MainConfig implements TritonConfig {
     }
 
     public void setup() {
-        setup(main.getConfig());
+        setup(main.getConfigYAML());
         if (this.bungeecord)
             setupFromCache();
     }
@@ -320,7 +138,8 @@ public class MainConfig implements TritonConfig {
             try {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
-                Triton.get().logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                Triton.get().getLogger()
+                        .logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
             }
             return;
         }
@@ -328,7 +147,7 @@ public class MainConfig implements TritonConfig {
             JSONObject obj = new JSONObject(FileUtils.contentsToString(file));
             setLanguages(obj);
         } catch (JSONException e) {
-            Triton.get().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
+            Triton.get().getLogger().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
                     e.getMessage());
         }
     }
@@ -395,51 +214,30 @@ public class MainConfig implements TritonConfig {
             try {
                 this.holograms.add(EntityType.valueOf(hologram.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                main.logDebugWarning("Failed to register hologram type %1 because it's not a valid entity type! " +
-                        "Please check your spelling and if you can't fix it, please contact the developer!", hologram);
+                main.getLogger()
+                        .logWarning("Failed to register hologram type %1 because it's not a valid entity type! " +
+                                        "Please check your spelling and if you can't fix it, please contact the " +
+                                        "developer!",
+                                hologram);
             }
     }
 
+    @Getter
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
-        private String lang;
-        private String args;
-        private String arg;
+        private final String lang;
+        private final String args;
+        private final String arg;
         private boolean interactive = false;
 
-        private FeatureSyntax(String lang, String args, String arg) {
-            this.lang = lang;
-            this.args = args;
-            this.arg = arg;
-        }
-
         private static FeatureSyntax fromSection(Configuration section) {
-            return new FeatureSyntax(section.getString("syntax-lang", "lang"), section.getString("syntax-args", "args"
-            ), section.getString("syntax-arg", "arg"));
+            return new FeatureSyntax(
+                    section.getString("syntax-lang", "lang"),
+                    section.getString("syntax-args", "args"),
+                    section.getString("syntax-arg", "arg")
+            );
         }
 
-        public String getLang() {
-            return lang;
-        }
-
-        public String getArgs() {
-            return args;
-        }
-
-        public String getArg() {
-            return arg;
-        }
-
-        public int getPatternSize() {
-            return lang.length() + 2;
-        }
-
-        public int getPatternArgSize() {
-            return arg.length() + 2;
-        }
-
-        public boolean isInteractive() {
-            return interactive;
-        }
     }
 
 }

@@ -49,7 +49,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send setEntryScore packet: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to send setEntryScore packet: %1", e.getMessage());
         }
     }
 
@@ -83,7 +83,8 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logDebugWarning("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
+            Triton.get().getLogger()
+                    .logDebugWarning("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
         }
     }
 
@@ -97,7 +98,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logDebugWarning("Failed to send addEntryToTeam packet: %1", e.getMessage());
+            Triton.get().getLogger().logDebugWarning("Failed to send addEntryToTeam packet: %1", e.getMessage());
         }
     }
 
@@ -116,7 +117,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send addObjective packet: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to send addObjective packet: %1", e.getMessage());
         }
         container = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, true);
@@ -125,7 +126,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send displayObjective packet: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to send displayObjective packet: %1", e.getMessage());
         }
         for (int i = 0; i < 15; i++) {
             container = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM, true);
@@ -157,7 +158,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
             } catch (Exception e) {
-                Triton.get().logError("Failed to send createTeam packet: %1", e.getMessage());
+                Triton.get().getLogger().logError("Failed to send createTeam packet: %1", e.getMessage());
             }
         }
     }
@@ -177,7 +178,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().logError("Failed to send updateObjectiveTitle packet: %1", e.getMessage());
+            Triton.get().getLogger().logError("Failed to send updateObjectiveTitle packet: %1", e.getMessage());
         }
     }
 

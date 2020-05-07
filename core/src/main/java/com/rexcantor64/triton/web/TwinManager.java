@@ -85,7 +85,7 @@ public class TwinManager {
             if (changed) {
                 main.getLanguageConfig().saveFromRaw(items);
                 main.getLanguageConfig().setup(false);
-                main.logDebug("Updated items to be able to upload to TWIN");
+                main.getLogger().logDebug("Updated items to be able to upload to TWIN");
             }
 
             data.put("data", items);

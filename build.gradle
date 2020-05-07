@@ -48,6 +48,12 @@ subprojects {
     }
     dependencies {
         compile 'com.github.diogotcorreia:Triton:v2.6.0' // Triton API
+
+        compileOnly 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
     }
     bukkit {
         name = pluginName
@@ -111,25 +117,5 @@ subprojects {
         author = pluginAuthor
         main = 'com.rexcantor64.triton.plugin.BungeePlugin'
     }
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-        content {
-            includeGroup 'org.bukkit'
-            includeGroup 'org.spigotmc'
-        }
-    }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url 'https://repo.dmulloy2.net/nexus/repository/public/' }
-    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-    maven {
-        name 'CodeMC'
-        url 'https://repo.codemc.org/repository/maven-public'
-    }
-    maven { url 'https://jitpack.io' }
 }
 

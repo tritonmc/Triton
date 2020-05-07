@@ -70,8 +70,10 @@ public class BungeeMLP extends Triton {
                 if (getConf().isTerminal())
                     Log4jInjector.injectAppender();
             } catch (Error | Exception ignored) {
-                logError("Failed to inject terminal translations. Some forked BungeeCord servers might not work " +
-                        "correctly. To hide this message, disable terminal translation on config.");
+                getLogger()
+                        .logError("Failed to inject terminal translations. Some forked BungeeCord servers might not " +
+                                "work " +
+                                "correctly. To hide this message, disable terminal translation on config.");
             }
         }
     }
@@ -208,8 +210,10 @@ public class BungeeMLP extends Triton {
                 info.sendData("triton:main", out.toByteArray());
             }
         } catch (Exception e) {
-            logError("Failed to send config and language items to other servers! Not everything might work as " +
-                    "expected! Error: %1", e.getMessage());
+            getLogger()
+                    .logError("Failed to send config and language items to other servers! Not everything might work " +
+                            "as " +
+                            "expected! Error: %1", e.getMessage());
         }
     }
 
@@ -239,11 +243,6 @@ public class BungeeMLP extends Triton {
                     .log(Level.SEVERE, "[BungeePackets] Failed to inject client connection for " + lp.getUUID()
                             .toString());
         }
-    }
-
-    @Override
-    public void runSync(Runnable runnable) {
-        runnable.run();
     }
 
     @Override

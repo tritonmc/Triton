@@ -101,6 +101,7 @@ public class LanguageParser {
             safeCounter++;
             if (safeCounter > 10) {
                 Triton.get()
+                        .getLogger()
                         .logError("The maximum attempts to translate a message have been exceeded. To prevent the " +
                                 "server from crashing, the message might not have been translated. If using " +
                                 "BungeeCord, restarting your proxy might fix the problem.");
@@ -165,6 +166,7 @@ public class LanguageParser {
             safeCounter++;
             if (safeCounter > 10) {
                 Triton.get()
+                        .getLogger()
                         .logError("The maximum attempts to translate a message have been exceeded. To prevent the " +
                                 "server from crashing, the message might not have been translated. If using " +
                                 "BungeeCord, restarting your proxy might fix the problem.");

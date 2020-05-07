@@ -30,6 +30,7 @@ public class ExecutableCommand {
         String[] inputSplit = input.split(":");
         if (inputSplit.length < 2) {
             Triton.get()
+                    .getLogger()
                     .logWarning("Language command '%1' doesn't have a type. Using type 'PLAYER' by default.", input);
             return new ExecutableCommand(input, Type.PLAYER);
         }
@@ -41,7 +42,7 @@ public class ExecutableCommand {
             }
         }
         if (type == null) {
-            Triton.get()
+            Triton.get().getLogger()
                     .logWarning("Language command '%1' has invalid type '%2'. Using the default type 'PLAYER'.",
                             input, inputSplit[0]);
             type = Type.PLAYER;

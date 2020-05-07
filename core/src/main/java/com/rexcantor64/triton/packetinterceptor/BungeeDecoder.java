@@ -27,7 +27,7 @@ public class BungeeDecoder extends MessageToMessageDecoder<PacketWrapper> {
             }
             out.add(wrapper);
         } catch (NullPointerException e) {
-            Triton.get().logError("Failed to fetch a player's locale!");
+            Triton.get().getLogger().logError("Failed to fetch a player's locale!");
             if (Triton.get().getConf().isDebug())
                 e.printStackTrace();
         }
