@@ -19,6 +19,7 @@ public class MainCMD extends Command {
         super("triton", null, "mlp", "ml", "multilanguage", "language", "lang", "multilanguageplugin");
         subCommands.put("setlanguage", new SetLanguageCMD());
         subCommands.put("reload", new ReloadCMD());
+        subCommands.put("database", new DatabaseCMD());
     }
 
     @Override

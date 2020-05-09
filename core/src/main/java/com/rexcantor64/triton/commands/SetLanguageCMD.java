@@ -82,7 +82,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         if (target instanceof Player)
             Triton.get().getPlayerManager().get(target.getUniqueId()).setLang(lang);
         else
-            Triton.get().getPlayerStorage().setLanguage(target.getUniqueId(), null, lang);
+            Triton.get().getStorage().setLanguage(target.getUniqueId(), null, lang);
         if (target == s)
             s.sendMessage(Triton.get().getMessage("success.setlanguage", "&aYour language has been changed to %1",
                     lang.getDisplayName()));

@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.utils;
 
 import com.rexcantor64.triton.Triton;
+import lombok.val;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -117,6 +118,23 @@ public class JSONUtils {
             }
         }
         return currentPath;
+    }
+
+    public static boolean isArrayEqualsIgnoreOrder(JSONArray array1, JSONArray array2) {
+        if (array1 == array2) return true;
+        if (array1 == null || array2 == null) return false;
+        if (array1.length() != array2.length()) return false;
+
+        val list1 = array1.toList();
+        val list2 = array2.toList();
+
+        return list1.containsAll(list2);
+    }
+
+    public static JSONObject getObjectWithoutKeys(JSONObject obj, String... keys) {
+        val map = obj.toMap();
+        for (String key : keys) map.remove(key);
+        return new JSONObject(map);
     }
 
 }

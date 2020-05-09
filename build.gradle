@@ -13,16 +13,16 @@ String pluginName = project.property("pluginName")
 
 group 'com.rexcantor64.triton'
 
-sourceCompatibility = 1.8
-
 allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
     repositories {
         jcenter()
     }
 }
 
 subprojects {
-    apply plugin: 'java'
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'net.minecrell.plugin-yml.bukkit'
     apply plugin: 'net.minecrell.plugin-yml.bungee'

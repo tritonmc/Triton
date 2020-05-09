@@ -5,11 +5,13 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.UUID;
 
-public class YamlStorage implements PlayerStorage {
+public class YamlStorage implements Storage {
 
     private Configuration configuration;
 
@@ -85,4 +87,8 @@ public class YamlStorage implements PlayerStorage {
         return configuration.getString(key, null);
     }
 
+    @Override
+    public boolean uploadToStorage(JSONObject metadata, JSONArray items) {
+        throw new UnsupportedOperationException("Uploading to storage is not supported on local storage");
+    }
 }

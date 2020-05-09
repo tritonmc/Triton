@@ -126,7 +126,7 @@ public class BungeeBridgeManager implements Listener {
             if (Triton.get().getConf().isMotd())
                 event.getResponse()
                         .setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
-                                .parseComponent(Triton.get().getPlayerStorage()
+                                .parseComponent(Triton.get().getStorage()
                                         .getLanguageFromIp(event.getConnection().getAddress().getAddress()
                                                 .getHostAddress())
                                         .getName(), Triton.get().getConf()

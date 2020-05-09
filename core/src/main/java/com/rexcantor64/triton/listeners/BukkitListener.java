@@ -20,7 +20,7 @@ public class BukkitListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onMotd(ServerListPingEvent e) {
         if (Triton.get().getConf().isMotd())
-            e.setMotd(Triton.get().getLanguageParser().replaceLanguages(e.getMotd(), Triton.get().getPlayerStorage()
+            e.setMotd(Triton.get().getLanguageParser().replaceLanguages(e.getMotd(), Triton.get().getStorage()
                     .getLanguageFromIp(e.getAddress().getHostAddress()).getName(), Triton.get().getConf()
                     .getMotdSyntax()));
     }

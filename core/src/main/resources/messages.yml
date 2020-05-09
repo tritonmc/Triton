@@ -4,9 +4,11 @@ error:
   lang-not-found: "&cLanguage %1 not found! Note: It's case sensitive. Use TAB to show all the available languages."
   player-not-found: "&cPlayer %1 not found!"
   player-not-found-use-uuid: "&cPlayer %1 not found! Use UUID to search through offline players."
-  bungee-reload-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') or 'all' (or 'a')."
+  bungee-reload-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') and 'all' (or 'a')."
   not-sign: "&cYou're not looking at a sign."
   sign-not-found: "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options."
+  database-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'upload' (or 'u') and 'download' (or 'd')."
+  database-not-supported: "&cThis command isn't supported on local storage."
 help:
   menu:
     - "&a---------Triton---------"
@@ -17,6 +19,7 @@ help:
   getflag: "&cUse /%1 getflag <language name>"
   setlanguage: "&cUse /%1 setlanguage [player] <language name>"
   sign: "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to a group."
+  database: "&cUse &4/%1 database <upload/download/u/d>"
 command:
   help: "Displays this message"
   getflag: "Gives the flag (banner) of a language to you"
@@ -25,6 +28,7 @@ command:
   setlanguage: "Changes the language of a player"
   sign: "Adds or removes signs from sign groups"
   twin: "Uploads/Downloads your config to/from TWIN for easy configuration"
+  database: "Uploads/Downloads translations to/from a database"
 success:
   getflag: "&aYou received the %1 flag!"
   selector: "&aLanguage changed to %1"
@@ -35,6 +39,7 @@ success:
   detected-language: "&aYour language has been automatically set to %1"
   sign-set: "&aSign successfully added to group &6%1&a."
   sign-remove: "&aSuccessfully removed sign from all groups."
+  database: "&aOperation successful"
 twin:
   failed-bungeecord: "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."
   no-internet: "&4Failed to upload config. Please check your internet connection and/or firewall! Error description: %1"
@@ -53,3 +58,4 @@ other:
   selector-gui-forward: "&aNext"
   selector-gui-currentpage: "&aPage %1 of %2"
   selected: "&6Currently selected"
+  database-loading: "&aPerforming operation..."

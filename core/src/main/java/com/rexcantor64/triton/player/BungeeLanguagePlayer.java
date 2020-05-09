@@ -127,9 +127,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     private void load() {
-        language = Triton.get().getPlayerStorage().getLanguage(this);
+        language = Triton.get().getStorage().getLanguage(this);
         if (currentConnection != null)
-            Triton.get().getPlayerStorage()
+            Triton.get().getStorage()
                     .setLanguage(null, currentConnection.getAddress().getAddress().getHostAddress(), language);
     }
 
@@ -138,7 +138,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
             String ip = null;
             if (parent != null)
                 ip = parent.getAddress().getAddress().getHostAddress();
-            Triton.get().getPlayerStorage().setLanguage(uuid, ip, language);
+            Triton.get().getStorage().setLanguage(uuid, ip, language);
         });
     }
 
