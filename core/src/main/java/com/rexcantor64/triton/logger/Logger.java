@@ -10,34 +10,43 @@ import java.util.logging.Level;
 public class Logger {
     private final java.util.logging.Logger logger;
     @Setter
-    private boolean debug;
+    private int logLevel = 0;
 
     public void logInfo(String info, Object... arguments) {
-        logger.log(Level.INFO, parseMessage(info, arguments));
+        logInfo(0, info, arguments);
     }
 
     public void logWarning(String warning, Object... arguments) {
-        logger.log(Level.WARNING, parseMessage(warning, arguments));
+        logWarning(0, warning, arguments);
     }
 
     public void logError(String error, Object... arguments) {
-        logger.log(Level.SEVERE, parseMessage(error, arguments));
+        logWarning(0, error, arguments);
     }
 
-    public void logDebug(String info, Object... arguments) {
-        if (!debug) return;
-        logger.log(Level.INFO, "[DEBUG] " + parseMessage(info, arguments));
+    public void logInfo(int level, String info, Object... arguments) {
+        if (level > logLevel) return;
+        logger.log(Level.INFO, getPrefix(level) + parseMessage(info, arguments));
     }
 
-    public void logDebugWarning(String warning, Object... arguments) {
-        if (!debug) return;
-        logger.log(Level.WARNING, "[DEBUG] " + parseMessage(warning, arguments));
+    public void logWarning(int level, String warning, Object... arguments) {
+        if (level > logLevel) return;
+        logger.log(Level.WARNING, getPrefix(level) + parseMessage(warning, arguments));
+    }
+
+    public void logError(int level, String error, Object... arguments) {
+        if (level > logLevel) return;
+        logger.log(Level.SEVERE, getPrefix(level) + parseMessage(error, arguments));
     }
 
     private String parseMessage(@NonNull String message, @NonNull Object... arguments) {
         for (int i = 0; i < arguments.length; ++i)
             message = message.replace("%" + (i + 1), String.valueOf(arguments[i]));
         return message;
+    }
+
+    private String getPrefix(int level) {
+        return level > 1 ? "[DEBUG] " : "";
     }
 
 }

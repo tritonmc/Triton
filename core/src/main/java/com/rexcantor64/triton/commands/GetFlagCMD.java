@@ -24,27 +24,25 @@ public class GetFlagCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.getflag") && !p.hasPermission("triton.getflag")) {
-            p.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.getflag"));
+            p.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.getflag"));
             return true;
         }
 
         if (args.length == 1) {
-            p.sendMessage(Triton.get().getMessage("help.getflag", "&cUse /%1 getflag <language name>", label));
+            p.sendMessage(Triton.get().getMessagesConfig().getMessage("help.getflag", label));
             return true;
         }
 
         com.rexcantor64.triton.language.Language lang = Triton.get().getLanguageManager()
                 .getLanguageByName(args[1], false);
         if (lang == null) {
-            p.sendMessage(Triton.get()
-                    .getMessage("error.lang-not found", "&cLanguage %1 not found! Note: It's case sensitive. Use TAB " +
-                            "to show all the available languages.", args[1]));
+            p.sendMessage(Triton.get().getMessagesConfig().getMessage("error.lang-not found", args[1]));
             return true;
         }
 
         p.getInventory().addItem(ItemStackParser.bannerToItemStack(lang.getBanner(), false));
-        p.sendMessage(Triton.get().getMessage("success.getflag", "&aYou received the %1 flag!", lang.getDisplayName()));
+        p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.getflag", lang.getDisplayName()));
 
         return true;
     }

@@ -19,14 +19,12 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
         if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage")) {
-            s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1"
-                    , "triton.setlanguage"));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.no-permission", "triton.setlanguage"));
             return true;
         }
 
         if (args.length == 1) {
-            s.sendMessage(Triton.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language " +
-                    "name>", label));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("help.setlanguage", label));
             return true;
         }
 
@@ -43,8 +41,8 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
                     try {
                         uuid = UUID.fromString(args[1]);
                     } catch (IllegalArgumentException e) {
-                        s.sendMessage(Triton.get().getMessage("error.player-not-found-use-uuid", "&cPlayer %1 not " +
-                                "found! Use UUID to search through offline players.", args[1]));
+                        s.sendMessage(Triton.get().getMessagesConfig()
+                                .getMessage("error.player-not-found-use-uuid", args[1]));
                         return true;
                     }
                     if (Triton.get().getConf().isBungeecord()) {
@@ -54,14 +52,13 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
                     }
                     target = Bukkit.getOfflinePlayer(uuid);
                     if (target == null) {
-                        s.sendMessage(Triton.get().getMessage("error.player-not-found", "&cPlayer %1 not found!",
-                                args[1]));
+                        s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.player-not-found", args[1]));
                         return true;
                     }
                 }
             } else {
-                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: " +
-                        "&4%1", "triton.setlanguage.others"));
+                s.sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("error.no-permission", "triton.setlanguage.others"));
                 return true;
             }
         } else if (s instanceof Player) {
@@ -74,8 +71,7 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
 
         Language lang = Triton.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
-            s.sendMessage(Triton.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case " +
-                    "sensitive. Use TAB to show all the available languages.", args[1]));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.lang-not-found", args[1]));
             return true;
         }
 
@@ -84,12 +80,11 @@ public class SetLanguageCMD implements CommandExecutor, TabCompleter {
         else
             Triton.get().getStorage().setLanguage(target.getUniqueId(), null, lang);
         if (target == s)
-            s.sendMessage(Triton.get().getMessage("success.setlanguage", "&aYour language has been changed to %1",
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.setlanguage",
                     lang.getDisplayName()));
         else
-            s.sendMessage(Triton.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to " +
-                            "%2", target.getName(),
-                    lang.getDisplayName()));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("success.setlanguage-others", target.getName(), lang.getDisplayName()));
         return true;
     }
 

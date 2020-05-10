@@ -38,20 +38,17 @@ public class MainCMD implements CommandExecutor, TabCompleter {
                 return entry.getValue().onCommand(s, cmd, label, args);
 
         if (!s.hasPermission("multilanguageplugin.help") && !s.hasPermission("triton.help")) {
-            s.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.help"));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.help"));
             return true;
         }
 
-        for (String str : Triton.get()
-                .getMessageList("help.menu", "&a---------MultiLanguagePlugin---------", "&6Available commands:", "%1"
-                        , "&a---------MultiLanguagePlugin---------"))
+        for (String str : Triton.get().getMessagesConfig().getMessageList("help.menu"))
             if (str.equalsIgnoreCase("%1"))
                 for (String command : subCommands.keySet())
-                    s.sendMessage(Triton.get()
-                            .getMessage("help.menu-item", "&6/%1 %2 &e&l- &f%3", label, command, Triton.get()
-                                    .getMessage("command." + command, "Description not found. Please regenerate " +
-                                            "messages.yml!")));
+                    s.sendMessage(Triton.get().getMessagesConfig()
+                            .getMessage("help.menu-item", label, command, Triton.get().getMessagesConfig()
+                                    .getMessage("command." + command)));
             else
                 s.sendMessage(ChatColor.translateAlternateColorCodes('&', str));
         return true;

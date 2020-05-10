@@ -19,14 +19,12 @@ public class SetLanguageCMD implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("multilanguageplugin.setlanguage") && !s.hasPermission("triton.setlanguage")) {
-            s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: &4%1"
-                    , "triton.setlanguage"));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.no-permission", "triton.setlanguage"));
             return;
         }
 
         if (args.length == 1) {
-            s.sendMessage(Triton.get().getMessage("help.setlanguage", "&cUse /%1 setlanguage [player] <language " +
-                    "name>", "triton"));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("help.setlanguage", "triton"));
             return;
         }
 
@@ -43,15 +41,15 @@ public class SetLanguageCMD implements CommandExecutor {
                     try {
                         targetOffline = UUID.fromString(args[1]);
                     } catch (IllegalArgumentException e) {
-                        s.sendMessage(Triton.get().getMessage("error.player-not-found-use-uuid", "&cPlayer %1 not " +
-                                "found! Use UUID to search through offline players.", args[1]));
+                        s.sendMessage(Triton.get().getMessagesConfig()
+                                .getMessage("error.player-not-found-use-uuid", args[1]));
                         return;
                     }
                     target = BungeeCord.getInstance().getPlayer(targetOffline);
                 }
             } else {
-                s.sendMessage(Triton.get().getMessage("error.no-permission", "&cNo permission. Permission required: " +
-                        "&4%1", "triton.setlanguage.others"));
+                s.sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("error.no-permission", "triton.setlanguage.others"));
                 return;
             }
         } else if (s instanceof ProxiedPlayer) {
@@ -64,8 +62,7 @@ public class SetLanguageCMD implements CommandExecutor {
 
         Language lang = Triton.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
-            s.sendMessage(Triton.get().getMessage("error.lang-not-found", "&cLanguage %1 not found! Note: It's case " +
-                    "sensitive. Use TAB to show all the available languages.", args[1]));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.lang-not-found", args[1]));
             return;
         }
 
@@ -82,11 +79,12 @@ public class SetLanguageCMD implements CommandExecutor {
             }
         }
         if (target == s)
-            s.sendMessage(Triton.get().getMessage("success.setlanguage", "&aYour language has been changed to %1",
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.setlanguage",
                     lang.getDisplayName()));
         else
-            s.sendMessage(Triton.get().getMessage("success.setlanguage-others", "&a%1's language has been changed to " +
-                            "%2", target != null ? target.getName() : targetOffline.toString(),
-                    lang.getDisplayName()));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("success.setlanguage-others", target != null ? target.getName() : targetOffline
+                                    .toString(),
+                            lang.getDisplayName()));
     }
 }

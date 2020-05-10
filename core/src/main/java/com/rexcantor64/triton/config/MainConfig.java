@@ -26,7 +26,7 @@ public class MainConfig implements TritonConfig {
     private String mainLanguage;
     private boolean runLanguageCommandsOnLogin;
     private boolean alwaysCheckClientLocale;
-    private boolean debug;
+    private int logLevel;
     private boolean bungeecord;
     private int configAutoRefresh;
     private String twinToken;
@@ -120,7 +120,7 @@ public class MainConfig implements TritonConfig {
         this.twinToken = section.getString("twin-token", "");
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
-        this.debug = section.getBoolean("debug", false);
+        this.logLevel = section.getInt("log-level", 0);
         this.configAutoRefresh = section.getInt("config-auto-refresh-interval", -1);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);

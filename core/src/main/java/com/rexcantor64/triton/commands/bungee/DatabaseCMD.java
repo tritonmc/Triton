@@ -10,39 +10,35 @@ public class DatabaseCMD implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("triton.database")) {
-            s.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton" +
-                            ".database"));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.database"));
             return;
         }
 
         if (args.length < 2) {
-            s.sendMessage(Triton.get()
-                    .getMessage("help.database", "&cUse &4/%1 database <upload/download/u/d>", "triton"));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("help.database", "triton"));
             return;
         }
 
         val mode = args[1];
         if (mode.equalsIgnoreCase("upload") || mode.equalsIgnoreCase("u")) {
             try {
-                s.sendMessage(Triton.get().getMessage("other.database-loading", "&aPerforming operation..."));
+                s.sendMessage(Triton.get().getMessagesConfig().getMessage("other.database-loading"));
                 Triton.get().runAsync(() -> {
                     val metadata = Triton.get().getLanguageConfig().getMetadataList();
                     val items = Triton.get().getLanguageConfig().getRaw();
                     Triton.get().getStorage().uploadToStorage(metadata, items);
-                    s.sendMessage(Triton.get().getMessage("success.database", "&aOperation successful"));
+                    s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
                 });
             } catch (UnsupportedOperationException e) {
-                s.sendMessage(Triton.get()
-                        .getMessage("error.database-not-supported", "&cThis command isn't supported on local storage" +
-                                "."));
+                s.sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("error.database-not-supported"));
             }
         } else if (mode.equals("download") || mode.equals("d")) {
             s.sendMessage("[Triton v3 BETA] Not implemented yet");
         } else {
-            s.sendMessage(Triton.get()
-                    .getMessage("error.database-invalid-mode", "&cMode &4%1&c does not exist. Available modes are " +
-                            "'upload' (or 'u') and 'download' (or 'd').", mode));
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.database-invalid-mode", mode));
         }
     }
 }

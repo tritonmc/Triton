@@ -18,9 +18,8 @@ public class OpenSelectorCMD implements CommandExecutor {
         Player p = (Player) s;
 
         if (!p.hasPermission("multilanguageplugin.openselector") && !p.hasPermission("triton.openselector")) {
-            p.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton" +
-                            ".openselector"));
+            p.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.openselector"));
             return true;
         }
 

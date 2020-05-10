@@ -11,8 +11,8 @@ public class ReloadCMD implements CommandExecutor {
     @SuppressWarnings("deprecation")
     public void execute(CommandSender s, String[] args) {
         if (!s.hasPermission("multilanguageplugin.reload") && !s.hasPermission("triton.reload")) {
-            s.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.reload"));
+            s.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.reload"));
             return;
         }
 
@@ -23,13 +23,12 @@ public class ReloadCMD implements CommandExecutor {
                 if (mode.equals("server") || mode.equals("s"))
                     return;
             } else if (!mode.equals("bungee") && !mode.equals("b")) {
-                s.sendMessage(Triton.get()
-                        .getMessage("error.bungee-reload-invalid-mode", "&cMode &4%1&c does not exist. Available " +
-                                "modes are 'bungee' (or 'b'), 'server' (or 's') or 'all' (or 'a').", mode));
+                s.sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("error.bungee-reload-invalid-mode", mode));
                 return;
             }
         }
         Triton.get().reload();
-        s.sendMessage(Triton.get().getMessage("success.bungee-reload", "&aBungeeCord config successfully reloaded."));
+        s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.bungee-reload"));
     }
 }

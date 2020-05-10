@@ -34,29 +34,26 @@ public class SignCMD implements CommandExecutor, TabCompleter {
         Player p = (Player) s;
 
         if (!p.hasPermission("triton.sign")) {
-            p.sendMessage(Triton.get()
-                    .getMessage("error.no-permission", "&cNo permission. Permission required: &4%1", "triton.sign"));
+            p.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("error.no-permission", "triton.sign"));
             return true;
         }
 
         if (args.length < 2 || (!args[1].equalsIgnoreCase("set") && !args[1].equalsIgnoreCase("remove"))) {
-            p.sendMessage(Triton.get()
-                    .getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a sign to" +
-                            " a group.", label));
+            p.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessage("help.sign", label));
             return true;
         }
 
         Block block = p.getTargetBlock((Set<Material>) null, 10);
         if (!(block.getState() instanceof Sign)) {
-            p.sendMessage(Triton.get().getMessage("error.not-sign", "&cYou're not looking at a sign."));
+            p.sendMessage(Triton.get().getMessagesConfig().getMessage("error.not-sign"));
             return true;
         }
 
         if (args[1].equalsIgnoreCase("set")) {
             if (args.length < 3) {
-                p.sendMessage(Triton.get()
-                        .getMessage("help.sign", "&cUse &4/%1 sign <set|remove> <group key (set only)>&c to add a " +
-                                "sign to a group.", label));
+                p.sendMessage(Triton.get().getMessagesConfig().getMessage("help.sign", label));
                 return true;
             }
             LanguageSign sign = null;
@@ -69,9 +66,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             }
 
             if (sign == null) {
-                p.sendMessage(Triton.get()
-                        .getMessage("error.sign-not-found", "&cSign group %1 not found! Note: It's case sensitive. " +
-                                "Use TAB to all the available options.", args[2]));
+                p.sendMessage(Triton.get().getMessagesConfig().getMessage("error.sign-not-found", args[2]));
                 return true;
             }
 
@@ -91,8 +86,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(true, args[2], loc);
             }
-            p.sendMessage(Triton.get()
-                    .getMessage("success.sign-set", "&aSign successfully added to group &6%1&a.", args[2]));
+            p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-set", args[2]));
 
         } else {
             if (Triton.get().getConf().isBungeecord()) {
@@ -113,8 +107,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             Triton.asSpigot().getProtocolLibListener()
                     .resetSign(p, new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block
                             .getY(), block.getZ()));
-            p.sendMessage(Triton.get()
-                    .getMessage("success.sign-remove", "&aSuccessfully removed sign from all groups."));
+            p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-remove"));
         }
 
 
