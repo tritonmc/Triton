@@ -1,21 +1,10 @@
 package com.rexcantor64.triton.migration;
 
-import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.utils.FileUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-
 public class LanguageMigration {
 
     public static void migrate() {
-        File file = new File(Triton.get().getDataFolder(), "languages.json");
+        // TODO
+        /*File file = new File(Triton.get().getDataFolder(), "languages.json");
         if (!file.exists()) return;
         File translationsFolder = Triton.get().getTranslationsFolder();
         if (translationsFolder.exists()) return;
@@ -55,7 +44,7 @@ public class LanguageMigration {
         } catch (IOException | SecurityException e) {
             Triton.get().getLogger()
                     .logError("[Migration] Aborting... Failed to create default.json: " + e.getMessage());
-        }
+        }*/
     }
 
 }

@@ -6,7 +6,7 @@ import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
-import com.rexcantor64.triton.utils.LocationUtils;
+import com.rexcantor64.triton.language.item.SignLocation;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -15,10 +15,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -82,7 +79,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 out.writeUTF(args[2]);
                 p.sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
             } else {
-                LanguageSign.SignLocation loc = new LanguageSign.SignLocation(block.getWorld().getName(), block
+                SignLocation loc = new SignLocation(block.getWorld().getName(), block
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(true, args[2], loc);
             }
@@ -100,12 +97,12 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 out.writeBoolean(false); // Remove
                 p.sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
             } else {
-                LanguageSign.SignLocation loc = new LanguageSign.SignLocation(block.getWorld().getName(), block
+                SignLocation loc = new SignLocation(block.getWorld().getName(), block
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(false, null, loc);
             }
             Triton.asSpigot().getProtocolLibListener()
-                    .resetSign(p, new LanguageSign.SignLocation(block.getWorld().getName(), block.getX(), block
+                    .resetSign(p, new SignLocation(block.getWorld().getName(), block.getX(), block
                             .getY(), block.getZ()));
             p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-remove"));
         }
@@ -114,8 +111,9 @@ public class SignCMD implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private void executeSignChange(boolean add, String key, LanguageSign.SignLocation loc) {
-        List<String> remove = new ArrayList<>();
+    private void executeSignChange(boolean add, String key, SignLocation loc) {
+        // TODO
+        /*List<String> remove = new ArrayList<>();
         for (LanguageItem li : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
             if (((LanguageSign) li).hasLocation(loc, false)) remove.add(li.getKey());
         JSONArray raw = Triton.get().getLanguageConfig().getRaw();
@@ -143,7 +141,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             }
         }
         Triton.get().getLanguageConfig().saveFromRaw(raw);
-        Triton.get().reload();
+        Triton.get().reload();*/
     }
 
     @Override

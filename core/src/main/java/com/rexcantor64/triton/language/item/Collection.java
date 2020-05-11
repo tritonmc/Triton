@@ -10,7 +10,6 @@ public class Collection {
     private CollectionMetadata metadata = new CollectionMetadata();
     private List<LanguageItem> items = new ArrayList<>();
 
-
     @Data
     public static class CollectionMetadata {
         private boolean blacklist = true;

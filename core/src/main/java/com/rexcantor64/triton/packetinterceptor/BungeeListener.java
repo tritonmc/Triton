@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.packetinterceptor;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
@@ -12,11 +14,12 @@ import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.packet.*;
-import org.json.JSONObject;
 
 import java.util.*;
 
 public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
+
+    private static final JsonParser JSON_PARSER = new JsonParser();
 
     private BungeeLanguagePlayer owner;
 
@@ -35,20 +38,21 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                     .getAction() == PlayerListItem.Action.ADD_PLAYER) {
                 if (i.getDisplayName() != null) {
                     try {
-                        String original = new JSONObject(i.getDisplayName()).getString("text");
+                        String original = JSON_PARSER.parse(i.getDisplayName()).getAsJsonObject()
+                                .getAsJsonPrimitive("text").getAsString();
                         String translated = translate(original,
                                 Triton.get().getConf().getTabSyntax());
                         if (!original.equals(translated)) {
                             PlayerListItem.Item item = clonePlayerListItem(i);
                             tabListCache.put(item.getUuid(), item.getDisplayName());
-                            JSONObject obj = new JSONObject(item.getDisplayName());
-                            obj.put("text", translated);
+                            JsonObject obj = JSON_PARSER.parse(item.getDisplayName()).getAsJsonObject();
+                            obj.addProperty("text", translated);
                             item.setDisplayName(obj.toString());
                             items.add(item);
                             continue;
                         } else tabListCache.remove(i.getUuid());
                     } catch (Exception e) {
-                        if (Triton.get().getConf().isDebug())
+                        if (Triton.get().getConf().getLogLevel() > 0)
                             e.printStackTrace();
                     }
                 } else

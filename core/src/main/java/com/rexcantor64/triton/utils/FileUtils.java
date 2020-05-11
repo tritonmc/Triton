@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 public class FileUtils {
 
+    // TODO
     public static String contentsToString(File file) {
         StringBuilder contentBuilder = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(

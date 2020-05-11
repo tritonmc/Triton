@@ -20,6 +20,7 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
+import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -506,7 +507,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     AdvancedComponent.fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
                             .getText();
         String[] lines = main.getLanguageManager().getSign(languagePlayer,
-                new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(),
+                new SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(),
                         pos.getZ()), defaultLines);
         if (lines == null) return;
         WrappedChatComponent[] comps = new WrappedChatComponent[4];
@@ -526,7 +527,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 defaultLines[i] = AdvancedComponent
                         .fromBaseComponent(ComponentSerializer.parse(nbt.getStringOrDefault("Text" + (i + 1))))
                         .getText();
-            LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(),
+            SignLocation l = new SignLocation(packet.getPlayer().getWorld().getName(),
                     nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
             String[] sign = main.getLanguageManager().getSign(languagePlayer, l, defaultLines);
             if (sign != null) {
@@ -547,7 +548,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     defaultLines[i] = AdvancedComponent
                             .fromBaseComponent(ComponentSerializer.parse(nbt.getStringOrDefault("Text" + (i + 1))))
                             .getText();
-                LanguageSign.SignLocation l = new LanguageSign.SignLocation(packet.getPlayer().getWorld().getName(),
+                SignLocation l = new SignLocation(packet.getPlayer().getWorld().getName(),
                         nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
                 String[] sign = main.getLanguageManager().getSign(languagePlayer, l, defaultLines);
                 if (sign != null)
@@ -635,12 +636,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
-                    .logDebugWarning("Failed to translate packet because UUID of the player is unknown (because " +
+                    .logWarning(1, "Failed to translate packet because UUID of the player is unknown (because " +
                             "the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().getLogger().logDebugWarning("Language Player is null on packet sending");
+            Triton.get().getLogger().logWarning(1, "Language Player is null on packet sending");
             return;
         }
         if (packet.getPacketType() == PacketType.Login.Server.SUCCESS)
@@ -716,12 +717,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
-                    .logDebugWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
+                    .logWarning(1, "Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
                             "(because the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().getLogger().logDebugWarning("Language Player is null on packet receiving");
+            Triton.get().getLogger().logWarning(1, "Language Player is null on packet receiving");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
@@ -737,7 +738,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         out:
         for (LanguageItem item : main.getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
-            for (LanguageSign.SignLocation location : sign.getLocations())
+            for (SignLocation location : sign.getLocations())
                 if (player.toBukkit().getWorld().getName().equals(location.getWorld())) {
                     PacketContainer packet =
                             ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN);
@@ -941,7 +942,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void resetSign(Player p, LanguageSign.SignLocation location) {
+    public void resetSign(Player p, SignLocation location) {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
@@ -1162,7 +1163,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return item;
     }
 
-    private String[] getSignLinesFromLocation(LanguageSign.SignLocation loc) {
+    private String[] getSignLinesFromLocation(SignLocation loc) {
         World w = Bukkit.getWorld(loc.getWorld());
         if (w == null) return new String[4];
         Location l = new Location(w, loc.getX(), loc.getY(), loc.getZ());

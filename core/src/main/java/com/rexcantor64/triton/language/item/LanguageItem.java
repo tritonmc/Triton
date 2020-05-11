@@ -1,21 +1,14 @@
 package com.rexcantor64.triton.language.item;
 
-import com.rexcantor64.triton.utils.LocationUtils;
-import net.md_5.bungee.api.ChatColor;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import lombok.Data;
 
-import java.util.HashMap;
-
+@Data
 public abstract class LanguageItem {
 
-    private final String key;
+    private String key;
+    private TWINData twinData = null;
 
-    public LanguageItem(String key) {
-        this.key = key;
-    }
-
-    public static LanguageItem fromJSON(JSONObject obj, boolean defaultUniversal, boolean defaultBlacklist,
+    /*public static LanguageItem fromJSON(JSONObject obj, boolean defaultUniversal, boolean defaultBlacklist,
                                         JSONArray defaultServers) {
         if (obj == null) return null;
         if (obj.optBoolean("archived", false) || (obj.optJSONObject("_twin") != null && obj.optJSONObject("_twin")
@@ -60,11 +53,7 @@ public abstract class LanguageItem {
                 return new LanguageSign(key, LocationUtils.jsonToLocationArray(loc), signMap);
         }
         return null;
-    }
-
-    public String getKey() {
-        return key;
-    }
+    }*/
 
     public abstract LanguageItemType getType();
 

@@ -4,13 +4,9 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
-import com.rexcantor64.triton.utils.FileUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -78,7 +74,8 @@ public class MainConfig implements TritonConfig {
         this.languages = languages;
     }
 
-    public void setLanguages(JSONObject languages) {
+    // TODO
+    /*public void setLanguages(JSONObject languages) {
         Configuration configuration = new Configuration();
         for (String lang : languages.keySet()) {
             JSONObject json = languages.optJSONObject(lang);
@@ -96,7 +93,7 @@ public class MainConfig implements TritonConfig {
                 setMainLanguage(lang);
         }
         this.languages = configuration;
-    }
+    }*/
 
     public void setMainLanguage(String mainLanguage) {
         this.mainLanguage = mainLanguage;
@@ -139,17 +136,18 @@ public class MainConfig implements TritonConfig {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 Triton.get().getLogger()
-                        .logDebugWarning("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                        .logError("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
             }
             return;
         }
-        try {
+        // TODO
+        /*try {
             JSONObject obj = new JSONObject(FileUtils.contentsToString(file));
             setLanguages(obj);
         } catch (JSONException e) {
             Triton.get().getLogger().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
                     e.getMessage());
-        }
+        }*/
     }
 
     private void setupLanguageCreation(Configuration section) {

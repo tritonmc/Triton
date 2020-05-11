@@ -3,33 +3,15 @@ package com.rexcantor64.triton.bridge;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.Language;
-import com.rexcantor64.triton.language.item.LanguageItem;
-import com.rexcantor64.triton.language.item.LanguageSign;
-import com.rexcantor64.triton.language.item.LanguageText;
-import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.json.JSONObject;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
 
 public class SpigotBridgeManager implements PluginMessageListener {
 
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] bytes) {
-        if (!channel.equals("triton:main")) return;
+        /*if (!channel.equals("triton:main")) return;
 
         long start = System.currentTimeMillis();
 
@@ -132,7 +114,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
             if (Triton.get().getConf().isDebug())
                 e.printStackTrace();
-        }
+        }*/
     }
 
     public void updatePlayerLanguage(SpigotLanguagePlayer lp) {

@@ -1,16 +1,15 @@
 package com.rexcantor64.triton.web;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 public class TwinManager {
 
@@ -23,7 +22,8 @@ public class TwinManager {
     }
 
     public HttpResponse upload() {
-        try {
+        //TODO
+        /*try {
             if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
                 return null;
 
@@ -127,7 +127,8 @@ public class TwinManager {
             }
         } catch (Exception e) {
             return new HttpResponse(false, 0, e.getMessage());
-        }
+        }*/
+        return null;
     }
 
     public HttpResponse download(String id) {

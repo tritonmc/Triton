@@ -1,17 +1,10 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.item.LanguageSign;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class LocationUtils {
 
-    private static LanguageSign.SignLocation jsonToLocation(JSONObject obj) {
-        return new LanguageSign.SignLocation(obj.optString("server", null), obj.optString("world", "world"), obj
+    // TODO
+    /*private static SignLocation jsonToLocation(JSONObject obj) {
+        return new SignLocation(obj.optString("server", null), obj.optString("world", "world"), obj
                 .optInt("x", 0), obj.optInt("y", 0), obj.optInt("z", 0));
     }
 
@@ -39,6 +32,6 @@ public class LocationUtils {
         return obj1 == obj2 || obj1 != null && obj2 != null && obj1.optInt("x", 0) == obj2.optInt("x", 0) && obj1
                 .optInt("y", 0) == obj2.optInt("y", 0) && obj1.optInt("z", 0) == obj2.optInt("z", 0) && obj1
                 .optString("world", "world").equals(obj2.optString("world", "world"));
-    }
+    }*/
 
 }

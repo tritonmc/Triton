@@ -1,20 +1,26 @@
 package com.rexcantor64.triton.storage;
 
 import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.player.LanguagePlayer;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public interface Storage {
+public abstract class Storage {
 
-    Language getLanguageFromIp(String ip);
+    protected ConcurrentHashMap<String, Collection> collections = new ConcurrentHashMap<>();
 
-    Language getLanguage(LanguagePlayer lp);
+    public abstract Language getLanguageFromIp(String ip);
 
-    void setLanguage(UUID uuid, String ip, Language newLanguage);
+    public abstract Language getLanguage(LanguagePlayer lp);
 
-    boolean uploadToStorage(JSONObject metadata, JSONArray items);
+    public abstract void setLanguage(UUID uuid, String ip, Language newLanguage);
+
+    public abstract void load();
+
+    public boolean uploadToStorage() {
+        throw new UnsupportedOperationException("Uploading to storage is not supported on local storage");
+    }
 
 }

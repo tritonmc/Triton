@@ -1,13 +1,9 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.Triton;
-import lombok.val;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 public class JSONUtils {
 
-    public static JSONObject applyPatches(JSONObject obj, JSONArray patches) {
+    // TODO
+    /*public static JSONObject applyPatches(JSONObject obj, JSONArray patches) {
         patchLoop:
         for (int i = 0; i < patches.length(); i++) {
             JSONObject patch = patches.optJSONObject(i);
@@ -135,6 +131,6 @@ public class JSONUtils {
         val map = obj.toMap();
         for (String key : keys) map.remove(key);
         return new JSONObject(map);
-    }
+    }*/
 
 }

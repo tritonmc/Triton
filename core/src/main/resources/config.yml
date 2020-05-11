@@ -63,7 +63,7 @@ twin-token: ""
 
 # Determines how verbose the logging will be. A lower value means less verbose.
 # 0 (default): Only errors and startup messages are logged to the console.
-# 1: Also outputs details about config initialization (translation count, startup time, etc).
+# 1: Also outputs details about config initialization and other relevant information (translation count, startup time, etc).
 # 2: Also outputs information related to reading/writing files, as well as communication with BungeeCord and a database.
 # 3: Logs EVERYTHING. Only recommended for debugging purposes. When enabled, every translation job will be logged to the console.
 log-level: 0

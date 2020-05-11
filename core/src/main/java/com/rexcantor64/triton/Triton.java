@@ -16,9 +16,9 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.Storage;
-import com.rexcantor64.triton.storage.YamlStorage;
 import com.rexcantor64.triton.utils.FileUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
@@ -129,7 +129,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
             logger.logError("Failed to connect to database, falling back to YAML storage!");
 
         }
-        this.storage = new YamlStorage();
+        this.storage = new LocalStorage();
     }
 
     public SpigotBridgeManager getBridgeManager() {

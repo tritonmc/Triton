@@ -4,33 +4,23 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.item.LanguageItem;
-import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
-import com.rexcantor64.triton.utils.LocationUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getTag().equals("triton:main")) return;
+        // TODO
+        /*if (!e.getTag().equals("triton:main")) return;
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
         try {
@@ -83,7 +73,7 @@ public class BungeeBridgeManager implements Listener {
             Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());
             if (Triton.get().getConf().isDebug())
                 e1.printStackTrace();
-        }
+        }*/
     }
 
     @EventHandler

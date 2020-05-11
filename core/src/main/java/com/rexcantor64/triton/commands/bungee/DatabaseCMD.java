@@ -25,12 +25,13 @@ public class DatabaseCMD implements CommandExecutor {
         if (mode.equalsIgnoreCase("upload") || mode.equalsIgnoreCase("u")) {
             try {
                 s.sendMessage(Triton.get().getMessagesConfig().getMessage("other.database-loading"));
-                Triton.get().runAsync(() -> {
+                // TODO
+                /*Triton.get().runAsync(() -> {
                     val metadata = Triton.get().getLanguageConfig().getMetadataList();
                     val items = Triton.get().getLanguageConfig().getRaw();
                     Triton.get().getStorage().uploadToStorage(metadata, items);
                     s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
-                });
+                });*/
             } catch (UnsupportedOperationException e) {
                 s.sendMessage(Triton.get().getMessagesConfig()
                         .getMessage("error.database-not-supported"));
