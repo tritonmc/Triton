@@ -1,6 +1,8 @@
 package com.rexcantor64.triton.language.item;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Data
 public abstract class LanguageItem {
@@ -57,20 +59,19 @@ public abstract class LanguageItem {
 
     public abstract LanguageItemType getType();
 
+    @RequiredArgsConstructor
+    @Getter
     public enum LanguageItemType {
         TEXT("text"), SIGN("sign");
 
-        private final String code;
+        private final String name;
 
-        LanguageItemType(String code) {
-            this.code = code;
-        }
-
-        private static LanguageItemType getType(String code) {
+        // TODO
+        /*private static LanguageItemType getType(String code) {
             for (LanguageItemType item : values())
                 if (item.code.equalsIgnoreCase(code)) return item;
             return null;
-        }
+        }*/
     }
 
 }

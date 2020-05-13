@@ -27,10 +27,12 @@ public class MessagesConfig {
                 .load(Triton.get().getLoader().getResourceAsStream("messages.yml"));
         defaultMessages = YAMLUtils.deepToMap(defaultConf, "");
 
-        if (messages.size() != defaultMessages.size())
+        if (messages.size() != defaultMessages.size()) {
             Triton.get().getLogger()
-                    .logWarning(1, "It seems like your messages.yml file is outdated. \nYou can get an up-to-date " +
-                            "copy at https://triton.rexcantor64.com/messagesyml");
+                    .logWarning(1, "It seems like your messages.yml file is outdated");
+            Triton.get().getLogger()
+                    .logWarning(1, "You can get an up-to-date copy at https://triton.rexcantor64.com/messagesyml");
+        }
     }
 
     private String getString(String code) {

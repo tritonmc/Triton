@@ -21,7 +21,7 @@ public class Logger {
     }
 
     public void logError(String error, Object... arguments) {
-        logWarning(0, error, arguments);
+        logError(0, error, arguments);
     }
 
     public void logInfo(int level, String info, Object... arguments) {

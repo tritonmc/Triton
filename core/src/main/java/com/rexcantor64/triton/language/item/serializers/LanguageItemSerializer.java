@@ -15,10 +15,15 @@ public class LanguageItemSerializer implements JsonDeserializer<LanguageItem> {
         val key = json.get("key");
         if (key == null || !key.isJsonPrimitive()) throw new JsonParseException("Translation requires a key");
         item.setKey(key.getAsString());
+
+        val twinData = json.get("_twin");
+        if (twinData != null && twinData.isJsonObject())
+            item.setTwinData(context.deserialize(twinData, TWINData.class));
     }
 
     static void serialize(LanguageItem item, JsonObject json, JsonSerializationContext context) {
         json.addProperty("key", item.getKey());
+        json.addProperty("type", item.getType().getName());
 
         if (item.getTwinData() != null)
             json.add("_twin", context.serialize(item.getTwinData(), TWINData.class));

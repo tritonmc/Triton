@@ -10,12 +10,14 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +31,11 @@ public class LocalStorage extends Storage {
 
     @Override
     public void load() {
+        loadPlayerData();
+        this.collections = downloadFromStorage();
+    }
+
+    public void loadPlayerData() {
         //val languageMap = new ConcurrentHashMap<String, String>();
         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
         if (playersFile.isFile()) {
@@ -53,26 +60,6 @@ public class LocalStorage extends Storage {
             }
         }
         //this.languageMap = languageMap;
-
-        val collections = new ConcurrentHashMap<String, Collection>();
-        val translationsFolder = new File(Triton.get().getDataFolder(), "translations");
-        if (translationsFolder.isDirectory()) {
-            val colFiles = translationsFolder.listFiles();
-            if (colFiles != null)
-                for (val colFile : colFiles) {
-                    if (colFile.getName().endsWith(".json"))
-                        collections.put(colFile.getName().substring(0, colFile.getName().length() - 5),
-                                CollectionSerializer.parse(getReaderFromFile(colFile)));
-                    else
-                        Triton.get().getLogger()
-                                .logWarning(2, "Did not load file %1 because it is not a JSON file.", colFile
-                                        .getName());
-                }
-            else
-                Triton.get().getLogger().logWarning(2, "An I/O error occurred while loading the translations folder.");
-        }
-        this.collections = collections;
-
     }
 
     @Override
@@ -117,8 +104,10 @@ public class LocalStorage extends Storage {
             if (changed) {
                 Triton.get().runAsync(() -> {
                     try {
+                        // TODO use RandomAcessFile with FileLock if this does not work correctly
                         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
-                        gson.toJson(languageMap, new FileWriter(playersFile));
+                        @Cleanup val fileWriter = new FileWriter(playersFile);
+                        gson.toJson(languageMap, fileWriter);
                     } catch (Exception e) {
                         Triton.get().getLogger()
                                 .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
@@ -141,4 +130,68 @@ public class LocalStorage extends Storage {
         return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
     }
 
+    @Override
+    public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
+        Triton.get().getLogger().logInfo(2, "Saving collections to local storage...");
+        val translationsFolder = new File(Triton.get().getDataFolder(), "translations");
+        if (!translationsFolder.exists())
+            if (!translationsFolder.mkdirs()) {
+                Triton.get().getLogger().logError("Couldn't create translations folder to save collections.");
+                return false;
+            }
+
+        if (!translationsFolder.isDirectory()) {
+            Triton.get().getLogger()
+                    .logError("There is a file name 'translations' in the Triton folder that is not a folder.");
+            return false;
+        }
+
+        for (val file : Objects.requireNonNull(translationsFolder.listFiles())) {
+            if (!file.isDirectory() && file.getName().endsWith(".json") && !collections
+                    .containsKey(file.getName().substring(0, file.getName().length() - 5)))
+                if (!file.delete())
+                    Triton.get().getLogger()
+                            .logError("Failed to delete translations/%1. Some additional translations might be loaded" +
+                                    " from local storage in the future.", file.getName());
+                else
+                    Triton.get().getLogger().logInfo(2, "Deleted translations/%1", file.getName());
+        }
+
+        collections.forEach((key, value) -> {
+            try {
+                Triton.get().getLogger().logInfo(2, "Saving translations/%1.json", key);
+                val collectionFile = new File(translationsFolder, key + ".json");
+                @Cleanup val fileWriter = new OutputStreamWriter(new FileOutputStream(collectionFile),
+                        StandardCharsets.UTF_8);
+                CollectionSerializer.toJson(value, fileWriter);
+            } catch (Exception e) {
+                Triton.get().getLogger()
+                        .logError("Failed to save collection %1.json: %2", key, e
+                                .getMessage());
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public ConcurrentHashMap<String, Collection> downloadFromStorage() {
+        val collections = new ConcurrentHashMap<String, Collection>();
+        val translationsFolder = new File(Triton.get().getDataFolder(), "translations");
+        if (translationsFolder.isDirectory()) {
+            val colFiles = translationsFolder.listFiles();
+            if (colFiles != null)
+                for (val colFile : colFiles) {
+                    if (colFile.getName().endsWith(".json"))
+                        collections.put(colFile.getName().substring(0, colFile.getName().length() - 5),
+                                CollectionSerializer.parse(getReaderFromFile(colFile)));
+                    else
+                        Triton.get().getLogger()
+                                .logWarning(2, "Did not load file %1 because it is not a JSON file.", colFile
+                                        .getName());
+                }
+            else
+                Triton.get().getLogger().logWarning(2, "An I/O error occurred while loading the translations folder.");
+        }
+        return collections;
+    }
 }

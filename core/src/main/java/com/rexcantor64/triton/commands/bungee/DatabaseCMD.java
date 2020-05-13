@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.commands.bungee;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
 import net.md_5.bungee.api.CommandSender;
 
@@ -21,23 +22,30 @@ public class DatabaseCMD implements CommandExecutor {
             return;
         }
 
+        val storage = Triton.get().getStorage();
+        if (storage instanceof LocalStorage) {
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.database-not-supported"));
+            return;
+        }
+
         val mode = args[1];
         if (mode.equalsIgnoreCase("upload") || mode.equalsIgnoreCase("u")) {
-            try {
-                s.sendMessage(Triton.get().getMessagesConfig().getMessage("other.database-loading"));
-                // TODO
-                /*Triton.get().runAsync(() -> {
-                    val metadata = Triton.get().getLanguageConfig().getMetadataList();
-                    val items = Triton.get().getLanguageConfig().getRaw();
-                    Triton.get().getStorage().uploadToStorage(metadata, items);
-                    s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
-                });*/
-            } catch (UnsupportedOperationException e) {
-                s.sendMessage(Triton.get().getMessagesConfig()
-                        .getMessage("error.database-not-supported"));
-            }
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("other.database-loading"));
+            Triton.get().runAsync(() -> {
+                val localStorage = new LocalStorage();
+                val collections = localStorage.downloadFromStorage();
+
+                Triton.get().getStorage().uploadToStorage(collections);
+                s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
+            });
         } else if (mode.equals("download") || mode.equals("d")) {
-            s.sendMessage("[Triton v3 BETA] Not implemented yet");
+            s.sendMessage(Triton.get().getMessagesConfig().getMessage("other.database-loading"));
+            Triton.get().runAsync(() -> {
+                val localStorage = new LocalStorage();
+                localStorage.uploadToStorage(Triton.get().getStorage().getCollections());
+
+                s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
+            });
         } else {
             s.sendMessage(Triton.get().getMessagesConfig().getMessage("error.database-invalid-mode", mode));
         }

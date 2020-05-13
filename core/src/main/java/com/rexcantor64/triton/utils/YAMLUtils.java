@@ -20,7 +20,7 @@ public class YAMLUtils {
         for (val key : conf.getKeys()) {
             Object value = conf.get(key);
             if (value instanceof Configuration)
-                result.putAll(deepToMap(conf, prefix + key + "."));
+                result.putAll(deepToMap((Configuration) value, prefix + key + "."));
             else
                 result.put(prefix + key, value);
         }

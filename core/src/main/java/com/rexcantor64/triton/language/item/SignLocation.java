@@ -2,12 +2,14 @@ package com.rexcantor64.triton.language.item;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Objects;
 
 @Data
 @AllArgsConstructor
 public class SignLocation implements com.rexcantor64.triton.api.language.SignLocation {
+    @EqualsAndHashCode.Exclude
     private String server;
     private String world;
     private int x;
@@ -18,13 +20,8 @@ public class SignLocation implements com.rexcantor64.triton.api.language.SignLoc
         this(null, name, x, y, z);
     }
 
-    public boolean equalsNoServer(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SignLocation that = (SignLocation) o;
-        return x == that.x &&
-                y == that.y &&
-                z == that.z &&
-                Objects.equals(world, that.world);
+    public boolean equalsWithServer(Object that) {
+        return this.equals(that) && Objects.equals(server, ((SignLocation) that).server);
     }
+
 }

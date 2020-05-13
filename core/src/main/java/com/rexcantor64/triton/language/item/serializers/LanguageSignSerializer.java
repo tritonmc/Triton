@@ -7,11 +7,11 @@ import com.rexcantor64.triton.language.item.SignLocation;
 import lombok.val;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LanguageSignSerializer implements JsonSerializer<LanguageSign>, JsonDeserializer<LanguageSign> {
-    private static final Type LANGUAGES_TYPE = new TypeToken<Map<String, String[]>>() {
+    private static final Type LANGUAGES_TYPE = new TypeToken<HashMap<String, String[]>>() {
     }.getType();
     private static final Type LOCATIONS_TYPE = new TypeToken<List<SignLocation>>() {
     }.getType();
@@ -38,14 +38,12 @@ public class LanguageSignSerializer implements JsonSerializer<LanguageSign>, Jso
 
         LanguageItemSerializer.serialize(item, json, context);
 
-        json.addProperty("type", "sign");
-
         if (item.getLanguages() != null)
             json.add("lines", context.serialize(item.getLanguages(), LANGUAGES_TYPE));
 
         if (item.getLocations() != null)
             json.add("locations", context.serialize(item.getLocations(), LOCATIONS_TYPE));
 
-        return null;
+        return json;
     }
 }

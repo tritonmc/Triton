@@ -105,7 +105,7 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(Triton.get().getMessage("other.selector-gui-prev", "&aPrevious"));
+            stackMeta.setDisplayName(Triton.get().getMessagesConfig().getMessage("other.selector-gui-prev"));
             backwardsButton.setItemMeta(stackMeta);
             inv.setItem(45, backwardsButton);
         }
@@ -115,7 +115,7 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(Triton.get().getMessage("other.selector-gui-forward", "&aNext"));
+            stackMeta.setDisplayName(Triton.get().getMessagesConfig().getMessage("other.selector-gui-forward"));
             forwardButton.setItemMeta(stackMeta);
             inv.setItem(53, forwardButton);
         }
@@ -125,8 +125,8 @@ public class ScrollableGui extends Gui {
         stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-        stackMeta.setDisplayName(Triton.get()
-                .getMessage("other.selector-gui-currentpage", "&aPage %1 of %2", page, getMaxPages()));
+        stackMeta.setDisplayName(Triton.get().getMessagesConfig()
+                .getMessage("other.selector-gui-currentpage", page, getMaxPages()));
         infoButton.setItemMeta(stackMeta);
         inv.setItem(49, infoButton);
     }

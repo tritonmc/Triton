@@ -1,15 +1,7 @@
 package com.rexcantor64.triton.commands;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.item.LanguageItem;
-import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,7 +9,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.Set;
 
 public class SignCMD implements CommandExecutor, TabCompleter {
 
@@ -28,7 +19,10 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        Player p = (Player) s;
+        // TODO
+        s.sendMessage("[Triton v3 Beta] Disabled for now.");
+
+        /*Player p = (Player) s;
 
         if (!p.hasPermission("triton.sign")) {
             p.sendMessage(Triton.get().getMessagesConfig()
@@ -107,7 +101,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
             p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-remove"));
         }
 
-
+*/
         return true;
     }
 
@@ -147,7 +141,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
         List<String> tab = Lists.newArrayList();
-        if (!s.hasPermission("triton.sign"))
+        /*if (!s.hasPermission("triton.sign"))
             return tab;
         if (args.length == 2)
             for (String str : new String[]{"set", "remove"})
@@ -156,7 +150,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
         if (args.length == 3 && args[1].equals("set"))
             for (LanguageItem item : Triton.get().getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN))
                 if (item.getKey().startsWith(args[2]))
-                    tab.add(item.getKey());
+                    tab.add(item.getKey());*/
         return tab;
     }
 

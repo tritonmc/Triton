@@ -22,7 +22,7 @@ public class ItemStackParser {
                     .valueOf(layer.getPattern().getType())));
         bm.setDisplayName(banner.getDisplayName());
         if (active)
-            bm.setLore(Collections.singletonList(Triton.get().getMessage("other.selected", "&6Currently selected")));
+            bm.setLore(Collections.singletonList(Triton.get().getMessagesConfig().getMessage("other.selected")));
         bm.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_ENCHANTS,
                 ItemFlag.HIDE_PLACED_ON, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE);
         is.setItemMeta(bm);

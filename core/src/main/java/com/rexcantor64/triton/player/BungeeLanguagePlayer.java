@@ -82,8 +82,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         BungeeCord.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale && getParent() != null)
-            parent.sendMessage(TextComponent.fromLegacyText(Triton.get().getMessage("success.detected-language",
-                    "&aYour language has been automatically set to %1", language.getDisplayName())));
+            parent.sendMessage(TextComponent.fromLegacyText(Triton.get().getMessagesConfig()
+                    .getMessage("success.detected-language", language.getDisplayName())));
         this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
         ByteArrayDataOutput out = ByteStreams.newDataOutput();

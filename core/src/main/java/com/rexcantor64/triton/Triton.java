@@ -1,7 +1,5 @@
 package com.rexcantor64.triton;
 
-import com.rexcantor64.triton.bridge.SpigotBridgeManager;
-import com.rexcantor64.triton.config.LanguageConfig;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.MessagesConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
@@ -37,7 +35,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     // Configs
     private Configuration configYAML;
     private MainConfig config;
-    private LanguageConfig languageConfig;
     private MessagesConfig messagesConfig;
     // Managers
     private LanguageManager languageManager;
@@ -69,7 +66,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         logger = new Logger(loader.getLogger());
 
         config = new MainConfig(this);
-        languageConfig = new LanguageConfig();
         languageManager = new LanguageManager();
         playerManager = new PlayerManager();
         messagesConfig = new MessagesConfig();
@@ -85,9 +81,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
         config.setup();
         logger.setLogLevel(config.getLogLevel());
-        setupStorage();
         messagesConfig.setup();
-        languageConfig.setup(config.isBungeecord());
+        setupStorage();
         languageManager.setup();
         for (LanguagePlayer lp : playerManager.getAll())
             lp.refreshAll();
@@ -121,19 +116,20 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     private void setupStorage() {
         if (config.isMysql()) {
-            MysqlStorage mysqlStorage = new MysqlStorage(config.getMysqlHost(), config.getMysqlPort(), config
-                    .getMysqlDatabase(), config.getMysqlUser(), config.getMysqlPassword(), config
-                    .getMysqlTablePrefix());
-            this.storage = mysqlStorage;
-            if (mysqlStorage.setup()) return;
-            logger.logError("Failed to connect to database, falling back to YAML storage!");
-
+            try {
+                MysqlStorage mysqlStorage = new MysqlStorage(config.getMysqlHost(), config.getMysqlPort(), config
+                        .getMysqlDatabase(), config.getMysqlUser(), config.getMysqlPassword(), config
+                        .getMysqlTablePrefix());
+                this.storage = mysqlStorage;
+                mysqlStorage.load();
+                return;
+            } catch (Exception ignore) {
+                logger.logError("Failed to connect to database, falling back to local storage!");
+                return;
+            }
         }
         this.storage = new LocalStorage();
-    }
-
-    public SpigotBridgeManager getBridgeManager() {
-        return null;
+        this.storage.load();
     }
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {

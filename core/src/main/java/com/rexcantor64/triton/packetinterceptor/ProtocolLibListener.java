@@ -18,8 +18,6 @@ import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.item.LanguageItem;
-import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
@@ -735,7 +733,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshSigns(SpigotLanguagePlayer player) {
-        out:
+        // TODO
+        /*out:
         for (LanguageItem item : main.getLanguageManager().getAllItems(LanguageItem.LanguageItemType.SIGN)) {
             LanguageSign sign = (LanguageSign) item;
             for (SignLocation location : sign.getLocations())
@@ -781,7 +780,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         main.getLogger().logError("Failed to send sign update packet: %1", e.getMessage());
                     }
                 }
-        }
+        }*/
     }
 
     @Override

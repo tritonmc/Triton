@@ -1,11 +1,13 @@
 package com.rexcantor64.triton.language.item;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.HashMap;
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class LanguageSign extends LanguageItem {
 
     private List<SignLocation> locations;
@@ -24,7 +26,7 @@ public class LanguageSign extends LanguageItem {
     public boolean hasLocation(SignLocation loc, boolean checkServer) {
         if (loc != null)
             for (SignLocation l : locations)
-                if (checkServer ? loc.equals(l) : loc.equalsNoServer(l)) return true;
+                if (checkServer ? loc.equalsWithServer(l) : loc.equals(l)) return true;
         return false;
     }
 

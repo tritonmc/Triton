@@ -1,43 +1,52 @@
 package com.rexcantor64.triton.storage;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.player.LanguagePlayer;
-import com.rexcantor64.triton.utils.JSONUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Cleanup;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.var;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class MysqlStorage implements Storage {
+@RequiredArgsConstructor
+public class MysqlStorage extends Storage {
 
-    private HikariConfig config = new HikariConfig();
+    private static final Type SIGN_TYPE = new TypeToken<HashMap<String, String[]>>() {
+    }.getType();
+    private static final Type TEXT_TYPE = new TypeToken<HashMap<String, String>>() {
+    }.getType();
+    private static final Type LOCATIONS_TYPE = new TypeToken<List<SignLocation>>() {
+    }.getType();
+    private static final Type STRING_LIST_TYPE = new TypeToken<List<String>>() {
+    }.getType();
+    private static final Gson gson = new Gson();
+
+    private final HikariConfig config = new HikariConfig();
+    private final String host;
+    private final int port;
+    private final String database;
+    private final String user;
+    private final String password;
+    private final String tablePrefix;
     private HikariDataSource dataSource;
-    private String host;
-    private int port;
-    private String database;
-    private String user;
-    private String password;
-    private String tablePrefix;
-
     private IpCache ipCache;
 
-    public MysqlStorage(String host, int port, String database, String user, String password, String tablePrefix) {
-        this.host = host;
-        this.port = port;
-        this.database = database;
-        this.user = user;
-        this.password = password;
-        this.tablePrefix = tablePrefix;
-        config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL" +
-                "=false");
+    @Override
+    public void load() {
+        config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false");
         config.setUsername(user);
         config.setPassword(password);
         config.addDataSourceProperty("cachePrepStmts", "true");
@@ -46,13 +55,20 @@ public class MysqlStorage implements Storage {
         this.dataSource = new HikariDataSource(config);
 
         this.ipCache = new IpCache();
+
+        if (!setup()) throw new RuntimeException("Failed to setup database connection");
+
+        val data = downloadFromStorage();
+        if (data == null) throw new RuntimeException("Failed to get translations from database");
+
+        this.collections = data;
     }
 
     private Connection openConnection() throws SQLException {
         return this.dataSource.getConnection();
     }
 
-    public boolean setup() {
+    private boolean setup() {
         try (Connection connection = openConnection()) {
             Statement stmt = connection.createStatement();
             // TODO sanitize tablePrefix
@@ -60,14 +76,13 @@ public class MysqlStorage implements Storage {
                     "`value` VARCHAR(100) NOT NULL, PRIMARY KEY (`key`) );");
             stmt.execute("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "collections` ( `name` VARCHAR(100) NOT NULL " +
                     ", `servers` TEXT NOT NULL , `blacklist` BOOLEAN NOT NULL , PRIMARY KEY (`name`));");
-            stmt.execute("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "translations` ( `id` INT NOT NULL " +
-                    "AUTO_INCREMENT , `collection` VARCHAR(100) NOT NULL , `type` ENUM('text','sign') NOT NULL " +
-                    "DEFAULT 'text' , `field_key` VARCHAR(200) NOT NULL , `content` MEDIUMTEXT NOT NULL , `blacklist`" +
-                    " BOOLEAN NULL DEFAULT NULL , `servers` TEXT NULL DEFAULT NULL , `locations` MEDIUMTEXT NULL " +
-                    "DEFAULT NULL , `patterns` TEXT NULL DEFAULT NULL , `twin_id` VARCHAR(36) NOT NULL , `twin_data` " +
-                    "TEXT NOT NULL , `archived` BOOLEAN NOT NULL , PRIMARY KEY (`id`), UNIQUE (`twin_id`) , " +
-                    "CONSTRAINT `collections_translations` FOREIGN KEY (`collection`) REFERENCES " +
-                    "`triton_collections`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE);");
+            stmt.execute("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "translations` ( `collection` VARCHAR(100) " +
+                    "NOT NULL , `type` ENUM('text','sign') NOT NULL DEFAULT 'text' , `field_key` VARCHAR(200) NOT " +
+                    "NULL , `content` MEDIUMTEXT NOT NULL , `blacklist` BOOLEAN NULL DEFAULT NULL , `servers` TEXT " +
+                    "NULL DEFAULT NULL , `locations` MEDIUMTEXT NULL DEFAULT NULL , `patterns` TEXT NULL DEFAULT NULL" +
+                    " , `twin_id` VARCHAR(36) NOT NULL , `twin_data` TEXT NOT NULL , UNIQUE (`twin_id`) , CONSTRAINT " +
+                    "`collections_translations` FOREIGN KEY (`collection`) REFERENCES `triton_collections`(`name`) ON" +
+                    " DELETE RESTRICT ON UPDATE CASCADE);");
             stmt.close();
             return true;
         } catch (SQLException e) {
@@ -101,7 +116,7 @@ public class MysqlStorage implements Storage {
     public void setLanguage(UUID uuid, String ip, Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
         if (uuid == null && ip == null) return;
-        Triton.get().getLogger().logDebug("Saving language for %1...", entity);
+        Triton.get().getLogger().logInfo(2, "Saving language for %1...", entity);
         try (Connection connection = openConnection()) {
             PreparedStatement stmt = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "player_data` (`key`, `value`) VALUES (?, ?) ON" +
@@ -116,7 +131,7 @@ public class MysqlStorage implements Storage {
                 stmt.executeUpdate();
             }
             stmt.close();
-            Triton.get().getLogger().logDebug("Saved!");
+            Triton.get().getLogger().logInfo(2, "Saved!");
         } catch (Exception e) {
             e.printStackTrace();
             Triton.get().getLogger()
@@ -143,7 +158,7 @@ public class MysqlStorage implements Storage {
     }
 
     @Override
-    public boolean uploadToStorage(@NonNull JSONObject metadata, @NonNull JSONArray items) {
+    public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
         try {
             @Cleanup val connection = openConnection();
 
@@ -154,70 +169,73 @@ public class MysqlStorage implements Storage {
             @Cleanup val collectionsStatement = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "collections` (`name`, `servers`, `blacklist`) " +
                             "VALUES (?, ?, ?);");
-            for (val collectionName : metadata.keySet()) {
-                val obj = metadata.optJSONObject(collectionName);
-                collectionsStatement.setString(1, collectionName);
-
-                val blacklist = obj.optBoolean("blacklist", true);
-                val servers = obj.optJSONArray("servers");
-                collectionsStatement.setString(2, servers.toString());
-                collectionsStatement.setBoolean(3, blacklist);
-
-                collectionsStatement.executeUpdate();
-            }
 
             @Cleanup val translationsStatement = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "translations` (`collection`, `type`, " +
                             "`field_key`, `content`, `blacklist`, `servers`, `locations`, `patterns`, `twin_id`, " +
-                            "`twin_data`, `archived`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-            for (Object o : items) {
-                val item = (JSONObject) o;
-                val type = item.optString("type", "text");
-                val collectionName = item.optString("fileName");
-                val collection = metadata.optJSONObject(collectionName);
+                            "`twin_data`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
 
-                translationsStatement.setString(1, collectionName);
-                translationsStatement.setString(2, type);
-                translationsStatement.setString(3, item.optString("key"));
-                if (type.equals("sign"))
-                    translationsStatement.setString(4, item.optJSONObject("lines").toString());
-                else
-                    translationsStatement.setString(4, item.optJSONObject("languages").toString());
+            for (val entry : collections.entrySet()) {
+                collectionsStatement.setString(1, entry.getKey());
 
-                val blacklist = item.optBoolean("blacklist", true);
-                val servers = item.optJSONArray("servers");
+                val metadata = entry.getValue().getMetadata();
 
-                if (blacklist == collection.optBoolean("blacklist", true))
-                    translationsStatement.setNull(5, Types.BOOLEAN);
-                else
-                    translationsStatement.setBoolean(5, blacklist);
+                collectionsStatement.setString(2, gson.toJson(metadata.getServers()));
+                collectionsStatement.setBoolean(3, metadata.isBlacklist());
 
-                if (servers == null || JSONUtils.isArrayEqualsIgnoreOrder(servers, collection.optJSONArray("servers")))
-                    translationsStatement.setNull(6, Types.VARCHAR);
-                else
-                    translationsStatement.setString(6, servers.toString());
+                collectionsStatement.executeUpdate();
 
-                if (type.equals("sign"))
-                    translationsStatement.setString(7, item.optJSONArray("locations").toString());
-                else
-                    translationsStatement.setNull(7, Types.VARCHAR);
+                for (val item : entry.getValue().getItems()) {
+                    val type = item.getType();
 
-                val patterns = item.optJSONArray("patterns");
-                if (patterns != null)
-                    translationsStatement.setString(8, patterns.toString());
-                else
-                    translationsStatement.setNull(8, Types.VARCHAR);
+                    translationsStatement.setString(1, entry.getKey());
+                    translationsStatement.setString(2, type.getName());
+                    translationsStatement.setString(3, item.getKey());
+                    if (item instanceof LanguageSign) {
+                        val itemSign = (LanguageSign) item;
+                        translationsStatement.setString(4, toJsonOrDefault(itemSign.getLanguages(), "{}"));
+                        translationsStatement.setNull(5, Types.BOOLEAN);
+                        translationsStatement.setNull(6, Types.VARCHAR);
+                        translationsStatement.setString(7, toJsonOrDefault(itemSign.getLocations(), "[]"));
+                        translationsStatement.setNull(8, Types.VARCHAR);
+                    } else {
+                        val itemText = (LanguageText) item;
 
-                var twin = item.optJSONObject("_twin");
-                if (twin == null) twin = new JSONObject();
+                        translationsStatement.setString(4, toJsonOrDefault(itemText.getLanguages(), "{}"));
 
-                translationsStatement.setString(9, twin.optString("id", UUID.randomUUID().toString()));
-                translationsStatement.setString(10, JSONUtils.getObjectWithoutKeys(twin, "id", "archived").toString());
+                        val blacklist = itemText.getBlacklist();
+                        val servers = itemText.getServers();
 
-                val archived = item.optBoolean("archived", false) || twin.optBoolean("archived", false);
-                translationsStatement.setBoolean(11, archived);
+                        if (blacklist == null)
+                            translationsStatement.setNull(5, Types.BOOLEAN);
+                        else
+                            translationsStatement.setBoolean(5, blacklist);
 
-                translationsStatement.executeUpdate();
+                        if (servers == null)
+                            translationsStatement.setNull(6, Types.VARCHAR);
+                        else
+                            translationsStatement.setString(6, gson.toJson(servers));
+
+                        translationsStatement.setNull(7, Types.VARCHAR);
+
+                        val patterns = itemText.getPatterns();
+                        if (patterns != null)
+                            translationsStatement.setString(8, gson.toJson(patterns));
+                        else
+                            translationsStatement.setNull(8, Types.VARCHAR);
+                    }
+
+                    var twin = item.getTwinData();
+                    if (twin == null) twin = new TWINData();
+                    twin.ensureValid();
+
+                    translationsStatement.setString(9, twin.getId().toString());
+                    val twinData = (JsonObject) gson.toJsonTree(twin, TWINData.class);
+                    twinData.remove("id");
+                    translationsStatement.setString(10, gson.toJson(twinData));
+
+                    translationsStatement.executeUpdate();
+                }
             }
 
             return true;
@@ -225,5 +243,97 @@ public class MysqlStorage implements Storage {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public ConcurrentHashMap<String, Collection> downloadFromStorage() {
+        try {
+            val collections = new ConcurrentHashMap<String, Collection>();
+            @Cleanup Connection connection = openConnection();
+
+            @Cleanup val collectionsStatement = connection
+                    .prepareStatement("SELECT name, servers, blacklist FROM `" + tablePrefix + "collections`;");
+
+            @Cleanup val collectionsResult = collectionsStatement.executeQuery();
+
+            while (collectionsResult.next()) {
+                val col = new Collection();
+                col.getMetadata().setServers(gson.fromJson(collectionsResult.getString("servers"), STRING_LIST_TYPE));
+                col.getMetadata().setBlacklist(collectionsResult.getBoolean("blacklist"));
+                collections.put(collectionsResult.getString("name"), col);
+            }
+
+            @Cleanup val translationsStatement = connection
+                    .prepareStatement("SELECT collection, type, field_key, content, blacklist, servers, locations, " +
+                            "patterns, twin_id, twin_data FROM `" + tablePrefix + "translations`;");
+
+            @Cleanup val translationsResult = translationsStatement.executeQuery();
+
+            while (translationsResult.next()) {
+                val type = translationsResult.getString("type");
+                if (type.equalsIgnoreCase("text")) {
+                    val item = new LanguageText();
+
+                    item.setKey(translationsResult.getString("field_key"));
+
+                    item.setLanguages(gson.fromJson(translationsResult.getString("content"), TEXT_TYPE));
+                    val blacklist = translationsResult.getObject("blacklist");
+                    if (blacklist != null)
+                        item.setBlacklist((boolean) blacklist);
+
+                    val servers = translationsResult.getString("servers");
+                    if (servers != null)
+                        item.setServers(gson.fromJson(servers, STRING_LIST_TYPE));
+
+                    val patterns = translationsResult.getString("patterns");
+                    if (patterns != null)
+                        item.setPatterns(gson.fromJson(patterns, STRING_LIST_TYPE));
+
+                    val twinDataString = translationsResult.getString("twin_data");
+                    val twinData = gson.fromJson(twinDataString, TWINData.class);
+
+                    val twinId = translationsResult.getString("twin_id");
+                    twinData.setId(UUID.fromString(twinId));
+
+                    item.setTwinData(twinData);
+
+                    val col = collections.get(translationsResult.getString("collection"));
+                    if (col != null)
+                        col.getItems().add(item);
+                } else if (type.equalsIgnoreCase("sign")) {
+                    val item = new LanguageSign();
+
+                    item.setKey(translationsResult.getString("field_key"));
+
+                    item.setLanguages(gson.fromJson(translationsResult.getString("content"), SIGN_TYPE));
+
+                    val locations = translationsResult.getString("locations");
+                    if (locations != null)
+                        item.setLocations(gson.fromJson(locations, LOCATIONS_TYPE));
+
+                    val twinDataString = translationsResult.getString("twin_data");
+                    val twinData = gson.fromJson(twinDataString, TWINData.class);
+
+                    val twinId = translationsResult.getString("twin_id");
+                    twinData.setId(UUID.fromString(twinId));
+
+                    item.setTwinData(twinData);
+
+                    val col = collections.get(translationsResult.getString("collection"));
+                    if (col != null)
+                        col.getItems().add(item);
+                }
+            }
+
+            return collections;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String toJsonOrDefault(Object obj, String def) {
+        if (obj == null) return def;
+        return gson.toJson(obj);
     }
 }

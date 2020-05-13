@@ -57,8 +57,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale)
             try {
-                toBukkit().sendMessage(Triton.get().getMessage("success.detected-language",
-                        "&aYour language has been automatically set to %1", lang.getDisplayName()));
+                toBukkit().sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("success.detected-language", lang.getDisplayName()));
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to sent language changed message.");
                 e.printStackTrace();

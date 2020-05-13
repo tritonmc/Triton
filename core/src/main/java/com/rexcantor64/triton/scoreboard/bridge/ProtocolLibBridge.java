@@ -84,7 +84,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
             Triton.get().getLogger()
-                    .logDebugWarning("Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
+                    .logWarning(1, "Failed to send updateTeamPrefixSuffix packet: %1", e.getMessage());
         }
     }
 
@@ -98,7 +98,7 @@ public class ProtocolLibBridge implements ScoreboardBridge {
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(owner.toBukkit(), container, false);
         } catch (Exception e) {
-            Triton.get().getLogger().logDebugWarning("Failed to send addEntryToTeam packet: %1", e.getMessage());
+            Triton.get().getLogger().logWarning(1, "Failed to send addEntryToTeam packet: %1", e.getMessage());
         }
     }
 

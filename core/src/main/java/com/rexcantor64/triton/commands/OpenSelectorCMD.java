@@ -23,7 +23,7 @@ public class OpenSelectorCMD implements CommandExecutor {
             return true;
         }
 
-        Triton.get().openLanguagesSelectionGUI(Triton.get().getPlayerManager().get(p.getUniqueId()));
+        Triton.asSpigot().openLanguagesSelectionGUI(Triton.get().getPlayerManager().get(p.getUniqueId()));
         return true;
     }
 

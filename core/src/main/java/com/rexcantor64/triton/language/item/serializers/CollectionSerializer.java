@@ -14,6 +14,7 @@ import java.util.Arrays;
 public class CollectionSerializer implements JsonDeserializer<Collection> {
 
     private static final Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
             .registerTypeAdapter(Collection.class, new CollectionSerializer())
             .registerTypeAdapter(LanguageItem.class, new LanguageItemSerializer())
             .registerTypeAdapter(LanguageText.class, new LanguageTextSerializer())
@@ -24,8 +25,8 @@ public class CollectionSerializer implements JsonDeserializer<Collection> {
         return gson.fromJson(json, Collection.class);
     }
 
-    public static String toJson(Collection collection) {
-        return gson.toJson(collection);
+    public static void toJson(Collection collection, Appendable reader) {
+        gson.toJson(collection, reader);
     }
 
     @Override

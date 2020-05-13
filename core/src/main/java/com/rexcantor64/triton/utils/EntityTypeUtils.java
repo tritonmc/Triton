@@ -33,7 +33,7 @@ public class EntityTypeUtils {
             }
             return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromId(id));
         } catch (Exception e) {
-            if (Triton.get().getConf().isDebug())
+            if (Triton.get().getConf().getLogLevel() > 0)
                 e.printStackTrace();
         }
         return EntityType.UNKNOWN;
