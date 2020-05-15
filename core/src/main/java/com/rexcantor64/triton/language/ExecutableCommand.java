@@ -2,15 +2,19 @@ package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.StringUtils;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Getter
+@RequiredArgsConstructor
 public class ExecutableCommand {
 
-    private String cmd;
-    private Type type;
+    private final String cmd;
+    private final Type type;
     private boolean universal = true;
     private List<String> servers = new ArrayList<>();
 
@@ -19,11 +23,6 @@ public class ExecutableCommand {
         this.type = type;
         this.universal = false;
         this.servers = servers;
-    }
-
-    private ExecutableCommand(String cmd, Type type) {
-        this.cmd = cmd;
-        this.type = type;
     }
 
     public static ExecutableCommand parse(String input) {
@@ -57,22 +56,6 @@ public class ExecutableCommand {
         return new ExecutableCommand(StringUtils
                 .join(":", Arrays.copyOfRange(inputSplit, 2, inputSplit.length)), type, Arrays
                 .asList(inputSplit[1].split(",")));
-    }
-
-    public String getCmd() {
-        return cmd;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public boolean isUniversal() {
-        return universal;
-    }
-
-    public List<String> getServers() {
-        return servers;
     }
 
     public enum Type {

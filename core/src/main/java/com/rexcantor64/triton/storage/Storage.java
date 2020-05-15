@@ -4,6 +4,7 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class Storage {
 
     @Getter
+    @Setter
     protected ConcurrentHashMap<String, Collection> collections = new ConcurrentHashMap<>();
 
     public abstract Language getLanguageFromIp(String ip);

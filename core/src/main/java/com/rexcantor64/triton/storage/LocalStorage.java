@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
@@ -176,6 +177,23 @@ public class LocalStorage extends Storage {
     @Override
     public ConcurrentHashMap<String, Collection> downloadFromStorage() {
         val collections = new ConcurrentHashMap<String, Collection>();
+
+        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) {
+            Triton.get().getLogger().logInfo(2, "Loading translations from cache since bungeecord mode is enabled.");
+
+            val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
+
+            if (!cacheFile.isFile()) {
+                Triton.get().getLogger()
+                        .logInfo(2, "Did not load translations from cache because cache file does not exist.");
+                return collections;
+            }
+
+            collections.put("cache", CollectionSerializer.parse(getReaderFromFile(cacheFile)));
+
+            return collections;
+        }
+
         val translationsFolder = new File(Triton.get().getDataFolder(), "translations");
         if (translationsFolder.isDirectory()) {
             val colFiles = translationsFolder.listFiles();

@@ -2,102 +2,146 @@ package com.rexcantor64.triton.bridge;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
+import lombok.val;
+import lombok.var;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class SpigotBridgeManager implements PluginMessageListener {
+
+    private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] bytes) {
-        /*if (!channel.equals("triton:main")) return;
+        if (!channel.equals("triton:main")) return;
 
-        long start = System.currentTimeMillis();
+        val start = System.currentTimeMillis();
 
-        DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
+        val in = new DataInputStream(new ByteArrayInputStream(bytes));
         try {
-            byte action = in.readByte();
+            val action = in.readByte();
             if (action == 0) {
                 try {
-                    boolean firstSend = in.readBoolean();
+                    val firstSend = in.readBoolean();
                     if (firstSend) {
-                        MainConfig config = Triton.get().getConf();
+                        val config = Triton.get().getConf();
                         config.setMainLanguage(in.readUTF());
                         short languageSize = in.readShort();
-                        JSONObject languages = new JSONObject();
-                        for (int i = 0; i < languageSize; i++) {
-                            String name = in.readUTF();
-                            String displayName = in.readUTF();
-                            String flag = in.readUTF();
-                            List<String> minecraftCodes = new ArrayList<>();
-                            short mcSize = in.readShort();
-                            for (int k = 0; k < mcSize; k++)
+                        val languages = new ArrayList<Language>();
+                        for (var i = 0; i < languageSize; i++) {
+                            val name = in.readUTF();
+                            val displayName = in.readUTF();
+                            val flag = in.readUTF();
+                            val minecraftCodes = new ArrayList<String>();
+                            val mcSize = in.readShort();
+                            for (var k = 0; k < mcSize; k++)
                                 minecraftCodes.add(in.readUTF());
-                            JSONObject lang = new JSONObject();
-                            lang.put("flag", flag);
-                            lang.put("minecraft-code", minecraftCodes);
-                            lang.put("display-name", displayName);
-                            lang.put("main", name.equals(config.getMainLanguage()));
-                            languages.put(name, lang);
+                            languages.add(new Language(name, flag, minecraftCodes, displayName, null));
                         }
                         config.setLanguages(languages);
+                        val jsonObj = new JsonObject();
                         File file = new File(Triton.get().getDataFolder(), "cache.json");
-                        Files.write(file.toPath(), languages.toString(4).getBytes(), StandardOpenOption.CREATE,
+                        jsonObj.addProperty("mainLanguage", config.getMainLanguage());
+                        jsonObj.add("languages", gson.toJsonTree(languages));
+                        Files.write(file.toPath(), gson.toJson(jsonObj)
+                                        .getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE,
                                 StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                     }
                     // Read language files
-                    List<LanguageItem> languageItems = new ArrayList<>();
-                    int itemsSize = in.readInt();
-                    for (int i = 0; i < itemsSize; i++) {
-                        byte type = in.readByte();
-                        String key = in.readUTF();
+                    val languageItems = new ArrayList<LanguageItem>();
+                    val itemsSize = in.readInt();
+                    for (var i = 0; i < itemsSize; i++) {
+                        val type = in.readByte();
+                        val key = in.readUTF();
                         switch (type) {
                             case 0:
                             case 2:
-                                HashMap<String, String> msgs = new HashMap<>();
-                                short langSize2 = in.readShort();
-                                for (int k = 0; k < langSize2; k++)
+                                val textItem = new LanguageText();
+                                textItem.setKey(key);
+
+                                val msgs = new HashMap<String, String>();
+                                val langSize = in.readShort();
+                                for (var k = 0; k < langSize; k++)
                                     msgs.put(in.readUTF(), in.readUTF());
-                                List<String> matches = new ArrayList<>();
+                                textItem.setLanguages(msgs);
+
+                                List<String> patterns = new ArrayList<>();
                                 if (type != 0) {
-                                    short matchesSize = in.readShort();
-                                    for (int k = 0; k < matchesSize; k++)
-                                        matches.add(in.readUTF());
+                                    val matchesSize = in.readShort();
+                                    for (var k = 0; k < matchesSize; k++)
+                                        patterns.add(in.readUTF());
                                 }
-                                languageItems.add(new LanguageText(key, msgs, matches));
+                                if (patterns.size() > 0) textItem.setPatterns(patterns);
+
+                                languageItems.add(textItem);
                                 break;
                             case 1:
-                                List<LanguageSign.SignLocation> signLocations = new ArrayList<>();
-                                short locSize = in.readShort();
-                                for (int k = 0; k < locSize; k++) {
-                                    signLocations.add(new LanguageSign.SignLocation(in.readUTF(), in.readInt(),
-                                            in.readInt(), in.readInt()));
-                                }
-                                HashMap<String, String[]> signLines = new HashMap<>();
-                                short langSize = in.readShort();
-                                for (int k = 0; k < langSize; k++)
+                                val signItem = new LanguageSign();
+                                signItem.setKey(key);
+
+                                val signLocations = new ArrayList<SignLocation>();
+                                val locSize = in.readShort();
+                                for (int k = 0; k < locSize; k++)
+                                    signLocations.add(new SignLocation(in.readUTF(), in.readInt(), in.readInt(), in
+                                            .readInt()));
+                                signItem.setLocations(signLocations);
+
+                                val signLines = new HashMap<String, String[]>();
+                                val linesSize = in.readShort();
+                                for (var k = 0; k < linesSize; k++)
                                     signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF()
                                             , in.readUTF()});
-                                languageItems.add(new LanguageSign(key, signLocations, signLines));
+                                signItem.setLines(signLines);
+
+                                languageItems.add(signItem);
                                 break;
                             default:
                                 Triton.get().getLogger()
-                                        .logDebugWarning("Received invalid type language item type while reading " +
+                                        .logWarning(2, "Received invalid type language item type while reading " +
                                                 "from BungeeCord: %1", type);
                                 break;
                         }
                     }
-                    if (firstSend)
-                        Triton.get().getLanguageConfig().setItems(languageItems).saveToCache();
-                    else
-                        Triton.get().getLanguageConfig().addItems(languageItems).saveToCache();
-                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
+                    ConcurrentHashMap<String, Collection> collections;
+                    if (firstSend) {
+                        collections = new ConcurrentHashMap<>();
+                        val col = new Collection();
+                        col.setItems(languageItems);
+                        collections.put("cache", col);
+                    } else {
+                        collections = Triton.get().getStorage().getCollections();
+                        val col = collections.containsKey("cache") ? collections.get("cache") : new Collection();
+                        col.getItems().addAll(languageItems);
+                    }
+                    Triton.get().getStorage().setCollections(collections);
+                    Triton.get().getStorage().uploadToStorage(collections);
+
+                    Triton.get().getLogger().logInfo(2, "Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
                     Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
-                        for (LanguagePlayer lp : Triton.get().getPlayerManager().getAll())
+                        for (val lp : Triton.get().getPlayerManager().getAll())
                             lp.refreshAll();
                     }, 10L);
                 }
@@ -112,9 +156,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
-            if (Triton.get().getConf().isDebug())
+            if (Triton.get().getConf().getLogLevel() >= 1)
                 e.printStackTrace();
-        }*/
+        }
     }
 
     public void updatePlayerLanguage(SpigotLanguagePlayer lp) {

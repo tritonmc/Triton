@@ -1,14 +1,22 @@
 package com.rexcantor64.triton.config;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.utils.YAMLUtils;
+import lombok.*;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -17,8 +25,15 @@ import java.util.List;
 @Getter
 public class MainConfig implements TritonConfig {
 
-    private final Triton main;
-    private Configuration languages;
+    private final static JsonParser JSON_PARSER = new JsonParser();
+    private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Type LANGUAGES_TYPE = new TypeToken<List<Language>>() {
+    }.getType();
+
+    private transient final Triton main;
+    @Setter
+    private List<Language> languages;
+    @Setter
     private String mainLanguage;
     private boolean runLanguageCommandsOnLogin;
     private boolean alwaysCheckClientLocale;
@@ -70,51 +85,37 @@ public class MainConfig implements TritonConfig {
         this.main = main;
     }
 
-    public void setLanguages(Configuration languages) {
-        this.languages = languages;
-    }
-
-    // TODO
-    /*public void setLanguages(JSONObject languages) {
-        Configuration configuration = new Configuration();
-        for (String lang : languages.keySet()) {
-            JSONObject json = languages.optJSONObject(lang);
-            if (json == null) continue;
-            Configuration section = configuration.getSection(lang);
-            section.set("flag", json.optString("flag"));
-            List<String> minecraftCodes = new ArrayList<>();
-            JSONArray minecraftCodesJSON = json.optJSONArray("minecraft-code");
-            if (minecraftCodesJSON != null)
-                for (int i = 0; i < minecraftCodesJSON.length(); i++)
-                    minecraftCodes.add(minecraftCodesJSON.optString(i));
-            section.set("minecraft-code", minecraftCodes);
-            section.set("display-name", json.optString("display-name"));
-            if (json.optBoolean("main"))
-                setMainLanguage(lang);
-        }
-        this.languages = configuration;
-    }*/
-
-    public void setMainLanguage(String mainLanguage) {
-        this.mainLanguage = mainLanguage;
-    }
-
     private void setup(Configuration section) {
         this.bungeecord = section.getBoolean("bungeecord", false);
         if (!this.bungeecord) {
-            this.languages = section.getSection("languages");
-            this.mainLanguage = section.getString("main-language", "en_GB");
-
-            Configuration database = section.getSection("database");
-            mysql = database.getBoolean("enabled", false);
-            mysqlHost = database.getString("host", "localhost");
-            mysqlPort = database.getInt("port", 3306);
-            mysqlDatabase = database.getString("database", "triton");
-            mysqlUser = database.getString("username", "root");
-            mysqlPassword = database.getString("password", "");
-            mysqlTablePrefix = database.getString("table-prefix", "triton_");
+            this.twinToken = section.getString("twin-token", "");
         }
-        this.twinToken = section.getString("twin-token", "");
+
+        val languagesSection = section.getSection("languages");
+        val languages = new ArrayList<Language>();
+        if (languagesSection != null) {
+            for (String lang : languagesSection.getKeys())
+                languages.add(new Language(
+                        lang,
+                        languagesSection.getString(lang + ".flag", "pa"),
+                        YAMLUtils.getStringOrStringList(languagesSection, lang + ".minecraft-code"),
+                        languagesSection.getString(lang + ".display-name", "&4Unknown"),
+                        languagesSection.getStringList(lang + ".commands")));
+        } else {
+            languages.add(new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>()));
+        }
+        this.languages = languages;
+
+        this.mainLanguage = section.getString("main-language", "en_GB");
+        Configuration database = section.getSection("database");
+        mysql = database.getBoolean("enabled", false);
+        mysqlHost = database.getString("host", "localhost");
+        mysqlPort = database.getInt("port", 3306);
+        mysqlDatabase = database.getString("database", "triton");
+        mysqlUser = database.getString("username", "root");
+        mysqlPassword = database.getString("password", "");
+        mysqlTablePrefix = database.getString("table-prefix", "triton_");
+
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
         this.logLevel = section.getInt("log-level", 0);
@@ -140,14 +141,26 @@ public class MainConfig implements TritonConfig {
             }
             return;
         }
-        // TODO
-        /*try {
-            JSONObject obj = new JSONObject(FileUtils.contentsToString(file));
-            setLanguages(obj);
-        } catch (JSONException e) {
+        try {
+            @Cleanup val reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+            val json = JSON_PARSER.parse(reader);
+            if (!json.isJsonObject()) {
+                Triton.get().getLogger().logWarning("Could not load languages from cache. JSON isn't a JSON object.");
+                return;
+            }
+            val mainLang = json.getAsJsonObject().getAsJsonPrimitive("mainLanguage");
+            if (mainLang == null || mainLang.getAsString() == null) {
+                Triton.get().getLogger()
+                        .logWarning("Could not load languages from cache. `mainLanguage` is not a string");
+                return;
+            }
+            this.mainLanguage = mainLang.getAsString();
+            setLanguages(gson.fromJson(json.getAsJsonObject().getAsJsonArray("languages"), LANGUAGES_TYPE));
+            this.languages.forEach(Language::computeProperties);
+        } catch (Exception e) {
             Triton.get().getLogger().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
                     e.getMessage());
-        }*/
+        }
     }
 
     private void setupLanguageCreation(Configuration section) {

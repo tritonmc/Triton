@@ -4,6 +4,11 @@ public class LanguageMigration {
 
     public static void migrate() {
         // TODO
+
+        // Remove universal from language items and collections
+        // Change cache.json
+
+
         /*File file = new File(Triton.get().getDataFolder(), "languages.json");
         if (!file.exists()) return;
         File translationsFolder = Triton.get().getTranslationsFolder();

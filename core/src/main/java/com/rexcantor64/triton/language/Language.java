@@ -1,60 +1,38 @@
 package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.banners.Banner;
+import lombok.Data;
 import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Data
 public class Language implements com.rexcantor64.triton.api.language.Language {
 
     private String name;
-    private List<String> minecraftCode;
+    private List<String> minecraftCodes;
     private String rawDisplayName;
-    private String displayName;
-    private Banner banner;
+    private transient String displayName;
+    private transient Banner banner;
     private String flagCode;
     private List<ExecutableCommand> cmds = new ArrayList<>();
 
-    public Language(String name, String flagCode, List<String> minecraftCode, String displayName, List<String> cmds) {
+    public Language(String name, String flagCode, List<String> minecraftCodes, String displayName, List<String> cmds) {
         this.name = name;
         this.rawDisplayName = displayName;
-        this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
-        banner = new Banner(flagCode, this.displayName);
-        this.minecraftCode = minecraftCode;
+        this.minecraftCodes = minecraftCodes;
         this.flagCode = flagCode;
         if (cmds != null)
             for (String cmd : cmds)
                 this.cmds.add(ExecutableCommand.parse(cmd));
+        computeProperties();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public List<String> getMinecraftCodes() {
-        return minecraftCode;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public Banner getBanner() {
-        return banner;
-    }
-
-    public String getRawDisplayName() {
-        return rawDisplayName;
-    }
-
-    public String getFlagCode() {
-        return flagCode;
-    }
-
-    public List<ExecutableCommand> getCmds() {
-        return cmds;
+    public void computeProperties() {
+        this.displayName = ChatColor.translateAlternateColorCodes('&', this.rawDisplayName);
+        this.banner = new Banner(flagCode, this.displayName);
     }
 
     @Override
@@ -65,4 +43,8 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
         return Objects.equals(name, language.name);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, minecraftCodes, rawDisplayName, displayName, banner, flagCode, cmds);
+    }
 }

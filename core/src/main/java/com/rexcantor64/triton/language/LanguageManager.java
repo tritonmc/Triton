@@ -3,10 +3,8 @@ package com.rexcantor64.triton.language;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
-import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
-import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
@@ -165,20 +163,14 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     public void setup() {
         Triton.get().getLogger().logInfo(1, "Setting up language manager...");
 
-        val languages = new ArrayList<Language>();
-        Configuration languagesConfig = Triton.get().getConf().getLanguages();
-        if (languagesConfig != null) {
-            for (String lang : languagesConfig.getKeys())
-                languages.add(mainLanguage = new Language(lang, languagesConfig.getString(lang + ".flag", "pa"),
-                        YAMLUtils.getStringOrStringList(languagesConfig, lang + ".minecraft-code"),
-                        languagesConfig.getString(lang + ".display-name", "&4Unknown"), languagesConfig
-                        .getStringList(lang +
-                                ".commands")));
-            this.mainLanguage = getLanguageByName(Triton.get().getConf().getMainLanguage(), true);
-        } else {
-            this.mainLanguage = new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>());
-            languages.add(this.mainLanguage);
-        }
+        val languages = Triton.get().getConf().getLanguages();
+        val mainLang = Triton.get().getConf().getMainLanguage();
+
+        for (val lang : languages)
+            if (lang.getName().equals(mainLang))
+                this.mainLanguage = lang;
+        if (this.mainLanguage == null) this.mainLanguage = languages.get(0);
+
         this.languages = languages;
 
         // Map<Language Name, Map<Translation Key, Text>>
@@ -197,8 +189,10 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
                 if (item instanceof LanguageText) {
                     val itemText = (LanguageText) item;
-                    if (itemText.getPatterns() != null)
+                    if (itemText.getPatterns() != null) {
                         itemText.getPatterns().forEach((pattern) -> matches.put(Pattern.compile(pattern), itemText));
+                        itemText.generateRegexStrings();
+                    }
 
                     if (itemText.getLanguages() != null)
                         itemText.getLanguages().forEach((key, value) -> {
@@ -208,8 +202,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                 }
                 if (item instanceof LanguageSign) {
                     val itemSign = (LanguageSign) item;
-                    if (itemSign.getLanguages() != null && itemSign.getLocations() != null)
-                        itemSign.getLanguages().forEach((key, value) -> {
+                    if (itemSign.getLines() != null && itemSign.getLocations() != null)
+                        itemSign.getLines().forEach((key, value) -> {
                             if (!signItems.containsKey(key)) signItems.put(key, new HashMap<>());
 
                             val signLang = signItems.get(key);

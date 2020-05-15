@@ -11,7 +11,7 @@ import java.util.List;
 public class LanguageSign extends LanguageItem {
 
     private List<SignLocation> locations;
-    private HashMap<String, String[]> languages;
+    private HashMap<String, String[]> lines;
 
     @Override
     public LanguageItemType getType() {
@@ -31,7 +31,7 @@ public class LanguageSign extends LanguageItem {
     }
 
     public String[] getLines(String languageName) {
-        return languages.get(languageName);
+        return lines.get(languageName);
     }
 
 }

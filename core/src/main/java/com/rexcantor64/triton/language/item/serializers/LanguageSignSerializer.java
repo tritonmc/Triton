@@ -24,7 +24,7 @@ public class LanguageSignSerializer implements JsonSerializer<LanguageSign>, Jso
         LanguageItemSerializer.deserialize(obj, item, context);
 
         if (obj.has("lines"))
-            item.setLanguages(context.deserialize(obj.get("lines"), LANGUAGES_TYPE));
+            item.setLines(context.deserialize(obj.get("lines"), LANGUAGES_TYPE));
 
         if (obj.has("locations"))
             item.setLocations(context.deserialize(obj.get("locations"), LOCATIONS_TYPE));
@@ -38,8 +38,8 @@ public class LanguageSignSerializer implements JsonSerializer<LanguageSign>, Jso
 
         LanguageItemSerializer.serialize(item, json, context);
 
-        if (item.getLanguages() != null)
-            json.add("lines", context.serialize(item.getLanguages(), LANGUAGES_TYPE));
+        if (item.getLines() != null)
+            json.add("lines", context.serialize(item.getLines(), LANGUAGES_TYPE));
 
         if (item.getLocations() != null)
             json.add("locations", context.serialize(item.getLocations(), LOCATIONS_TYPE));

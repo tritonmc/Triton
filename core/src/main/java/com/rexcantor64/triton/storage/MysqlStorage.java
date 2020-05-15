@@ -193,7 +193,7 @@ public class MysqlStorage extends Storage {
                     translationsStatement.setString(3, item.getKey());
                     if (item instanceof LanguageSign) {
                         val itemSign = (LanguageSign) item;
-                        translationsStatement.setString(4, toJsonOrDefault(itemSign.getLanguages(), "{}"));
+                        translationsStatement.setString(4, toJsonOrDefault(itemSign.getLines(), "{}"));
                         translationsStatement.setNull(5, Types.BOOLEAN);
                         translationsStatement.setNull(6, Types.VARCHAR);
                         translationsStatement.setString(7, toJsonOrDefault(itemSign.getLocations(), "[]"));
@@ -305,7 +305,7 @@ public class MysqlStorage extends Storage {
 
                     item.setKey(translationsResult.getString("field_key"));
 
-                    item.setLanguages(gson.fromJson(translationsResult.getString("content"), SIGN_TYPE));
+                    item.setLines(gson.fromJson(translationsResult.getString("content"), SIGN_TYPE));
 
                     val locations = translationsResult.getString("locations");
                     if (locations != null)
