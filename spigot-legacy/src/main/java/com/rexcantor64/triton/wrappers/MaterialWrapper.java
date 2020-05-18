@@ -1,4 +1,4 @@
-package com.rexcantor64.triton.legacy;
+package com.rexcantor64.triton.wrappers;
 
 import org.bukkit.Material;
 
