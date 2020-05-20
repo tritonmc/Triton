@@ -115,11 +115,11 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public abstract File getDataFolder();
 
     private void setupStorage() {
-        if (config.isMysql()) {
+        if (config.getStorageType().equalsIgnoreCase("mysql")) {
             try {
-                MysqlStorage mysqlStorage = new MysqlStorage(config.getMysqlHost(), config.getMysqlPort(), config
-                        .getMysqlDatabase(), config.getMysqlUser(), config.getMysqlPassword(), config
-                        .getMysqlTablePrefix());
+                MysqlStorage mysqlStorage = new MysqlStorage(config.getDatabaseHost(), config.getDatabasePort(), config
+                        .getDatabaseName(), config.getDatabaseUser(), config.getDatabasePassword(), config
+                        .getDatabaseTablePrefix());
                 this.storage = mysqlStorage;
                 mysqlStorage.load();
                 return;

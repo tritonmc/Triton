@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.language;
 
+import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
@@ -180,15 +181,19 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
         Map<Pattern, LanguageText> matches = new HashMap<>();
 
+        val filterItems = Triton.get() instanceof SpigotMLP && Triton.get().getConfig().isBungeecord();
+        val serverName = Triton.get().getConfig().getServerName();
+
         var itemCount = 0;
         for (val collection : Triton.get().getStorage().getCollections().values()) {
-            // TODO ignore translations that are not for this server
 
             for (val item : collection.getItems()) {
                 if (item.getTwinData() != null && item.getTwinData().isArchived()) continue;
 
                 if (item instanceof LanguageText) {
                     val itemText = (LanguageText) item;
+                    if (filterItems && !itemText.belongsToServer(collection.getMetadata(), serverName)) continue;
+
                     if (itemText.getPatterns() != null) {
                         itemText.getPatterns().forEach((pattern) -> matches.put(Pattern.compile(pattern), itemText));
                         itemText.generateRegexStrings();
@@ -207,7 +212,9 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                             if (!signItems.containsKey(key)) signItems.put(key, new HashMap<>());
 
                             val signLang = signItems.get(key);
-                            itemSign.getLocations().forEach((loc) -> signLang.put(loc, value));
+                            itemSign.getLocations().stream()
+                                    .filter((loc) -> !filterItems || serverName.equals(loc.getServer()))
+                                    .forEach((loc) -> signLang.put(loc, value));
                         });
                 }
                 itemCount++;

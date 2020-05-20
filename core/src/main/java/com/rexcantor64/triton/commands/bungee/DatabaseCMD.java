@@ -36,6 +36,11 @@ public class DatabaseCMD implements CommandExecutor {
                 val collections = localStorage.downloadFromStorage();
 
                 Triton.get().getStorage().uploadToStorage(collections);
+                Triton.get().getStorage().setCollections(collections);
+
+                Triton.get().getLanguageManager().setup();
+                Triton.asBungee().getBridgeManager().sendConfigToEveryone();
+
                 s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
             });
         } else if (mode.equals("download") || mode.equals("d")) {

@@ -65,11 +65,14 @@ twin-token: ""
 # 3: Logs EVERYTHING. Only recommended for debugging purposes. When enabled, every translation job will be logged to the console.
 log-level: 0
 
-# Enable this to use a MySQL/MariaDB database to store player's languages.
-# The tables will be created automatically for you.
-# NOTE: translations are still saved locally, no matter what.
-database:
-  enabled: false
+# This section controls the storage location of player data and translations.
+# If using a database, the tables/collections will be created automatically for you.
+# You can use '/triton database upload' to upload the local translations to a remote storage.
+# The same settings MUST be placed on the Triton config for all Spigot servers under the same network
+storage:
+  # Valid options: 'local', 'mysql', 'mongodb'
+  type: 'local'
+  # The options below this are for non-local storage only
   host: "localhost"
   port: 3306
   database: "triton"

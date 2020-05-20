@@ -3,6 +3,7 @@ package com.rexcantor64.triton.storage;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.*;
@@ -159,6 +160,8 @@ public class MysqlStorage extends Storage {
 
     @Override
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
+        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) return true;
+
         try {
             @Cleanup val connection = openConnection();
 

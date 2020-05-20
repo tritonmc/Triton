@@ -1,12 +1,12 @@
 package com.rexcantor64.triton.player;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageBungeeEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
+import com.rexcantor64.triton.utils.SocketUtils;
+import lombok.val;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
@@ -86,13 +86,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
                     .getMessage("success.detected-language", language.getDisplayName())));
         this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        // Action 1
-        out.writeByte(1);
-        out.writeUTF(uuid.toString());
-        out.writeUTF(language.getName());
-        if (getParent() != null)
-            getParent().getServer().sendData("triton:main", out.toByteArray());
+
+        Triton.asBungee().getBridgeManager().sendPlayerLanguage(this);
+
         save();
         refreshAll();
         executeCommands(null);
@@ -130,14 +126,14 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         language = Triton.get().getStorage().getLanguage(this);
         if (currentConnection != null)
             Triton.get().getStorage()
-                    .setLanguage(null, currentConnection.getAddress().getAddress().getHostAddress(), language);
+                    .setLanguage(null, SocketUtils.getIpAddress(currentConnection.getSocketAddress()), language);
     }
 
     private void save() {
         BungeeCord.getInstance().getScheduler().runAsync(Triton.get().getLoader().asBungee(), () -> {
             String ip = null;
-            if (parent != null)
-                ip = parent.getAddress().getAddress().getHostAddress();
+            if (getParent() != null)
+                ip = SocketUtils.getIpAddress(parent.getSocketAddress());
             Triton.get().getStorage().setLanguage(uuid, ip, language);
         });
     }
@@ -147,17 +143,15 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void executeCommands(Server overrideServer) {
-        Server server = overrideServer == null ? getParent().getServer() : overrideServer;
-        for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
-            String cmdText = cmd.getCmd().replace("%player%", getParent().getName()).replace("%uuid%", uuid.toString());
+        val server = overrideServer == null ? getParent().getServer() : overrideServer;
+        for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
+            val cmdText = cmd.getCmd().replace("%player%", getParent().getName()).replace("%uuid%", uuid.toString());
+
             if (!cmd.isUniversal() && !cmd.getServers().contains(server.getInfo().getName())) continue;
-            if (cmd.getType() == ExecutableCommand.Type.SERVER) {
-                ByteArrayDataOutput out = ByteStreams.newDataOutput();
-                // Action 2
-                out.writeByte(2);
-                out.writeUTF(cmdText);
-                server.sendData("triton:main", out.toByteArray());
-            } else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+
+            if (cmd.getType() == ExecutableCommand.Type.SERVER)
+                Triton.asBungee().getBridgeManager().sendExecutableCommand(cmdText, server);
+            else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
                 server.unsafe().sendPacket(new Chat("/" + cmdText));
             else if (cmd.getType() == ExecutableCommand.Type.BUNGEE)
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(),

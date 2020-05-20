@@ -105,7 +105,7 @@ public class LocalStorage extends Storage {
             if (changed) {
                 Triton.get().runAsync(() -> {
                     try {
-                        // TODO use RandomAcessFile with FileLock if this does not work correctly
+                        // TODO use RandomAccessFile with FileLock if this does not work correctly
                         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
                         @Cleanup val fileWriter = new FileWriter(playersFile);
                         gson.toJson(languageMap, fileWriter);
@@ -133,6 +133,27 @@ public class LocalStorage extends Storage {
 
     @Override
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
+
+        // Use translations.cache.json
+        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) {
+            Triton.get().getLogger().logInfo(2, "Saving translations to cache since bungeecord mode is enabled.");
+
+            val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
+
+            val collection = new Collection();
+            collections.values().forEach((col) -> collection.getItems().addAll(col.getItems()));
+
+            try {
+                Triton.get().getLogger().logInfo(2, "Saving translations.cache.json");
+
+                @Cleanup val fileWriter = new OutputStreamWriter(new FileOutputStream(cacheFile),
+                        StandardCharsets.UTF_8);
+                CollectionSerializer.toJson(collection, fileWriter);
+            } catch (Exception e) {
+                Triton.get().getLogger().logError("Failed to save translations.cache.json: %1", e.getMessage());
+            }
+        }
+
         Triton.get().getLogger().logInfo(2, "Saving collections to local storage...");
         val translationsFolder = new File(Triton.get().getDataFolder(), "translations");
         if (!translationsFolder.exists())
@@ -178,6 +199,7 @@ public class LocalStorage extends Storage {
     public ConcurrentHashMap<String, Collection> downloadFromStorage() {
         val collections = new ConcurrentHashMap<String, Collection>();
 
+        // Use translations.cache.json
         if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) {
             Triton.get().getLogger().logInfo(2, "Loading translations from cache since bungeecord mode is enabled.");
 

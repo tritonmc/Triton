@@ -73,13 +73,14 @@ public class MainConfig implements TritonConfig {
     private boolean terminal;
     private boolean terminalAnsi;
 
-    private boolean mysql = false;
-    private String mysqlHost;
-    private int mysqlPort;
-    private String mysqlDatabase;
-    private String mysqlUser;
-    private String mysqlPassword;
-    private String mysqlTablePrefix;
+    private String storageType = "local";
+    private String serverName;
+    private String databaseHost;
+    private int databasePort;
+    private String databaseName;
+    private String databaseUser;
+    private String databasePassword;
+    private String databaseTablePrefix;
 
     public MainConfig(Triton main) {
         this.main = main;
@@ -108,13 +109,14 @@ public class MainConfig implements TritonConfig {
 
         this.mainLanguage = section.getString("main-language", "en_GB");
         Configuration database = section.getSection("database");
-        mysql = database.getBoolean("enabled", false);
-        mysqlHost = database.getString("host", "localhost");
-        mysqlPort = database.getInt("port", 3306);
-        mysqlDatabase = database.getString("database", "triton");
-        mysqlUser = database.getString("username", "root");
-        mysqlPassword = database.getString("password", "");
-        mysqlTablePrefix = database.getString("table-prefix", "triton_");
+        storageType = database.getString("type", "local");
+        serverName = database.getString("server-name", "lobby");
+        databaseHost = database.getString("host", "localhost");
+        databasePort = database.getInt("port", 3306);
+        databaseName = database.getString("database", "triton");
+        databaseUser = database.getString("username", "root");
+        databasePassword = database.getString("password", "");
+        databaseTablePrefix = database.getString("table-prefix", "triton_");
 
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
@@ -231,6 +233,12 @@ public class MainConfig implements TritonConfig {
                                         "developer!",
                                 hologram);
             }
+    }
+
+    @Override
+    public boolean isMysql() {
+        // TODO deprecate api
+        return storageType.equalsIgnoreCase("mysql");
     }
 
     @Getter

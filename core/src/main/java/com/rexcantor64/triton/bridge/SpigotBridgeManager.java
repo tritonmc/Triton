@@ -9,6 +9,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
+import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
 import lombok.var;
 import org.bukkit.Bukkit;
@@ -41,6 +42,15 @@ public class SpigotBridgeManager implements PluginMessageListener {
         try {
             val action = in.readByte();
             if (action == 0) {
+                if (!(Triton.get().getStorage() instanceof LocalStorage)) {
+                    Triton.get().getLogger()
+                            .logWarning(0, "You're using BungeeCord with a local storage option, but this server is " +
+                                    "using non-local storage.");
+                    Triton.get().getLogger()
+                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                                    "might not be loaded.");
+                    return;
+                }
                 try {
                     val firstSend = in.readBoolean();
                     if (firstSend) {
@@ -70,6 +80,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     // Read language files
                     val languageItems = new ArrayList<LanguageItem>();
                     val itemsSize = in.readInt();
+                    System.out.println(itemsSize);
                     for (var i = 0; i < itemsSize; i++) {
                         val type = in.readByte();
                         val key = in.readUTF();
@@ -153,6 +164,25 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         , 10L);
             } else if (action == 2) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
+            } else if (action == 3) {
+                val storage = Triton.get().getStorage();
+                if (storage instanceof LocalStorage) {
+                    Triton.get().getLogger()
+                            .logWarning(0, "You're using BungeeCord with a non-local storage option, but this server " +
+                                    "is using local storage.");
+                    Triton.get().getLogger()
+                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                                    "might not be loaded.");
+                    return;
+                }
+                val col = storage.downloadFromStorage();
+                storage.setCollections(col);
+
+                Triton.get().getLanguageManager().setup();
+                Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
+                    for (val lp : Triton.get().getPlayerManager().getAll())
+                        lp.refreshAll();
+                }, 10L);
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
