@@ -175,14 +175,16 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                     "might not be loaded.");
                     return;
                 }
-                val col = storage.downloadFromStorage();
-                storage.setCollections(col);
+                Triton.get().runAsync(() -> {
+                    val col = storage.downloadFromStorage();
+                    storage.setCollections(col);
 
-                Triton.get().getLanguageManager().setup();
-                Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
-                    for (val lp : Triton.get().getPlayerManager().getAll())
-                        lp.refreshAll();
-                }, 10L);
+                    Triton.get().getLanguageManager().setup();
+                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
+                        for (val lp : Triton.get().getPlayerManager().getAll())
+                            lp.refreshAll();
+                    }, 10L);
+                });
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
@@ -198,6 +200,20 @@ public class SpigotBridgeManager implements PluginMessageListener {
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
         lp.toBukkit().sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
+    }
+
+    public void updateSign(String world, int x, int y, int z, String key, Player p) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        // Action (1): sign management
+        out.writeByte(1);
+        out.writeUTF(world);
+        out.writeInt(x);
+        out.writeInt(y);
+        out.writeInt(z);
+        out.writeBoolean(key != null); // Set (true) or Remove (false)
+        if (key != null) // Set only
+            out.writeUTF(key);
+        p.sendPluginMessage(Triton.get().getLoader().asSpigot(), "triton:main", out.toByteArray());
     }
 
 }

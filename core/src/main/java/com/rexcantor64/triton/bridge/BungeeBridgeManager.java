@@ -21,9 +21,7 @@ import net.md_5.bungee.event.EventHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class BungeeBridgeManager implements Listener {
 
@@ -42,7 +40,9 @@ public class BungeeBridgeManager implements Listener {
                 val language = in.readUTF();
 
                 val player = Triton.get().getPlayerManager().get(uuid);
-                if (player != null) player.setLang(Triton.get().getLanguageManager().getLanguageByName(language, true));
+                if (player != null)
+                    Triton.get().runAsync(() -> player
+                            .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true)));
             }
 
             // Add or remove a location from a sign group using /triton sign
@@ -53,31 +53,16 @@ public class BungeeBridgeManager implements Listener {
 
                 // Whether we're adding a location to a group or removing one from a group
                 boolean add = in.readBoolean();
-
                 val key = add ? in.readUTF() : null;
 
-                for (val collection : Triton.get().getStorage().getCollections().values()) {
-                    for (val item : collection.getItems()) {
-                        if (!(item instanceof LanguageSign)) continue;
+                Triton.get().getStorage().toggleLocationForSignGroup(location, key);
 
-                        val sign = (LanguageSign) item;
-
-                        // Remove locations for a sign group
-                        if (!add && sign.getLocations() != null)
-                            sign.setLocations(sign.getLocations().stream()
-                                    .filter(loc -> !loc.equalsWithServer(location)).collect(Collectors.toList()));
-
-                        if (add && sign.getKey().equals(key)) {
-                            if (sign.hasLocation(location, true)) continue;
-                            if (sign.getLocations() == null) sign.setLocations(new ArrayList<>());
-                            sign.getLocations().add(location);
-                        }
-
-                    }
-                }
-
-                Triton.get().getStorage().uploadToStorage(Triton.get().getStorage().getCollections());
-                Triton.asBungee().reload(server);
+                Triton.get().runAsync(() -> {
+                    Triton.get().getLogger().logInfo(2, "Saving sign to storage...");
+                    Triton.get().getStorage().uploadToStorage(Triton.get().getStorage().getCollections());
+                    sendConfigToServer(server, null);
+                    Triton.get().getLogger().logInfo(2, "Sign saved!");
+                });
             }
         } catch (Exception e1) {
             Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());

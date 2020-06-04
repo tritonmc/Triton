@@ -25,6 +25,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     private Language mainLanguage;
     private HashMap<String, HashMap<String, String>> textItems = new HashMap<>();
     private HashMap<String, HashMap<SignLocation, String[]>> signItems = new HashMap<>();
+    @Getter
+    private List<String> signKeys = new ArrayList<>();
     private Map<Pattern, LanguageText> matches = new HashMap<>();
     @Getter
     private int itemCount = 0;
@@ -102,7 +104,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return formatLines(this.mainLanguage.getName(), lines, defaultLines);
     }
 
-    private String[] formatLines(@NonNull String language, @NonNull String[] lines, @NonNull String[] defaultLines) {
+    public String[] formatLines(@NonNull String language, @NonNull String[] lines, @NonNull String[] defaultLines) {
         val result = new String[4];
 
         for (int i = 0; i < 4; ++i) {
@@ -112,10 +114,11 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             }
             result[i] = lines[i];
 
-            if (result[i].equals("%use_line_default%") && defaultLines.length > i && defaultLines[i] != null) {
+            if (result[i].equals("%use_line_default%")) {
                 result[i] = Triton.get().getLanguageParser()
                         .replaceLanguages(
-                                matchPattern(defaultLines[i], language),
+                                matchPattern(defaultLines.length > i && defaultLines[i] != null ? defaultLines[i] :
+                                        "", language),
                                 language,
                                 Triton.get().getConf().getSignsSyntax()
                         );
@@ -152,11 +155,6 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return new ArrayList<>(languages);
     }
 
-    // TODO
-    /*public List<LanguageItem> getAllItems(LanguageItem.LanguageItemType type) {
-        return new ArrayList<>(items.get(type));
-    }*/
-
     public Language getMainLanguage() {
         return mainLanguage;
     }
@@ -178,6 +176,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         val textItems = new HashMap<String, HashMap<String, String>>();
         // Map<Language Name, Map<Sign Location, Lines>>
         val signItems = new HashMap<String, HashMap<SignLocation, String[]>>();
+        val signKeys = new ArrayList<String>();
 
         Map<Pattern, LanguageText> matches = new HashMap<>();
 
@@ -207,6 +206,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                 }
                 if (item instanceof LanguageSign) {
                     val itemSign = (LanguageSign) item;
+                    signKeys.add(itemSign.getKey());
                     if (itemSign.getLines() != null && itemSign.getLocations() != null)
                         itemSign.getLines().forEach((key, value) -> {
                             if (!signItems.containsKey(key)) signItems.put(key, new HashMap<>());
@@ -223,6 +223,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
         this.textItems = textItems;
         this.signItems = signItems;
+        this.signKeys = signKeys;
         this.matches = matches;
         this.itemCount = itemCount;
 
