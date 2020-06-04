@@ -1,12 +1,22 @@
 package com.rexcantor64.triton.web;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.language.item.LanguageItem;
+import com.rexcantor64.triton.language.item.LanguageSign;
+import com.rexcantor64.triton.language.item.LanguageText;
+import com.rexcantor64.triton.language.item.TWINData;
+import com.rexcantor64.triton.language.item.serializers.LanguageItemSerializer;
+import com.rexcantor64.triton.language.item.serializers.LanguageSignSerializer;
+import com.rexcantor64.triton.language.item.serializers.LanguageTextSerializer;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import lombok.val;
+import lombok.var;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +25,11 @@ public class TwinManager {
 
     private static final int TWIN_VERSION = 4;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LanguageItem.class, new LanguageItemSerializer())
+            .registerTypeAdapter(LanguageText.class, new LanguageTextSerializer())
+            .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
+            .create();
     private final Triton main;
 
     public TwinManager(Triton main) {
@@ -23,88 +38,62 @@ public class TwinManager {
 
     public HttpResponse upload() {
         //TODO
-        /*try {
-            if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
+        try {
+            val bungee = Triton.isBungee();
+            if (!bungee && main.getConf().isBungeecord())
                 return null;
 
-            JSONObject data = new JSONObject();
-            data.put("tritonv", TWIN_VERSION);
-            data.put("user", "%%__USER__%%");
-            data.put("resource", "%%__RESOURCE__%%-" + main.getVersion());
-            data.put("nonce", "%%__NONCE__%%");
-            data.put("bungee", Triton.isBungee());
-            JSONArray languages = new JSONArray();
-            for (Language lang : main.getLanguageManager().getAllLanguages())
-                languages.put(lang.getName());
-            data.put("languages", languages);
-            data.put("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
+            val data = new JsonObject();
+            data.addProperty("tritonv", TWIN_VERSION);
+            data.addProperty("user", "%%__USER__%%");
+            data.addProperty("resource", "%%__RESOURCE__%%-" + main.getVersion());
+            data.addProperty("nonce", "%%__NONCE__%%");
+            data.addProperty("bungee", bungee);
+            val languages = new JsonArray();
+            for (val lang : main.getLanguageManager().getAllLanguages())
+                languages.add(lang.getName());
+            data.add("languages", languages);
+            data.addProperty("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
 
-            boolean changed = false;
-            JSONArray items = main.getLanguageConfig().getRaw();
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject obj = items.optJSONObject(i);
-                if (obj == null) continue;
-                JSONObject twin = obj.optJSONObject("_twin");
-                if (twin == null) {
-                    twin = new JSONObject();
-                    obj.put("_twin", twin);
-                    changed = true;
+            var changed = false;
+
+            val items = new JsonArray();
+            val metadata = new JsonObject();
+            for (val collection : main.getStorage().getCollections().entrySet()) {
+                for (val item : collection.getValue().getItems()) {
+                    if (item.getTwinData() == null) item.setTwinData(new TWINData());
+                    if (item.getTwinData().ensureValid()) changed = true;
+
+                    val jsonItem = (JsonObject) gson.toJsonTree(item);
+                    jsonItem.addProperty("fileName", collection.getKey());
+                    items.add(jsonItem);
                 }
-                if (!twin.has("id")) {
-                    twin.put("id", UUID.randomUUID().toString());
-                    changed = true;
-                }
-                if (!twin.has("dateCreated")) {
-                    twin.put("dateCreated", System.currentTimeMillis());
-                    changed = true;
-                }
-                if (!twin.has("dateUpdated")) {
-                    twin.put("dateUpdated", System.currentTimeMillis());
-                    changed = true;
-                }
-                if (!twin.has("tags") && obj.optJSONArray("tags") != null) {
-                    twin.put("tags", obj.optJSONArray("tags"));
-                    obj.remove("tags");
-                    changed = true;
-                }
-                if (obj.optString("type").equals("sign")) {
-                    if ((obj.optJSONArray("locations")) != null) {
-                        JSONArray locs = obj.optJSONArray("locations");
-                        for (int j = 0; j < locs.length(); j++) {
-                            JSONObject loc = locs.optJSONObject(j);
-                            if (loc == null) continue;
-                            if (!loc.has("id")) {
-                                loc.put("id", UUID.randomUUID().toString());
-                                changed = true;
-                            }
-                        }
-                    }
-                }
+                if (bungee)
+                    metadata.add(collection.getKey(), gson.toJsonTree(collection.getValue().getMetadata()));
             }
 
             if (changed) {
-                main.getLanguageConfig().saveFromRaw(items);
-                main.getLanguageConfig().setup(false);
-                main.getLogger().logDebug("Updated items to be able to upload to TWIN");
+                main.getStorage().uploadToStorage(main.getStorage().getCollections());
+                main.getLogger().logInfo(2, "Updated items to be able to upload to TWIN");
             }
 
-            data.put("data", items);
-            if (Triton.isBungee())
-                data.put("metadata", main.getLanguageConfig().getMetadataList());
+            data.add("data", items);
+            if (bungee)
+                data.add("metadata", metadata);
 
-            String encodedData = data.toString();
-            URL u = new URL(BASE_URL + "/api/v1/upload");
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            val encodedData = data.toString();
+            val u = new URL(BASE_URL + "/api/v1/upload");
+            val conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
-            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
+            val os = new DataOutputStream(conn.getOutputStream());
             os.write(encodedData.getBytes(StandardCharsets.UTF_8));
             os.flush();
             os.close();
 
-            int responseCode = conn.getResponseCode();
+            val responseCode = conn.getResponseCode();
 
             try {
                 InputStream is;
@@ -112,13 +101,13 @@ public class TwinManager {
                     is = conn.getInputStream();
                 else
                     is = conn.getErrorStream();
-                BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
 
-                while ((inputLine = in.readLine()) != null) {
+                val in = new BufferedReader(new InputStreamReader(is));
+
+                String inputLine;
+                val response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null)
                     response.append(inputLine);
-                }
                 in.close();
 
                 return new HttpResponse(true, responseCode, response.toString());
@@ -127,8 +116,7 @@ public class TwinManager {
             }
         } catch (Exception e) {
             return new HttpResponse(false, 0, e.getMessage());
-        }*/
-        return null;
+        }
     }
 
     public HttpResponse download(String id) {

@@ -12,10 +12,15 @@ public class TWINData {
     private boolean archived;
     private String[] tags;
 
-    public void ensureValid() {
+    /**
+     * Returns true if something changed, otherwise returns false
+     */
+    public boolean ensureValid() {
+        if (id != null && dateCreated > 0 && dateUpdated > 0 && tags != null) return false;
         if (id == null) id = UUID.randomUUID();
         if (dateCreated <= 0) dateCreated = System.currentTimeMillis();
         if (dateUpdated <= 0) dateUpdated = System.currentTimeMillis();
         if (tags == null) tags = new String[0];
+        return true;
     }
 }
