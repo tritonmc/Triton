@@ -111,6 +111,7 @@ public class TwinCMD implements CommandExecutor {
                 Triton.get().getLanguageManager().setup();
                 if (Triton.isBungee())
                     Triton.asBungee().getBridgeManager().sendConfigToEveryone();
+                Triton.get().refreshPlayers();
                 // TODO refresh players
 
                 Triton.get().getLogger()

@@ -40,6 +40,7 @@ public class DatabaseCMD implements CommandExecutor {
 
                 Triton.get().getLanguageManager().setup();
                 Triton.asBungee().getBridgeManager().sendConfigToEveryone();
+                Triton.get().refreshPlayers();
 
                 s.sendMessage(Triton.get().getMessagesConfig().getMessage("success.database"));
             });

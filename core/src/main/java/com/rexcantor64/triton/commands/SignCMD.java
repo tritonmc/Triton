@@ -72,6 +72,7 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                 SignLocation loc = new SignLocation(block.getWorld().getName(), block
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(loc, args[2]);
+                Triton.get().refreshPlayers();
             }
             p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-set", args[2]));
         } else if (args[1].equalsIgnoreCase("remove")) {
@@ -83,9 +84,10 @@ public class SignCMD implements CommandExecutor, TabCompleter {
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(loc, null);
             }
-            Triton.asSpigot().getProtocolLibListener()
-                    .resetSign(p, new SignLocation(block.getWorld().getName(), block.getX(), block
-                            .getY(), block.getZ()));
+            for (val p2 : p.getWorld().getPlayers())
+                Triton.asSpigot().getProtocolLibListener()
+                        .resetSign(p2, new SignLocation(block.getWorld().getName(), block.getX(), block
+                                .getY(), block.getZ()));
             p.sendMessage(Triton.get().getMessagesConfig().getMessage("success.sign-remove"));
         } else {
             p.sendMessage(Triton.get().getMessagesConfig().getMessage("help.sign", label));

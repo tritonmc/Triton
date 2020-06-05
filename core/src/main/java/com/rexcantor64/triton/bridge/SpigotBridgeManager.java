@@ -151,10 +151,8 @@ public class SpigotBridgeManager implements PluginMessageListener {
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
-                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
-                        for (val lp : Triton.get().getPlayerManager().getAll())
-                            lp.refreshAll();
-                    }, 10L);
+                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> Triton.get()
+                            .refreshPlayers(), 10L);
                 }
             } else if (action == 1) {
                 final UUID uuid = UUID.fromString(in.readUTF());
@@ -180,10 +178,8 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     storage.setCollections(col);
 
                     Triton.get().getLanguageManager().setup();
-                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> {
-                        for (val lp : Triton.get().getPlayerManager().getAll())
-                            lp.refreshAll();
-                    }, 10L);
+                    Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> Triton.get()
+                            .refreshPlayers(), 10L);
                 });
             }
         } catch (Exception e) {

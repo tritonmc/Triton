@@ -84,9 +84,12 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         messagesConfig.setup();
         setupStorage();
         languageManager.setup();
+        startConfigRefreshTask();
+    }
+
+    public void refreshPlayers() {
         for (LanguagePlayer lp : playerManager.getAll())
             lp.refreshAll();
-        startConfigRefreshTask();
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {

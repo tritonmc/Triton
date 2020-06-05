@@ -117,7 +117,7 @@ public class TwinCMD extends Command {
                 Triton.get().getLanguageManager().setup();
                 if (Triton.isBungee())
                     Triton.asBungee().getBridgeManager().sendConfigToEveryone();
-                // TODO refresh players
+                Triton.get().refreshPlayers();
 
                 Triton.get().getLogger()
                         .logInfo(2, "[TWIN] Parsed and saved changes and restarted translation manager in %1 ms!",
