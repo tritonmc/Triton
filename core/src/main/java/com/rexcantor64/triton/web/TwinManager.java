@@ -23,13 +23,13 @@ import java.nio.charset.StandardCharsets;
 
 public class TwinManager {
 
-    private static final int TWIN_VERSION = 4;
-    private static final String BASE_URL = "https://twin.rexcantor64.com";
-    private static final Gson gson = new GsonBuilder()
+    static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LanguageItem.class, new LanguageItemSerializer())
             .registerTypeAdapter(LanguageText.class, new LanguageTextSerializer())
             .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
             .create();
+    private static final int TWIN_VERSION = 4;
+    private static final String BASE_URL = "https://twin.rexcantor64.com";
     private final Triton main;
 
     public TwinManager(Triton main) {
@@ -37,7 +37,6 @@ public class TwinManager {
     }
 
     public HttpResponse upload() {
-        //TODO
         try {
             val bungee = Triton.isBungee();
             if (!bungee && main.getConf().isBungeecord())
