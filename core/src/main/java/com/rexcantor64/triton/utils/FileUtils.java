@@ -2,6 +2,7 @@ package com.rexcantor64.triton.utils;
 
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
+import lombok.SneakyThrows;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -53,6 +54,16 @@ public class FileUtils {
             e.printStackTrace();
         }
         return resourceFile;
+    }
+
+    @SneakyThrows
+    public static Reader getReaderFromFile(File file) {
+        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+    }
+
+    @SneakyThrows
+    public static Writer getWriterFromFile(File file) {
+        return new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8);
     }
 
 }

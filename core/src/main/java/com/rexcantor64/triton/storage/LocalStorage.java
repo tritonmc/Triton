@@ -3,7 +3,6 @@ package com.rexcantor64.triton.storage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
@@ -11,20 +10,18 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.val;
 
-import java.io.*;
+import java.io.File;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalStorage extends Storage {
 
-    private static final JsonParser JSON_PARSER = new JsonParser();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final Type HASH_MAP_TYPE = new TypeToken<ConcurrentHashMap<String, String>>() {
     }.getType();
@@ -37,30 +34,14 @@ public class LocalStorage extends Storage {
     }
 
     public void loadPlayerData() {
-        //val languageMap = new ConcurrentHashMap<String, String>();
         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
         if (playersFile.isFile()) {
             try {
-                //val element = JSON_PARSER.parse(getReaderFromFile(playersFile));
-                // TODO use gson.fromJson
-                /*if (element.isJsonObject()) {
-                    val obj = element.getAsJsonObject();
-                    for (val entry : obj.entrySet())
-                        if (entry.getValue().isJsonPrimitive())
-                            languageMap.put(entry.getKey(), entry.getValue().getAsString());
-                        else
-                            Triton.get().getLogger()
-                                    .logWarning(2, "[players.json] Entry '%1' is not a string. Ignoring...", entry
-                                    .getKey());
-                } else
-                    Triton.get().getLogger()
-                            .logError("players.json does not contain a JSON object. No player data loaded.");*/
-                this.languageMap = gson.fromJson(getReaderFromFile(playersFile), HASH_MAP_TYPE);
+                this.languageMap = gson.fromJson(FileUtils.getReaderFromFile(playersFile), HASH_MAP_TYPE);
             } catch (JsonParseException e) {
                 Triton.get().getLogger().logError("Failed load players.json. JSON is not valid: %1", e.getMessage());
             }
         }
-        //this.languageMap = languageMap;
     }
 
     @Override
@@ -107,7 +88,7 @@ public class LocalStorage extends Storage {
                     try {
                         // TODO use RandomAccessFile with FileLock if this does not work correctly
                         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
-                        @Cleanup val fileWriter = new FileWriter(playersFile);
+                        @Cleanup val fileWriter = FileUtils.getWriterFromFile(playersFile);
                         gson.toJson(languageMap, fileWriter);
                     } catch (Exception e) {
                         Triton.get().getLogger()
@@ -126,11 +107,6 @@ public class LocalStorage extends Storage {
         }
     }
 
-    @SneakyThrows
-    private Reader getReaderFromFile(File file) {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
-    }
-
     @Override
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
 
@@ -146,8 +122,7 @@ public class LocalStorage extends Storage {
             try {
                 Triton.get().getLogger().logInfo(2, "Saving translations.cache.json");
 
-                @Cleanup val fileWriter = new OutputStreamWriter(new FileOutputStream(cacheFile),
-                        StandardCharsets.UTF_8);
+                @Cleanup val fileWriter = FileUtils.getWriterFromFile(cacheFile);
                 CollectionSerializer.toJson(collection, fileWriter);
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to save translations.cache.json: %1", e.getMessage());
@@ -183,8 +158,7 @@ public class LocalStorage extends Storage {
             try {
                 Triton.get().getLogger().logInfo(2, "Saving translations/%1.json", key);
                 val collectionFile = new File(translationsFolder, key + ".json");
-                @Cleanup val fileWriter = new OutputStreamWriter(new FileOutputStream(collectionFile),
-                        StandardCharsets.UTF_8);
+                @Cleanup val fileWriter = FileUtils.getWriterFromFile(collectionFile);
                 CollectionSerializer.toJson(value, fileWriter);
             } catch (Exception e) {
                 Triton.get().getLogger()
@@ -211,7 +185,7 @@ public class LocalStorage extends Storage {
                 return collections;
             }
 
-            collections.put("cache", CollectionSerializer.parse(getReaderFromFile(cacheFile)));
+            collections.put("cache", CollectionSerializer.parse(FileUtils.getReaderFromFile(cacheFile)));
 
             return collections;
         }
@@ -223,7 +197,7 @@ public class LocalStorage extends Storage {
                 for (val colFile : colFiles) {
                     if (colFile.getName().endsWith(".json"))
                         collections.put(colFile.getName().substring(0, colFile.getName().length() - 5),
-                                CollectionSerializer.parse(getReaderFromFile(colFile)));
+                                CollectionSerializer.parse(FileUtils.getReaderFromFile(colFile)));
                     else
                         Triton.get().getLogger()
                                 .logWarning(2, "Did not load file %1 because it is not a JSON file.", colFile
