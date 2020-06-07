@@ -59,8 +59,8 @@ public class TwinCMD extends Command {
 
         if (response.getStatusCode() != 200) {
             s.sendMessage(Triton.get().getMessagesConfig()
-                    .getMessage("twin.failed-upload", "&cFailed to upload the config: %1",
-                            Triton.get().getMessagesConfig().getMessage("twin.incorrect-status",
+                    .getMessage("twin.failed-upload", Triton.get().getMessagesConfig()
+                            .getMessage("twin.incorrect-status",
                                     response.getStatusCode())));
             return;
         }

@@ -28,7 +28,7 @@ public class TwinManager {
             .registerTypeAdapter(LanguageText.class, new LanguageTextSerializer())
             .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
             .create();
-    private static final int TWIN_VERSION = 4;
+    private static final int TWIN_VERSION = 5;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
     private final Triton main;
 

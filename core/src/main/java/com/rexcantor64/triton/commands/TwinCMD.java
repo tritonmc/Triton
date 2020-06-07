@@ -112,7 +112,6 @@ public class TwinCMD implements CommandExecutor {
                 if (Triton.isBungee())
                     Triton.asBungee().getBridgeManager().sendConfigToEveryone();
                 Triton.get().refreshPlayers();
-                // TODO refresh players
 
                 Triton.get().getLogger()
                         .logInfo(2, "[TWIN] Parsed and saved changes and restarted translation manager in %1 ms!",
