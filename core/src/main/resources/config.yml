@@ -190,3 +190,6 @@ language-creation:
   # For UX reasons, messages that contain disabled line placeholders aren't touched.
   # Changing this requires a full server restart.
   terminal: false
+  # Should placeholders typed in chat by players be ignored?
+  # Default is true
+  prevent-placeholders-in-chat: true

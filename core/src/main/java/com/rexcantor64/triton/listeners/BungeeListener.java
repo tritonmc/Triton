@@ -2,14 +2,15 @@ package com.rexcantor64.triton.listeners;
 
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
+import lombok.val;
+import lombok.var;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.event.LoginEvent;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.ProxyPingEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -68,6 +69,19 @@ public class BungeeListener implements Listener {
         BaseComponent result = new TextComponent("");
         result.setExtra(Arrays.asList(c));
         return result;
+    }
+
+    @EventHandler
+    public void onChat(ChatEvent e) {
+        if (!Triton.get().getConfig().isPreventPlaceholdersInChat()) return;
+
+        var msg = e.getMessage();
+        val indexes = LanguageParser.getPatternIndexArray(msg, Triton.get().getConfig().getChatSyntax().getLang());
+        for (var i = 0; i < indexes.size(); ++i) {
+            val index = indexes.get(i);
+            msg = msg.substring(0, index[0] + 1 + i) + ChatColor.RESET + msg.substring(index[0] + 1 + i);
+        }
+        e.setMessage(msg);
     }
 
 }

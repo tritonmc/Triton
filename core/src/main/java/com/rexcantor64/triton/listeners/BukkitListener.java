@@ -1,10 +1,15 @@
 package com.rexcantor64.triton.listeners;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
+import lombok.val;
+import lombok.var;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -41,6 +46,19 @@ public class BukkitListener implements Listener {
         if (e.getResult() != PlayerLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent e) {
+        if (!Triton.get().getConfig().isPreventPlaceholdersInChat()) return;
+
+        var msg = e.getMessage();
+        val indexes = LanguageParser.getPatternIndexArray(msg, Triton.get().getConfig().getChatSyntax().getLang());
+        for (var i = 0; i < indexes.size(); ++i) {
+            val index = indexes.get(i);
+            msg = msg.substring(0, index[0] + 1 + i) + ChatColor.RESET + msg.substring(index[0] + 1 + i);
+        }
+        e.setMessage(msg);
     }
 
 }

@@ -48,7 +48,7 @@ public class LanguageParser {
         return null;
     }
 
-    private static List<Integer[]> getPatternIndexArray(String input, String pattern) {
+    public static List<Integer[]> getPatternIndexArray(String input, String pattern) {
         List<Integer[]> result = new ArrayList<>();
         int start = -1;
         int contentLength = 0;

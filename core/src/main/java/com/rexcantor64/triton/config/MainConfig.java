@@ -72,6 +72,7 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax motdSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
+    private boolean preventPlaceholdersInChat;
 
     private String storageType = "local";
     private String serverName;
@@ -171,6 +172,7 @@ public class MainConfig implements TritonConfig {
         disabledLine = section.getString("disabled-line", "");
         terminal = section.getBoolean("terminal", false);
         terminalAnsi = section.getBoolean("terminalAnsi", true);
+        preventPlaceholdersInChat = section.getBoolean("prevent-placeholders-in-chat", true);
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);
