@@ -7,6 +7,7 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
 import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
+import com.rexcantor64.triton.storage.LocalStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -66,7 +67,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.lang = event.getNewLanguage();
         this.waitingForClientLocale = false;
         refreshAll();
-        save();
+        if (Triton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
+            save();
         if (sendToBungee && Triton.asSpigot().getBridgeManager() != null)
             Triton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
         executeCommands();

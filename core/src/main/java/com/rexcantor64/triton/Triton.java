@@ -69,9 +69,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         languageManager = new LanguageManager();
         playerManager = new PlayerManager();
         messagesConfig = new MessagesConfig();
-        reload();
 
         LanguageMigration.migrate();
+
+        reload();
 
         languageParser = new LanguageParser();
         twinManager = new TwinManager(this);
