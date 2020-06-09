@@ -139,6 +139,14 @@ public class AdvancedComponent {
                     case MAGIC:
                         component.setObfuscated(true);
                         break;
+                    case RESET:
+                        component.setBold(null);
+                        component.setItalic(null);
+                        component.setUnderlined(null);
+                        component.setStrikethrough(null);
+                        component.setObfuscated(null);
+                        component.setColor(null);
+                        break;
                     default:
                         component.setColor(format);
                         break;
