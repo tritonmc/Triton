@@ -20,8 +20,6 @@ public class LanguageMigration {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void migrate() {
-        // TODO
-
         // Remove universal from language items and collections
         // Change cache.json
         // players.yml to players.json

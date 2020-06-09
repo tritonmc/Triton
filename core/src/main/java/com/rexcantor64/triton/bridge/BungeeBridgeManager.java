@@ -27,7 +27,6 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        // TODO
         if (!e.getTag().equals("triton:main")) return;
         val in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
