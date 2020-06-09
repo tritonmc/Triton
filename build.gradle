@@ -26,7 +26,7 @@ subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'net.minecrell.plugin-yml.bukkit'
     apply plugin: 'net.minecrell.plugin-yml.bungee'
-    version '3.0.0-SNAPSHOT'
+    version '3.0.0-BETA.1'
     repositories {
         mavenLocal()
         mavenCentral()
