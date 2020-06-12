@@ -109,7 +109,7 @@ public class MainConfig implements TritonConfig {
         this.languages = languages;
 
         this.mainLanguage = section.getString("main-language", "en_GB");
-        Configuration database = section.getSection("database");
+        Configuration database = section.getSection("storage");
         storageType = database.getString("type", "local");
         serverName = database.getString("server-name", "lobby");
         databaseHost = database.getString("host", "localhost");

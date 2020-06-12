@@ -20,6 +20,7 @@ import com.rexcantor64.triton.storage.Storage;
 import com.rexcantor64.triton.utils.FileUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
+import lombok.val;
 
 import java.io.File;
 
@@ -121,11 +122,12 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private void setupStorage() {
         if (config.getStorageType().equalsIgnoreCase("mysql")) {
             try {
-                MysqlStorage mysqlStorage = new MysqlStorage(config.getDatabaseHost(), config.getDatabasePort(), config
+                val mysqlStorage = new MysqlStorage(config.getDatabaseHost(), config.getDatabasePort(), config
                         .getDatabaseName(), config.getDatabaseUser(), config.getDatabasePassword(), config
                         .getDatabaseTablePrefix());
                 this.storage = mysqlStorage;
                 mysqlStorage.load();
+                logger.logInfo(1, "Loaded MySQL storage manager");
                 return;
             } catch (Exception ignore) {
                 logger.logError("Failed to connect to database, falling back to local storage!");
@@ -134,6 +136,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         }
         this.storage = new LocalStorage();
         this.storage.load();
+        logger.logInfo(2, "Loaded local storage manager");
     }
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {
