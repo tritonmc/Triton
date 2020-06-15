@@ -47,7 +47,7 @@ subprojects {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        compile 'com.github.diogotcorreia:Triton:v2.6.0' // Triton API
+        implementation 'com.github.diogotcorreia:Triton:v2.6.0' // Triton API
 
         compileOnly 'org.projectlombok:lombok:1.18.12'
         annotationProcessor 'org.projectlombok:lombok:1.18.12'
