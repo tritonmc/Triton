@@ -17,7 +17,9 @@ import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.terminal.Log4jInjector;
+import com.rexcantor64.triton.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
+import lombok.Getter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 
@@ -27,6 +29,8 @@ public class SpigotMLP extends Triton {
 
     private ProtocolLibListener protocolLibListener;
     private SpigotBridgeManager bridgeManager;
+    @Getter
+    private MaterialWrapperManager wrapperManager;
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
@@ -41,6 +45,9 @@ public class SpigotMLP extends Triton {
         Metrics metrics = new Metrics(loader.asSpigot(), 5606);
         metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageManager().getItemCount()));
+
+        // Setup custom managers
+        wrapperManager = new MaterialWrapperManager();
 
         // Setup commands
         loader.asSpigot().getCommand("triton").setExecutor(new MainCMD());

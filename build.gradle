@@ -11,22 +11,16 @@ String pluginAuthor = project.property("pluginAuthor")
 String pluginApiVersion = project.property("pluginApiVersion")
 String pluginName = project.property("pluginName")
 
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'net.minecrell.plugin-yml.bukkit'
+apply plugin: 'net.minecrell.plugin-yml.bungee'
 group 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
+    version '3.0.0-BETA.1'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
-    repositories {
-        jcenter()
-    }
-}
-
-subprojects {
-    apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: 'net.minecrell.plugin-yml.bukkit'
-    apply plugin: 'net.minecrell.plugin-yml.bungee'
-    version '3.0.0-BETA.1'
     repositories {
         mavenLocal()
         mavenCentral()
@@ -46,6 +40,9 @@ subprojects {
         }
         maven { url 'https://jitpack.io' }
     }
+}
+
+subprojects {
     dependencies {
         implementation 'com.github.diogotcorreia:Triton:v2.6.0' // Triton API
 
@@ -55,67 +52,77 @@ subprojects {
         testCompileOnly 'org.projectlombok:lombok:1.18.12'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
     }
-    bukkit {
-        name = pluginName
-        version = project.version
-        description = pluginDescription
-        website = pluginWebsite
-        author = pluginAuthor
-        main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
-        apiVersion = pluginApiVersion
+}
 
-        depend = ['ProtocolLib']
-        softDepend = ['PlaceholderAPI']
+dependencies {
+    compile project(path: ":core")
+}
 
-        commands {
-            triton {
-                description = 'The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.'
-                aliases = ['mlp', 'ml', 'multilanguage', 'language', 'lang', 'multilanguageplugin']
-            }
-            twin {
-                description = 'Upload and download your config to/from the Triton Web INterface.'
-                aliases = ['tritonweb', 'tweb', 'twebinterface', 'tritonwebinterface']
-                usage = '/twin [code]'
-            }
+bukkit {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    website = pluginWebsite
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
+    apiVersion = pluginApiVersion
+
+    depend = ['ProtocolLib']
+    softDepend = ['PlaceholderAPI']
+
+    commands {
+        triton {
+            description = 'The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.'
+            aliases = ['mlp', 'ml', 'multilanguage', 'language', 'lang', 'multilanguageplugin']
         }
-
-        permissions {
-            'triton.getflag' {
-                setDefault('OP')
-            }
-            'triton.setlanguage' {
-                setDefault('TRUE')
-            }
-            'triton.setlanguage.others' {
-                setDefault('OP')
-            }
-            'triton.openselector' {
-                setDefault('TRUE')
-            }
-            'triton.reload' {
-                setDefault('OP')
-            }
-            'triton.help' {
-                setDefault('TRUE')
-            }
-            'triton.sign' {
-                setDefault('OP')
-            }
-            'twin.upload' {
-                setDefault('OP')
-            }
-            'twin.download' {
-                setDefault('OP')
-            }
+        twin {
+            description = 'Upload and download your config to/from the Triton Web INterface.'
+            aliases = ['tritonweb', 'tweb', 'twebinterface', 'tritonwebinterface']
+            usage = '/twin [code]'
         }
     }
 
-    bungee {
-        name = pluginName
-        version = project.version
-        description = pluginDescription
-        author = pluginAuthor
-        main = 'com.rexcantor64.triton.plugin.BungeePlugin'
+    permissions {
+        'triton.getflag' {
+            setDefault('OP')
+        }
+        'triton.setlanguage' {
+            setDefault('TRUE')
+        }
+        'triton.setlanguage.others' {
+            setDefault('OP')
+        }
+        'triton.openselector' {
+            setDefault('TRUE')
+        }
+        'triton.reload' {
+            setDefault('OP')
+        }
+        'triton.help' {
+            setDefault('TRUE')
+        }
+        'triton.sign' {
+            setDefault('OP')
+        }
+        'twin.upload' {
+            setDefault('OP')
+        }
+        'twin.download' {
+            setDefault('OP')
+        }
     }
+}
+
+bungee {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.BungeePlugin'
+}
+
+shadowJar {
+    getArchiveBaseName().set(rootProject.name)
+    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
 }
 
