@@ -126,6 +126,8 @@ public class TwinCMD extends Command {
                 s.sendMessage(Triton.get().getMessagesConfig().getMessage("twin.success"));
             } catch (Exception e) {
                 s.sendMessage(Triton.get().getMessagesConfig().getMessage("twin.failed-fetch", e.getMessage()));
+                if (Triton.get().getConfig().getLogLevel() > 0)
+                    e.printStackTrace();
             }
         });
     }
