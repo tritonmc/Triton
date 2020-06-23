@@ -7,6 +7,8 @@ import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.scoreboard.ScoreboardComponent;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import lombok.val;
+import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -16,7 +18,7 @@ import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LanguageParser {
 
@@ -155,13 +157,20 @@ public class LanguageParser {
     public BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... text) {
         text = ComponentSerializer.parse(ComponentSerializer.toString(text));
         removeMLPLinks(text);
-        AdvancedComponent advancedComponent = AdvancedComponent.fromBaseComponent(text);
-        String input = advancedComponent.getText();
+        val advancedComponent = parseAdvancedComponent(language, syntax, AdvancedComponent.fromBaseComponent(text));
+
+        if (advancedComponent == null) return null;
+        return advancedComponent.toBaseComponent();
+    }
+
+    private AdvancedComponent parseAdvancedComponent(String language, FeatureSyntax syntax,
+                                                     AdvancedComponent advancedComponent) {
+        var input = advancedComponent.getText();
         while (input.startsWith(ChatColor.RESET.toString()))
             input = input.substring(2);
         input = Triton.get().getLanguageManager().matchPattern(input, language);
         Integer[] i;
-        int safeCounter = 0;
+        var safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             safeCounter++;
             if (safeCounter > 10) {
@@ -172,18 +181,17 @@ public class LanguageParser {
                                 "BungeeCord, restarting your proxy might fix the problem.");
                 break;
             }
-            StringBuilder builder = new StringBuilder();
+            val builder = new StringBuilder();
             builder.append(input, 0, i[0]);
-            String placeholder = input.substring(i[2], i[3]);
-            Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
+            val placeholder = input.substring(i[2], i[3]);
+            val argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
                 if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
                         .equals(Triton.get().getConf().getDisabledLine()))
                     return null;
-                AdvancedComponent result =
-                        AdvancedComponent
-                                .fromBaseComponent(TextComponent.fromLegacyText(Triton.get().getLanguageManager()
-                                        .getText(language, ChatColor.stripColor(placeholder))));
+                val result = AdvancedComponent.fromBaseComponent(TextComponent
+                        .fromLegacyText(Triton.get().getLanguageManager()
+                                .getText(language, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 while (result.getText().startsWith(ChatColor.RESET.toString()))
                     result.setText(result.getText().substring(2));
@@ -192,20 +200,19 @@ public class LanguageParser {
                 input = builder.toString();
                 continue;
             }
-            String code = ChatColor.stripColor(placeholder.substring(0, argsIndex[0]));
+            val code = ChatColor.stripColor(placeholder.substring(0, argsIndex[0]));
             if (!Triton.get().getConf().getDisabledLine().isEmpty() && code
                     .equals(Triton.get().getConf().getDisabledLine()))
                 return null;
-            String args = placeholder.substring(argsIndex[2], argsIndex[3]);
-            List<Integer[]> argIndexList = getPatternIndexArray(args, syntax.getArg());
-            Object[] argList = new Object[argIndexList.size()];
+            val args = placeholder.substring(argsIndex[2], argsIndex[3]);
+            val argIndexList = getPatternIndexArray(args, syntax.getArg());
+            val argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
                 argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
             }
-            AdvancedComponent result =
-                    AdvancedComponent.fromBaseComponent(TextComponent
-                            .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(language, code, argList)));
+            val result = AdvancedComponent.fromBaseComponent(TextComponent
+                    .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(language, code, argList)));
             while (result.getText().startsWith(ChatColor.RESET.toString()))
                 result.setText(result.getText().substring(2));
             advancedComponent.getComponents().putAll(result.getComponents());
@@ -214,9 +221,13 @@ public class LanguageParser {
             input = builder.toString();
         }
         advancedComponent.setText(input);
-        for (Map.Entry<String, String> entry : advancedComponent.getComponents().entrySet())
+        for (val entry : advancedComponent.getComponents().entrySet())
             advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), language, syntax));
-        return advancedComponent.toBaseComponent();
+
+        for (val entry : advancedComponent.getAllTranslatableArguments().entrySet())
+            advancedComponent.getAllTranslatableArguments().put(entry.getKey(), entry.getValue().stream()
+                    .map(comp -> parseAdvancedComponent(language, syntax, comp)).collect(Collectors.toList()));
+        return advancedComponent;
     }
 
     /* Scoreboard stuff */

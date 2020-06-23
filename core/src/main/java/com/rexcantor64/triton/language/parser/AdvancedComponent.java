@@ -255,7 +255,7 @@ public class AdvancedComponent {
         return translatableArguments.get(uuid);
     }
 
-    private HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
+    public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
         return translatableArguments;
     }
 
