@@ -242,28 +242,22 @@ public class LanguageParser {
                 i++;
                 ChatColor cc = ChatColor.getByChar(text.charAt(i));
                 if (cc == null) continue;
-                switch (cc) {
-                    case BOLD:
-                        current.setBold(true);
-                        break;
-                    case ITALIC:
-                        current.setItalic(true);
-                        break;
-                    case MAGIC:
-                        current.setMagic(true);
-                        break;
-                    case STRIKETHROUGH:
-                        current.setStrikethrough(true);
-                        break;
-                    case UNDERLINE:
-                        current.setUnderline(true);
-                        break;
-                    default:
-                        current.setText(builder.toString());
-                        builder = new StringBuilder();
-                        components.add(current);
-                        current = new ScoreboardComponent();
-                        current.setColor(cc);
+                if (ChatColor.BOLD.equals(cc)) {
+                    current.setBold(true);
+                } else if (ChatColor.ITALIC.equals(cc)) {
+                    current.setItalic(true);
+                } else if (ChatColor.MAGIC.equals(cc)) {
+                    current.setMagic(true);
+                } else if (ChatColor.STRIKETHROUGH.equals(cc)) {
+                    current.setStrikethrough(true);
+                } else if (ChatColor.UNDERLINE.equals(cc)) {
+                    current.setUnderline(true);
+                } else {
+                    current.setText(builder.toString());
+                    builder = new StringBuilder();
+                    components.add(current);
+                    current = new ScoreboardComponent();
+                    current.setColor(cc);
                 }
             } else
                 builder.append(c);

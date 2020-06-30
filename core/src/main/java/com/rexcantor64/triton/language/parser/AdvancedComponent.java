@@ -2,6 +2,7 @@ package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import lombok.val;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
@@ -109,7 +110,16 @@ public class AdvancedComponent {
                     builder.append(c);
                     continue;
                 }
-                ChatColor format = ChatColor.getByChar(Character.toLowerCase(text.charAt(i)));
+                val lowercaseChar = Character.toLowerCase(text.charAt(i));
+
+                ChatColor format;
+                if (lowercaseChar == 'x' && i + 12 < text.length()) {
+                    val color = text.substring(i + 1, i + 13);
+                    format = ChatColor.of("#" + color.replace("\u00A7", ""));
+                    i += 12;
+                } else {
+                    format = ChatColor.getByChar(lowercaseChar);
+                }
                 if (format == null) {
                     builder.append(c);
                     i--;
@@ -123,33 +133,25 @@ public class AdvancedComponent {
                     component = new TextComponent("");
                     component.setColor(previousColor);
                 }
-                switch (format) {
-                    case BOLD:
-                        component.setBold(true);
-                        break;
-                    case ITALIC:
-                        component.setItalic(true);
-                        break;
-                    case UNDERLINE:
-                        component.setUnderlined(true);
-                        break;
-                    case STRIKETHROUGH:
-                        component.setStrikethrough(true);
-                        break;
-                    case MAGIC:
-                        component.setObfuscated(true);
-                        break;
-                    case RESET:
-                        component.setBold(null);
-                        component.setItalic(null);
-                        component.setUnderlined(null);
-                        component.setStrikethrough(null);
-                        component.setObfuscated(null);
-                        component.setColor(null);
-                        break;
-                    default:
-                        component.setColor(format);
-                        break;
+                if (ChatColor.BOLD.equals(format)) {
+                    component.setBold(true);
+                } else if (ChatColor.ITALIC.equals(format)) {
+                    component.setItalic(true);
+                } else if (ChatColor.UNDERLINE.equals(format)) {
+                    component.setUnderlined(true);
+                } else if (ChatColor.STRIKETHROUGH.equals(format)) {
+                    component.setStrikethrough(true);
+                } else if (ChatColor.MAGIC.equals(format)) {
+                    component.setObfuscated(true);
+                } else if (ChatColor.RESET.equals(format)) {
+                    component.setBold(null);
+                    component.setItalic(null);
+                    component.setUnderlined(null);
+                    component.setStrikethrough(null);
+                    component.setObfuscated(null);
+                    component.setColor(null);
+                } else {
+                    component.setColor(format);
                 }
             } else if (c == '\uE400' || c == '\uE500') {
                 if (builder.length() != 0) {
