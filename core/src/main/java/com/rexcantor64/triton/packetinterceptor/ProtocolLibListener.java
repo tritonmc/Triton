@@ -98,15 +98,22 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
-                BaseComponent[] result = main.getLanguageParser()
-                        .parseComponent(languagePlayer, main.getConf()
-                                .getChatSyntax(), ComponentSerializer.parse(msg.getJson()));
-                if (result == null) {
-                    packet.setCancelled(true);
-                    return;
+                try {
+                    BaseComponent[] result = main.getLanguageParser()
+                            .parseComponent(languagePlayer, main.getConf()
+                                    .getChatSyntax(), ComponentSerializer.parse(msg.getJson()));
+                    if (result == null) {
+                        packet.setCancelled(true);
+                        return;
+                    }
+                    msg.setJson(ComponentSerializer.toString(result));
+                    packet.getPacket().getChatComponents().writeSafely(0, msg);
+                } catch (NullPointerException e) {
+                    // Catch 1.16 Hover 'contents' not being parsed correctly
+                    Triton.get().getLogger()
+                            .logError(1, "Could not parse a chat message, so it was ignored. Message: %1", msg
+                                    .getJson());
                 }
-                msg.setJson(ComponentSerializer.toString(result));
-                packet.getPacket().getChatComponents().writeSafely(0, msg);
                 return;
             }
             BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
