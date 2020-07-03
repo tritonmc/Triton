@@ -80,7 +80,6 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     // Read language files
                     val languageItems = new ArrayList<LanguageItem>();
                     val itemsSize = in.readInt();
-                    System.out.println(itemsSize);
                     for (var i = 0; i < itemsSize; i++) {
                         val type = in.readByte();
                         val key = in.readUTF();
