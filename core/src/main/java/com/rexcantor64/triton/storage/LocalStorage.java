@@ -127,6 +127,7 @@ public class LocalStorage extends Storage {
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to save translations.cache.json: %1", e.getMessage());
             }
+            return true;
         }
 
         Triton.get().getLogger().logInfo(2, "Saving collections to local storage...");
