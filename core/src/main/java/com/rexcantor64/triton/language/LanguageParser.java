@@ -165,9 +165,7 @@ public class LanguageParser {
 
     private AdvancedComponent parseAdvancedComponent(String language, FeatureSyntax syntax,
                                                      AdvancedComponent advancedComponent) {
-        var input = advancedComponent.getText();
-        while (input.startsWith(ChatColor.RESET.toString()))
-            input = input.substring(2);
+        var input = advancedComponent.getTextClean();
         input = Triton.get().getLanguageManager().matchPattern(input, language);
         Integer[] i;
         var safeCounter = 0;

@@ -2,7 +2,9 @@ package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import lombok.Getter;
 import lombok.val;
+import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
@@ -10,6 +12,7 @@ import java.util.*;
 
 public class AdvancedComponent {
 
+    @Getter
     private String text;
     private HashMap<String, String> components = new HashMap<>();
     private HashMap<String, List<AdvancedComponent>> translatableArguments = new HashMap<>();
@@ -229,8 +232,11 @@ public class AdvancedComponent {
         return list;
     }
 
-    public String getText() {
-        return text;
+    public String getTextClean() {
+        var result = text;
+        while (result.startsWith(ChatColor.RESET.toString()))
+            result = result.substring(2);
+        return result;
     }
 
     public void setText(String text) {

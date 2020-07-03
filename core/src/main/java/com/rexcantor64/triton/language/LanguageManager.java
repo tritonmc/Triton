@@ -6,6 +6,7 @@ import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
+import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,15 +78,20 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
 
-    public String[] getSign(LanguagePlayer p, SignLocation location) {
-        return getSign(p, location, new String[4]);
+    public String[] getSign(LanguagePlayer player, SignLocation location) {
+        return getSign(player, location, () -> new String[4]);
     }
 
-    public String[] getSign(LanguagePlayer p, SignLocation location, String[] defaultLines) {
-        return getSign(p.getLang().getName(), location, defaultLines);
+    public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, String[] defaultLines) {
+        return getSign(player.getLang().getName(), location, () -> defaultLines);
     }
 
-    private String[] getSign(@NonNull String language, @NonNull SignLocation location, @NonNull String[] defaultLines) {
+    public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines) {
+        return getSign(player.getLang().getName(), location, defaultLines);
+    }
+
+    private String[] getSign(@NonNull String language, @NonNull SignLocation location,
+                             @NonNull Supplier<String[]> defaultLines) {
         val langItems = this.signItems.get(language);
         if (langItems == null) return getSignFromMain(location, defaultLines);
 
@@ -94,7 +101,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return formatLines(language, lines, defaultLines);
     }
 
-    private String[] getSignFromMain(@NonNull SignLocation location, @NonNull String[] defaultLines) {
+    private String[] getSignFromMain(@NonNull SignLocation location, @NonNull Supplier<String[]> defaultLines) {
         val langItems = this.signItems.get(this.mainLanguage.getName());
         if (langItems == null) return null;
 
@@ -104,8 +111,10 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return formatLines(this.mainLanguage.getName(), lines, defaultLines);
     }
 
-    public String[] formatLines(@NonNull String language, @NonNull String[] lines, @NonNull String[] defaultLines) {
+    public String[] formatLines(@NonNull String language, @NonNull String[] lines,
+                                @NonNull Supplier<String[]> defaultLinesSupplier) {
         val result = new String[4];
+        String[] defaultLines = null;
 
         for (int i = 0; i < 4; ++i) {
             if (lines.length - 1 < i) {
@@ -115,6 +124,9 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             result[i] = lines[i];
 
             if (result[i].equals("%use_line_default%")) {
+                if (defaultLines == null) {
+                    defaultLines = defaultLinesSupplier.get();
+                }
                 result[i] = Triton.get().getLanguageParser()
                         .replaceLanguages(
                                 matchPattern(defaultLines.length > i && defaultLines[i] != null ? defaultLines[i] :
@@ -180,7 +192,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
         Map<Pattern, LanguageText> matches = new HashMap<>();
 
-        val filterItems = Triton.get() instanceof SpigotMLP && Triton.get().getConfig().isBungeecord();
+        val filterItems = Triton.get() instanceof SpigotMLP && Triton.get().getConfig().isBungeecord() && !(Triton.get()
+                .getStorage() instanceof LocalStorage);
         val serverName = Triton.get().getConfig().getServerName();
 
         var itemCount = 0;
@@ -213,7 +226,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
                             val signLang = signItems.get(key);
                             itemSign.getLocations().stream()
-                                    .filter((loc) -> !filterItems || serverName.equals(loc.getServer()))
+                                    .filter((loc) -> !filterItems || loc.getServer() == null || serverName
+                                            .equals(loc.getServer()))
                                     .forEach((loc) -> signLang.put(loc, value));
                         });
                 }
