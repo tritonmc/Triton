@@ -110,7 +110,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     msg.setJson(ComponentSerializer.toString(result));
                     packet.getPacket().getChatComponents().writeSafely(0, msg);
                 } catch (NullPointerException e) {
-                    // Catch 1.16 Hover 'contents' not being parsed correctly
+                    // TODO Catch 1.16 Hover 'contents' not being parsed correctly
                     Triton.get().getLogger()
                             .logError(1, "Could not parse a chat message, so it was ignored. Message: %1", msg
                                     .getJson());
@@ -632,13 +632,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (action != Action.ADD && action != Action.UPDATE_NAME) return;
         WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
-        languagePlayer.setBossbar(uuid, bossbar.getJson());
-        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
-        if (result == null)
-            result = new BaseComponent[]{new TranslatableComponent("")};
-        bossbar.setJson(ComponentSerializer.toString(result));
-        packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+        try {
+            languagePlayer.setBossbar(uuid, bossbar.getJson());
+            BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
+                    main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
+            if (result == null)
+                result = new BaseComponent[]{new TranslatableComponent("")};
+            bossbar.setJson(ComponentSerializer.toString(result));
+            packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+        } catch (NullPointerException e) {
+            // TODO Catch 1.16 Hover 'contents' not being parsed correctly
+            Triton.get().getLogger()
+                    .logError(1, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
+        }
     }
 
     private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
