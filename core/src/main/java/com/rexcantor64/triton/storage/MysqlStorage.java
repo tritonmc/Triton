@@ -160,23 +160,53 @@ public class MysqlStorage extends Storage {
 
     @Override
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
+        return uploadPartiallyToStorage(collections, null, null);
+    }
+
+    @Override
+    public boolean uploadPartiallyToStorage(ConcurrentHashMap<String, Collection> collections,
+                                            List<LanguageItem> changed, List<LanguageItem> deleted) {
         if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) return true;
 
         try {
             @Cleanup val connection = openConnection();
 
-            @Cleanup val emptyTablesStatement = connection.createStatement();
-            emptyTablesStatement.execute("TRUNCATE `" + tablePrefix + "translations`");
-            emptyTablesStatement.execute("DELETE FROM `" + tablePrefix + "collections`");
+            if (changed == null && deleted == null) {
+                @Cleanup val emptyTablesStatement = connection.createStatement();
+                emptyTablesStatement.execute("TRUNCATE `" + tablePrefix + "translations`");
+                emptyTablesStatement.execute("DELETE FROM `" + tablePrefix + "collections`");
+            }
 
             @Cleanup val collectionsStatement = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "collections` (`name`, `servers`, `blacklist`) " +
-                            "VALUES (?, ?, ?);");
+                            "VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `servers` = VALUES (`servers`), `blacklist` = " +
+                            "VALUES(`blacklist`);");
 
             @Cleanup val translationsStatement = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "translations` (`collection`, `type`, " +
                             "`field_key`, `content`, `blacklist`, `servers`, `locations`, `patterns`, `twin_id`, " +
-                            "`twin_data`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                            "`twin_data`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `collection` " +
+                            "= VALUES (`collection`), `type` = VALUES (`type`), `field_key` = VALUES (`field_key`), " +
+                            "`content` = VALUES (`content`), `blacklist` = VALUES (`blacklist`), `servers` = VALUES " +
+                            "(`servers`), `locations` = VALUES (`locations`), `patterns` = VALUES (`patterns`), " +
+                            "`twin_data` = VALUES (`twin_data`);");
+
+            @Cleanup val translationsDeleteStatement = connection
+                    .prepareStatement("DELETE FROM `" + tablePrefix + "translations` WHERE `twin_id` = ?");
+
+            if (deleted != null) {
+                for (val item : deleted) {
+                    if (item.getTwinData() == null || item.getTwinData().getId() == null) {
+                        Triton.get().getLogger()
+                                .logWarning("Failed to delete item %1 from database because it doesn't have a TWIN " +
+                                        "id", item);
+                        continue;
+                    }
+
+                    translationsDeleteStatement.setString(1, item.getTwinData().getId().toString());
+                    translationsDeleteStatement.executeUpdate();
+                }
+            }
 
             for (val entry : collections.entrySet()) {
                 collectionsStatement.setString(1, entry.getKey());
@@ -189,6 +219,9 @@ public class MysqlStorage extends Storage {
                 collectionsStatement.executeUpdate();
 
                 for (val item : entry.getValue().getItems()) {
+                    // Ignore item if it hasn't changed
+                    if (changed != null && !changed.contains(item)) continue;
+
                     val type = item.getType();
 
                     translationsStatement.setString(1, entry.getKey());

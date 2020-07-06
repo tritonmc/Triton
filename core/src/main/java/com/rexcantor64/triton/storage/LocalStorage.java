@@ -8,6 +8,7 @@ import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
+import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
@@ -16,6 +17,7 @@ import lombok.val;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -168,6 +170,12 @@ public class LocalStorage extends Storage {
             }
         });
         return true;
+    }
+
+    @Override
+    public boolean uploadPartiallyToStorage(ConcurrentHashMap<String, Collection> collections,
+                                            List<LanguageItem> changed, List<LanguageItem> deleted) {
+        return uploadToStorage(collections);
     }
 
     @Override
