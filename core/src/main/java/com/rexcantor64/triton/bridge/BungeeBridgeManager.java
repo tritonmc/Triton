@@ -54,11 +54,12 @@ public class BungeeBridgeManager implements Listener {
                 boolean add = in.readBoolean();
                 val key = add ? in.readUTF() : null;
 
-                Triton.get().getStorage().toggleLocationForSignGroup(location, key);
+                val changed = Triton.get().getStorage().toggleLocationForSignGroup(location, key);
 
                 Triton.get().runAsync(() -> {
                     Triton.get().getLogger().logInfo(2, "Saving sign to storage...");
-                    Triton.get().getStorage().uploadToStorage(Triton.get().getStorage().getCollections());
+                    Triton.get().getStorage()
+                            .uploadPartiallyToStorage(Triton.get().getStorage().getCollections(), changed, null);
                     sendConfigToServer(server, null);
                     Triton.get().getLogger().logInfo(2, "Sign saved!");
                 });

@@ -11,8 +11,11 @@ import com.tananaev.jsonpatch.JsonPath;
 import com.tananaev.jsonpatch.gson.AbsOperationDeserializer;
 import com.tananaev.jsonpatch.gson.JsonPathDeserializer;
 import com.tananaev.jsonpatch.operation.AbsOperation;
+import lombok.Data;
 import lombok.val;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -24,25 +27,36 @@ public class TwinParser {
             .registerTypeAdapter(AbsOperation.class, new AbsOperationDeserializer())
             .create();
 
-    public static ConcurrentHashMap<String, Collection> parseDownload(ConcurrentHashMap<String, Collection> collections, JsonObject data) {
+    public static TwinResponse parseDownload(ConcurrentHashMap<String, Collection> collections, JsonObject data) {
         val deleted = data.getAsJsonArray("deleted");
         val added = data.getAsJsonArray("added");
         val modified = data.getAsJsonObject("modified");
         val metadata = data.getAsJsonObject("metadata");
 
+        val changedList = new ArrayList<LanguageItem>();
+        val deletedList = new ArrayList<LanguageItem>();
+
         // Delete
         collections.values().forEach(collection -> collection.setItems(collection.getItems().stream()
-                .filter(item -> !deleted.contains(new JsonPrimitive(item.getTwinData().getId().toString())))
+                .filter(item -> {
+                    if (!deleted.contains(new JsonPrimitive(item.getTwinData().getId().toString()))) return true;
+                    deletedList.add(item);
+                    return false;
+                })
                 .collect(Collectors.toList())));
 
         // Add
         added.forEach(itemElement -> {
-            val item = itemElement.getAsJsonObject();
+            val itemJson = itemElement.getAsJsonObject();
             val collection = collections
-                    .computeIfAbsent(item.get("fileName").getAsString(), (ignore) -> new Collection());
+                    .computeIfAbsent(itemJson.get("fileName").getAsString(), (ignore) -> new Collection());
 
-            item.remove("fileName");
-            collection.getItems().add(TwinManager.gson.fromJson(item, LanguageItem.class));
+            itemJson.remove("fileName");
+
+            val item = TwinManager.gson.fromJson(itemJson, LanguageItem.class);
+            collection.getItems().add(item);
+
+            changedList.add(item);
         });
 
 
@@ -63,6 +77,8 @@ public class TwinParser {
 
                     val resultJson = patch.apply(itemJson);
                     val result = TwinManager.gson.fromJson(resultJson, LanguageItem.class);
+
+                    changedList.add(result);
 
                     val newColName = resultJson.getAsJsonObject().get("fileName").getAsString();
                     if (newColName.equals(colName)) return result;
@@ -86,7 +102,14 @@ public class TwinParser {
             entry.getValue().setMetadata(TwinManager.gson.fromJson(colMetadata, Collection.CollectionMetadata.class));
         }
 
-        return collections;
+        return new TwinResponse(collections, changedList, deletedList);
+    }
+
+    @Data
+    public static class TwinResponse {
+        private final ConcurrentHashMap<String, Collection> collections;
+        private final List<LanguageItem> changed;
+        private final List<LanguageItem> deleted;
     }
 
 }

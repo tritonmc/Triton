@@ -14,12 +14,12 @@ import com.rexcantor64.triton.language.item.serializers.LanguageSignSerializer;
 import com.rexcantor64.triton.language.item.serializers.LanguageTextSerializer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import lombok.val;
-import lombok.var;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 public class TwinManager {
 
@@ -54,14 +54,14 @@ public class TwinManager {
             data.add("languages", languages);
             data.addProperty("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
 
-            var changed = false;
+            val changed = new ArrayList<LanguageItem>();
 
             val items = new JsonArray();
             val metadata = new JsonObject();
             for (val collection : main.getStorage().getCollections().entrySet()) {
                 for (val item : collection.getValue().getItems()) {
                     if (item.getTwinData() == null) item.setTwinData(new TWINData());
-                    if (item.getTwinData().ensureValid()) changed = true;
+                    if (item.getTwinData().ensureValid()) changed.add(item);
 
                     val jsonItem = (JsonObject) gson.toJsonTree(item);
                     jsonItem.addProperty("fileName", collection.getKey());
@@ -71,8 +71,8 @@ public class TwinManager {
                     metadata.add(collection.getKey(), gson.toJsonTree(collection.getValue().getMetadata()));
             }
 
-            if (changed) {
-                main.getStorage().uploadToStorage(main.getStorage().getCollections());
+            if (changed.size() > 0) {
+                main.getStorage().uploadPartiallyToStorage(main.getStorage().getCollections(), changed, null);
                 main.getLogger().logInfo(2, "Updated items to be able to upload to TWIN");
             }
 

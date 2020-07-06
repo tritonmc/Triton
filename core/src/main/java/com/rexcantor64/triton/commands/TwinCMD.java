@@ -101,11 +101,12 @@ public class TwinCMD implements CommandExecutor {
                 long start = System.currentTimeMillis();
                 Triton.get().getLogger().logInfo(2, "Parsing changes from TWIN...");
                 val data = new JsonParser().parse(response.getPage()).getAsJsonObject();
-                val collections = TwinParser.parseDownload(storage.getCollections(), data);
+                val twinResponse = TwinParser.parseDownload(storage.getCollections(), data);
 
                 Triton.get().getLogger().logInfo(2, "Saving changes to permanent storage...");
-                storage.setCollections(collections);
-                storage.uploadToStorage(collections);
+                storage.setCollections(twinResponse.getCollections());
+                storage.uploadPartiallyToStorage(twinResponse.getCollections(), twinResponse.getChanged(), twinResponse
+                        .getDeleted());
 
                 Triton.get().getLogger().logInfo(2, "Reloading translation manager...");
                 Triton.get().getLanguageManager().setup();

@@ -38,8 +38,8 @@ public abstract class Storage {
     public abstract ConcurrentHashMap<String, Collection> downloadFromStorage();
 
     // If key is null, it's a remove action; otherwise, it's an add action
-    public List<LanguageSign> toggleLocationForSignGroup(SignLocation location, String key) {
-        val changed = new ArrayList<LanguageSign>();
+    public List<LanguageItem> toggleLocationForSignGroup(SignLocation location, String key) {
+        val changed = new ArrayList<LanguageItem>();
         for (val collection : collections.values()) {
             for (val item : collection.getItems()) {
                 if (!(item instanceof LanguageSign)) continue;

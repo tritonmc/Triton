@@ -98,8 +98,8 @@ public class SignCMD implements CommandExecutor, TabCompleter {
 
     private void executeSignChange(SignLocation location, String key) {
         val storage = Triton.get().getStorage();
-        storage.toggleLocationForSignGroup(location, key);
-        storage.uploadToStorage(storage.getCollections());
+        val changed = storage.toggleLocationForSignGroup(location, key);
+        storage.uploadPartiallyToStorage(storage.getCollections(), changed, null);
 
         Triton.get().getLanguageManager().setup();
     }
