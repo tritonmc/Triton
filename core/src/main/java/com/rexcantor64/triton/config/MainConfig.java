@@ -129,7 +129,7 @@ public class MainConfig implements TritonConfig {
 
     public void setup() {
         setup(main.getConfigYAML());
-        if (this.bungeecord)
+        if (this.bungeecord && storageType.equalsIgnoreCase("local"))
             setupFromCache();
     }
 
