@@ -104,6 +104,12 @@ bukkit {
         'triton.sign' {
             setDefault('OP')
         }
+        'triton.database' {
+            setDefault('OP')
+        }
+        'triton.info' {
+            setDefault('TRUE')
+        }
         'twin.upload' {
             setDefault('OP')
         }
