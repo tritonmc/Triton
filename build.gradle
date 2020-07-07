@@ -77,7 +77,6 @@ bukkit {
         }
         twin {
             description = 'Upload and download your config to/from the Triton Web INterface.'
-            aliases = ['tritonweb', 'tweb', 'twebinterface', 'tritonwebinterface']
             usage = '/twin [code]'
         }
     }
