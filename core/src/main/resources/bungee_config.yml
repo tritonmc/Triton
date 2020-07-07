@@ -14,7 +14,7 @@ languages:
     minecraft-code: [en_GB]
     # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
-    display-name: '&aEnglish (UK)'
+    display-name: '&3English (UK)'
     # Use this to run commands on language change.
     # The commands must not start with a slash.
     # Prefix with the desired type. Available types: 'PLAYER', 'SERVER', 'BUNGEE', 'BUNGEE_PLAYER'.
@@ -32,7 +32,7 @@ languages:
   pt_PT:
     flag: bacLlt
     minecraft-code: [pt_PT]
-    display-name: '&aPortuguese (Portugal)'
+    display-name: '&3Portuguese (Portugal)'
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 
