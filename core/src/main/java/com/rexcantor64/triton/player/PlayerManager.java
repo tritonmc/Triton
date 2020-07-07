@@ -22,6 +22,10 @@ public class PlayerManager implements com.rexcantor64.triton.api.players.PlayerM
         return lp;
     }
 
+    public boolean hasPlayer(UUID p) {
+        return players.containsKey(p);
+    }
+
     public void unregisterPlayer(UUID p) {
         players.remove(p);
     }

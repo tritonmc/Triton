@@ -1,8 +1,8 @@
 package com.rexcantor64.triton;
 
 import com.rexcantor64.triton.bridge.BungeeBridgeManager;
-import com.rexcantor64.triton.commands.bungee.MainCMD;
-import com.rexcantor64.triton.commands.bungee.TwinCMD;
+import com.rexcantor64.triton.commands.handler.BungeeCommand;
+import com.rexcantor64.triton.commands.handler.BungeeCommandHandler;
 import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
@@ -14,6 +14,7 @@ import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
 import lombok.Getter;
+import lombok.val;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
@@ -24,6 +25,7 @@ import org.bstats.bungeecord.Metrics;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class BungeeMLP extends Triton {
@@ -56,8 +58,12 @@ public class BungeeMLP extends Triton {
             injectPipeline(lp, p);
         }
 
-        getBungeeCord().getPluginManager().registerCommand(loader.asBungee(), new MainCMD());
-        getBungeeCord().getPluginManager().registerCommand(loader.asBungee(), new TwinCMD());
+        val commandHandler = new BungeeCommandHandler();
+        getBungeeCord().getPluginManager().registerCommand(loader
+                .asBungee(), new BungeeCommand(commandHandler, "triton", "mlp", "ml", "multilanguage", "language",
+                "lang", "multilanguageplugin"));
+        getBungeeCord().getPluginManager()
+                .registerCommand(loader.asBungee(), new BungeeCommand(commandHandler, "twin"));
 
         if (getStorage() instanceof LocalStorage)
             bridgeManager.sendConfigToEveryone();
@@ -132,5 +138,17 @@ public class BungeeMLP extends Triton {
 
     public ProxyServer getBungeeCord() {
         return loader.asBungee().getProxy();
+    }
+
+    @Override
+    public UUID getPlayerUUIDFromString(String input) {
+        val player = getBungeeCord().getPlayer(input);
+        if (player != null) return player.getUniqueId();
+
+        try {
+            return UUID.fromString(input);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

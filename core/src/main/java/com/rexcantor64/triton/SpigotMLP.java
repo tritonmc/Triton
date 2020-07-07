@@ -4,8 +4,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.bridge.SpigotBridgeManager;
-import com.rexcantor64.triton.commands.MainCMD;
-import com.rexcantor64.triton.commands.TwinCMD;
+import com.rexcantor64.triton.commands.handler.SpigotCommandHandler;
 import com.rexcantor64.triton.guiapi.Gui;
 import com.rexcantor64.triton.guiapi.GuiButton;
 import com.rexcantor64.triton.guiapi.GuiManager;
@@ -20,10 +19,13 @@ import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import lombok.Getter;
+import lombok.val;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 
 import java.io.File;
+import java.util.Objects;
+import java.util.UUID;
 
 public class SpigotMLP extends Triton {
 
@@ -31,6 +33,8 @@ public class SpigotMLP extends Triton {
     private SpigotBridgeManager bridgeManager;
     @Getter
     private MaterialWrapperManager wrapperManager;
+    @Getter
+    private SpigotCommandHandler commandHandler;
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
@@ -50,8 +54,9 @@ public class SpigotMLP extends Triton {
         wrapperManager = new MaterialWrapperManager();
 
         // Setup commands
-        loader.asSpigot().getCommand("triton").setExecutor(new MainCMD());
-        loader.asSpigot().getCommand("twin").setExecutor(new TwinCMD());
+        this.commandHandler = new SpigotCommandHandler();
+        Objects.requireNonNull(loader.asSpigot().getCommand("triton")).setExecutor(this.commandHandler);
+        Objects.requireNonNull(loader.asSpigot().getCommand("twin")).setExecutor(this.commandHandler);
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), loader.asSpigot());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), loader.asSpigot());
@@ -120,5 +125,17 @@ public class SpigotMLP extends Triton {
     @Override
     public void runAsync(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(loader.asSpigot(), runnable);
+    }
+
+    @Override
+    public UUID getPlayerUUIDFromString(String input) {
+        val player = Bukkit.getPlayer(input);
+        if (player != null) return player.getUniqueId();
+
+        try {
+            return UUID.fromString(input);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.rexcantor64.triton.bridge;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.item.SignLocation;
@@ -240,6 +241,26 @@ public class BungeeBridgeManager implements Listener {
         out.writeByte(2);
         out.writeUTF(command);
         server.sendData("triton:main", out.toByteArray());
+    }
+
+    public void forwardCommand(CommandEvent commandEvent) {
+        val out = ByteStreams.newDataOutput();
+        // Action 4
+        out.writeByte(4);
+
+        val uuid = commandEvent.getSender().getUUID();
+        out.writeLong(uuid.getMostSignificantBits());
+        out.writeLong(uuid.getLeastSignificantBits());
+
+        out.writeBoolean(commandEvent.getSubCommand() != null);
+        if (commandEvent.getSubCommand() != null)
+            out.writeUTF(commandEvent.getSubCommand());
+
+        out.writeShort(commandEvent.getArgs().length);
+        for (val arg : commandEvent.getArgs())
+            out.writeUTF(arg);
+
+        Triton.asBungee().getBungeeCord().getPlayer(uuid).getServer().sendData("triton:main", out.toByteArray());
     }
 
 }

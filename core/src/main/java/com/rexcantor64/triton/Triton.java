@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
+import java.util.UUID;
 
 @Getter
 public abstract class Triton implements com.rexcantor64.triton.api.Triton {
@@ -141,5 +142,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {
     }
+
+    public abstract UUID getPlayerUUIDFromString(String input);
 
 }

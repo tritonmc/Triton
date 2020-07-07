@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.SpigotSender;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -180,6 +182,18 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     Bukkit.getScheduler().runTaskLater(Triton.get().getLoader().asSpigot(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 });
+            } else if (action == 4) {
+                val uuid = new UUID(in.readLong(), in.readLong());
+                val p = Bukkit.getPlayer(uuid);
+
+                val subCommand = in.readBoolean() ? in.readUTF() : null;
+                val args = new String[in.readShort()];
+                for (var i = 0; i < args.length; ++i)
+                    args[i] = in.readUTF();
+
+                val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
+                        CommandEvent.Environment.SPIGOT);
+                Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
