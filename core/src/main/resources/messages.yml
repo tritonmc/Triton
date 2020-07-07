@@ -8,6 +8,7 @@ error:
   sign-not-found: "&cSign group %1 not found! Note: It's case sensitive. Use TAB to all the available options."
   database-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'upload' (or 'u') and 'download' (or 'd')."
   database-not-supported: "&cThis command isn't supported on local storage."
+  not-available-on-spigot: "&cThis action isn't available on Spigot when using BungeeCord. Please run this through BungeeCord instead."
 help:
   menu:
     - "&8-------[ &b&lTriton&8 ]-------"

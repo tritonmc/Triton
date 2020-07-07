@@ -21,6 +21,7 @@ public abstract class CommandHandler {
         commands.put("setlanguage", new SetLanguageCommand());
         commands.put("reload", new ReloadCommand());
         commands.put("sign", new SignCommand());
+        commands.put("database", new DatabaseCommand());
         commands.put("twin", new TwinCommand());
     }
 

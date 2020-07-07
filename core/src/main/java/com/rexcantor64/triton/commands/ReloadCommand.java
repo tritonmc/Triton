@@ -47,7 +47,7 @@ public class ReloadCommand implements Command {
 
     @Override
     public List<String> handleTabCompletion(CommandEvent event) {
-        if (!Triton.isBungee() && !Triton.get().getConfig().isBungeecord())
+        if (event.getArgs().length > 1 || (!Triton.isBungee() && !Triton.get().getConfig().isBungeecord()))
             return Collections.emptyList();
         return Stream.of("server", "all", "bungee")
                 .filter(v -> v.toLowerCase().startsWith(event.getArgs()[0].toLowerCase()))
