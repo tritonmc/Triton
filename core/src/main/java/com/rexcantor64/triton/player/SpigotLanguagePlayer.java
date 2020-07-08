@@ -5,8 +5,6 @@ import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
-import com.rexcantor64.triton.scoreboard.WrappedScoreboard;
-import com.rexcantor64.triton.scoreboard.bridge.ProtocolLibBridge;
 import com.rexcantor64.triton.storage.LocalStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -31,15 +29,12 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private HashMap<UUID, String> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
 
-    private WrappedScoreboard scoreboard;
-
     private HashMap<World, HashMap<Integer, String>> entities = new HashMap<>();
     private HashMap<World, HashMap<Integer, Entity>> players = new HashMap<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
         load();
-        scoreboard = new WrappedScoreboard(new ProtocolLibBridge(this), this);
     }
 
     public Language getLang() {
@@ -83,14 +78,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.waitingForClientLocale = true;
     }
 
-    public WrappedScoreboard getScoreboard() {
-        return scoreboard;
-    }
-
     public void refreshAll() {
         if (toBukkit() == null)
             return;
-        refreshScoreboard();
         refreshEntities();
         refreshSigns();
         toBukkit().updateInventory();
@@ -110,13 +100,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
             return;
         if (interceptor != null)
             interceptor.refreshSigns(this);
-    }
-
-    private void refreshScoreboard() {
-        if (!Triton.get().getConf().isScoreboards())
-            return;
-        if (interceptor != null)
-            interceptor.refreshScoreboard(this);
     }
 
     private void refreshEntities() {

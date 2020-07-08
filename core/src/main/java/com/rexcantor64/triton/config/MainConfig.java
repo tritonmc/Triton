@@ -50,9 +50,6 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax titleSyntax;
     private boolean guis;
     private FeatureSyntax guiSyntax;
-    private boolean scoreboards;
-    private boolean scoreboardsAdvanced;
-    private FeatureSyntax scoreboardSyntax;
     private List<EntityType> holograms = new ArrayList<>();
     private boolean hologramsAll;
     private FeatureSyntax hologramSyntax;
@@ -191,11 +188,6 @@ public class MainConfig implements TritonConfig {
         this.guis = guis.getBoolean("enabled", true);
         this.guiSyntax = FeatureSyntax.fromSection(guis);
 
-        Configuration scoreboards = section.getSection("scoreboards");
-        this.scoreboards = scoreboards.getBoolean("enabled", false);
-        this.scoreboardsAdvanced = scoreboards.getBoolean("advanced", false);
-        this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
-
         Configuration holograms = section.getSection("holograms");
         this.hologramsAll = holograms.getBoolean("allow-all", false);
         this.hologramSyntax = FeatureSyntax.fromSection(holograms);
@@ -243,6 +235,24 @@ public class MainConfig implements TritonConfig {
     public boolean isMysql() {
         // TODO deprecate api
         return storageType.equalsIgnoreCase("mysql");
+    }
+
+    @Override
+    public boolean isScoreboards() {
+        // TODO deprecate api
+        return false;
+    }
+
+    @Override
+    public boolean isScoreboardsAdvanced() {
+        // TODO deprecate api
+        return false;
+    }
+
+    @Override
+    public com.rexcantor64.triton.api.config.FeatureSyntax getScoreboardSyntax() {
+        // TODO deprecate api
+        return new FeatureSyntax("lang", "args", "arg");
     }
 
     @Getter

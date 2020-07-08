@@ -8,7 +8,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
-import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
@@ -23,8 +22,6 @@ import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.scoreboard.WrappedObjective;
-import com.rexcantor64.triton.scoreboard.WrappedTeam;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
@@ -363,138 +360,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
     }
 
-    private void handleScoreboardObjective(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        int mode = packet.getPacket().getIntegers().readSafely(0);
-        String name = packet.getPacket().getStrings().readSafely(0);
-        if (!main.getConf().isScoreboardsAdvanced()) {
-            if (mode == 1) return;
-            if (getMCVersion() < 13)
-                packet.getPacket().getStrings().writeSafely(1, translate(languagePlayer,
-                        packet.getPacket().getStrings().readSafely(1), 32, main.getConf().getScoreboardSyntax()));
-            else
-                packet.getPacket().getChatComponents().writeSafely(0,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
-                                .parseComponent(languagePlayer, main.getConf()
-                                        .getScoreboardSyntax(), ComponentSerializer
-                                        .parse(packet.getPacket().getChatComponents().readSafely(0).getJson())))));
-        }
-        if (mode == 1) {
-            languagePlayer.getScoreboard().removeObjective(name);
-            return;
-        }
-        WrappedObjective objective = null;
-        if (mode == 0) {
-            objective = languagePlayer.getScoreboard().createObjective(name);
-        } else if (mode == 2) {
-            objective = languagePlayer.getScoreboard().getObjective(name);
-        }
-        if (objective == null)
-            return;
-        if (getMCVersion() < 13) {
-            objective.setTitle(packet.getPacket().getStrings().readSafely(1));
-            languagePlayer.getScoreboard().getBridge().updateObjectiveTitle(translate(languagePlayer,
-                    objective.getTitle(), 32, main.getConf().getScoreboardSyntax()));
-        } else {
-            objective.setTitleComp(ComponentSerializer
-                    .parse(packet.getPacket().getChatComponents().readSafely(0).getJson()));
-            languagePlayer.getScoreboard().getBridge().updateObjectiveTitle(ComponentSerializer
-                    .toString(main.getLanguageParser()
-                            .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), objective
-                                    .getTitleComp())));
-        }
-    }
-
-    private void handleScoreboardScore(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        StructureModifier<String> strings = packet.getPacket().getStrings();
-        if (!main.getConf().isScoreboardsAdvanced()) {
-            strings.writeSafely(0, translate(languagePlayer, strings.readSafely(0), 40,
-                    main.getConf().getScoreboardSyntax()));
-            return;
-        }
-        String objectiveString = strings.readSafely(1);
-        if (objectiveString.isEmpty()) {
-            for (WrappedObjective objective : languagePlayer.getScoreboard().getObjectives())
-                objective.setScore(strings.readSafely(0),
-                        packet.getPacket().getScoreboardActions()
-                                .readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ? packet.getPacket()
-                                .getIntegers().readSafely(0) : null);
-        } else {
-            WrappedObjective objective = languagePlayer.getScoreboard().getObjective(objectiveString);
-            if (objective == null) {
-                return;
-            }
-            objective.setScore(strings.readSafely(0),
-                    packet.getPacket().getScoreboardActions().readSafely(0) == EnumWrappers.ScoreboardAction.CHANGE ?
-                            packet.getPacket().getIntegers().readSafely(0) : null);
-        }
-        languagePlayer.getScoreboard().rerender(false);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        StructureModifier<String> strings = packet.getPacket().getStrings();
-        StructureModifier<WrappedChatComponent> components = packet.getPacket().getChatComponents();
-        if (!main.getConf().isScoreboardsAdvanced()) {
-            if (getMCVersion() < 13) {
-                strings.writeSafely(2, translate(languagePlayer, strings.readSafely(2), 16,
-                        main.getConf().getScoreboardSyntax()));
-                strings.writeSafely(3, translate(languagePlayer, strings.readSafely(3), 16,
-                        main.getConf().getScoreboardSyntax()));
-            } else {
-                components.writeSafely(1,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
-                                .parseComponent(languagePlayer, main.getConf()
-                                        .getScoreboardSyntax(), ComponentSerializer
-                                        .parse(components.readSafely(1).getJson())))));
-                components.writeSafely(2,
-                        WrappedChatComponent.fromJson(ComponentSerializer.toString(main.getLanguageParser()
-                                .parseComponent(languagePlayer, main.getConf()
-                                        .getScoreboardSyntax(), ComponentSerializer
-                                        .parse(components.readSafely(2).getJson())))));
-            }
-            return;
-        }
-        StructureModifier<Integer> integers = packet.getPacket().getIntegers();
-        String name = strings.readSafely(0);
-        int mode = integers.readSafely(getMCVersion() < 13 ? 1 : 0);
-        if (mode == 1) {
-            languagePlayer.getScoreboard().removeTeam(name);
-            return;
-        }
-        WrappedTeam team;
-        if (mode == 0) team = languagePlayer.getScoreboard().createTeam(name);
-        else team = languagePlayer.getScoreboard().getTeam(name);
-        if (team == null)
-            return;
-        if (mode == 0 || mode == 2) {
-            if (getMCVersion() < 13) {
-                team.setPrefix(strings.readSafely(2));
-                team.setSuffix(strings.readSafely(3));
-            } else {
-                team.setPrefixComp(ComponentSerializer.parse(components.readSafely(1).getJson()));
-                team.setSuffixComp(ComponentSerializer.parse(components.readSafely(2).getJson()));
-            }
-        }
-        if (mode == 0 || mode == 3)
-            team.addEntry((Collection<String>) packet.getPacket().getSpecificModifier(Collection.class).readSafely(0));
-        if (mode == 4)
-            team.removeEntry((Collection<String>) packet.getPacket().getSpecificModifier(Collection.class)
-                    .readSafely(0));
-        languagePlayer.getScoreboard().rerender(false);
-    }
-
-    private void handleScoreboardDisplayObjective(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isScoreboardsAdvanced()) return;
-        int position = packet.getPacket().getIntegers().readSafely(0);
-        String name = packet.getPacket().getStrings().readSafely(0);
-        if (position != 1 && position < 3) return;
-        WrappedObjective obj = languagePlayer.getScoreboard().getObjective(name);
-        if (obj == null) return;
-        packet.setCancelled(true);
-        languagePlayer.getScoreboard().setSidebarObjective(obj);
-        languagePlayer.getScoreboard().rerender(false);
-    }
-
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
@@ -716,17 +581,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_INFO && (main.getConf()
                 .isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
             handlePlayerInfo(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf()
-                .isScoreboards()) {
-            handleScoreboardObjective(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_SCORE && main.getConf()
-                .isScoreboards()) {
-            handleScoreboardScore(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM && main.getConf().isScoreboards()) {
-            handleScoreboardTeam(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE && main.getConf()
-                .isScoreboards()) {
-            handleScoreboardDisplayObjective(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT && main.getConf().isKick()) {
             handleKickDisconnect(packet, languagePlayer);
         } else if (existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main
@@ -986,11 +840,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
-    public void refreshScoreboard(SpigotLanguagePlayer player) {
-        player.getScoreboard().rerender(true);
-    }
-
-    @Override
     public void resetSign(Player p, SignLocation location) {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
@@ -1063,10 +912,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
         types.add(PacketType.Play.Server.ENTITY_DESTROY);
         types.add(PacketType.Play.Server.PLAYER_INFO);
-        types.add(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
-        types.add(PacketType.Play.Server.SCOREBOARD_SCORE);
-        types.add(PacketType.Play.Server.SCOREBOARD_TEAM);
-        types.add(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE);
         types.add(PacketType.Play.Server.KICK_DISCONNECT);
         if (existsSignUpdatePacket()) types.add(PacketType.Play.Server.UPDATE_SIGN);
         else {
@@ -1224,10 +1069,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     public enum Action {
         ADD, REMOVE, UPDATE_PCT, UPDATE_NAME, UPDATE_STYLE, UPDATE_PROPERTIES
-    }
-
-    public enum EnumScoreboardHealthDisplay {
-        HEARTS, INTEGER
     }
 
 }
