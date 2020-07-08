@@ -1,4 +1,5 @@
-# This will be ignored if 'bungeecord' is enabled.
+# This will be ignored if 'bungeecord' is enabled and local storage is being used.
+# If using non-local storage, please make sure this matches what's on BungeeCord.
 languages:
   # The language name. This will influence the language key in the translation files.
   # It's recommended to follow this syntax: xx_XX
