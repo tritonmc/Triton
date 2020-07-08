@@ -121,24 +121,29 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     @Override
     protected void encode(ChannelHandlerContext ctx, DefinedPacket packet,
                           List<Object> out) {
-        if (packet instanceof PlayerListItem && Triton.get().getConf().isTab())
-            handlePlayerListItem(packet);
-        else if (packet instanceof Chat) {
-            if (!handleChat(packet)) {
-                out.add(false);
-                return;
-            }
-        } else if (packet instanceof Title && Triton.get().getConf().isTitles()) {
-            if (!handleTitle(packet)) {
-                out.add(false);
-                return;
-            }
-        } else if (packet instanceof BossBar && Triton.get().getConf().isBossbars())
-            handleBossbar(packet);
-        else if (packet instanceof PlayerListHeaderFooter && Triton.get().getConf().isTab())
-            handlePlayerListHeaderFooter(packet);
-        else if (packet instanceof Kick && Triton.get().getConf().isKick())
-            handleKick(packet);
+        try {
+            if (Triton.get().getConf().isTab() && packet instanceof PlayerListItem)
+                handlePlayerListItem(packet);
+            else if (packet instanceof Chat) {
+                if (!handleChat(packet)) {
+                    out.add(false);
+                    return;
+                }
+            } else if (Triton.get().getConf().isTitles() && packet instanceof Title) {
+                if (!handleTitle(packet)) {
+                    out.add(false);
+                    return;
+                }
+            } else if (Triton.get().getConf().isBossbars() && packet instanceof BossBar)
+                handleBossbar(packet);
+            else if (Triton.get().getConf().isTab() && packet instanceof PlayerListHeaderFooter)
+                handlePlayerListHeaderFooter(packet);
+            else if (Triton.get().getConf().isKick() && packet instanceof Kick)
+                handleKick(packet);
+        } catch (NoClassDefFoundError e) {
+            if (Triton.get().getConfig().getLogLevel() >= 2)
+                e.printStackTrace();
+        }
         out.add(packet);
     }
 
