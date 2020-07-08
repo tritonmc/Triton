@@ -90,8 +90,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return getSign(player.getLang().getName(), location, defaultLines);
     }
 
-    private String[] getSign(@NonNull String language, @NonNull SignLocation location,
-                             @NonNull Supplier<String[]> defaultLines) {
+    public String[] getSign(@NonNull String language, @NonNull SignLocation location,
+                            @NonNull Supplier<String[]> defaultLines) {
         val langItems = this.signItems.get(language);
         if (langItems == null) return getSignFromMain(location, defaultLines);
 

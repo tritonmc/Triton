@@ -2,7 +2,7 @@ package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.config.MainConfig.FeatureSyntax;
+import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class LanguageParser {
+public class LanguageParser implements com.rexcantor64.triton.api.language.LanguageParser {
 
     private static Integer[] getPatternIndex(String input, String pattern) {
         int start = -1;
@@ -90,12 +90,17 @@ public class LanguageParser {
         return false;
     }
 
+    public String parseString(String language, FeatureSyntax syntax, String input) {
+        return replaceLanguages(input, language, syntax);
+    }
+
     public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
         if (input == null) return null;
         return replaceLanguages(input, p.getLang().getName(), syntax);
     }
 
-    public String replaceLanguages(String input, String p, FeatureSyntax syntax) {
+    public String replaceLanguages(String input, String language, FeatureSyntax syntax) {
+        if (input == null) return null;
         Integer[] i;
         int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
@@ -116,7 +121,8 @@ public class LanguageParser {
                 return null;
             Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
-                builder.append(SpigotMLP.get().getLanguageManager().getText(p, ChatColor.stripColor(placeholder)));
+                builder.append(SpigotMLP.get().getLanguageManager()
+                        .getText(language, ChatColor.stripColor(placeholder)));
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
                 continue;
@@ -127,11 +133,11 @@ public class LanguageParser {
             Object[] argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
-                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), p, syntax);
+                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
                 if (argList[k] == null)
                     return null;
             }
-            builder.append(SpigotMLP.get().getLanguageManager().getText(p, code, argList));
+            builder.append(SpigotMLP.get().getLanguageManager().getText(language, code, argList));
             builder.append(input.substring(i[1]));
             input = builder.toString();
         }
