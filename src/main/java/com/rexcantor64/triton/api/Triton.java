@@ -2,6 +2,7 @@ package com.rexcantor64.triton.api;
 
 import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.api.language.LanguageManager;
+import com.rexcantor64.triton.api.language.LanguageParser;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.api.players.PlayerManager;
 
@@ -21,12 +22,29 @@ public interface Triton {
     TritonConfig getConf();
 
     /**
+     * Get the {@link TritonConfig config}.
+     * Alias of {@link Triton#getConf()}
+     *
+     * @return The {@link TritonConfig config}.
+     * @since 3.0.0
+     */
+    TritonConfig getConfig();
+
+    /**
      * Get the {@link LanguageManager language manager}.
      *
      * @return The {@link LanguageManager language manager}.
      * @since 1.0.0
      */
     LanguageManager getLanguageManager();
+
+    /**
+     * Get the {@link LanguageParser language parser}.
+     *
+     * @return The {@link LanguageParser language parser}.
+     * @since 3.0.0
+     */
+    LanguageParser getLanguageParser();
 
     /**
      * Get the {@link PlayerManager player manager}.

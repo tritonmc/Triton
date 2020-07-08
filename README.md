@@ -1,14 +1,17 @@
-# Triton 2.6.4
-[![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#diogotcorreia/Triton)  
+# Triton 3.0.0
+[![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#tritonmc/Triton)  
 
 _Translate your server! Sends the same message on different languages... Hooks into all plugins!_  
 This repository was previously called MultiLanguagePlugin.
 
-Buy it [here](https://www.spigotmc.org/resources/triton.30331/)!
+Triton is a Minecraft plugin for Spigot and BungeeCord that helps you translate your Minecraft server!
 
+Purchase the plugin on [Spigot](https://spigotmc.org/resources/triton.30331/) or [Polymart](https://polymart.org/resource/triton.38)!
 
-[Download API for Triton 2.6.4](https://cdn.rexcantor64.com/triton/api/TritonAPI-v2.5.0.jar) or [add it to your project using Gradle/Maven](https://jitpack.io/#diogotcorreia/Triton).
+## Using the API
+
+[Download the latest API from the releases tab](https://github.com/tritonmc/Triton/releases/latest) or [add it to your project using Gradle/Maven](https://jitpack.io/#tritonmc/Triton).
 
 Need help developing? Take a look at the [JavaDocs](https://triton.rexcantor64.com/javadocs) or join our [Discord](https://triton.rexcantor64.com/discord)!
 
-Looking for old API versions? Take a look at the [download page](https://github.com/diogotcorreia/Triton/wiki/Downloads)!
+Looking for older API versions? Take a look at the [download page](https://github.com/diogotcorreia/Triton/wiki/Downloads)!

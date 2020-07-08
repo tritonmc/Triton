@@ -3,6 +3,7 @@ package com.rexcantor64.triton.api.language;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * This class manages all the languages and messages.
@@ -36,6 +37,18 @@ public interface LanguageManager {
     String getText(LanguagePlayer player, String code, Object... args);
 
     /**
+     * Get a message from its code in a player's language.
+     *
+     * @param language The name of the {@link Language Language} to get the message from.
+     * @param code     The code of the message to get.
+     * @param args     (optional) The variables to replace in the message.
+     * @return The message in the player's language. If no message is found with the provided code, a standard 404
+     * message will be returned.
+     * @since 3.0.0
+     */
+    String getText(String language, String code, Object... args);
+
+    /**
      * Get a message from its code in the main language.
      *
      * @param code The code of the message to get.
@@ -52,7 +65,7 @@ public interface LanguageManager {
      * @param player   The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
      *                 {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
      * @param location The location of the sign.
-     * @return The message in the player's language. If no translatable sign is found on that location, null is
+     * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 1.0.0
      */
@@ -65,11 +78,41 @@ public interface LanguageManager {
      *                     {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
      * @param location     The location of the sign.
      * @param defaultLines The lines of the sign before translation.
-     * @return The message in the player's language. If no translatable sign is found on that location, null is
+     * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 2.3.0
      */
     String[] getSign(LanguagePlayer player, SignLocation location, String[] defaultLines);
+
+    /**
+     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     * This also allows for the defaultLines to only be fetched if needed, improving performance.
+     *
+     * @param player       The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
+     *                     {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
+     * @param location     The location of the sign.
+     * @param defaultLines A {@link java.util.function.Supplier Supplier} that resolves to the lines of the sign
+     *                     before translation.
+     * @return The lines in the player's language. If no translatable sign is found on that location, null is
+     * returned.
+     * @since 3.0.0
+     */
+    String[] getSign(LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines);
+
+    /**
+     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     * This also allows for the defaultLines to only be fetched if needed, improving performance.
+     *
+     * @param language     The {@link Language#getName() name of the language} to use. If invalid, this will fallback
+     *                     to the main language without warning.
+     * @param location     The location of the sign.
+     * @param defaultLines A {@link java.util.function.Supplier Supplier} that resolves to the lines of the sign
+     *                     before translation.
+     * @return The lines in the player's language. If no translatable sign is found on that location, null is
+     * returned.
+     * @since 3.0.0
+     */
+    String[] getSign(String language, SignLocation location, Supplier<String[]> defaultLines);
 
     /**
      * Get a {@link Language language} by its name.
