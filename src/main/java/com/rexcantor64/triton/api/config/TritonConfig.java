@@ -32,6 +32,12 @@ public interface TritonConfig {
     boolean isBungeecord();
 
     /**
+     * @return The value of "log-level" in the config.
+     * @since 3.0.0
+     */
+    int getLogLevel();
+
+    /**
      * @return The value of "language-creation.disabled-line" in the config.
      * @since 1.0.0
      */
@@ -68,6 +74,7 @@ public interface TritonConfig {
      *
      * @return The value of "language-creation.scoreboards.enabled" in the config.
      * @since 1.0.0
+     * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return false from now on.
      */
     boolean isScoreboards();
 
@@ -76,6 +83,7 @@ public interface TritonConfig {
      *
      * @return The value of "language-creation.scoreboards.advanced" in the config.
      * @since 1.0.0
+     * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return false from now on.
      */
     boolean isScoreboardsAdvanced();
 
@@ -152,8 +160,16 @@ public interface TritonConfig {
      *
      * @return The value of "database.enabled" in the config.
      * @since 2.6.0
+     * @deprecated This has been deprecated since v3.0.0 in favor of {@link #getStorageType()}
      */
     boolean isMysql();
+
+    /**
+     * Get the storage type currently in use by the server.
+     *
+     * @return The string value of the storage type in use. ('local' or 'mysql')
+     */
+    String getStorageType();
 
     /**
      * @return The value of "language-creation.motd.enabled" in the config.
@@ -166,6 +182,14 @@ public interface TritonConfig {
      * @since 2.6.0
      */
     boolean isTerminal();
+
+    /**
+     * Spigot only
+     *
+     * @return The value of "language-creation.prevent-placeholders-in-chat" in the config.
+     * @since 3.0.0
+     */
+    boolean isPreventPlaceholdersInChat();
 
     /**
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat"
@@ -203,6 +227,8 @@ public interface TritonConfig {
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
      * .scoreboards" in the config.
      * @since 1.0.0
+     * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return a default
+     * {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} from now on.
      */
     FeatureSyntax getScoreboardSyntax();
 
