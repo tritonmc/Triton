@@ -52,13 +52,18 @@ public class BungeeListener implements Listener {
     public void onMotd(ProxyPingEvent event) {
         Plugin plugin = Triton.get().getLoader().asBungee();
         event.registerIntent(plugin);
+
+        if (!Triton.get().getConf().isMotd()) {
+            event.completeIntent(plugin);
+            return;
+        }
+
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
-            if (Triton.get().getConf().isMotd())
-                event.getResponse().setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
-                        .parseComponent(Triton.get().getStorage()
-                                .getLanguageFromIp(SocketUtils.getIpAddress(event.getConnection().getSocketAddress()))
-                                .getName(), Triton.get().getConf().getMotdSyntax(), event.getResponse()
-                                .getDescriptionComponent())));
+            event.getResponse().setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
+                    .parseComponent(Triton.get().getStorage()
+                            .getLanguageFromIp(SocketUtils.getIpAddress(event.getConnection().getSocketAddress()))
+                            .getName(), Triton.get().getConf().getMotdSyntax(), event.getResponse()
+                            .getDescriptionComponent())));
             event.completeIntent(plugin);
         });
     }
