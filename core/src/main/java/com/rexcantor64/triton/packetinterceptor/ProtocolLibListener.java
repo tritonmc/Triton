@@ -983,30 +983,33 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (compound.containsKey("BlockEntityTag")) {
             NbtCompound blockEntityTag = compound.getCompoundOrDefault("BlockEntityTag");
             if (blockEntityTag.containsKey("Items")) {
-                NbtList<?> items = blockEntityTag.getList("Items");
-                Collection<? extends NbtBase<?>> itemsCollection = items.asCollection();
-                for (NbtBase<?> base : itemsCollection) {
-                    NbtCompound invItem = NbtFactory.asCompound(base);
-                    if (!invItem.containsKey("tag")) continue;
-                    NbtCompound tag = invItem.getCompoundOrDefault("tag");
-                    if (!tag.containsKey("display")) continue;
-                    NbtCompound display = tag.getCompoundOrDefault("display");
-                    if (!display.containsKey("Name")) continue;
-                    String name = display.getStringOrDefault("Name");
-                    if (getMCVersion() >= 13) {
-                        BaseComponent[] result = main.getLanguageParser()
-                                .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
-                                        .parse(name));
-                        if (result == null)
-                            display.remove("Name");
-                        else
-                            display.put("Name", ComponentSerializer.toString(result));
-                    } else {
-                        String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
-                        if (result == null)
-                            display.remove("Name");
-                        else
-                            display.put("Name", result);
+                NbtBase<?> itemsBase = blockEntityTag.getValue("Items");
+                if (itemsBase instanceof NbtList<?>) {
+                    NbtList<?> items = (NbtList<?>) itemsBase;
+                    Collection<? extends NbtBase<?>> itemsCollection = items.asCollection();
+                    for (NbtBase<?> base : itemsCollection) {
+                        NbtCompound invItem = NbtFactory.asCompound(base);
+                        if (!invItem.containsKey("tag")) continue;
+                        NbtCompound tag = invItem.getCompoundOrDefault("tag");
+                        if (!tag.containsKey("display")) continue;
+                        NbtCompound display = tag.getCompoundOrDefault("display");
+                        if (!display.containsKey("Name")) continue;
+                        String name = display.getStringOrDefault("Name");
+                        if (getMCVersion() >= 13) {
+                            BaseComponent[] result = main.getLanguageParser()
+                                    .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                            .parse(name));
+                            if (result == null)
+                                display.remove("Name");
+                            else
+                                display.put("Name", ComponentSerializer.toString(result));
+                        } else {
+                            String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
+                            if (result == null)
+                                display.remove("Name");
+                            else
+                                display.put("Name", result);
+                        }
                     }
                 }
             }
