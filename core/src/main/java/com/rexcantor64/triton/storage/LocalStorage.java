@@ -217,4 +217,8 @@ public class LocalStorage extends Storage {
         }
         return collections;
     }
+
+    public String toString() {
+        return "Local";
+    }
 }

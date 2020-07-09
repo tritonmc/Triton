@@ -18,7 +18,7 @@ public class InfoCommand implements Command {
                 .sendMessage(handleArguments(msg,
                         Triton.get().getVersion(),
                         "Rexcantor64 (Diogo Correia)",
-                        Triton.get().getStorage().getClass().getSimpleName(),
+                        Triton.get().getStorage().toString(),
                         Triton.isBungee() || Triton.get().getConfig().isBungeecord()
                 )));
 

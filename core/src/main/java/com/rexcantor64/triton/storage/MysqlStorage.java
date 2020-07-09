@@ -372,4 +372,8 @@ public class MysqlStorage extends Storage {
         if (obj == null) return def;
         return gson.toJson(obj);
     }
+
+    public String toString() {
+        return "MySQL";
+    }
 }
