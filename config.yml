@@ -1,4 +1,5 @@
-# This will be ignored if 'bungeecord' is enabled.
+# This will be ignored if 'bungeecord' is enabled and local storage is being used.
+# If using non-local storage, please make sure this matches what's on BungeeCord.
 languages:
   # The language name. This will influence the language key in the translation files.
   # It's recommended to follow this syntax: xx_XX
@@ -15,7 +16,7 @@ languages:
     minecraft-code: [en_GB]
     # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
-    display-name: '&aEnglish (UK)'
+    display-name: '&3English (UK)'
     # Use this to run commands on language change.
     # The commands must not start with a slash.
     # Prefix with the desired type. Available types: 'PLAYER', 'SERVER'
@@ -29,7 +30,7 @@ languages:
   pt_PT:
     flag: bacLlt
     minecraft-code: [pt_PT]
-    display-name: '&aPortuguese (Portugal)'
+    display-name: '&3Portuguese (Portugal)'
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 
@@ -61,12 +62,24 @@ bungeecord: false
 # If you've enabled "bungeecord" above, there is no need to put your token here. You just need it on your BungeeCord config.
 twin-token: ""
 
-# Enable this to use a MySQL/MariaDB database to store player's languages.
-# The tables will be created automatically for you.
-# NOTE: translations are still saved locally, no matter what.
-# This is ignored when "bungeecord" is enabled above.
-database:
-  enabled: false
+# Determines how verbose the logging will be. A lower value means less verbose.
+# 0 (default): Only errors and startup messages are logged to the console.
+# 1: Also outputs details about config initialization and other relevant information (translation count, startup time, stack traces etc).
+# 2: Also outputs information related to reading/writing files, as well as communication with BungeeCord and a database.
+# 3: Logs EVERYTHING. Only recommended for debugging purposes. When enabled, every translation job will be logged to the console.
+log-level: 0
+
+# This section controls the storage location of player data and translations.
+# If using a database, the tables/collections will be created automatically for you.
+# You can use '/triton database upload' to upload the local translations to a remote storage.
+# This MUST match what is on BungeeCord
+storage:
+  # Valid options: 'local', 'mysql', 'mongodb'
+  type: 'local'
+  # This should match the name of this server in BungeeCord's config.yml
+  # Used to filter translations for this server only
+  server-name: 'lobby'
+  # The options below this are for non-local storage only
   host: "localhost"
   port: 3306
   database: "triton"
@@ -99,17 +112,6 @@ language-creation:
   guis:
     # Should the plugin check for placeholders in GUIs' titles?
     enabled: true
-    syntax-lang: lang
-    syntax-args: args
-    syntax-arg: arg
-  # Due to the complexity of scoreboards, this is now deprecated (since v2.5.1).
-  # Seek to use PlaceholderAPI instead if the scoreboard plugin supports it.
-  # https://triton.rexcantor64.com/docs/placeholderapi/
-  scoreboards:
-    # Should the plugin check for placeholders in scoreboards?
-    enabled: false
-    # This adds support for custom scoreboard plugins. Most advanced scoreboard plugins will need this enabled to work.
-    advanced: false
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
@@ -178,3 +180,6 @@ language-creation:
   # For UX reasons, messages that contain disabled line placeholders aren't touched.
   # Changing this requires a full server restart.
   terminal: false
+  # Should placeholders typed in chat by players be ignored?
+  # Default is true
+  prevent-placeholders-in-chat: true

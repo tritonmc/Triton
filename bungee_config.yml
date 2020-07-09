@@ -14,7 +14,7 @@ languages:
     minecraft-code: [en_GB]
     # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
-    display-name: '&aEnglish (UK)'
+    display-name: '&3English (UK)'
     # Use this to run commands on language change.
     # The commands must not start with a slash.
     # Prefix with the desired type. Available types: 'PLAYER', 'SERVER', 'BUNGEE', 'BUNGEE_PLAYER'.
@@ -32,7 +32,7 @@ languages:
   pt_PT:
     flag: bacLlt
     minecraft-code: [pt_PT]
-    display-name: '&aPortuguese (Portugal)'
+    display-name: '&3Portuguese (Portugal)'
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 
@@ -58,11 +58,21 @@ config-auto-refresh-interval: -1
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
 twin-token: ""
 
-# Enable this to use a MySQL/MariaDB database to store player's languages.
-# The tables will be created automatically for you.
-# NOTE: translations are still saved locally, no matter what.
-database:
-  enabled: false
+# Determines how verbose the logging will be. A lower value means less verbose.
+# 0 (default): Only errors and startup messages are logged to the console.
+# 1: Also outputs details about config initialization and other relevant information (translation count, startup time, etc).
+# 2: Also outputs information related to reading/writing files, as well as communication with BungeeCord and a database.
+# 3: Logs EVERYTHING. Only recommended for debugging purposes. When enabled, every translation job will be logged to the console.
+log-level: 0
+
+# This section controls the storage location of player data and translations.
+# If using a database, the tables/collections will be created automatically for you.
+# You can use '/triton database upload' to upload the local translations to a remote storage.
+# The same settings MUST be placed on the Triton config for all Spigot servers under the same network
+storage:
+  # Valid options: 'local', 'mysql', 'mongodb'
+  type: 'local'
+  # The options below this are for non-local storage only
   host: "localhost"
   port: 3306
   database: "triton"
