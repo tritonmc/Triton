@@ -1,9 +1,6 @@
 package com.rexcantor64.triton.web;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -50,7 +47,7 @@ public class TwinManager {
             data.addProperty("bungee", bungee);
             val languages = new JsonArray();
             for (val lang : main.getLanguageManager().getAllLanguages())
-                languages.add(lang.getName());
+                languages.add(new JsonPrimitive(lang.getName()));
             data.add("languages", languages);
             data.addProperty("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
 
