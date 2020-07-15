@@ -9,12 +9,7 @@ import java.util.Set;
 
 public class EntityTypeUtils {
 
-    private static short MAJOR_VERSION = -1;
     private static HashMap<Integer, EntityType> cache = new HashMap<>();
-
-    static {
-        MAJOR_VERSION = Short.parseShort(MinecraftReflection.getPackageVersion().split("_")[1]);
-    }
 
     public static EntityType getEntityTypeById(int id) {
         if (!cache.containsKey(id))
@@ -24,7 +19,7 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
-            if (MAJOR_VERSION >= 13) {
+            if (Triton.get().getMcVersion() >= 13) {
                 Class<?> registryClass = MinecraftReflection.getMinecraftClass("IRegistry");
                 Object entityTypeFinder = registryClass.getField("ENTITY_TYPE").get(null);
                 Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("keySet").invoke(entityTypeFinder);

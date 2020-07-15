@@ -3,7 +3,6 @@ package com.rexcantor64.triton.utils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
 
 import java.util.regex.Pattern;
 
@@ -41,33 +40,6 @@ public class ComponentUtils {
                 return ClickEvent.Action.SUGGEST_COMMAND;
             case 4:
                 return ClickEvent.Action.CHANGE_PAGE;
-        }
-    }
-
-    public static int encodeHoverAction(HoverEvent.Action action) {
-        switch (action) {
-            case SHOW_TEXT:
-                return 0;
-            case SHOW_ACHIEVEMENT:
-                return 1;
-            case SHOW_ITEM:
-                return 2;
-            case SHOW_ENTITY:
-                return 3;
-        }
-        return 0;
-    }
-
-    public static HoverEvent.Action decodeHoverAction(int action) {
-        switch (action) {
-            default:
-                return HoverEvent.Action.SHOW_TEXT;
-            case 1:
-                return HoverEvent.Action.SHOW_ACHIEVEMENT;
-            case 2:
-                return HoverEvent.Action.SHOW_ITEM;
-            case 3:
-                return HoverEvent.Action.SHOW_ENTITY;
         }
     }
 

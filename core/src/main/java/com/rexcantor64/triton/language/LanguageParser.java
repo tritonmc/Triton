@@ -6,13 +6,11 @@ import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.wrappers.legacy.HoverComponentWrapper;
 import lombok.val;
 import lombok.var;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
+import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
@@ -196,6 +194,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                         .fromLegacyText(Triton.get().getLanguageManager()
                                 .getText(language, ChatColor.stripColor(placeholder))));
                 advancedComponent.getComponents().putAll(result.getComponents());
+                advancedComponent.getHovers().putAll(result.getHovers());
+                advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
                 while (result.getText().startsWith(ChatColor.RESET.toString()))
                     result.setText(result.getText().substring(2));
                 builder.append(result.getText());
@@ -219,6 +219,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             while (result.getText().startsWith(ChatColor.RESET.toString()))
                 result.setText(result.getText().substring(2));
             advancedComponent.getComponents().putAll(result.getComponents());
+            advancedComponent.getHovers().putAll(result.getHovers());
+            advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
             builder.append(result.getText());
             builder.append(input.substring(i[1]));
             input = builder.toString();
@@ -226,6 +228,25 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         advancedComponent.setText(input);
         for (val entry : advancedComponent.getComponents().entrySet())
             advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), language, syntax));
+
+        for (val entry : advancedComponent.getHovers().entrySet()) {
+            if (!Triton.isBungee() && Triton.get().getMcVersion() < 16) {
+                val comps = HoverComponentWrapper.getValue(entry.getValue());
+                val string = TextComponent.toLegacyText(comps);
+                val replaced = replaceLanguages(string, language, syntax);
+                if (replaced == null) {
+                    if (entry.getValue().getAction() != HoverEvent.Action.SHOW_ITEM)
+                        entry.setValue(null);
+                    continue;
+                }
+                entry.setValue(HoverComponentWrapper
+                        .setValue(entry.getValue(), TextComponent.fromLegacyText(replaced)));
+                continue;
+            }
+
+            entry.setValue(com.rexcantor64.triton.wrappers.HoverComponentWrapper
+                    .handleHoverEvent(entry.getValue(), language, syntax));
+        }
 
         for (val entry : advancedComponent.getAllTranslatableArguments().entrySet())
             advancedComponent.getAllTranslatableArguments().put(entry.getKey(), entry.getValue().stream()

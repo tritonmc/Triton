@@ -145,4 +145,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     public abstract UUID getPlayerUUIDFromString(String input);
 
+    public abstract short getMcVersion();
+
+    public abstract short getMinorMcVersion();
+
 }

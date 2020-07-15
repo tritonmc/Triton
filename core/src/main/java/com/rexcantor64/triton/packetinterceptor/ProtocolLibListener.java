@@ -53,18 +53,12 @@ import java.util.stream.Collectors;
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
-    private final int mcVersion;
-    private final int mcVersionR;
     private Triton main;
 
     public ProtocolLibListener(SpigotMLP main) {
         this.main = main;
-        String a = Bukkit.getServer().getClass().getPackage().getName();
-        String[] s = a.substring(a.lastIndexOf('.') + 1).split("_");
-        mcVersion = Integer.parseInt(s[1]);
-        mcVersionR = Integer.parseInt(s[2].substring(1));
-        MERCHANT_RECIPE_LIST_CLASS = mcVersion >= 14 ? NMSUtils.getNMSClass("MerchantRecipeList") : null;
-        CRAFT_MERCHANT_RECIPE_LIST_CLASS = mcVersion >= 14 ? NMSUtils
+        MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils.getNMSClass("MerchantRecipeList") : null;
+        CRAFT_MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils
                 .getCraftbukkitClass("inventory.CraftMerchantRecipe") : null;
     }
 
@@ -106,11 +100,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     }
                     msg.setJson(ComponentSerializer.toString(result));
                     packet.getPacket().getChatComponents().writeSafely(0, msg);
-                } catch (NullPointerException e) {
+                } catch (RuntimeException e) {
                     // TODO Catch 1.16 Hover 'contents' not being parsed correctly
                     Triton.get().getLogger()
                             .logError(1, "Could not parse a chat message, so it was ignored. Message: %1", msg
                                     .getJson());
+                    if (Triton.get().getConfig().getLogLevel() > 99)
+                        e.printStackTrace();
                 }
                 return;
             }
@@ -505,7 +501,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 result = new BaseComponent[]{new TranslatableComponent("")};
             bossbar.setJson(ComponentSerializer.toString(result));
             packet.getPacket().getChatComponents().writeSafely(0, bossbar);
-        } catch (NullPointerException e) {
+        } catch (RuntimeException e) {
             // TODO Catch 1.16 Hover 'contents' not being parsed correctly
             Triton.get().getLogger()
                     .logError(1, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
@@ -943,12 +939,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return container.getBytes().readSafely(0) == 2;
     }
 
-    private int getMCVersion() {
-        return mcVersion;
+    private short getMCVersion() {
+        return main.getMcVersion();
     }
 
-    private int getMCVersionR() {
-        return mcVersionR;
+    private short getMCVersionR() {
+        return main.getMinorMcVersion();
     }
 
     private boolean existsSignUpdatePacket() {

@@ -8,14 +8,21 @@ import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 public class AdvancedComponent {
 
     @Getter
     private String text;
+    @Getter
     private HashMap<String, String> components = new HashMap<>();
     private HashMap<String, List<AdvancedComponent>> translatableArguments = new HashMap<>();
+    @Getter
+    private HashMap<String, HoverEvent> hovers = new HashMap<>();
+
 
     public static AdvancedComponent fromBaseComponent(BaseComponent... components) {
         return fromBaseComponent(false, components);
@@ -51,10 +58,9 @@ public class AdvancedComponent {
                     }
                     if (comp.getHoverEvent() != null) {
                         builder.append("\uE500");
-                        builder.append(ComponentUtils.encodeHoverAction(comp.getHoverEvent().getAction()));
                         UUID uuid = UUID.randomUUID();
                         advancedComponent
-                                .setComponent(uuid, TextComponent.toLegacyText(comp.getHoverEvent().getValue()));
+                                .setHover(uuid, comp.getHoverEvent());
                         builder.append(uuid.toString());
                         hasHover = true;
                     }
@@ -81,11 +87,9 @@ public class AdvancedComponent {
                 AdvancedComponent component = fromBaseComponent(onlyText, comp.getExtra()
                         .toArray(new BaseComponent[0]));
                 builder.append(component.getText());
-                for (Map.Entry<String, String> entry : component.getComponents().entrySet())
-                    advancedComponent.setComponent(entry.getKey(), entry.getValue());
-                for (Map.Entry<String, List<AdvancedComponent>> entry :
-                        component.getAllTranslatableArguments().entrySet())
-                    advancedComponent.setTranslatableArguments(entry.getKey(), entry.getValue());
+                advancedComponent.getComponents().putAll(component.getComponents());
+                advancedComponent.getHovers().putAll(component.getHovers());
+                advancedComponent.getAllTranslatableArguments().putAll(component.getAllTranslatableArguments());
             }
             if (hasHover)
                 builder.append("\uE501");
@@ -165,17 +169,17 @@ public class AdvancedComponent {
                     component = new TextComponent("");
                     ComponentUtils.copyFormatting(previousComponent, component);
                 }
-                String uuid = text.substring(i + 2, i + 2 + 36);
-                int actionCode = Integer.parseInt(Character.toString(text.charAt(i + 1)));
                 if (c == '\uE400') {
+                    String uuid = text.substring(i + 2, i + 2 + 36);
+                    int actionCode = Integer.parseInt(Character.toString(text.charAt(i + 1)));
                     ClickEvent.Action action = ComponentUtils.decodeClickAction(actionCode);
                     component.setClickEvent(new ClickEvent(action, this.getComponent(uuid)));
+                    i += 2 + 36;
                 } else { // c == '\uE500'
-                    HoverEvent.Action action = ComponentUtils.decodeHoverAction(actionCode);
-                    component.setHoverEvent(new HoverEvent(action, TextComponent
-                            .fromLegacyText(this.getComponent(uuid))));
+                    String uuid = text.substring(i + 1, i + 1 + 36);
+                    component.setHoverEvent(this.hovers.get(uuid));
+                    i += 1 + 36;
                 }
-                i += 2 + 36;
                 int deep = 0;
                 StringBuilder content = new StringBuilder();
                 while (text.charAt(i) != c + 1 || deep != 0) {
@@ -251,6 +255,10 @@ public class AdvancedComponent {
         components.put(uuid, text);
     }
 
+    private void setHover(UUID uuid, HoverEvent hover) {
+        hovers.put(uuid.toString(), hover);
+    }
+
     private String getComponent(String uuid) {
         return components.get(uuid);
     }
@@ -265,10 +273,6 @@ public class AdvancedComponent {
 
     public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
         return translatableArguments;
-    }
-
-    public HashMap<String, String> getComponents() {
-        return components;
     }
 
     @Override
