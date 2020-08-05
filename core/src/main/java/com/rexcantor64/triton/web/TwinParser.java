@@ -2,8 +2,8 @@ package com.rexcantor64.triton.web;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.tananaev.jsonpatch.JsonPatch;
@@ -28,7 +28,7 @@ public class TwinParser {
             .create();
 
     public static TwinResponse parseDownload(ConcurrentHashMap<String, Collection> collections, JsonObject data) {
-        val deleted = data.getAsJsonArray("deleted");
+        val deleted = jsonArrayToArrayList(data.getAsJsonArray("deleted"));
         val added = data.getAsJsonArray("added");
         val modified = data.getAsJsonObject("modified");
         val metadata = data.getAsJsonObject("metadata");
@@ -39,7 +39,7 @@ public class TwinParser {
         // Delete
         collections.values().forEach(collection -> collection.setItems(collection.getItems().stream()
                 .filter(item -> {
-                    if (!deleted.contains(new JsonPrimitive(item.getTwinData().getId().toString()))) return true;
+                    if (!deleted.contains(item.getTwinData().getId().toString())) return true;
                     deletedList.add(item);
                     return false;
                 })
@@ -103,6 +103,12 @@ public class TwinParser {
         }
 
         return new TwinResponse(collections, changedList, deletedList);
+    }
+
+    private static List<String> jsonArrayToArrayList(JsonArray array) {
+        val list = new ArrayList<String>();
+        array.iterator().forEachRemaining((element) -> list.add(element.getAsString()));
+        return list;
     }
 
     @Data
