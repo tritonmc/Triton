@@ -65,7 +65,9 @@ public class HoverComponentWrapper {
 
         if (changed.get()) {
             if (newContents.size() == 0) return null;
-            return new HoverEvent(hoverEvent.getAction(), newContents);
+            val newHover = new HoverEvent(hoverEvent.getAction(), newContents);
+            newHover.setLegacy(hoverEvent.isLegacy());
+            return newHover;
         }
         return hoverEvent;
     }

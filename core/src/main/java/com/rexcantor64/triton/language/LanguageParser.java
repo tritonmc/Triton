@@ -229,8 +229,12 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         for (val entry : advancedComponent.getComponents().entrySet())
             advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), language, syntax));
 
-        for (val entry : advancedComponent.getHovers().entrySet()) {
-            if (!Triton.isBungee() && Triton.get().getMcVersion() < 16) {
+        try {
+            for (val entry : advancedComponent.getHovers().entrySet())
+                entry.setValue(com.rexcantor64.triton.wrappers.HoverComponentWrapper
+                        .handleHoverEvent(entry.getValue(), language, syntax));
+        } catch (NoSuchMethodError e) {
+            for (val entry : advancedComponent.getHovers().entrySet()) {
                 val comps = HoverComponentWrapper.getValue(entry.getValue());
                 val string = TextComponent.toLegacyText(comps);
                 val replaced = replaceLanguages(string, language, syntax);
@@ -241,11 +245,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 }
                 entry.setValue(HoverComponentWrapper
                         .setValue(entry.getValue(), TextComponent.fromLegacyText(replaced)));
-                continue;
             }
-
-            entry.setValue(com.rexcantor64.triton.wrappers.HoverComponentWrapper
-                    .handleHoverEvent(entry.getValue(), language, syntax));
         }
 
         for (val entry : advancedComponent.getAllTranslatableArguments().entrySet())

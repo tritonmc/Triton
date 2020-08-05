@@ -140,9 +140,8 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 handlePlayerListHeaderFooter(packet);
             else if (Triton.get().getConf().isKick() && packet instanceof Kick)
                 handleKick(packet);
-        } catch (NoClassDefFoundError e) {
-            if (Triton.get().getConfig().getLogLevel() >= 2)
-                e.printStackTrace();
+        } catch (Exception | Error e) {
+            e.printStackTrace();
         }
         out.add(packet);
     }
