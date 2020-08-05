@@ -407,9 +407,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 val defaultLines = new String[4];
                 for (int i = 0; i < 4; i++) {
                     try {
-                        defaultLines[i] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.parse(nbt.getStringOrDefault("Text" + (i + 1))))
-                                .getTextClean();
+                        val nbtLine = nbt.getStringOrDefault("Text" + (i + 1));
+                        if (nbtLine != null)
+                            defaultLines[i] = AdvancedComponent
+                                    .fromBaseComponent(ComponentSerializer.parse(nbtLine))
+                                    .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
                         if (Triton.get().getConfig().getLogLevel() >= 1)
@@ -437,9 +439,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     val defaultLines = new String[4];
                     for (int i = 0; i < 4; i++) {
                         try {
-                            defaultLines[i] = AdvancedComponent
-                                    .fromBaseComponent(ComponentSerializer
-                                            .parse(nbt.getStringOrDefault("Text" + (i + 1)))).getTextClean();
+                            val nbtLine = nbt.getStringOrDefault("Text" + (i + 1));
+                            if (nbtLine != null)
+                                defaultLines[i] = AdvancedComponent
+                                        .fromBaseComponent(ComponentSerializer.parse(nbtLine))
+                                        .getTextClean();
                         } catch (Exception e) {
                             Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
                             if (Triton.get().getConfig().getLogLevel() >= 1)
