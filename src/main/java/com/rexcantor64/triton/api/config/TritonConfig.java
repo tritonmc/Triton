@@ -12,6 +12,12 @@ import java.util.List;
 public interface TritonConfig {
 
     /**
+     * @return The value of "open-selector-command-override" in the config.
+     * @since 3.1.0
+     */
+    String getOpenSelectorCommandOverride();
+
+    /**
      * @return The value of "run-language-commands-on-join" in the config.
      * @since 1.0.0
      */
