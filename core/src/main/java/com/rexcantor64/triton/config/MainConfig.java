@@ -35,6 +35,7 @@ public class MainConfig implements TritonConfig {
     private List<Language> languages;
     @Setter
     private String mainLanguage;
+    private String openSelectorCommandOverride;
     private boolean runLanguageCommandsOnLogin;
     private boolean alwaysCheckClientLocale;
     private int logLevel;
@@ -106,6 +107,7 @@ public class MainConfig implements TritonConfig {
         this.languages = languages;
 
         this.mainLanguage = section.getString("main-language", "en_GB");
+        this.openSelectorCommandOverride = section.getString("open-selector-command-override", null);
         Configuration database = section.getSection("storage");
         storageType = database.getString("type", "local");
         serverName = database.getString("server-name", "lobby");

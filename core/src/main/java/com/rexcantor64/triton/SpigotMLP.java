@@ -1,15 +1,12 @@
 package com.rexcantor64.triton;
 
 import com.comphenix.protocol.ProtocolLibrary;
-import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.commands.handler.SpigotCommandHandler;
-import com.rexcantor64.triton.guiapi.Gui;
 import com.rexcantor64.triton.guiapi.GuiButton;
 import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
-import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
@@ -108,20 +105,29 @@ public class SpigotMLP extends Triton {
     public void openLanguagesSelectionGUI(LanguagePlayer p) {
         if (!(p instanceof SpigotLanguagePlayer)) return;
 
-        LanguageManager language = Triton.get().getLanguageManager();
-        Language pLang = p.getLang();
-        Gui gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
-        for (Language lang : language.getAllLanguages())
+        val slp = (SpigotLanguagePlayer) p;
+
+        val commandOverride = getConfig().getOpenSelectorCommandOverride();
+        if (commandOverride != null && !commandOverride.isEmpty()) {
+            slp.toBukkit().performCommand(commandOverride);
+            return;
+        }
+
+        val language = Triton.get().getLanguageManager();
+        val pLang = p.getLang();
+        val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
+        for (val lang : language.getAllLanguages())
             gui.addButton(new GuiButton(ItemStackParser
-                    .bannerToItemStack(((com.rexcantor64.triton.language.Language) lang).getBanner(), pLang
-                            .equals(lang))).setListener(event -> {
+                    .bannerToItemStack(
+                            ((com.rexcantor64.triton.language.Language) lang).getBanner(),
+                            pLang.equals(lang)
+                    )).setListener(event -> {
                 p.setLang(lang);
-                ((SpigotLanguagePlayer) p).toBukkit().closeInventory();
-                ((SpigotLanguagePlayer) p).toBukkit()
-                        .sendMessage(Triton.get().getMessagesConfig()
-                                .getMessage("success.selector", lang.getDisplayName()));
+                slp.toBukkit().closeInventory();
+                slp.toBukkit().sendMessage(Triton.get().getMessagesConfig()
+                        .getMessage("success.selector", lang.getDisplayName()));
             }));
-        gui.open(((SpigotLanguagePlayer) p).toBukkit());
+        gui.open(slp.toBukkit());
     }
 
     @Override

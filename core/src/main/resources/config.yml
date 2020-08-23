@@ -39,6 +39,12 @@ languages:
 # Also, if you delete any language, the players with that language will have their language changed to this.
 main-language: en_GB
 
+# If you want to open a custom menu (or even just execute a custom command) instead of opening Triton's default
+# language selector menu, put the command here, without the first slash (/).
+# Instead of opening the language menu, Triton will execute this command as the player.
+# E.g. "dm open language"
+open-selector-command-override: null
+
 # When enabled, the commands inside each language will run when the player joins.
 run-language-commands-on-join: false
 
