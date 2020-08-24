@@ -237,7 +237,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             for (val entry : advancedComponent.getHovers().entrySet()) {
                 val comps = HoverComponentWrapper.getValue(entry.getValue());
                 val string = TextComponent.toLegacyText(comps);
-                val replaced = replaceLanguages(string, language, syntax);
+                val replaced = replaceLanguages(Triton.get().getLanguageManager()
+                        .matchPattern(string, language), language, syntax);
                 if (replaced == null) {
                     if (entry.getValue().getAction() != HoverEvent.Action.SHOW_ITEM)
                         entry.setValue(null);
