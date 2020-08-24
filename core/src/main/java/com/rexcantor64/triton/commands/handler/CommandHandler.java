@@ -3,6 +3,7 @@ package com.rexcantor64.triton.commands.handler;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.*;
 import lombok.val;
+import lombok.var;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,9 +28,14 @@ public abstract class CommandHandler {
 
     public void handleCommand(CommandEvent event) {
         if (event.getLabel().equalsIgnoreCase("twin"))
-            event = new CommandEvent(event.getSender(), "twin", event
-                    .getSubCommand() == null ? new String[0] : new String[]{event.getSubCommand()}, "twin", event
-                    .getEnvironment());
+            event = new CommandEvent(event.getSender(),
+                    "twin",
+                    event.getSubCommand() == null ?
+                            new String[0] :
+                            mergeSubcommandWithArgs(event.getSubCommand(), event.getArgs()),
+                    "twin",
+                    event.getEnvironment()
+            );
 
         try {
             // No args given
@@ -63,6 +69,15 @@ public abstract class CommandHandler {
         } catch (NoPermissionException e) {
             return Collections.emptyList();
         }
+    }
+
+    private String[] mergeSubcommandWithArgs(String subCommand, String[] args) {
+        val newLength = args.length + 1;
+        val newArray = new String[newLength];
+        newArray[0] = subCommand;
+        for (var i = 0; i < args.length; ++i)
+            newArray[i + 1] = args[i];
+        return newArray;
     }
 
 }

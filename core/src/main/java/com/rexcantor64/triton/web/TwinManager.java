@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TwinManager {
 
@@ -25,7 +26,7 @@ public class TwinManager {
             .registerTypeAdapter(LanguageText.class, new LanguageTextSerializer())
             .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
             .create();
-    private static final int TWIN_VERSION = 5;
+    private static final int TWIN_VERSION = 6;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
     private final Triton main;
 
@@ -34,20 +35,36 @@ public class TwinManager {
     }
 
     public HttpResponse upload() {
+        return upload(null, null);
+    }
+
+    public HttpResponse upload(List<String> allowedCollections, List<String> allowedLanguages) {
         try {
             val bungee = Triton.isBungee();
             if (!bungee && main.getConf().isBungeecord())
                 return null;
 
             val data = new JsonObject();
+
             data.addProperty("tritonv", TWIN_VERSION);
             data.addProperty("user", "%%__USER__%%");
             data.addProperty("resource", "%%__RESOURCE__%%-" + main.getVersion());
             data.addProperty("nonce", "%%__NONCE__%%");
             data.addProperty("bungee", bungee);
+
+            if (allowedCollections != null || allowedLanguages != null) {
+                val limit = new JsonObject();
+                if (allowedCollections != null)
+                    limit.add("collections", gson.toJsonTree(allowedCollections));
+                if (allowedLanguages != null)
+                    limit.add("languages", gson.toJsonTree(allowedLanguages));
+                data.add("limit", limit);
+            }
+
             val languages = new JsonArray();
             for (val lang : main.getLanguageManager().getAllLanguages())
-                languages.add(new JsonPrimitive(lang.getName()));
+                if (allowedLanguages == null || allowedLanguages.contains(lang.getName()))
+                    languages.add(new JsonPrimitive(lang.getName()));
             data.add("languages", languages);
             data.addProperty("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
 
@@ -56,12 +73,28 @@ public class TwinManager {
             val items = new JsonArray();
             val metadata = new JsonObject();
             for (val collection : main.getStorage().getCollections().entrySet()) {
+                if (allowedCollections != null && !allowedCollections.contains(collection.getKey())) continue;
                 for (val item : collection.getValue().getItems()) {
                     if (item.getTwinData() == null) item.setTwinData(new TWINData());
                     if (item.getTwinData().ensureValid()) changed.add(item);
 
                     val jsonItem = (JsonObject) gson.toJsonTree(item);
                     jsonItem.addProperty("fileName", collection.getKey());
+
+                    if (allowedLanguages != null) {
+                        try {
+                            for (val key : new String[]{"languages", "lines"}) {
+                                val obj = jsonItem.getAsJsonObject(key);
+                                if (obj == null) continue;
+                                obj.entrySet().removeIf(entry -> !allowedLanguages.contains(entry.getKey()));
+                            }
+                        } catch (Exception e) {
+                            Triton.get().getLogger()
+                                    .logError(1, "Could not strip blocked languages from translation while uploading " +
+                                            "to TWIN");
+                        }
+                    }
+
                     items.add(jsonItem);
                 }
                 if (bungee)

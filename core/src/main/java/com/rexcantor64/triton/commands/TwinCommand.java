@@ -4,9 +4,11 @@ import com.google.gson.JsonParser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.web.TwinManager;
 import com.rexcantor64.triton.web.TwinParser;
 import lombok.val;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,14 +19,15 @@ public class TwinCommand implements Command {
     @Override
     public boolean handleCommand(CommandEvent event) {
         val sender = event.getSender();
-        val downloading = event.getArgs().length > 0;
+        val args = event.getArgs();
+        val downloading = args.length > 0 && !args[0].equalsIgnoreCase("upload");
 
         if (downloading)
             sender.assertPermission("twin.download");
         else
             sender.assertPermission("twin.upload");
 
-        if (downloading && event.getArgs()[0].equals(lastDownload)) {
+        if (downloading && args[0].equals(lastDownload)) {
             sender.sendMessageFormatted("twin.repeated-download");
             lastDownload = "";
             return true;
@@ -34,7 +37,24 @@ public class TwinCommand implements Command {
 
         Triton.get().runAsync(() -> {
             val twinManager = Triton.get().getTwinManager();
-            val response = downloading ? twinManager.download(event.getArgs()[0]) : twinManager.upload();
+
+            TwinManager.HttpResponse response;
+            if (downloading) {
+                response = twinManager.download(args[0]);
+            } else {
+                if (args.length == 0)
+                    twinManager.upload();
+
+                List<String> collections = null;
+                if (args.length >= 2 && !args[1].equalsIgnoreCase("*"))
+                    collections = Arrays.asList(args[1].split(":"));
+
+                List<String> languages = null;
+                if (args.length >= 3 && !args[2].equalsIgnoreCase("*"))
+                    languages = Arrays.asList(args[2].split(":"));
+
+                response = twinManager.upload(collections, languages);
+            }
 
             if (response == null) {
                 sender.sendMessageFormatted("twin.failed-bungeecord");
@@ -62,7 +82,7 @@ public class TwinCommand implements Command {
                 return;
             }
 
-            lastDownload = event.getArgs()[0];
+            lastDownload = args[0];
 
             handleDownload(event, response.getPage());
 
