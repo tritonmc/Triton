@@ -10,6 +10,8 @@ import lombok.val;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class CollectionSerializer implements JsonDeserializer<Collection> {
 
@@ -44,7 +46,8 @@ public class CollectionSerializer implements JsonDeserializer<Collection> {
             throw new JsonParseException("Invalid JSON while deserializing Collection");
         }
 
-        collection.setItems(Arrays.asList(context.deserialize(items, LanguageItem[].class)));
+        collection.setItems(Arrays.stream((LanguageItem[]) context.deserialize(items, LanguageItem[].class))
+                .filter(Objects::nonNull).collect(Collectors.toList()));
 
         return collection;
     }

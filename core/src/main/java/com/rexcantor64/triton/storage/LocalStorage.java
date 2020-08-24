@@ -204,13 +204,21 @@ public class LocalStorage extends Storage {
             val colFiles = translationsFolder.listFiles();
             if (colFiles != null)
                 for (val colFile : colFiles) {
-                    if (colFile.getName().endsWith(".json"))
-                        collections.put(colFile.getName().substring(0, colFile.getName().length() - 5),
-                                CollectionSerializer.parse(FileUtils.getReaderFromFile(colFile)));
-                    else
+                    try {
+                        if (colFile.getName().endsWith(".json"))
+                            collections.put(colFile.getName().substring(0, colFile.getName().length() - 5),
+                                    CollectionSerializer.parse(FileUtils.getReaderFromFile(colFile)));
+                        else
+                            Triton.get().getLogger()
+                                    .logWarning(2, "Did not load file %1 because it is not a JSON file.", colFile
+                                            .getName());
+                    } catch (JsonParseException e) {
                         Triton.get().getLogger()
-                                .logWarning(2, "Did not load file %1 because it is not a JSON file.", colFile
-                                        .getName());
+                                .logError("Failed to load collection %1 because it has invalid syntax: %2", colFile
+                                        .getName(), e.getMessage());
+                        if (Triton.get().getConfig().getLogLevel() >= 2)
+                            e.printStackTrace();
+                    }
                 }
             else
                 Triton.get().getLogger().logWarning(2, "An I/O error occurred while loading the translations folder.");
