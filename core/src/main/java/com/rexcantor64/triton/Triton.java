@@ -130,8 +130,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
                 mysqlStorage.load();
                 logger.logInfo(1, "Loaded MySQL storage manager");
                 return;
-            } catch (Exception ignore) {
+            } catch (Exception e) {
                 logger.logError("Failed to connect to database, falling back to local storage!");
+                if (getConfig().getLogLevel() >= 2)
+                    e.printStackTrace();
                 return;
             }
         }

@@ -50,9 +50,17 @@ public class MysqlStorage extends Storage {
         config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false");
         config.setUsername(user);
         config.setPassword(password);
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+        val tritonConfig = Triton.get().getConfig();
+
+        config.setMaximumPoolSize(tritonConfig.getDatabaseMysqlPoolMaxSize());
+        config.setMinimumIdle(tritonConfig.getDatabaseMysqlPoolMinIdle());
+        config.setMaxLifetime(tritonConfig.getDatabaseMysqlPoolMaxLifetime());
+        config.setConnectionTimeout(tritonConfig.getDatabaseMysqlPoolConnTimeout());
+
+        for (val entry : tritonConfig.getDatabaseMysqlPoolProperties().entrySet())
+            config.addDataSourceProperty(entry.getKey(), entry.getValue());
+
         this.dataSource = new HikariDataSource(config);
 
         this.ipCache = new IpCache();

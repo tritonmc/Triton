@@ -19,8 +19,8 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public class MainConfig implements TritonConfig {
@@ -80,6 +80,11 @@ public class MainConfig implements TritonConfig {
     private String databaseUser;
     private String databasePassword;
     private String databaseTablePrefix;
+    private int databaseMysqlPoolMaxSize;
+    private int databaseMysqlPoolMinIdle;
+    private long databaseMysqlPoolMaxLifetime;
+    private long databaseMysqlPoolConnTimeout;
+    private Map<String, String> databaseMysqlPoolProperties;
 
     public MainConfig(Triton main) {
         this.main = main;
@@ -117,6 +122,20 @@ public class MainConfig implements TritonConfig {
         databaseUser = database.getString("username", "root");
         databasePassword = database.getString("password", "");
         databaseTablePrefix = database.getString("table-prefix", "triton_");
+
+        val databaseMysqlPool = database.getSection("mysql-pool-advanced");
+        databaseMysqlPoolMaxSize = databaseMysqlPool.getInt("maximum-pool-size", 10);
+        databaseMysqlPoolMinIdle = databaseMysqlPool.getInt("minimum-idle", 10);
+        databaseMysqlPoolMaxLifetime = databaseMysqlPool.getLong("maximum-lifetime", 1800000);
+        databaseMysqlPoolConnTimeout = databaseMysqlPool.getLong("connection-timeout", 5000);
+        val properties = databaseMysqlPool.getSection("properties");
+        databaseMysqlPoolProperties = new HashMap<>();
+        for (val key : properties.getKeys())
+            databaseMysqlPoolProperties.put(key, Objects.toString(properties.get(key), ""));
+        databaseMysqlPoolProperties.putIfAbsent("socketTimeout", String.valueOf(TimeUnit.SECONDS.toMillis(30)));
+        databaseMysqlPoolProperties.putIfAbsent("cachePrepStmts", "true");
+        databaseMysqlPoolProperties.putIfAbsent("prepStmtCacheSize", "250");
+        databaseMysqlPoolProperties.putIfAbsent("prepStmtCacheSqlLimit", "2048");
 
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);

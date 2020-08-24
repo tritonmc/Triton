@@ -92,6 +92,26 @@ storage:
   username: "root"
   password: ""
   table-prefix: "triton_"
+  # Configuration options for HikariCP
+  # Do not change if you don't know what you're doing!
+  mysql-pool-advanced:
+    # Sets the maximum size of the MySQL connection pool.
+    # https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
+    maximum-pool-size: 10
+    # Sets the minimum number of idle connections that the pool will try to maintain.
+    minimum-idle: 10
+    # This setting controls the maximum lifetime of a connection in the pool in milliseconds.
+    maximum-lifetime: 1800000 # 30 minutes
+    # This setting controls the maximum number of milliseconds that the plugin will wait for a
+    # connection from the pool, before timing out.
+    connection-timeout: 5000 # 5 seconds
+
+    # This setting allows you to define extra properties for connections.
+    properties:
+    #  useUnicode: true
+    #  characterEncoding: utf8
+    #  useSSL: false
+    #  verifyServerCertificate: false
 
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
