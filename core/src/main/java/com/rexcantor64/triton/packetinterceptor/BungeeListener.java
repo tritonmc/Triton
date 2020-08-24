@@ -1,6 +1,5 @@
 package com.rexcantor64.triton.packetinterceptor;
 
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
@@ -9,6 +8,7 @@ import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.netty.ChannelWrapper;
@@ -38,16 +38,13 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                     .getAction() == PlayerListItem.Action.ADD_PLAYER) {
                 if (i.getDisplayName() != null) {
                     try {
-                        String original = JSON_PARSER.parse(i.getDisplayName()).getAsJsonObject()
-                                .getAsJsonPrimitive("text").getAsString();
+                        String original = TextComponent.toLegacyText(ComponentSerializer.parse(i.getDisplayName()));
                         String translated = translate(original,
                                 Triton.get().getConf().getTabSyntax());
                         if (!original.equals(translated)) {
                             PlayerListItem.Item item = clonePlayerListItem(i);
                             tabListCache.put(item.getUuid(), item.getDisplayName());
-                            JsonObject obj = JSON_PARSER.parse(item.getDisplayName()).getAsJsonObject();
-                            obj.addProperty("text", translated);
-                            item.setDisplayName(obj.toString());
+                            item.setDisplayName(ComponentSerializer.toString(TextComponent.fromLegacyText(translated)));
                             items.add(item);
                             continue;
                         } else tabListCache.remove(i.getUuid());
