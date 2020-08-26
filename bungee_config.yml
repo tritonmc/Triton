@@ -11,7 +11,7 @@ languages:
     flag: eapwplpnpmbzbj
     # The Minecraft code is the Minecraft language code. You can find a complete list here:
     # https://minecraft.gamepedia.com/Language
-    minecraft-code: [en_GB]
+    minecraft-code: [ en_GB, en_AU, en_CA, en_NZ, en_PT, en_UD, en_US ]
     # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
     display-name: '&3English (UK)'
@@ -31,7 +31,7 @@ languages:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
   pt_PT:
     flag: bacLlt
-    minecraft-code: [pt_PT]
+    minecraft-code: [ pt_PT, pt_BR ]
     display-name: '&3Portuguese (Portugal)'
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
