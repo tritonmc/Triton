@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.language;
 
+import com.google.gson.JsonParseException;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
@@ -190,15 +191,12 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
                         .equals(Triton.get().getConf().getDisabledLine()))
                     return null;
-                val result = AdvancedComponent.fromBaseComponent(TextComponent
-                        .fromLegacyText(Triton.get().getLanguageManager()
-                                .getText(language, ChatColor.stripColor(placeholder))));
+                val result = parseTritonTranslation(Triton.get().getLanguageManager()
+                        .getText(language, ChatColor.stripColor(placeholder)));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 advancedComponent.getHovers().putAll(result.getHovers());
                 advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
-                while (result.getText().startsWith(ChatColor.RESET.toString()))
-                    result.setText(result.getText().substring(2));
-                builder.append(result.getText());
+                builder.append(result.getTextClean());
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
                 continue;
@@ -214,14 +212,11 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 Integer[] argIndex = argIndexList.get(k);
                 argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
             }
-            val result = AdvancedComponent.fromBaseComponent(TextComponent
-                    .fromLegacyText(SpigotMLP.get().getLanguageManager().getText(language, code, argList)));
-            while (result.getText().startsWith(ChatColor.RESET.toString()))
-                result.setText(result.getText().substring(2));
+            val result = parseTritonTranslation(SpigotMLP.get().getLanguageManager().getText(language, code, argList));
             advancedComponent.getComponents().putAll(result.getComponents());
             advancedComponent.getHovers().putAll(result.getHovers());
             advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
-            builder.append(result.getText());
+            builder.append(result.getTextClean());
             builder.append(input.substring(i[1]));
             input = builder.toString();
         }
@@ -253,5 +248,24 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             advancedComponent.getAllTranslatableArguments().put(entry.getKey(), entry.getValue().stream()
                     .map(comp -> parseAdvancedComponent(language, syntax, comp)).collect(Collectors.toList()));
         return advancedComponent;
+    }
+
+    private AdvancedComponent parseTritonTranslation(String translatedResult) {
+        BaseComponent[] componentResult;
+        if (translatedResult.startsWith("[triton_json]")) {
+            val jsonInput = translatedResult.substring(13);
+            try {
+                componentResult = ComponentSerializer.parse(jsonInput);
+            } catch (JsonParseException e) {
+                Triton.get().getLogger()
+                        .logError("Failed to parse JSON translation (%1): %2", jsonInput, e.getMessage());
+                componentResult = TextComponent.fromLegacyText(jsonInput);
+                if (Triton.get().getConfig().getLogLevel() >= 2)
+                    e.printStackTrace();
+            }
+        } else {
+            componentResult = TextComponent.fromLegacyText(translatedResult);
+        }
+        return AdvancedComponent.fromBaseComponent(componentResult);
     }
 }
