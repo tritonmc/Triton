@@ -44,7 +44,7 @@ allprojects {
 
 subprojects {
     dependencies {
-        implementation 'com.github.tritonmc:Triton:v3.0.0' // Triton API
+        implementation 'com.github.tritonmc:Triton:v3.1.0' // Triton API
 
         compileOnly 'org.projectlombok:lombok:1.18.12'
         annotationProcessor 'org.projectlombok:lombok:1.18.12'
