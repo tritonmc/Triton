@@ -1,4 +1,4 @@
-# Triton 3.0.3
+# Triton 3.1.0
 [![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#tritonmc/Triton)  
 
 _Translate your server! Sends the same message on different languages... Hooks into all plugins!_  

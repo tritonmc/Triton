@@ -6,7 +6,7 @@
 
     <groupId>com.rexcantor64.triton</groupId>
     <artifactId>api</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <properties>
         <build.number/>
         <plugin.version>${project.version}-${build.number}</plugin.version>
