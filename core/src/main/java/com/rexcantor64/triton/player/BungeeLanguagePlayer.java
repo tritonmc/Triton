@@ -87,7 +87,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
 
-        Triton.asBungee().getBridgeManager().sendPlayerLanguage(this);
+        if (getParent() != null)
+            Triton.asBungee().getBridgeManager().sendPlayerLanguage(this);
 
         save();
         refreshAll();
