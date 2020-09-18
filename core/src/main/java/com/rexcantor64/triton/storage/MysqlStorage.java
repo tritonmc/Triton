@@ -90,8 +90,8 @@ public class MysqlStorage extends Storage {
                     "NULL , `content` MEDIUMTEXT NOT NULL , `blacklist` BOOLEAN NULL DEFAULT NULL , `servers` TEXT " +
                     "NULL DEFAULT NULL , `locations` MEDIUMTEXT NULL DEFAULT NULL , `patterns` TEXT NULL DEFAULT NULL" +
                     " , `twin_id` VARCHAR(36) NOT NULL , `twin_data` TEXT NOT NULL , UNIQUE (`twin_id`) , CONSTRAINT " +
-                    "`collections_translations` FOREIGN KEY (`collection`) REFERENCES `triton_collections`(`name`) ON" +
-                    " DELETE RESTRICT ON UPDATE CASCADE);");
+                    "`collections_translations` FOREIGN KEY (`collection`) REFERENCES `" + tablePrefix +
+                    "_collections`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE);");
             stmt.close();
             return true;
         } catch (SQLException e) {
