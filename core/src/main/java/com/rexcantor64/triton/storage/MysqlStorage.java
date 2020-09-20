@@ -91,7 +91,7 @@ public class MysqlStorage extends Storage {
                     "NULL DEFAULT NULL , `locations` MEDIUMTEXT NULL DEFAULT NULL , `patterns` TEXT NULL DEFAULT NULL" +
                     " , `twin_id` VARCHAR(36) NOT NULL , `twin_data` TEXT NOT NULL , UNIQUE (`twin_id`) , CONSTRAINT " +
                     "`collections_translations` FOREIGN KEY (`collection`) REFERENCES `" + tablePrefix +
-                    "_collections`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE);");
+                    "collections`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE);");
             stmt.close();
             return true;
         } catch (SQLException e) {

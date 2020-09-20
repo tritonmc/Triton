@@ -1025,7 +1025,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     String result = translate(lore, languagePlayer,
                             main.getConf().getItemsSyntax());
                     if (result != null)
-                        newLore.add(result);
+                        newLore.addAll(Arrays.asList(result.split("\n")));
                 }
                 meta.setLore(newLore);
             }
