@@ -102,8 +102,11 @@ public class TwinCommand implements Command {
 
             Triton.get().getLogger().logInfo(2, "Saving changes to permanent storage...");
             storage.setCollections(twinResponse.getCollections());
-            storage.uploadPartiallyToStorage(twinResponse.getCollections(), twinResponse.getChanged(), twinResponse
-                    .getDeleted());
+            if (!storage.uploadPartiallyToStorage(twinResponse.getCollections(), twinResponse.getChanged(), twinResponse
+                    .getDeleted())) {
+                event.getSender().sendMessageFormatted("twin.failed-collection-save");
+                return;
+            }
 
             Triton.get().getLogger().logInfo(2, "Reloading translation manager...");
             Triton.get().getLanguageManager().setup();

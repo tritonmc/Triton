@@ -14,6 +14,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
+import lombok.var;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalStorage extends Storage {
 
@@ -157,6 +159,8 @@ public class LocalStorage extends Storage {
                     Triton.get().getLogger().logInfo(2, "Deleted translations/%1", file.getName());
         }
 
+        var success = new AtomicBoolean(true);
+
         collections.forEach((key, value) -> {
             try {
                 Triton.get().getLogger().logInfo(2, "Saving translations/%1.json", key);
@@ -164,12 +168,13 @@ public class LocalStorage extends Storage {
                 @Cleanup val fileWriter = FileUtils.getWriterFromFile(collectionFile);
                 CollectionSerializer.toJson(value, fileWriter);
             } catch (Exception e) {
+                success.set(false);
                 Triton.get().getLogger()
                         .logError("Failed to save collection %1.json: %2", key, e
                                 .getMessage());
             }
         });
-        return true;
+        return success.get();
     }
 
     @Override
