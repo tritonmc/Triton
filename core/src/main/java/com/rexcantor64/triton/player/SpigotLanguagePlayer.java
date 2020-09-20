@@ -51,14 +51,20 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         PlayerChangeLanguageSpigotEvent event = new PlayerChangeLanguageSpigotEvent(this, this.lang, lang);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
-        if (this.waitingForClientLocale)
+        if (this.waitingForClientLocale) {
             try {
-                toBukkit().sendMessage(Triton.get().getMessagesConfig()
-                        .getMessage("success.detected-language", lang.getDisplayName()));
+                if (toBukkit() != null)
+                    bukkit.sendMessage(Triton.get().getMessagesConfig()
+                            .getMessage("success.detected-language", lang.getDisplayName()));
+                else
+                    Triton.get().getLogger()
+                            .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +
+                                    "is null", uuid);
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to sent language changed message.");
                 e.printStackTrace();
             }
+        }
         this.lang = event.getNewLanguage();
         this.waitingForClientLocale = false;
         refreshAll();
@@ -140,7 +146,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> {
             String ip = null;
             if (toBukkit() != null)
-                ip = toBukkit().getAddress().getAddress().getHostAddress();
+                ip = bukkit.getAddress().getAddress().getHostAddress();
             Triton.get().getStorage().setLanguage(uuid, ip, lang);
         });
     }
@@ -159,6 +165,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void executeCommands() {
+        if (toBukkit() == null)
+            return;
         for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
             String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
                     bukkit.getUniqueId().toString());
