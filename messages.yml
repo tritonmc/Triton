@@ -48,10 +48,10 @@ twin:
   incorrect-status: "&7status is not 200 (received &c%1&7)"
   connecting: "&bConnecting to TWIN... Please wait"
   uploaded: "&bYour config is live! Start editing now at &3%1"
-  failed-file-update: "&cError while writing to file '%1': &7%2"
   success: "&bSuccessfully fetched the config from TWIN and applied it into the server!"
   no-token: "&cInvalid token! Please check if TWIN is setup correctly on config."
   repeated-download: "&c&lWARNING &cYou're trying to download the same config twice! This might break the translation files. If you want to bypass this message, just execute the same command again."
+  failed-collection-save: "&cError while saving collections to storage. Check the console for error details."
 other:
   selector-gui-name: "&bSelect a language"
   selector-gui-prev: "&bPrevious"
