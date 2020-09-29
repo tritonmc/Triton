@@ -88,10 +88,11 @@ public class MysqlStorage extends Storage {
                     ", `servers` TEXT NOT NULL , `blacklist` BOOLEAN NOT NULL , PRIMARY KEY (`name`));");
             stmt.execute("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "translations` ( `collection` VARCHAR(100) " +
                     "NOT NULL , `type` ENUM('text','sign') NOT NULL DEFAULT 'text' , `field_key` VARCHAR(200) NOT " +
-                    "NULL , `content` MEDIUMTEXT NOT NULL , `blacklist` BOOLEAN NULL DEFAULT NULL , `servers` TEXT " +
-                    "NULL DEFAULT NULL , `locations` MEDIUMTEXT NULL DEFAULT NULL , `patterns` TEXT NULL DEFAULT NULL" +
-                    " , `twin_id` VARCHAR(36) NOT NULL , `twin_data` TEXT NOT NULL , UNIQUE (`twin_id`) , CONSTRAINT " +
-                    "`collections_translations` FOREIGN KEY (`collection`) REFERENCES `" + tablePrefix +
+                    "NULL , `content` MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL , " +
+                    "`blacklist` BOOLEAN NULL DEFAULT NULL , `servers` TEXT NULL DEFAULT NULL , `locations` " +
+                    "MEDIUMTEXT NULL DEFAULT NULL , `patterns` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci " +
+                    "NULL DEFAULT NULL , `twin_id` VARCHAR(36) NOT NULL , `twin_data` TEXT NOT NULL , UNIQUE " +
+                    "(`twin_id`) , CONSTRAINT `collections_translations` FOREIGN KEY (`collection`) REFERENCES `" + tablePrefix +
                     "collections`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE);");
             stmt.close();
             return true;
