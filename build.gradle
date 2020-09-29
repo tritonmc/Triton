@@ -129,5 +129,4 @@ bungee {
 shadowJar {
     getArchiveBaseName().set(rootProject.name)
     relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
-    relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
 }
