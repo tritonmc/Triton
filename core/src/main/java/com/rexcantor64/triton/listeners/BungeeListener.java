@@ -4,12 +4,10 @@ import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
+import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.event.LoginEvent;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.ProxyPingEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -46,6 +44,21 @@ public class BungeeListener implements Listener {
     @EventHandler
     public void onLeave(PlayerDisconnectEvent event) {
         Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPreLogin(PreLoginEvent event) {
+        if (!event.isCancelled()) return;
+
+        val plugin = Triton.get().getLoader().asBungee();
+        event.registerIntent(plugin);
+        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
+            val lang = Triton.get().getStorage()
+                    .getLanguageFromIp(SocketUtils.getIpAddress(event.getConnection().getSocketAddress())).getName();
+            event.setCancelReason(Triton.get().getLanguageParser()
+                    .parseComponent(lang, Triton.get().getConf().getKickSyntax(), event.getCancelReasonComponents()));
+            event.completeIntent(plugin);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
