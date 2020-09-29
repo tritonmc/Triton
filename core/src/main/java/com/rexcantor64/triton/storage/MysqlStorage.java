@@ -47,7 +47,8 @@ public class MysqlStorage extends Storage {
 
     @Override
     public void load() {
-        config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false");
+        config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false" +
+                "&useUnicode=yes&characterEncoding=UTF-8");
         config.setUsername(user);
         config.setPassword(password);
 
@@ -244,7 +245,8 @@ public class MysqlStorage extends Storage {
                         translationsStatement.setNull(8, Types.VARCHAR);
                     } else {
                         val itemText = (LanguageText) item;
-
+                        System.out.println(getEscaped(itemText.getLanguages().toString()));
+                        System.out.println(getEscaped(toJsonOrDefault(itemText.getLanguages(), "{}")));
                         translationsStatement.setString(4, toJsonOrDefault(itemText.getLanguages(), "{}"));
 
                         val blacklist = itemText.getBlacklist();
@@ -287,6 +289,19 @@ public class MysqlStorage extends Storage {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public String getEscaped(String input) {
+        StringBuilder b = new StringBuilder();
+
+        for (char c : input.toCharArray()) {
+            if (c >= 128)
+                b.append("\\u").append(String.format("%04X", (int) c));
+            else
+                b.append(c);
+        }
+
+        return b.toString();
     }
 
     @Override
