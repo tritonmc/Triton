@@ -535,9 +535,35 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
     }
 
+    private void handleServerInfo(PacketEvent event) {
+        val lang = Triton.get().getStorage().getLanguageFromIp(Objects
+                .requireNonNull(event.getPlayer().getAddress()).getAddress().getHostAddress()).getName();
+        val syntax = Triton.get().getConfig().getMotdSyntax();
+
+        val serverPing = event.getPacket().getServerPings().readSafely(0);
+        serverPing.setPlayers(serverPing.getPlayers().stream().map((gp) -> {
+            if (gp.getName() == null) return gp;
+            val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
+            if (gp.getName().equals(translatedName)) return gp;
+            if (translatedName == null) return null;
+            return gp.withName(translatedName);
+        }).filter(Objects::nonNull).collect(Collectors.toList()));
+
+        val motd = serverPing.getMotD();
+        val result = main.getLanguageParser()
+                .parseComponent(lang, syntax, ComponentSerializer.parse(motd.getJson()));
+        if (result != null)
+            motd.setJson(ComponentSerializer.toString(mergeComponents(result)));
+        serverPing.setMotD(motd);
+    }
+
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
+        if (packet.getPacketType() == PacketType.Status.Server.SERVER_INFO) {
+            if (main.getConfig().isMotd()) handleServerInfo(packet);
+            return;
+        }
         SpigotLanguagePlayer languagePlayer;
         try {
             languagePlayer =
@@ -920,6 +946,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         types.add(PacketType.Play.Server.WINDOW_ITEMS);
         types.add(PacketType.Play.Server.SET_SLOT);
+        types.add(PacketType.Status.Server.SERVER_INFO);
         if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
         if (getMCVersion() >= 14) types.add(PacketType.Play.Server.OPEN_WINDOW_MERCHANT);
         return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).highest().build();
