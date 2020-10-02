@@ -48,7 +48,7 @@ public class BungeeListener implements Listener {
         Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = 127)
     public void onPreLogin(PreLoginEvent event) {
         if (!event.isCancelled()) return;
 
