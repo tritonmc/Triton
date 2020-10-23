@@ -126,6 +126,7 @@ public class BungeeMLP extends Triton {
             channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
             channel.pipeline()
                     .addAfter(PipelineUtils.PACKET_ENCODER, "triton-custom-encoder", new BungeeListener(lp));
+            channel.pipeline().remove("triton-pre-login-encoder");
         } catch (Exception e) {
             getLogger().logError("[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
         }

@@ -2,8 +2,11 @@ package com.rexcantor64.triton.listeners;
 
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.packetinterceptor.PreLoginBungeeEncoder;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.utils.SocketUtils;
+import io.netty.channel.Channel;
 import lombok.val;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -13,7 +16,9 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
+import net.md_5.bungee.netty.PipelineUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -48,19 +53,19 @@ public class BungeeListener implements Listener {
         Triton.get().getPlayerManager().unregisterPlayer(event.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = 127)
+    @EventHandler(priority = -128)
     public void onPreLogin(PreLoginEvent event) {
-        if (!event.isCancelled()) return;
-
-        val plugin = Triton.get().getLoader().asBungee();
-        event.registerIntent(plugin);
-        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
-            val lang = Triton.get().getStorage()
-                    .getLanguageFromIp(SocketUtils.getIpAddress(event.getConnection().getSocketAddress())).getName();
-            event.setCancelReason(Triton.get().getLanguageParser()
-                    .parseComponent(lang, Triton.get().getConf().getKickSyntax(), event.getCancelReasonComponents()));
-            event.completeIntent(plugin);
-        });
+        val ip = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
+        try {
+            Object ch = NMSUtils.getDeclaredField(event.getConnection(), "ch");
+            Method method = ch.getClass().getDeclaredMethod("getHandle");
+            Channel channel = (Channel) method.invoke(ch, new Object[0]);
+            channel.pipeline()
+                    .addAfter(PipelineUtils.PACKET_ENCODER, "triton-pre-login-encoder",
+                            new PreLoginBungeeEncoder(ip));
+        } catch (Exception e) {
+            Triton.get().getLogger().logError("[PacketInjector] Failed to inject client connection for %1", ip);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
