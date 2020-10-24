@@ -54,7 +54,7 @@ public class BungeeListener implements Listener {
     }
 
     @EventHandler(priority = -128)
-    public void onPreLogin(PreLoginEvent event) {
+    public void onPreLogin(PlayerHandshakeEvent event) {
         val ip = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
         try {
             Object ch = NMSUtils.getDeclaredField(event.getConnection(), "ch");
