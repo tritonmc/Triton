@@ -1003,7 +1003,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (item == null) return null;
         NbtCompound compound;
         try {
-            compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+            val nbtTagOptional = NbtFactory.fromItemOptional(item);
+            if (!nbtTagOptional.isPresent()) return item;
+            compound = NbtFactory.asCompound(nbtTagOptional.get());
         } catch (IllegalArgumentException e) {
             return item;
         }
