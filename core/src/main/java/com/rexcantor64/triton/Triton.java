@@ -23,6 +23,9 @@ import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Getter
@@ -98,7 +101,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public Configuration loadYAML(String fileName, String internalFileName) {
         File f = FileUtils.getResource(fileName + ".yml", internalFileName + ".yml");
         try {
-            return ConfigurationProvider.getProvider(YamlConfiguration.class).load(f);
+            val stream = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            return ConfigurationProvider.getProvider(YamlConfiguration.class).load(stream);
         } catch (Exception e) {
             logger.logError("Failed to load %1.yml: %2", fileName, e.getMessage());
             logger.logError("You'll likely receive more errors on console until the next restart.");
