@@ -65,4 +65,18 @@ public class ComponentUtils {
                 getColorFromBaseComponent((BaseComponent) parent);
     }
 
+    public static boolean hasExtra(BaseComponent bc) {
+        return bc.getExtra() != null && bc.getExtra().size() != 0;
+    }
+
+    public static boolean haveSameFormatting(BaseComponent c1, BaseComponent c2) {
+        return c1.getColorRaw() == c2.getColorRaw() &&
+                c1.isBoldRaw() == c2.isBoldRaw() &&
+                c1.isItalicRaw() == c2.isItalicRaw() &&
+                c1.isUnderlinedRaw() == c2.isUnderlinedRaw() &&
+                c1.isStrikethroughRaw() == c2.isStrikethroughRaw() &&
+                c1.isObfuscatedRaw() == c2.isObfuscatedRaw() &&
+                (c1.getInsertion() == null ? c2.getInsertion() == null : c1.getInsertion().equals(c2.getInsertion()));
+    }
+
 }

@@ -143,15 +143,31 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         return input;
     }
 
-    private void removeMLPLinks(BaseComponent[] baseComponents) {
-        for (BaseComponent component : baseComponents) {
+    private List<BaseComponent> removeTritonLinks(BaseComponent... baseComponents) {
+        val result = new ArrayList<BaseComponent>();
+        for (val component : baseComponents) {
             if (component.getClickEvent() != null && component.getClickEvent()
                     .getAction() == ClickEvent.Action.OPEN_URL && !ComponentUtils
                     .isLink(component.getClickEvent().getValue()))
                 component.setClickEvent(null);
             if (component.getExtra() != null)
-                removeMLPLinks(component.getExtra().toArray(new BaseComponent[0]));
+                component.setExtra(removeTritonLinks(component.getExtra().toArray(new BaseComponent[0])));
+
+            val lastComp = result.size() > 0 ? result.get(result.size() - 1) : null;
+            if (lastComp instanceof TextComponent &&
+                    component instanceof TextComponent &&
+                    !ComponentUtils.hasExtra(lastComp) &&
+                    !ComponentUtils.hasExtra(component) &&
+                    ComponentUtils.haveSameFormatting(lastComp, component)
+            ) {
+                val lastTextComp = (TextComponent) lastComp;
+                val textComp = (TextComponent) component;
+                lastTextComp.setText(lastTextComp.getText() + textComp.getText());
+                continue;
+            }
+            result.add(component);
         }
+        return result;
     }
 
     public BaseComponent[] parseComponent(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
@@ -160,7 +176,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
 
     public BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... text) {
         text = ComponentSerializer.parse(ComponentSerializer.toString(text));
-        removeMLPLinks(text);
+        text = removeTritonLinks(text).toArray(new BaseComponent[0]);
         val advancedComponent = parseAdvancedComponent(language, syntax, AdvancedComponent.fromBaseComponent(text));
 
         if (advancedComponent == null) return null;
