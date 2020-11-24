@@ -517,16 +517,22 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             ArrayList<?> recipes = (ArrayList<?>) packet.getPacket()
                     .getSpecificModifier(MERCHANT_RECIPE_LIST_CLASS).readSafely(0);
             ArrayList<Object> newRecipes = (ArrayList<Object>) MERCHANT_RECIPE_LIST_CLASS.newInstance();
-            for (Object recipeObject : recipes) {
-                MerchantRecipe recipe = (MerchantRecipe) NMSUtils.getMethod(recipeObject, "asBukkit");
-                MerchantRecipe newRecipe = new MerchantRecipe(translateItemStack(recipe.getResult()
+            for (val recipeObject : recipes) {
+                val recipe = (MerchantRecipe) NMSUtils.getMethod(recipeObject, "asBukkit");
+                val originalSpecialPrice = NMSUtils.getDeclaredField(recipeObject, "specialPrice");
+                val originalDemand = NMSUtils.getDeclaredField(recipeObject, "demand");
+
+                val newRecipe = new MerchantRecipe(translateItemStack(recipe.getResult()
                         .clone(), languagePlayer, false), recipe.getUses(), recipe.getMaxUses(), recipe
-                        .hasExperienceReward());
-                for (ItemStack ingredient : recipe.getIngredients())
+                        .hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
+
+                for (val ingredient : recipe.getIngredients())
                     newRecipe.addIngredient(translateItemStack(ingredient.clone(), languagePlayer, false));
                 Object newCraftRecipe = MethodUtils
                         .invokeExactStaticMethod(CRAFT_MERCHANT_RECIPE_LIST_CLASS, "fromBukkit", newRecipe);
                 Object newNMSRecipe = MethodUtils.invokeExactMethod(newCraftRecipe, "toMinecraft", null);
+                NMSUtils.setDeclaredField(newNMSRecipe, "specialPrice", originalSpecialPrice);
+                NMSUtils.setDeclaredField(newNMSRecipe, "demand", originalDemand);
                 newRecipes.add(newNMSRecipe);
             }
             packet.getPacket().getModifier().writeSafely(1, newRecipes);
