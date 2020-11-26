@@ -68,15 +68,14 @@ public class BungeeListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = 127)
     public void onMotd(ProxyPingEvent event) {
         Plugin plugin = Triton.get().getLoader().asBungee();
-        event.registerIntent(plugin);
 
-        if (!Triton.get().getConf().isMotd()) {
-            event.completeIntent(plugin);
+        if (!Triton.get().getConf().isMotd())
             return;
-        }
+
+        event.registerIntent(plugin);
 
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lang = Triton.get().getStorage()
@@ -98,6 +97,11 @@ public class BungeeListener implements Listener {
                 }
                 players.setSample(newSample.toArray(new ServerPing.PlayerInfo[0]));
             }
+
+            val version = event.getResponse().getVersion();
+            val translatedVersion = new ServerPing.Protocol(Triton.get().getLanguageParser()
+                    .parseString(lang, syntax, version.getName()), version.getProtocol());
+            event.getResponse().setVersion(translatedVersion);
 
             event.getResponse().setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
                     .parseComponent(lang, syntax, event.getResponse()
