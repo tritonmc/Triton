@@ -76,7 +76,11 @@ public class ComponentUtils {
                 c1.isUnderlinedRaw() == c2.isUnderlinedRaw() &&
                 c1.isStrikethroughRaw() == c2.isStrikethroughRaw() &&
                 c1.isObfuscatedRaw() == c2.isObfuscatedRaw() &&
-                (c1.getInsertion() == null ? c2.getInsertion() == null : c1.getInsertion().equals(c2.getInsertion()));
+                (c1.getInsertion() == null ? c2.getInsertion() == null : c1.getInsertion().equals(c2.getInsertion())) &&
+                (c1.getHoverEvent() == null ? c2.getHoverEvent() == null : c1.getHoverEvent()
+                        .equals(c2.getHoverEvent())) &&
+                (c1.getClickEvent() == null ? c2.getClickEvent() == null : c1.getClickEvent()
+                        .equals(c2.getClickEvent()));
     }
 
 }
