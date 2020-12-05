@@ -39,10 +39,10 @@ public class BungeeBridgeManager implements Listener {
                 val uuid = UUID.fromString(in.readUTF());
                 val language = in.readUTF();
 
-                val player = Triton.get().getPlayerManager().get(uuid);
+                val player = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(uuid);
                 if (player != null)
                     Triton.get().runAsync(() -> player
-                            .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true)));
+                            .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true), false));
             }
 
             // Add or remove a location from a sign group using /triton sign

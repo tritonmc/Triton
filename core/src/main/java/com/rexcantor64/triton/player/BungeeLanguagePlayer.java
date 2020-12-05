@@ -78,6 +78,10 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void setLang(Language language) {
+        setLang(language, true);
+    }
+
+    public void setLang(Language language, boolean sendToSpigot) {
         PlayerChangeLanguageBungeeEvent event = new PlayerChangeLanguageBungeeEvent(this, this.language, language);
         BungeeCord.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
@@ -87,7 +91,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
 
-        if (getParent() != null)
+        if (sendToSpigot && getParent() != null)
             Triton.asBungee().getBridgeManager().sendPlayerLanguage(this);
 
         save();
