@@ -333,12 +333,20 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
+        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
+        if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
+            for (PlayerInfoData data : dataList)
+                languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
+            return;
+        }
+
         if (infoAction != EnumWrappers.PlayerInfoAction.ADD_PLAYER && infoAction != EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)
             return;
-        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
+
         List<PlayerInfoData> dataListNew = new ArrayList<>();
         for (PlayerInfoData data : dataList) {
             WrappedGameProfile oldGP = data.getProfile();
+            languagePlayer.getShownPlayers().add(oldGP.getUUID());
             WrappedGameProfile newGP = oldGP.withName(translate(languagePlayer, oldGP.getName(), 16,
                     main.getConf().getHologramSyntax()));
             newGP.getProperties().putAll(oldGP.getProperties());
@@ -783,29 +791,31 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             playerLoop:
                     for (Map.Entry<Integer, Entity> entry : player.getPlayersMap().get(player.toBukkit().getWorld())
                             .entrySet()) {
-                        Player p = (Player) entry.getValue();
-                        for (Player op : Bukkit.getOnlinePlayers())
+                        val p = (Player) entry.getValue();
+                        for (val op : Bukkit.getOnlinePlayers())
                             if (op.getUniqueId().equals(p.getUniqueId())) continue playerLoop;
-                        List<PlayerInfoData> dataList = new ArrayList<>();
+
+                        val dataList = new ArrayList<PlayerInfoData>();
                         dataList.add(new PlayerInfoData(WrappedGameProfile.fromPlayer(p), 50,
                                 EnumWrappers.NativeGameMode.fromBukkit(p.getGameMode()),
                                 WrappedChatComponent.fromText(p.getPlayerListName())));
-                        PacketContainer packetRemove =
+
+                        val packetRemove =
                                 ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
                         packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
                         packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
 
-                        PacketContainer packetAdd =
+                        val packetAdd =
                                 ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
-                        packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
-                        packetRemove.getPlayerInfoDataLists().writeSafely(0, dataList);
+                        packetAdd.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
+                        packetAdd.getPlayerInfoDataLists().writeSafely(0, dataList);
 
-                        PacketContainer packetDestroy =
+                        val packetDestroy =
                                 ProtocolLibrary.getProtocolManager()
                                         .createPacket(PacketType.Play.Server.ENTITY_DESTROY);
                         packetDestroy.getIntegerArrays().writeSafely(0, new int[]{p.getEntityId()});
 
-                        PacketContainer packetSpawn =
+                        val packetSpawn =
                                 ProtocolLibrary.getProtocolManager()
                                         .createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
                         packetSpawn.getIntegers().writeSafely(0, p.getEntityId());
@@ -823,20 +833,33 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                 .writeSafely(1, (byte) (int) (p.getLocation().getPitch() * 256.0F / 360.0F));
                         packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(p));
 
-                        PacketContainer packetLook = ProtocolLibrary.getProtocolManager()
+                        val packetLook = ProtocolLibrary.getProtocolManager()
                                 .createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
                         packetLook.getIntegers().writeSafely(0, p.getEntityId());
                         packetLook.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F));
 
                         try {
+                            val isHiddenEntity = !player.getShownPlayers().contains(p.getUniqueId());
                             ProtocolLibrary.getProtocolManager()
                                     .sendServerPacket(player.toBukkit(), packetRemove, true);
                             ProtocolLibrary.getProtocolManager()
                                     .sendServerPacket(player.toBukkit(), packetDestroy, false);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, false);
+                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, true);
                             ProtocolLibrary.getProtocolManager()
                                     .sendServerPacket(player.toBukkit(), packetSpawn, false);
                             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, false);
+                            if (isHiddenEntity) {
+                                Bukkit.getScheduler().runTaskLater(main.getLoader().asSpigot(), () -> {
+                                    try {
+                                        ProtocolLibrary
+                                                .getProtocolManager()
+                                                .sendServerPacket(player.toBukkit(), packetRemove, true);
+                                    } catch (InvocationTargetException e) {
+                                        main.getLogger().logError("Failed to send player entity update packet: %1", e
+                                                .getMessage());
+                                    }
+                                }, 4L);
+                            }
                         } catch (InvocationTargetException e) {
                             main.getLogger().logError("Failed to send player entity update packet: %1", e.getMessage());
                         }

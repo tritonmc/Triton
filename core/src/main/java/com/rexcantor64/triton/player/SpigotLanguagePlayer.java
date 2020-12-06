@@ -6,14 +6,13 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.storage.LocalStorage;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class SpigotLanguagePlayer implements LanguagePlayer {
 
@@ -29,8 +28,12 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private HashMap<UUID, String> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
 
-    private HashMap<World, HashMap<Integer, String>> entities = new HashMap<>();
-    private HashMap<World, HashMap<Integer, Entity>> players = new HashMap<>();
+    @Getter
+    private HashMap<World, HashMap<Integer, String>> entitiesMap = new HashMap<>();
+    @Getter
+    private HashMap<World, HashMap<Integer, Entity>> playersMap = new HashMap<>();
+    @Getter
+    private Set<UUID> shownPlayers = new HashSet<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -177,11 +180,4 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         }
     }
 
-    public HashMap<World, HashMap<Integer, String>> getEntitiesMap() {
-        return entities;
-    }
-
-    public HashMap<World, HashMap<Integer, Entity>> getPlayersMap() {
-        return players;
-    }
 }
