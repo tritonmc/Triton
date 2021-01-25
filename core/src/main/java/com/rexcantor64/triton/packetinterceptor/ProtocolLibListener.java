@@ -681,6 +681,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (!(item instanceof LanguageSign)) return;
             val sign = (LanguageSign) item;
 
+            if (sign.getLocations() == null) return;
+
             val lines = Optional.ofNullable(sign.getLines(player.getLang().getName()))
                     .orElse(sign.getLines(main.getLanguageManager().getMainLanguage().getName()));
             if (lines == null) return;
