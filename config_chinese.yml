@@ -1,0 +1,213 @@
+﻿#本插件Triton由 Spihea进行翻译 请不要售卖 盗用本翻译#
+#未经许可禁止转载#
+# 如果已在设置中启用了"Bungeecord"并在使用本地存储 请忽略本选项
+# 如果正在使用非本地存储请确保设置与 BungeeCord 同步
+languages:
+  # 语言名称将会影响 languages文件中的语言文件
+  # 语言名称的语法请使用: xx_XX
+  # 建议不要在服务器有玩家时更改以下设置,
+  # 否则TA设置的语言将恢复默认.
+  en_GB:
+    # 此选项为旗帜代码设置.
+    # 若要获取旗帜代码可前往 https://www.needcoolshoes.com/banner 创建一个旗帜.
+    # 当你完成时,链接将更新你需复制它的代码.
+    # 例如链接为 https://www.needcoolshoes.com/banner?=eapwplpnpmbzbj 你只需复制banner?=后面的字符eapwplpnpmbzbj到flag选项
+    flag: eapwplpnpmbzbj #这里
+    # Minecraft-code 是我的世界的游戏语言代码 你可在此处获取:
+    # https://minecraft.gamepedia.com/Language
+    minecraft-code: [ en_GB, en_AU, en_CA, en_NZ, en_PT, en_UD, en_US ]
+    # display-name将是最终游戏里展示的语言名称 例如, en_UK 将变为 English (UK)
+    # 这里可以运用自如的使用颜色代码!
+    display-name: '&3English (UK)'
+    # 当语言改变时将执行此指令.
+    # 设置的指令不用以/开头.
+    # 前缀类型有: 'PLAYER'以玩家身份执行指令, 'SERVER' 以服务器执行指令
+    # 例如 "PLAYER:say 我在使用英语!"
+    # 变量列表:
+    # %player% - 玩家的游戏名.
+    # %uuid% - 玩家的uuid.
+    # 取消command和下面的 注释(#)使用以下功能.
+  #  commands:
+  #      - 'SERVER:say %player% (%uuid%) has just changed their language!'
+  pt_PT:
+    flag: bacLlt
+    minecraft-code: [ pt_PT, pt_BR ]
+    display-name: '&3Portuguese (Portugal)'
+  #  commands:
+  #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
+
+# 主语言为默认语言,当在其他语言找不到某消息,将使用主语言的消息
+# 返回错误消息
+# 另外,当一个语言被删除时使用此语言的玩家将回退到主语言
+main-language: en_GB
+
+# 如果你想 打开一个自定义菜单 (或者自定义指令) 而不是自带的语言菜单
+# 可将下面的null换为你的指令,不要带/
+# Triton将以玩家身份执行以下指令,而不是打开自带的语言菜单
+# 例如 "dm open language"
+open-selector-command-override: null
+
+# 启用后,玩家进入后将自动打开语言菜单
+run-language-commands-on-join: false
+
+# 开启后,Triton将以玩家的我的世界语言设置为Triton游戏语言
+# 通常下,Triton只在玩家第一次进入服务器时设置
+# 出于玩家体验,建议关闭此选项
+# 使用蹦极端请忽略本选项
+force-client-locale-on-join: false
+
+# 每隔X秒自动重载插件 (类似于 /twin reload).
+# 若你在使用第三方工具编辑翻译文件时,开启可能对你很有帮助
+# 设置-1为关闭功能 (默认设置)
+config-auto-refresh-interval: -1
+
+# 如果你是蹦极端 请开启此选项
+# 更改选项后你需要重启全服
+bungeecord: false
+
+# 若要使用TWIN你需要填写token
+# 你可以在我们的discord获取 https://triton.rexcantor64.com/discord 或私聊作者的Spigot账号.
+# 如果你开启了"bungeecord"选项 你无需在子服填写token只需在蹦极端填写
+twin-token: ""
+
+# 以下设置为log详细度,值越大越详细(越小则越不详细)
+# 0 (default): 只在控制台显示启动与报错信息
+# 1: 还将输出配置的详细信息与相关信息(翻译计数、插件启动时间、堆栈跟踪等)
+# 2: 还将输出读/写文件信息,与蹦极端和数据库的通联信息
+# 3: 记录一切! 建议只在调试时使用,启用后控制台将显示每个翻译信息
+log-level: 0
+
+# 此选项为玩家数据与翻译的存储介质设置
+# 若启用数据库将自动创建表/集合
+# 你可使用 '/triton database upload' 将本地文件上传到数据库.
+# 此设置必须要与蹦极端配置同步
+storage:
+  # 存储介质: 'local', 'mysql', 'mongodb'
+  type: 'local'
+  # 此选项必须要与 蹦极端的 config.yml 里的服务器名相匹配
+  # 用于筛选本服使用的翻译
+  server-name: 'lobby'
+  # 以下选项只适用于非本地存储
+  host: "localhost" #数据库IP
+  port: 3306 #数据库端口
+  database: "triton" #数据库库名
+  username: "root" #数据库用户名
+  password: "" #数据库密码
+  table-prefix: "triton_" #数据库列表前缀
+  # HikariCP选项配置
+  # 若你不知道这是什么,请不要更改配置!!!
+  mysql-pool-advanced:
+    # 设置MySQL连接池的最大数
+    # https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
+    maximum-pool-size: 10
+    # 设置连接池中空闲的最长时间
+    minimum-idle: 10
+    # 设置控制池中连接的最大生存期
+    maximum-lifetime: 1800000 # 30 分钟
+    # 此选项为插件等待重连的最长时间(毫秒)
+    # 如果在没有连接可用的情况下超过了这个时间,降断连
+    connection-timeout: 5000 # 5 秒
+
+    # 此选项为数据库额外选项 取消注释以使用
+    properties:
+    #  useUnicode: true
+    #  characterEncoding: utf8
+    #  useSSL: false
+    #  verifyServerCertificate: false
+
+# 这里你可以关闭一些插件的功能
+# 每个选项都包含"syntax-lang", "syntax-args" 和 "syntax-arg"三个字符. 这用于变量.
+# 如果更改了变量,也需在其他翻译了的插件配置文件中更改.
+language-creation:
+  chat:
+    # 需替换聊天中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  actionbars:
+    # 需替换Actionbar中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  titles:
+    # 需替换题目标题中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  guis:
+    # 需替换gui中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  holograms:
+    # 需替换全息悬浮字中的变量吗 (或实体名)?
+    # 通常现在的全息字插件都使用盔甲架进行创建,若不是可以types中更改
+    # 当然你也可以翻译其他的实体名,比如村民你可在types填入村名的实体类型
+    # 实体类型列表: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
+    types:
+      - ARMOR_STAND
+    # 当开启此选项 将忽略types选项 并检查/替换所有实体名
+    allow-all: false
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  kick:
+    # 需替换kick信息中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  tab:
+    # 需替换tab中的变量吗?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  items:
+    # 需替换物品名中的变量吗?
+    enabled: true
+    # 启用此选项后玩家背包中所有物品都将检测
+    # 若玩家处于创造模式 物品名会显示错误
+    allow-in-inventory: false
+    # 开启翻译书
+    # 若要翻译书请开启上面的 "allow-in-inventory" 选项
+    books: false
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  signs:
+    # 插件是否需要将木牌上的语言替换为 languages.json?
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  bossbars:
+    # 需替换boss条中的变量吗? (1.9+)
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  motd:
+    # 插件需替换 MOTD 中的变量吗?
+    # 此选项以玩家IP定位地区而实现获取所在地区语言,当玩家IP发生变化语言也会发生变化
+    # 若IP地区为未知地区,则将使用主语言
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  # 若含以下消息的变量将不会发送给玩家(控制台仍可接受).
+  # 不填写则为关闭此功能 (默认为关闭).
+  # 举个例子 (假如你将 disabled-line 填入到 'disabled.line'):
+  # 如果消息中含有 '[lang]disabled.line[/lang]' 将不会发送.
+  disabled-line: ''
+  # 将控制台的消息翻译为默认语言.
+  # 出于用户体验, 消息不包含禁用的变量.
+  # 更改此选项需重启服务器.
+  terminal: false
+  # 是否忽略玩家消息中发送的变量?
+  # 默认为true(开启)
+  prevent-placeholders-in-chat: true
