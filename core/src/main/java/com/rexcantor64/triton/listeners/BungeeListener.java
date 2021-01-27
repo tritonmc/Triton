@@ -37,6 +37,7 @@ public class BungeeListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onLogin(LoginEvent event) {
+        if (event.isCancelled()) return;
         Plugin plugin = Triton.get().getLoader().asBungee();
         event.registerIntent(plugin);
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
