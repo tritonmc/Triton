@@ -4,6 +4,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ComponentUtils {
@@ -54,7 +55,11 @@ public class ComponentUtils {
         target.setUnderlined(origin.isUnderlinedRaw());
         target.setStrikethrough(origin.isStrikethroughRaw());
         target.setObfuscated(origin.isObfuscatedRaw());
-        target.setInsertion(origin.getInsertion());
+        try {
+            target.setInsertion(origin.getInsertion());
+        } catch (NoSuchMethodError ignore) {
+            // Ignore, it's an outdated server
+        }
     }
 
     public static ChatColor getColorFromBaseComponent(BaseComponent bc) {
@@ -70,17 +75,23 @@ public class ComponentUtils {
     }
 
     public static boolean haveSameFormatting(BaseComponent c1, BaseComponent c2) {
+        String insertion1 = null;
+        String insertion2 = null;
+        try {
+            insertion1 = c1.getInsertion();
+            insertion2 = c2.getInsertion();
+        } catch (NoSuchMethodError ignore) {
+            // Ignore, it's an outdated server
+        }
         return c1.getColorRaw() == c2.getColorRaw() &&
                 c1.isBoldRaw() == c2.isBoldRaw() &&
                 c1.isItalicRaw() == c2.isItalicRaw() &&
                 c1.isUnderlinedRaw() == c2.isUnderlinedRaw() &&
                 c1.isStrikethroughRaw() == c2.isStrikethroughRaw() &&
                 c1.isObfuscatedRaw() == c2.isObfuscatedRaw() &&
-                (c1.getInsertion() == null ? c2.getInsertion() == null : c1.getInsertion().equals(c2.getInsertion())) &&
-                (c1.getHoverEvent() == null ? c2.getHoverEvent() == null : c1.getHoverEvent()
-                        .equals(c2.getHoverEvent())) &&
-                (c1.getClickEvent() == null ? c2.getClickEvent() == null : c1.getClickEvent()
-                        .equals(c2.getClickEvent()));
+                Objects.equals(insertion1, insertion2) &&
+                Objects.equals(c1.getHoverEvent(), c2.getHoverEvent()) &&
+                Objects.equals(c1.getClickEvent(), c2.getClickEvent());
     }
 
 }
