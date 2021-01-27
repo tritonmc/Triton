@@ -60,8 +60,8 @@ public class BungeeMLP extends Triton {
 
         val commandHandler = new BungeeCommandHandler();
         getBungeeCord().getPluginManager().registerCommand(loader
-                .asBungee(), new BungeeCommand(commandHandler, "triton", "mlp", "ml", "multilanguage", "language",
-                "lang", "multilanguageplugin"));
+                .asBungee(), new BungeeCommand(commandHandler, "triton", getConfig().getCommandAliases()
+                .toArray(new String[0])));
         getBungeeCord().getPluginManager()
                 .registerCommand(loader.asBungee(), new BungeeCommand(commandHandler, "twin"));
 

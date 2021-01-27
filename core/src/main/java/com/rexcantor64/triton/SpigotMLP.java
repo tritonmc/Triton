@@ -59,7 +59,9 @@ public class SpigotMLP extends Triton {
 
         // Setup commands
         this.commandHandler = new SpigotCommandHandler();
-        Objects.requireNonNull(loader.asSpigot().getCommand("triton")).setExecutor(this.commandHandler);
+        val tritonCommand = Objects.requireNonNull(loader.asSpigot().getCommand("triton"));
+        tritonCommand.setAliases(getConfig().getCommandAliases());
+        tritonCommand.setExecutor(this.commandHandler);
         Objects.requireNonNull(loader.asSpigot().getCommand("twin")).setExecutor(this.commandHandler);
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), loader.asSpigot());

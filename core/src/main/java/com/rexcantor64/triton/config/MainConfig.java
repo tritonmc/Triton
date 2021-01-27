@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.config;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
@@ -42,6 +43,7 @@ public class MainConfig implements TritonConfig {
     private boolean bungeecord;
     private int configAutoRefresh;
     private String twinToken;
+    private List<String> commandAliases;
     private String disabledLine;
     private boolean chat;
     private FeatureSyntax chatSyntax;
@@ -136,6 +138,11 @@ public class MainConfig implements TritonConfig {
         databaseMysqlPoolProperties.putIfAbsent("cachePrepStmts", "true");
         databaseMysqlPoolProperties.putIfAbsent("prepStmtCacheSize", "250");
         databaseMysqlPoolProperties.putIfAbsent("prepStmtCacheSqlLimit", "2048");
+
+        if (section.contains("command-aliases"))
+            commandAliases = section.getStringList("command-aliases");
+        else
+            commandAliases = Lists.newArrayList("lang", "language");
 
         this.runLanguageCommandsOnLogin = section.getBoolean("run-language-commands-on-join", false);
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
