@@ -2,16 +2,19 @@ package com.rexcantor64.triton.plugin;
 
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.logger.JavaLogger;
+import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.terminal.Log4jInjector;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.InputStream;
 
 public class SpigotPlugin extends JavaPlugin implements PluginLoader {
+    private TritonLogger logger;
 
     @Override
     public void onEnable() {
+        this.logger = new JavaLogger(this.getLogger());
         new SpigotMLP(this).onEnable();
     }
 
@@ -27,22 +30,12 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
     }
 
     @Override
-    public SpigotPlugin asSpigot() {
-        return this;
-    }
-
-    @Override
-    public BungeePlugin asBungee() {
-        return null;
-    }
-
-    @Override
     public InputStream getResourceAsStream(String fileName) {
         return getResource(fileName);
     }
 
     @Override
-    public void shutdown() {
-        Bukkit.getPluginManager().disablePlugin(this);
+    public TritonLogger getTritonLogger() {
+        return this.logger;
     }
 }

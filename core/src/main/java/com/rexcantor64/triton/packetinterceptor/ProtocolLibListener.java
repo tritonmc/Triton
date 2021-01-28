@@ -54,7 +54,7 @@ import java.util.stream.Stream;
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
-    private Triton main;
+    private SpigotMLP main;
 
     public ProtocolLibListener(SpigotMLP main) {
         this.main = main;
@@ -725,7 +725,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
             if (languagePlayer.isWaitingForClientLocale())
-                Bukkit.getScheduler().runTask(Triton.get().getLoader().asSpigot(), () -> languagePlayer
+                Bukkit.getScheduler().runTask(Triton.asSpigot().getLoader(), () -> languagePlayer
                         .setLang(Triton.get().getLanguageManager()
                                 .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
         }
@@ -912,7 +912,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .sendServerPacket(player.toBukkit(), packetSpawn, false);
                             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, false);
                             if (isHiddenEntity) {
-                                Bukkit.getScheduler().runTaskLater(main.getLoader().asSpigot(), () -> {
+                                Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> {
                                     try {
                                         ProtocolLibrary
                                                 .getProtocolManager()
@@ -1091,7 +1091,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public Plugin getPlugin() {
-        return main.getLoader().asSpigot();
+        return main.getLoader();
     }
 
     private boolean isActionbar(PacketContainer container) {

@@ -12,6 +12,7 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.plugin.SpigotPlugin;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
@@ -45,12 +46,16 @@ public class SpigotMLP extends Triton {
         super.loader = loader;
     }
 
+    public SpigotPlugin getLoader() {
+        return (SpigotPlugin) this.loader;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
         super.onEnable();
 
-        Metrics metrics = new Metrics(loader.asSpigot(), 5606);
+        Metrics metrics = new Metrics(getLoader(), 5606);
         metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageManager().getItemCount()));
 
@@ -59,21 +64,21 @@ public class SpigotMLP extends Triton {
 
         // Setup commands
         this.commandHandler = new SpigotCommandHandler();
-        val tritonCommand = Objects.requireNonNull(loader.asSpigot().getCommand("triton"));
+        val tritonCommand = Objects.requireNonNull(getLoader().getCommand("triton"));
         tritonCommand.setAliases(getConfig().getCommandAliases());
         tritonCommand.setExecutor(this.commandHandler);
-        Objects.requireNonNull(loader.asSpigot().getCommand("twin")).setExecutor(this.commandHandler);
+        Objects.requireNonNull(getLoader().getCommand("twin")).setExecutor(this.commandHandler);
         // Setup listeners
-        Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), loader.asSpigot());
-        Bukkit.getPluginManager().registerEvents(new BukkitListener(), loader.asSpigot());
+        Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getLoader());
+        Bukkit.getPluginManager().registerEvents(new BukkitListener(), getLoader());
         // Use ProtocolLib if available
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib"))
             ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
 
         if (getConf().isBungeecord()) {
-            loader.asSpigot().getServer().getMessenger().registerOutgoingPluginChannel(loader.asSpigot(), "triton" +
+            getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +
                     ":main");
-            loader.asSpigot().getServer().getMessenger().registerIncomingPluginChannel(loader.asSpigot(), "triton" +
+            getLoader().getServer().getMessenger().registerIncomingPluginChannel(getLoader(), "triton" +
                     ":main", bridgeManager = new SpigotBridgeManager());
         }
 
@@ -89,7 +94,7 @@ public class SpigotMLP extends Triton {
         if (refreshTaskId != -1) Bukkit.getScheduler().cancelTask(refreshTaskId);
         if (getConf().getConfigAutoRefresh() <= 0) return;
         refreshTaskId = Bukkit.getScheduler()
-                .scheduleSyncDelayedTask(loader.asSpigot(), this::reload, getConf().getConfigAutoRefresh() * 20L);
+                .scheduleSyncDelayedTask(getLoader(), this::reload, getConf().getConfigAutoRefresh() * 20L);
     }
 
     public ProtocolLibListener getProtocolLibListener() {
@@ -97,7 +102,7 @@ public class SpigotMLP extends Triton {
     }
 
     public File getDataFolder() {
-        return loader.asSpigot().getDataFolder();
+        return getLoader().getDataFolder();
     }
 
     public SpigotBridgeManager getBridgeManager() {
@@ -134,12 +139,12 @@ public class SpigotMLP extends Triton {
 
     @Override
     public String getVersion() {
-        return loader.asSpigot().getDescription().getVersion();
+        return getLoader().getDescription().getVersion();
     }
 
     @Override
     public void runAsync(Runnable runnable) {
-        Bukkit.getScheduler().runTaskAsynchronously(loader.asSpigot(), runnable);
+        Bukkit.getScheduler().runTaskAsynchronously(getLoader(), runnable);
     }
 
     @Override

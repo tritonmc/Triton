@@ -8,9 +8,8 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
-import com.rexcantor64.triton.logger.Logger;
+import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
-import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -47,7 +46,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private TwinManager twinManager;
     private PlayerManager playerManager;
     private Storage storage;
-    private Logger logger;
+    private TritonLogger logger;
 
     public static boolean isBungee() {
         return instance instanceof BungeeMLP;
@@ -68,7 +67,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 
-        logger = new Logger(loader.getLogger());
+        logger = loader.getTritonLogger();
 
         config = new MainConfig(this);
         languageManager = new LanguageManager();
@@ -115,8 +114,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public abstract String getVersion();
-
-    public abstract ProtocolLibListener getProtocolLibListener();
 
     protected abstract void startConfigRefreshTask();
 
