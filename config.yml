@@ -68,6 +68,13 @@ bungeecord: false
 # If you've enabled "bungeecord" above, there is no need to put your token here. You just need it on your BungeeCord config.
 twin-token: ""
 
+# Triton command aliases.
+# Add or remove aliases here to customize which commands are detected by Triton.
+# The /triton command cannot be edited.
+command-aliases:
+  - lang
+  - language
+
 # Determines how verbose the logging will be. A lower value means less verbose.
 # 0 (default): Only errors and startup messages are logged to the console.
 # 1: Also outputs details about config initialization and other relevant information (translation count, startup time, stack traces etc).
@@ -193,6 +200,15 @@ language-creation:
     # Should the plugin check for placeholders in the MOTD?
     # This works by associating each IP with a language that changes when a player changes language.
     # When the IP is unknown, the default language is used.
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  scoreboards:
+    # Should the plugin check for placeholders in scoreboard teams and objectives?
+    # Only works on 1.13 and above
+    # This is intended for TAB plugins that use scoreboard teams and objectives, not for actual scoreboards.
+    # To translate scoreboards, it is recommended to translate using PlaceholderAPI
     enabled: true
     syntax-lang: lang
     syntax-args: args

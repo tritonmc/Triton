@@ -44,6 +44,15 @@ public interface TritonConfig {
     int getLogLevel();
 
     /**
+     * Although possible, it is not recommended to change the values in this list.
+     * Consider it as read-only.
+     *
+     * @return The value of "command-aliases" in the config.
+     * @since 3.2.0
+     */
+    List<String> getCommandAliases();
+
+    /**
      * @return The value of "language-creation.disabled-line" in the config.
      * @since 1.0.0
      */
@@ -76,11 +85,11 @@ public interface TritonConfig {
     boolean isGuis();
 
     /**
-     * Spigot only
+     * Spigot only.
+     * From v3.0.0 to v3.2.0, this always returned false because scoreboard was dropped.
      *
      * @return The value of "language-creation.scoreboards.enabled" in the config.
      * @since 1.0.0
-     * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return false from now on.
      */
     boolean isScoreboards();
 
@@ -174,6 +183,7 @@ public interface TritonConfig {
      * Get the storage type currently in use by the server.
      *
      * @return The string value of the storage type in use. ('local' or 'mysql')
+     * @since 3.0.0
      */
     String getStorageType();
 
@@ -229,12 +239,12 @@ public interface TritonConfig {
 
     /**
      * Spigot only
+     * From v3.0.0 to v3.2.0, this always returned a default
+     * {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax}.
      *
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
      * .scoreboards" in the config.
      * @since 1.0.0
-     * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return a default
-     * {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} from now on.
      */
     FeatureSyntax getScoreboardSyntax();
 

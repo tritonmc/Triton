@@ -58,6 +58,13 @@ config-auto-refresh-interval: -1
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
 twin-token: ""
 
+# Triton command aliases.
+# Add or remove aliases here to customize which commands are detected by Triton.
+# The /triton command cannot be edited.
+command-aliases:
+  - lang
+  - language
+
 # Determines how verbose the logging will be. A lower value means less verbose.
 # 0 (default): Only errors and startup messages are logged to the console.
 # 1: Also outputs details about config initialization and other relevant information (translation count, startup time, etc).

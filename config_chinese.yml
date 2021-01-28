@@ -70,6 +70,13 @@ bungeecord: false
 # 如果你开启了"bungeecord"选项 你无需在子服填写token只需在蹦极端填写
 twin-token: ""
 
+# Triton command aliases.
+# Add or remove aliases here to customize which commands are detected by Triton.
+# The /triton command cannot be edited.
+command-aliases:
+  - lang
+  - language
+
 # 以下设置为log详细度,值越大越详细(越小则越不详细)
 # 0 (default): 只在控制台显示启动与报错信息
 # 1: 还将输出配置的详细信息与相关信息(翻译计数、插件启动时间、堆栈跟踪等)
@@ -195,6 +202,15 @@ language-creation:
     # 插件需替换 MOTD 中的变量吗?
     # 此选项以玩家IP定位地区而实现获取所在地区语言,当玩家IP发生变化语言也会发生变化
     # 若IP地区为未知地区,则将使用主语言
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+  scoreboards:
+    # Should the plugin check for placeholders in scoreboard teams and objectives?
+    # Only works on 1.13 and above
+    # This is intended for TAB plugins that use scoreboard teams and objectives, not for actual scoreboards.
+    # To translate scoreboards, it is recommended to translate using PlaceholderAPI
     enabled: true
     syntax-lang: lang
     syntax-args: args
