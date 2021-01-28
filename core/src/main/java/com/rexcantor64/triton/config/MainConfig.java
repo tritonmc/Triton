@@ -70,6 +70,8 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax bossbarSyntax;
     private boolean motd;
     private FeatureSyntax motdSyntax;
+    private boolean scoreboards;
+    private FeatureSyntax scoreboardSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -246,6 +248,10 @@ public class MainConfig implements TritonConfig {
         this.motd = motd.getBoolean("enabled", true);
         this.motdSyntax = FeatureSyntax.fromSection(motd);
 
+        Configuration scoreboards = section.getSection("scoreboards");
+        this.scoreboards = scoreboards.getBoolean("enabled", true);
+        this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
+
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)
             try {
@@ -266,21 +272,9 @@ public class MainConfig implements TritonConfig {
     }
 
     @Override
-    public boolean isScoreboards() {
-        // TODO deprecate api
-        return false;
-    }
-
-    @Override
     public boolean isScoreboardsAdvanced() {
         // TODO deprecate api
         return false;
-    }
-
-    @Override
-    public com.rexcantor64.triton.api.config.FeatureSyntax getScoreboardSyntax() {
-        // TODO deprecate api
-        return new FeatureSyntax("lang", "args", "arg");
     }
 
     @Getter

@@ -16,6 +16,8 @@ public interface PacketInterceptor {
 
     void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String text);
 
+    void refreshScoreboard(SpigotLanguagePlayer player);
+
     void resetSign(Player p, SignLocation location);
 
 }

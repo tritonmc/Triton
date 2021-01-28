@@ -48,6 +48,7 @@ import org.bukkit.plugin.Plugin;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings({"deprecation"})
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
@@ -571,6 +572,62 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         serverPing.setMotD(motd);
     }
 
+    private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        val teamName = packet.getPacket().getStrings().readSafely(0);
+        val mode = packet.getPacket().getIntegers().readSafely(0);
+
+        if (mode == 1) {
+            languagePlayer.removeScoreboardTeam(teamName);
+            return;
+        }
+
+        if (mode != 0 && mode != 2) return; // Other modes don't change text
+
+        // Pack name tag visibility, collision rule, team color and friendly flags into list
+        val modifiers = packet.getPacket().getModifier();
+        List<Object> options = Stream.of(4, 5, 6, 9).map(modifiers::readSafely).collect(Collectors.toList());
+
+        val chatComponents = packet.getPacket().getChatComponents();
+        val displayName = chatComponents.readSafely(0);
+        val prefix = chatComponents.readSafely(1);
+        val suffix = chatComponents.readSafely(2);
+
+        languagePlayer.setScoreboardTeam(teamName, displayName.getJson(), prefix.getJson(), suffix.getJson(), options);
+
+        var i = 0;
+        for (var component : Arrays.asList(displayName, prefix, suffix)) {
+            var result = main.getLanguageParser()
+                    .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                            .parse(component.getJson()));
+            if (result == null) result = new BaseComponent[]{new TextComponent("")};
+            component.setJson(ComponentSerializer.toString(mergeComponents(result)));
+            packet.getPacket().getChatComponents().writeSafely(i++, component);
+        }
+    }
+
+    private void handleScoreboardObjective(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        val objectiveName = packet.getPacket().getStrings().readSafely(0);
+        val mode = packet.getPacket().getIntegers().readSafely(0);
+
+        if (mode == 1) {
+            languagePlayer.removeScoreboardObjective(objectiveName);
+            return;
+        }
+        // There are only 3 modes, so no need to check for more modes
+
+        val healthDisplay = packet.getPacket().getModifier().readSafely(2);
+        val displayName = packet.getPacket().getChatComponents().readSafely(0);
+
+        languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
+
+        var result = main.getLanguageParser()
+                .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                        .parse(displayName.getJson()));
+        if (result == null) result = new BaseComponent[]{new TextComponent("")};
+        displayName.setJson(ComponentSerializer.toString(mergeComponents(result)));
+        packet.getPacket().getChatComponents().writeSafely(0, displayName);
+    }
+
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
@@ -642,6 +699,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleKickDisconnect(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW_MERCHANT && main.getConf().isItems()) {
             handleMerchantItems(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM) {
+            handleScoreboardTeam(packet, languagePlayer);
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE) {
+            handleScoreboardObjective(packet, languagePlayer);
         }
     }
 
@@ -897,6 +958,41 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
+    public void refreshScoreboard(SpigotLanguagePlayer player) {
+        player.getObjectivesMap().forEach((key, value) -> {
+            val packet = ProtocolLibrary.getProtocolManager()
+                    .createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
+            packet.getIntegers().writeSafely(0, 2); // Update display name mode
+            packet.getStrings().writeSafely(0, key);
+            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getChatJson()));
+            packet.getModifier().writeSafely(2, value.getType());
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+            } catch (InvocationTargetException e) {
+                main.getLogger().logError("Failed to send scoreboard objective update packet: %1", e.getMessage());
+            }
+        });
+
+        player.getTeamsMap().forEach((key, value) -> {
+            val packet = ProtocolLibrary.getProtocolManager()
+                    .createPacket(PacketType.Play.Server.SCOREBOARD_TEAM);
+            packet.getIntegers().writeSafely(0, 2); // Update team info mode
+            packet.getStrings().writeSafely(0, key);
+            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
+            packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
+            packet.getChatComponents().writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
+            var j = 0;
+            for (var i : Arrays.asList(4, 5, 6, 9))
+                packet.getModifier().writeSafely(i, value.getOptionData().get(j++));
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+            } catch (InvocationTargetException e) {
+                main.getLogger().logError("Failed to send scoreboard team update packet: %1", e.getMessage());
+            }
+        });
+    }
+
+    @Override
     public void resetSign(Player p, SignLocation location) {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
@@ -970,6 +1066,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Play.Server.ENTITY_DESTROY);
         types.add(PacketType.Play.Server.PLAYER_INFO);
         types.add(PacketType.Play.Server.KICK_DISCONNECT);
+        if (main.getMcVersion() >= 13) { // Scoreboard rewrite on 1.13
+            types.add(PacketType.Play.Server.SCOREBOARD_TEAM);
+            types.add(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
+        }
         if (existsSignUpdatePacket()) types.add(PacketType.Play.Server.UPDATE_SIGN);
         else {
             types.add(PacketType.Play.Server.MAP_CHUNK);

@@ -1,6 +1,5 @@
 package com.rexcantor64.triton.packetinterceptor;
 
-import com.google.gson.JsonParser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
@@ -18,8 +17,6 @@ import net.md_5.bungee.protocol.packet.*;
 import java.util.*;
 
 public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
-
-    private static final JsonParser JSON_PARSER = new JsonParser();
 
     private BungeeLanguagePlayer owner;
 
