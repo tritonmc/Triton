@@ -72,7 +72,7 @@ bukkit {
 
     commands {
         triton {
-            description = 'The main command of Triton. For compatibility reasons, /mlp and all its aliases still work.'
+            description = 'The main command of Triton.'
         }
         twin {
             description = 'Upload and download your config to/from the Triton Web INterface.'
