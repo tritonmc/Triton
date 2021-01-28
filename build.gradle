@@ -18,7 +18,7 @@ group 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version '3.1.8'
+    version '3.2.0'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     repositories {
@@ -44,7 +44,7 @@ allprojects {
 
 subprojects {
     dependencies {
-        implementation 'com.github.tritonmc:Triton:v3.1.0' // Triton API
+        implementation 'com.github.tritonmc:Triton:v3.2.0' // Triton API
 
         compileOnly 'org.projectlombok:lombok:1.18.12'
         annotationProcessor 'org.projectlombok:lombok:1.18.12'

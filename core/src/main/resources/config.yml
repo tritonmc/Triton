@@ -204,6 +204,15 @@ language-creation:
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
+  scoreboards:
+    # Should the plugin check for placeholders in scoreboard teams and objectives?
+    # Only works on 1.13 and above
+    # This is intended for TAB plugins that use scoreboard teams and objectives, not for actual scoreboards.
+    # To translate scoreboards, it is recommended to translate using PlaceholderAPI
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):

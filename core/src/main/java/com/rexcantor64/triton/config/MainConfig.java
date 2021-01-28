@@ -267,13 +267,13 @@ public class MainConfig implements TritonConfig {
 
     @Override
     public boolean isMysql() {
-        // TODO deprecate api
+        // Handle deprecated API
         return storageType.equalsIgnoreCase("mysql");
     }
 
     @Override
     public boolean isScoreboardsAdvanced() {
-        // TODO deprecate api
+        // Handle deprecated API
         return false;
     }
 
