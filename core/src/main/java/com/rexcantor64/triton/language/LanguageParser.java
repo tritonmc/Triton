@@ -51,7 +51,6 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     public static List<Integer[]> getPatternIndexArray(String input, String pattern) {
         List<Integer[]> result = new ArrayList<>();
         int start = -1;
-        int contentLength = 0;
         int openedAmount = 0;
 
         for (int i = 0; i < input.length(); i++) {
@@ -65,16 +64,10 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                     i + 3 + pattern.length()).equals("/" + pattern + "]")) {
                 openedAmount--;
                 if (openedAmount == 0) {
-                    if (contentLength == 0) {
-                        start = -1;
-                        continue;
-                    }
                     result.add(new Integer[]{start, i + 3 + pattern.length(), start + pattern.length() + 2, i});
                     start = -1;
-                    contentLength = 0;
                 }
-            } else if (start != -1)
-                contentLength++;
+            }
         }
         return result;
     }
