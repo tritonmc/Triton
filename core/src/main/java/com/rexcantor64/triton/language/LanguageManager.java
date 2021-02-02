@@ -73,7 +73,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     private String formatMessage(@NonNull String msg, @NonNull Object... args) {
-        for (int i = 0; i < args.length; ++i)
+        for (int i = args.length - 1; i >= 0; --i)
             msg = msg.replace("%" + (i + 1), String.valueOf(args[i]));
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
