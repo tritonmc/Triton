@@ -11,6 +11,7 @@ public class TWINData {
     private long dateUpdated;
     private boolean archived;
     private String[] tags;
+    private String description;
 
     /**
      * Returns true if something changed, otherwise returns false
