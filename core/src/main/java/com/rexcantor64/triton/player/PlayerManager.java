@@ -1,7 +1,10 @@
 package com.rexcantor64.triton.player;
 
 import com.google.common.collect.Maps;
+import com.rexcantor64.triton.BungeeMLP;
+import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.VelocityMLP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +18,12 @@ public class PlayerManager implements com.rexcantor64.triton.api.players.PlayerM
     public LanguagePlayer get(UUID p) {
         LanguagePlayer lp = players.get(p);
         if (lp != null) return lp;
-        if (Triton.isBungee())
+        if (Triton.get() instanceof BungeeMLP)
             players.put(p, lp = new BungeeLanguagePlayer(p));
-        else
+        else if (Triton.get() instanceof SpigotMLP)
             players.put(p, lp = new SpigotLanguagePlayer(p));
+        else if (Triton.get() instanceof VelocityMLP)
+            players.put(p, lp = VelocityLanguagePlayer.fromUUID(p));
         return lp;
     }
 
@@ -30,19 +35,12 @@ public class PlayerManager implements com.rexcantor64.triton.api.players.PlayerM
         players.remove(p);
     }
 
-    public SpigotLanguagePlayer registerSpigot(UUID uuid, SpigotLanguagePlayer slp) {
-        players.put(uuid, slp);
-        return slp;
-    }
-
-    public BungeeLanguagePlayer registerBungee(UUID uuid, BungeeLanguagePlayer blp) {
-        players.put(uuid, blp);
-        return blp;
+    public void registerPlayer(LanguagePlayer lp) {
+        players.put(lp.getUUID(), lp);
     }
 
     public List<LanguagePlayer> getAll() {
         return new ArrayList<>(players.values());
     }
-
 
 }

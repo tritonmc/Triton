@@ -1,14 +1,25 @@
 package com.rexcantor64.triton;
 
+import com.rexcantor64.triton.bridge.VelocityBridgeManager;
+import com.rexcantor64.triton.listeners.VelocityListener;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.VelocityPlugin;
+import com.rexcantor64.triton.storage.LocalStorage;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
 import java.util.UUID;
 
 public class VelocityMLP extends Triton {
+
+    @Getter
+    private VelocityBridgeManager bridgeManager;
+    @Getter
+    private ChannelIdentifier bridgeChannelIdentifier;
 
     public VelocityMLP(PluginLoader loader) {
         super.loader = loader;
@@ -22,6 +33,16 @@ public class VelocityMLP extends Triton {
     public void onEnable() {
         instance = this;
         super.onEnable();
+
+        this.bridgeManager = new VelocityBridgeManager();
+        getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
+
+        this.bridgeChannelIdentifier = MinecraftChannelIdentifier.create("triton", "main");
+        System.out.println(bridgeChannelIdentifier.getId());
+        getLoader().getServer().getChannelRegistrar().register(this.bridgeChannelIdentifier);
+
+        if (getStorage() instanceof LocalStorage)
+            bridgeManager.sendConfigToEveryone();
     }
 
     @Override

@@ -35,7 +35,6 @@ public class VelocityPlugin implements PluginLoader {
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
-        this.tritonLogger.logInfo("Hello there! I made my first plugin with Velocity.");
         new VelocityMLP(this).onEnable();
     }
 

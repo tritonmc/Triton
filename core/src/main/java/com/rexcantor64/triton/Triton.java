@@ -64,6 +64,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return (BungeeMLP) instance;
     }
 
+    public static VelocityMLP asVelocity() {
+        return (VelocityMLP) instance;
+    }
+
     void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 

@@ -2,7 +2,6 @@ package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.banners.Banner;
 import lombok.Data;
-import net.md_5.bungee.api.ChatColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,8 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     }
 
     public void computeProperties() {
-        this.displayName = ChatColor.translateAlternateColorCodes('&', this.rawDisplayName);
+        //TODO this.displayName = ChatColor.translateAlternateColorCodes('&', this.rawDisplayName);
+        this.displayName = this.rawDisplayName;
         this.banner = new Banner(flagCode, this.displayName);
     }
 

@@ -156,8 +156,8 @@ public class SpigotBridgeManager implements PluginMessageListener {
                             .refreshPlayers(), 10L);
                 }
             } else if (action == 1) {
-                final UUID uuid = UUID.fromString(in.readUTF());
-                final Language lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
+                val uuid = new UUID(in.readLong(), in.readLong());
+                val lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
                 Bukkit.getScheduler().runTaskLater(Triton.asSpigot().getLoader(),
                         () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false)
                         , 10L);

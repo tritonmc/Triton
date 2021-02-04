@@ -29,7 +29,7 @@ public class BungeeListener implements Listener {
         BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
                 .get(event.getPlayer().getUniqueId());
 
-        Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getPlayer(), event.getServer());
+        Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
 
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             lp.executeCommands(event.getServer());
@@ -41,9 +41,8 @@ public class BungeeListener implements Listener {
         Plugin plugin = Triton.asBungee().getLoader();
         event.registerIntent(plugin);
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
-            BungeeLanguagePlayer lp = Triton.get().getPlayerManager()
-                    .registerBungee(event.getConnection().getUniqueId(), new BungeeLanguagePlayer(event.getConnection()
-                            .getUniqueId(), event.getConnection()));
+            val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
+            Triton.get().getPlayerManager().registerPlayer(lp);
             BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
             event.completeIntent(plugin);
         });
