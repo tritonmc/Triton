@@ -71,9 +71,6 @@ bukkit {
     softDepend = ['PlaceholderAPI']
 
     commands {
-        triton {
-            description = 'The main command of Triton.'
-        }
         twin {
             description = 'Upload and download your config to/from the Triton Web INterface.'
             usage = '/twin [code]'
