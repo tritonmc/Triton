@@ -14,12 +14,17 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.SpigotPlugin;
 import com.rexcantor64.triton.terminal.Log4jInjector;
+import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Objects;
@@ -64,9 +69,7 @@ public class SpigotMLP extends Triton {
 
         // Setup commands
         this.commandHandler = new SpigotCommandHandler();
-        val tritonCommand = Objects.requireNonNull(getLoader().getCommand("triton"));
-        tritonCommand.setAliases(getConfig().getCommandAliases());
-        tritonCommand.setExecutor(this.commandHandler);
+        registerTritonCommand().setExecutor(this.commandHandler);
         Objects.requireNonNull(getLoader().getCommand("twin")).setExecutor(this.commandHandler);
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getLoader());
@@ -87,6 +90,21 @@ public class SpigotMLP extends Triton {
 
         if (getConf().isTerminal())
             Log4jInjector.injectAppender();
+    }
+
+    @SneakyThrows
+    private PluginCommand registerTritonCommand() {
+        val constructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
+        constructor.setAccessible(true);
+        val command = (PluginCommand) constructor.newInstance("triton", getLoader());
+
+        command.setAliases(getConf().getCommandAliases());
+        command.setDescription("The main command of Triton.");
+
+        val commandMap = (CommandMap) NMSUtils.getDeclaredField(Bukkit.getServer(), "commandMap");
+        commandMap.register("triton", command);
+
+        return command;
     }
 
     @Override

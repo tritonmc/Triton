@@ -18,7 +18,7 @@ group 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version '3.2.1'
+    version '3.2.2'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     repositories {
@@ -75,9 +75,6 @@ bukkit {
     softDepend = ['PlaceholderAPI']
 
     commands {
-        triton {
-            description = 'The main command of Triton.'
-        }
         twin {
             description = 'Upload and download your config to/from the Triton Web INterface.'
             usage = '/twin [code]'
