@@ -105,7 +105,8 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(Triton.get().getMessagesConfig().getMessage("other.selector-gui-prev"));
+            stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                    .getMessage("other.selector-gui-prev")));
             backwardsButton.setItemMeta(stackMeta);
             inv.setItem(45, backwardsButton);
         }
@@ -115,7 +116,8 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(Triton.get().getMessagesConfig().getMessage("other.selector-gui-forward"));
+            stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                    .getMessage("other.selector-gui-forward")));
             forwardButton.setItemMeta(stackMeta);
             inv.setItem(53, forwardButton);
         }
@@ -125,8 +127,8 @@ public class ScrollableGui extends Gui {
         stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-        stackMeta.setDisplayName(Triton.get().getMessagesConfig()
-                .getMessage("other.selector-gui-currentpage", page, getMaxPages()));
+        stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                .getMessage("other.selector-gui-currentpage", page, getMaxPages())));
         infoButton.setItemMeta(stackMeta);
         inv.setItem(49, infoButton);
     }

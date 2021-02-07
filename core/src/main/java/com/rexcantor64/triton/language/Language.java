@@ -30,7 +30,6 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     }
 
     public void computeProperties() {
-        //TODO this.displayName = ChatColor.translateAlternateColorCodes('&', this.rawDisplayName);
         this.displayName = this.rawDisplayName;
         this.banner = new Banner(flagCode, this.displayName);
     }

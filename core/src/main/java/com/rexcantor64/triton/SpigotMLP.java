@@ -20,6 +20,7 @@ import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import net.md_5.bungee.api.ChatColor;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -149,8 +150,8 @@ public class SpigotMLP extends Triton {
                     )).setListener(event -> {
                 p.setLang(lang);
                 slp.toBukkit().closeInventory();
-                slp.toBukkit().sendMessage(Triton.get().getMessagesConfig()
-                        .getMessage("success.selector", lang.getDisplayName()));
+                slp.toBukkit().sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                        .getMessage("success.selector", lang.getDisplayName())));
             }));
         gui.open(slp.toBukkit());
     }
