@@ -51,6 +51,8 @@ public class DatabaseCommand implements Command {
                     Triton.get().getLanguageManager().setup();
                     if (Triton.isBungee())
                         Triton.asBungee().getBridgeManager().sendConfigToEveryone();
+                    if (Triton.isVelocity())
+                        Triton.asVelocity().getBridgeManager().sendConfigToEveryone();
                     Triton.get().refreshPlayers();
 
                     sender.sendMessageFormatted("success.database");

@@ -1,6 +1,7 @@
 package com.rexcantor64.triton;
 
 import com.rexcantor64.triton.bridge.VelocityBridgeManager;
+import com.rexcantor64.triton.commands.handler.VelocityCommandHandler;
 import com.rexcantor64.triton.listeners.VelocityListener;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.VelocityPlugin;
@@ -8,11 +9,13 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class VelocityMLP extends Triton {
 
@@ -20,6 +23,7 @@ public class VelocityMLP extends Triton {
     private VelocityBridgeManager bridgeManager;
     @Getter
     private ChannelIdentifier bridgeChannelIdentifier;
+    private ScheduledTask configRefreshTask;
 
     public VelocityMLP(PluginLoader loader) {
         super.loader = loader;
@@ -38,20 +42,31 @@ public class VelocityMLP extends Triton {
         getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
 
         this.bridgeChannelIdentifier = MinecraftChannelIdentifier.create("triton", "main");
-        System.out.println(bridgeChannelIdentifier.getId());
         getLoader().getServer().getChannelRegistrar().register(this.bridgeChannelIdentifier);
 
         if (getStorage() instanceof LocalStorage)
             bridgeManager.sendConfigToEveryone();
+
+        val commandHandler = new VelocityCommandHandler();
+        val commandManager = getLoader().getServer().getCommandManager();
+        commandManager.register(commandManager.metaBuilder("triton")
+                .aliases(getConfig().getCommandAliases().toArray(new String[0])).build(), commandHandler);
+        commandManager.register(commandManager.metaBuilder("twin").build(), commandHandler);
     }
 
     @Override
     public void reload() {
         super.reload();
+        if (bridgeManager != null)
+            bridgeManager.sendConfigToEveryone();
     }
 
     @Override
     protected void startConfigRefreshTask() {
+        if (configRefreshTask != null) configRefreshTask.cancel();
+        if (getConf().getConfigAutoRefresh() <= 0) return;
+        configRefreshTask = getLoader().getServer().getScheduler().buildTask(getLoader(), this::reload)
+                .repeat(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
     }
 
 

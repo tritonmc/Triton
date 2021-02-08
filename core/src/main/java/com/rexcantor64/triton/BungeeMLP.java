@@ -16,7 +16,6 @@ import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
@@ -94,11 +93,6 @@ public class BungeeMLP extends Triton {
         super.reload();
         if (bridgeManager != null)
             bridgeManager.sendConfigToEveryone();
-    }
-
-    public void reload(ServerInfo server) {
-        super.reload();
-        bridgeManager.sendConfigToServer(server, null);
     }
 
     @Override

@@ -52,6 +52,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return instance instanceof BungeeMLP;
     }
 
+    public static boolean isVelocity() {
+        return instance instanceof VelocityMLP;
+    }
+
     public static Triton get() {
         return instance;
     }

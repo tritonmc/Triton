@@ -1,7 +1,9 @@
 package com.rexcantor64.triton.bridge;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.player.VelocityLanguagePlayer;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.NonNull;
 import lombok.val;
@@ -55,6 +57,14 @@ public class VelocityBridgeManager {
             sendPluginMessage(info, message);
         }
 
+    }
+
+    public void forwardCommand(CommandEvent commandEvent) {
+        val out = BridgeSerializer.buildForwardCommandData(commandEvent);
+
+        Triton.asVelocity().getLoader().getServer().getPlayer(commandEvent.getSender().getUUID())
+                .flatMap(Player::getCurrentServer)
+                .ifPresent(serverConnection -> sendPluginMessage(serverConnection.getServer(), out));
     }
 
     private void sendPluginMessage(@NonNull RegisteredServer info, byte[] data) {

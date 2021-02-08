@@ -110,8 +110,12 @@ public class TwinCommand implements Command {
 
             Triton.get().getLogger().logInfo(2, "Reloading translation manager...");
             Triton.get().getLanguageManager().setup();
+
             if (Triton.isBungee())
                 Triton.asBungee().getBridgeManager().sendConfigToEveryone();
+            if (Triton.isVelocity())
+                Triton.asVelocity().getBridgeManager().sendConfigToEveryone();
+
             Triton.get().refreshPlayers();
 
             Triton.get().getLogger()
