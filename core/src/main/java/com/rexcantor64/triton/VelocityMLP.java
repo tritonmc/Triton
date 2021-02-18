@@ -40,6 +40,7 @@ public class VelocityMLP extends Triton {
 
         this.bridgeManager = new VelocityBridgeManager();
         getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
+        getLoader().getServer().getEventManager().register(getLoader(), bridgeManager);
 
         this.bridgeChannelIdentifier = MinecraftChannelIdentifier.create("triton", "main");
         getLoader().getServer().getChannelRegistrar().register(this.bridgeChannelIdentifier);

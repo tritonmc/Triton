@@ -2,19 +2,68 @@ package com.rexcantor64.triton.bridge;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.player.VelocityLanguagePlayer;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.NonNull;
 import lombok.val;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 public class VelocityBridgeManager {
     private final Map<RegisteredServer, Queue<byte[]>> queue = new HashMap<>();
+
+    @Subscribe
+    public void onPluginMessage(PluginMessageEvent e) {
+        if (!e.getIdentifier().equals(Triton.asVelocity().getBridgeChannelIdentifier()) ||
+                !(e.getSource() instanceof ServerConnection)) return;
+
+        val in = e.dataAsDataStream();
+
+        try {
+            val action = in.readByte();
+
+            // Player changes language
+            if (action == 0) {
+                val uuid = UUID.fromString(in.readUTF());
+                val language = in.readUTF();
+
+                val player = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(uuid);
+                if (player != null)
+                    Triton.get().runAsync(() -> player
+                            .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true), false));
+            }
+
+            // Add or remove a location from a sign group using /triton sign
+            if (action == 1) {
+                val server = ((ServerConnection) e.getSource());
+                SignLocation location = new SignLocation(server.getServerInfo().getName(), in.readUTF(), in.readInt(), in.readInt(), in
+                        .readInt());
+
+                // Whether we're adding a location to a group or removing one from a group
+                boolean add = in.readBoolean();
+                val key = add ? in.readUTF() : null;
+
+                val changed = Triton.get().getStorage().toggleLocationForSignGroup(location, key);
+
+                Triton.get().runAsync(() -> {
+                    Triton.get().getLogger().logInfo(2, "Saving sign to storage...");
+                    Triton.get().getStorage()
+                            .uploadPartiallyToStorage(Triton.get().getStorage().getCollections(), changed, null);
+                    sendConfigToServer(server.getServer(), null);
+                    Triton.get().getLogger().logInfo(2, "Sign saved!");
+                });
+            }
+        } catch (Exception e1) {
+            Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());
+            if (Triton.get().getConf().getLogLevel() > 0)
+                e1.printStackTrace();
+        }
+    }
 
     public void sendPlayerLanguage(@NonNull VelocityLanguagePlayer lp) {
         lp.getParent().getCurrentServer().ifPresent(server -> sendPlayerLanguage(lp, server.getServer()));
