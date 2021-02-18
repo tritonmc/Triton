@@ -39,6 +39,10 @@ allprojects {
             url 'https://repo.codemc.org/repository/maven-public'
         }
         maven { url 'https://jitpack.io' }
+        maven {
+            name 'velocity'
+            url 'https://nexus.velocitypowered.com/repository/maven-public/'
+        }
     }
 }
 

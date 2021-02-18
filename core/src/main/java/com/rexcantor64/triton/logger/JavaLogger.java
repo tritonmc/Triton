@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.logging.Level;
 
 @RequiredArgsConstructor
-public class Logger {
+public class JavaLogger implements TritonLogger {
     private final java.util.logging.Logger logger;
     @Setter
     private int logLevel = 0;

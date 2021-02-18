@@ -19,7 +19,7 @@ public class InfoCommand implements Command {
                         Triton.get().getVersion(),
                         "Rexcantor64 (Diogo Correia)",
                         Triton.get().getStorage().toString(),
-                        Triton.isBungee() || Triton.get().getConfig().isBungeecord()
+                        event.getEnvironment().isProxy() || Triton.get().getConfig().isBungeecord()
                 )));
 
         return true;

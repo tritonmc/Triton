@@ -23,8 +23,8 @@ public class BukkitListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLogin(AsyncPlayerPreLoginEvent e) {
-        SpigotLanguagePlayer lp = Triton.get().getPlayerManager()
-                .registerSpigot(e.getUniqueId(), new SpigotLanguagePlayer(e.getUniqueId()));
+        val lp = new SpigotLanguagePlayer(e.getUniqueId());
+        Triton.get().getPlayerManager().registerPlayer(lp);
         if (e.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
@@ -32,8 +32,8 @@ public class BukkitListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLoginSync(PlayerLoginEvent e) {
-        SpigotLanguagePlayer lp = Triton.get().getPlayerManager()
-                .registerSpigot(e.getPlayer().getUniqueId(), new SpigotLanguagePlayer(e.getPlayer().getUniqueId()));
+        val lp = new SpigotLanguagePlayer(e.getPlayer().getUniqueId());
+        Triton.get().getPlayerManager().registerPlayer(lp);
         if (e.getResult() != PlayerLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));

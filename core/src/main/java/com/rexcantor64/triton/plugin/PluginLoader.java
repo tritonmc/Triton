@@ -1,24 +1,19 @@
 package com.rexcantor64.triton.plugin;
 
+import com.rexcantor64.triton.logger.TritonLogger;
+
 import java.io.InputStream;
-import java.util.logging.Logger;
 
 public interface PluginLoader {
 
     PluginType getType();
 
-    SpigotPlugin asSpigot();
-
-    BungeePlugin asBungee();
-
-    Logger getLogger();
+    TritonLogger getTritonLogger();
 
     InputStream getResourceAsStream(String fileName);
 
-    void shutdown();
-
     enum PluginType {
-        SPIGOT, BUNGEE
+        SPIGOT, BUNGEE, VELOCITY
     }
 
 }

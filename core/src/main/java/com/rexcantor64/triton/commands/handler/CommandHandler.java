@@ -44,8 +44,13 @@ public abstract class CommandHandler {
             if (command == null)
                 command = commands.get("help");
 
-            if (!command.handleCommand(event) && Triton.isBungee())
-                Triton.asBungee().getBridgeManager().forwardCommand(event);
+            if (!command.handleCommand(event)) {
+                if (Triton.isBungee())
+                    Triton.asBungee().getBridgeManager().forwardCommand(event);
+                if (Triton.isVelocity())
+                    Triton.asVelocity().getBridgeManager().forwardCommand(event);
+            }
+
         } catch (NoPermissionException e) {
             event.getSender().sendMessageFormatted("error.no-permission", e.getPermission());
         }
@@ -55,7 +60,6 @@ public abstract class CommandHandler {
         if (event.getLabel().equalsIgnoreCase("twin")) return Collections.emptyList();
 
         val subCommand = event.getSubCommand();
-
         try {
             if (subCommand == null || event.getArgs().length == 0)
                 return commands.keySet().stream().filter(cmd -> subCommand != null && cmd.startsWith(subCommand))

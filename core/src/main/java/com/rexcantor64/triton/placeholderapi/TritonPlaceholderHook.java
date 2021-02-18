@@ -1,14 +1,14 @@
 package com.rexcantor64.triton.placeholderapi;
 
-import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.SpigotMLP;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 
 public class TritonPlaceholderHook extends PlaceholderExpansion {
 
-    private final Triton triton;
+    private final SpigotMLP triton;
 
-    public TritonPlaceholderHook(Triton triton) {
+    public TritonPlaceholderHook(SpigotMLP triton) {
         this.triton = triton;
     }
 
@@ -24,7 +24,7 @@ public class TritonPlaceholderHook extends PlaceholderExpansion {
 
     @Override
     public String getVersion() {
-        return triton.getLoader().asSpigot().getDescription().getVersion();
+        return triton.getLoader().getDescription().getVersion();
     }
 
     @Override

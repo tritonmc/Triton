@@ -6,7 +6,6 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.val;
 import lombok.var;
-import net.md_5.bungee.api.ChatColor;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,7 +43,7 @@ public class MessagesConfig {
     }
 
     public String getMessage(String code, Object... args) {
-        String s = ChatColor.translateAlternateColorCodes('&', getString(code));
+        String s = getString(code);
         for (int i = 0; i < args.length; i++)
             if (args[i] != null)
                 s = s.replace("%" + (i + 1), args[i].toString());

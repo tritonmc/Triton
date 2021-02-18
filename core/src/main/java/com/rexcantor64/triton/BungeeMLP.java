@@ -5,8 +5,8 @@ import com.rexcantor64.triton.commands.handler.BungeeCommand;
 import com.rexcantor64.triton.commands.handler.BungeeCommandHandler;
 import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
-import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.plugin.BungeePlugin;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.terminal.BungeeTerminalManager;
@@ -16,7 +16,6 @@ import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
@@ -38,19 +37,23 @@ public class BungeeMLP extends Triton {
         super.loader = loader;
     }
 
+    public BungeePlugin getLoader() {
+        return (BungeePlugin) this.loader;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
         super.onEnable();
 
-        Metrics metrics = new Metrics(loader.asBungee(), 5607);
+        Metrics metrics = new Metrics(getLoader(), 5607);
         metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageManager().getItemCount()));
 
         bridgeManager = new BungeeBridgeManager();
-        getBungeeCord().getPluginManager().registerListener(loader.asBungee(), bridgeManager);
+        getBungeeCord().getPluginManager().registerListener(getLoader(), bridgeManager);
         getBungeeCord().getPluginManager()
-                .registerListener(loader.asBungee(), new com.rexcantor64.triton.listeners.BungeeListener());
+                .registerListener(getLoader(), new com.rexcantor64.triton.listeners.BungeeListener());
         getBungeeCord().registerChannel("triton:main");
 
         for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
@@ -59,11 +62,12 @@ public class BungeeMLP extends Triton {
         }
 
         val commandHandler = new BungeeCommandHandler();
-        getBungeeCord().getPluginManager().registerCommand(loader
-                .asBungee(), new BungeeCommand(commandHandler, "triton", getConfig().getCommandAliases()
-                .toArray(new String[0])));
         getBungeeCord().getPluginManager()
-                .registerCommand(loader.asBungee(), new BungeeCommand(commandHandler, "twin"));
+                .registerCommand(getLoader(), new BungeeCommand(commandHandler, "triton", getConfig()
+                        .getCommandAliases()
+                        .toArray(new String[0])));
+        getBungeeCord().getPluginManager()
+                .registerCommand(getLoader(), new BungeeCommand(commandHandler, "twin"));
 
         if (getStorage() instanceof LocalStorage)
             bridgeManager.sendConfigToEveryone();
@@ -91,31 +95,22 @@ public class BungeeMLP extends Triton {
             bridgeManager.sendConfigToEveryone();
     }
 
-    public void reload(ServerInfo server) {
-        super.reload();
-        bridgeManager.sendConfigToServer(server, null);
-    }
-
     @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConf().getConfigAutoRefresh() <= 0) return;
         configRefreshTask = getBungeeCord().getScheduler()
-                .schedule(loader.asBungee(), this::reload, getConf().getConfigAutoRefresh(), TimeUnit.SECONDS);
+                .schedule(getLoader(), this::reload, getConf().getConfigAutoRefresh(), TimeUnit.SECONDS);
     }
 
-
-    public ProtocolLibListener getProtocolLibListener() {
-        return null;
-    }
 
     public File getDataFolder() {
-        return loader.asBungee().getDataFolder();
+        return getLoader().getDataFolder();
     }
 
     @Override
     public String getVersion() {
-        return loader.asBungee().getDescription().getVersion();
+        return getLoader().getDescription().getVersion();
     }
 
     public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
@@ -134,11 +129,11 @@ public class BungeeMLP extends Triton {
 
     @Override
     public void runAsync(Runnable runnable) {
-        getBungeeCord().getScheduler().runAsync(loader.asBungee(), runnable);
+        getBungeeCord().getScheduler().runAsync(getLoader(), runnable);
     }
 
     public ProxyServer getBungeeCord() {
-        return loader.asBungee().getProxy();
+        return getLoader().getProxy();
     }
 
     @Override

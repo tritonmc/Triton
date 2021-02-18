@@ -171,13 +171,13 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
             Triton.get().getStorage()
                     .setLanguage(null, toBukkit().getAddress().getAddress().getHostAddress(), lang);
         if (lang != null)
-            Bukkit.getScheduler().runTask(Triton.get().getLoader().asSpigot(), this::refreshAll);
+            Bukkit.getScheduler().runTask(Triton.asSpigot().getLoader(), this::refreshAll);
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
     private void save() {
-        Bukkit.getScheduler().runTaskAsynchronously(Triton.get().getLoader().asSpigot(), () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(Triton.asSpigot().getLoader(), () -> {
             String ip = null;
             if (toBukkit() != null)
                 ip = bukkit.getAddress().getAddress().getHostAddress();
