@@ -54,6 +54,7 @@ import java.util.stream.Stream;
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
+    private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private SpigotMLP main;
 
     public ProtocolLibListener(SpigotMLP main) {
@@ -65,6 +66,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         boolean ab = isActionbar(packet.getPacket());
+        val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
         if (ab && main.getConf().isActionbars()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
@@ -81,13 +83,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
             BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
                     main.getConf().getActionbarSyntax(),
-                    (BaseComponent[]) packet.getPacket().getModifier().readSafely(1));
+                    baseComponentModifier.readSafely(0));
             if (bc == null) {
                 packet.setCancelled(true);
                 return;
             }
-            packet.getPacket().getModifier().writeSafely(1,
-                    mergeComponents(bc));
+            baseComponentModifier.writeSafely(0, mergeComponents(bc));
         } else if (!ab && main.getConf().isChat()) {
             WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
             if (msg != null) {
@@ -102,7 +103,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     msg.setJson(ComponentSerializer.toString(result));
                     packet.getPacket().getChatComponents().writeSafely(0, msg);
                 } catch (RuntimeException e) {
-                    // TODO Catch 1.16 Hover 'contents' not being parsed correctly
                     Triton.get().getLogger()
                             .logError(1, "Could not parse a chat message, so it was ignored. Message: %1", msg
                                     .getJson());
@@ -113,12 +113,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
             BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
                     main.getConf().getChatSyntax(),
-                    (BaseComponent[]) packet.getPacket().getModifier().readSafely(1));
+                    baseComponentModifier.readSafely(0));
             if (bc == null) {
                 packet.setCancelled(true);
                 return;
             }
-            packet.getPacket().getModifier().writeSafely(1, bc);
+            baseComponentModifier.writeSafely(0, bc);
         }
     }
 
