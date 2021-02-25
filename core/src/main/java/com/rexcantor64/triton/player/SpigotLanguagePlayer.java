@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.var;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -86,8 +87,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (this.waitingForClientLocale) {
             try {
                 if (toBukkit() != null)
-                    bukkit.sendMessage(Triton.get().getMessagesConfig()
-                            .getMessage("success.detected-language", lang.getDisplayName()));
+                    bukkit.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                            .getMessage("success.detected-language", lang.getDisplayName())));
                 else
                     Triton.get().getLogger()
                             .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +

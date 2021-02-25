@@ -8,6 +8,7 @@ import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.utils.SocketUtils;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -86,8 +87,8 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         BungeeCord.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale && getParent() != null)
-            parent.sendMessage(TextComponent.fromLegacyText(Triton.get().getMessagesConfig()
-                    .getMessage("success.detected-language", language.getDisplayName())));
+            parent.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                    .getMessage("success.detected-language", language.getDisplayName()))));
         this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
 
