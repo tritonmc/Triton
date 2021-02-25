@@ -141,7 +141,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
         if (resultHeader == null)
-            resultHeader = new BaseComponent[]{new TranslatableComponent("")};
+            resultHeader = new BaseComponent[]{new TextComponent("")};
+        else if (resultHeader.length == 1 && resultHeader[0] instanceof TextComponent) {
+            // This is needed because the Notchian client does not render the header/footer
+            // if the content of the header top level component is an empty string.
+            val textComp = (TextComponent) resultHeader[0];
+            if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
+                textComp.setText("§0§1§2§r");
+        }
         header.setJson(ComponentSerializer.toString(resultHeader));
         packet.getPacket().getChatComponents().writeSafely(0, header);
         WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
@@ -149,7 +156,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
         if (resultFooter == null)
-            resultFooter = new BaseComponent[]{new TranslatableComponent("")};
+            resultFooter = new BaseComponent[]{new TextComponent("")};
         footer.setJson(ComponentSerializer.toString(resultFooter));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
