@@ -2,10 +2,7 @@ package com.rexcantor64.triton.packetinterceptor;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.ListeningWhitelist;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.events.PacketListener;
+import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.wrappers.*;
@@ -1087,7 +1084,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         types.add(PacketType.Status.Server.SERVER_INFO);
         if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
         if (getMCVersion() >= 14) types.add(PacketType.Play.Server.OPEN_WINDOW_MERCHANT);
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).highest().build();
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).mergeOptions(ListenerOptions.ASYNC).highest().build();
     }
 
     @Override
