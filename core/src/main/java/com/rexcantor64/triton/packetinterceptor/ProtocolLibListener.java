@@ -600,7 +600,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
                             .parse(component.getJson()));
             if (result == null) result = new BaseComponent[]{new TextComponent("")};
-            component.setJson(ComponentSerializer.toString(mergeComponents(result)));
+            component.setJson(ComponentSerializer.toString(result));
             packet.getPacket().getChatComponents().writeSafely(i++, component);
         }
     }
@@ -624,7 +624,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
                         .parse(displayName.getJson()));
         if (result == null) result = new BaseComponent[]{new TextComponent("")};
-        displayName.setJson(ComponentSerializer.toString(mergeComponents(result)));
+        displayName.setJson(ComponentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, displayName);
     }
 
@@ -699,9 +699,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             handleKickDisconnect(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW_MERCHANT && main.getConf().isItems()) {
             handleMerchantItems(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM && main.getConf().isScoreboards()) {
             handleScoreboardTeam(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE) {
+        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf().isScoreboards()) {
             handleScoreboardObjective(packet, languagePlayer);
         }
     }
