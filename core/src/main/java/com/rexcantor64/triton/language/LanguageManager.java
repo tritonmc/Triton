@@ -64,10 +64,12 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
     public String getTextFromMain(@NonNull String code, @NonNull Object... args) {
         val langItems = this.textItems.get(this.getMainLanguage().getName());
-        if (langItems == null) return Triton.get().getMessagesConfig().getMessage("error.message-not-found", code);
+        if (langItems == null)
+            return ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig().getMessage("error.message-not-found", code));
 
         val msg = langItems.get(code);
-        if (msg == null) return Triton.get().getMessagesConfig().getMessage("error.message-not-found", code);
+        if (msg == null)
+            return ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig().getMessage("error.message-not-found", code));
 
         return formatMessage(msg, args);
     }
