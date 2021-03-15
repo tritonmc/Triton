@@ -1,4 +1,4 @@
-# Triton 3.3.0
+# Triton 3.3.1
 
 [![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#tritonmc/Triton)
 
