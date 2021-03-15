@@ -5,6 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
+import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
@@ -22,6 +23,7 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
 import lombok.val;
 import lombok.var;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -52,6 +54,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
+    private Class<?> ADVENTURE_COMPONENT_CLASS;
     private SpigotMLP main;
 
     public ProtocolLibListener(SpigotMLP main) {
@@ -59,64 +62,55 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils.getNMSClass("MerchantRecipeList") : null;
         CRAFT_MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils
                 .getCraftbukkitClass("inventory.CraftMerchantRecipe") : null;
+
+        try {
+            ADVENTURE_COMPONENT_CLASS = Class.forName("net.kyori.adventure.text.Component");
+        } catch (ClassNotFoundException e) {
+            ADVENTURE_COMPONENT_CLASS = null;
+        }
     }
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         boolean ab = isActionbar(packet.getPacket());
+
+        // Don't bother parsing anything else if it's disabled on config
+        if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
+
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
-        if (ab && main.getConf().isActionbars()) {
-            WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-            if (msg != null) {
-                BaseComponent[] result = main.getLanguageParser()
-                        .parseComponent(languagePlayer, main.getConf().getActionbarSyntax(), ComponentSerializer
-                                .parse(msg.getJson()));
-                if (result == null) {
-                    packet.setCancelled(true);
-                    return;
-                }
-                msg.setJson(ComponentSerializer.toString(mergeComponents(result)));
-                packet.getPacket().getChatComponents().writeSafely(0, msg);
-                return;
-            }
-            BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
-                    main.getConf().getActionbarSyntax(),
-                    baseComponentModifier.readSafely(0));
-            if (bc == null) {
-                packet.setCancelled(true);
-                return;
-            }
-            baseComponentModifier.writeSafely(0, mergeComponents(bc));
-        } else if (!ab && main.getConf().isChat()) {
-            WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-            if (msg != null) {
-                try {
-                    BaseComponent[] result = main.getLanguageParser()
-                            .parseComponent(languagePlayer, main.getConf()
-                                    .getChatSyntax(), ComponentSerializer.parse(msg.getJson()));
-                    if (result == null) {
-                        packet.setCancelled(true);
-                        return;
-                    }
-                    msg.setJson(ComponentSerializer.toString(result));
-                    packet.getPacket().getChatComponents().writeSafely(0, msg);
-                } catch (RuntimeException e) {
-                    Triton.get().getLogger()
-                            .logError(1, "Could not parse a chat message, so it was ignored. Message: %1", msg
-                                    .getJson());
-                    if (Triton.get().getConfig().getLogLevel() > 99)
-                        e.printStackTrace();
-                }
-                return;
-            }
-            BaseComponent[] bc = main.getLanguageParser().parseComponent(languagePlayer,
-                    main.getConf().getChatSyntax(),
-                    baseComponentModifier.readSafely(0));
-            if (bc == null) {
-                packet.setCancelled(true);
-                return;
-            }
-            baseComponentModifier.writeSafely(0, bc);
+        BaseComponent[] result = null;
+
+        // Hot fix for Paper builds 472+
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
+            Object adventureComponent = adventureModifier.readSafely(0);
+            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
+            adventureModifier.writeSafely(0, null);
+        } else if (baseComponentModifier.readSafely(0) != null) {
+            result = baseComponentModifier.readSafely(0);
+        } else {
+            val msg = packet.getPacket().getChatComponents().readSafely(0);
+            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
         }
+
+        // Something went wrong while getting data from the packet, or the packet is empty...?
+        if (result == null) return;
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                ab ? main.getConf().getActionbarSyntax() : main.getConf().getChatSyntax(),
+                result);
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        // Flatten action bar's json
+        baseComponentModifier.writeSafely(0, ab ? mergeComponents(result) : result);
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {

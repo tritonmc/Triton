@@ -25,6 +25,8 @@ public class ComponentUtils {
                 return 3;
             case CHANGE_PAGE:
                 return 4;
+            case COPY_TO_CLIPBOARD:
+                return 5;
         }
         return 0;
     }
@@ -41,6 +43,8 @@ public class ComponentUtils {
                 return ClickEvent.Action.SUGGEST_COMMAND;
             case 4:
                 return ClickEvent.Action.CHANGE_PAGE;
+            case 5:
+                return ClickEvent.Action.COPY_TO_CLIPBOARD;
         }
     }
 
