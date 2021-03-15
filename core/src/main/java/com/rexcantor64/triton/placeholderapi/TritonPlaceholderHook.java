@@ -34,6 +34,8 @@ public class TritonPlaceholderHook extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player p, String params) {
+        if (params == null) return null;
+        if (p == null) return triton.getLanguageManager().getTextFromMain(params);
         return triton.getLanguageManager().getText(triton.getPlayerManager().get(p.getUniqueId()), params);
     }
 }
