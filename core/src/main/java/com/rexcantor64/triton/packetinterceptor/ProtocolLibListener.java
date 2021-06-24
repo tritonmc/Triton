@@ -6,6 +6,7 @@ import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
@@ -24,6 +25,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.var;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -51,17 +53,29 @@ import java.util.stream.Stream;
 
 @SuppressWarnings({"deprecation"})
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
+    private final Class<?> CONTAINER_PLAYER_CLASS;
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
+    private final Class<?> BOSSBAR_UPDATE_TITLE_ACTION_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
+    private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private Class<?> ADVENTURE_COMPONENT_CLASS;
     private SpigotMLP main;
 
     public ProtocolLibListener(SpigotMLP main) {
         this.main = main;
-        MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils.getNMSClass("MerchantRecipeList") : null;
+        if (main.getMcVersion() >= 17)
+            MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getClass("net.minecraft.world.item.trading.MerchantRecipeList");
+        else if (main.getMcVersion() >= 14)
+            MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getNMSClass("MerchantRecipeList");
+        else
+            MERCHANT_RECIPE_LIST_CLASS = null;
         CRAFT_MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils
                 .getCraftbukkitClass("inventory.CraftMerchantRecipe") : null;
+        CONTAINER_PLAYER_CLASS = main.getMcVersion() >= 17 ?
+                NMSUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
+                NMSUtils.getNMSClass("ContainerPlayer");
+        BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? NMSUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
 
         try {
             ADVENTURE_COMPONENT_CLASS = Class.forName("net.kyori.adventure.text.Component");
@@ -468,8 +482,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils
-                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main
+        if (CONTAINER_PLAYER_CLASS == NMSUtils
+                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
+                        getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
                 .getConf().isInventoryItems())
             return;
 
@@ -485,8 +500,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (NMSUtils.getNMSClass("ContainerPlayer") == NMSUtils
-                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()), "activeContainer").getClass() && !main
+        if (CONTAINER_PLAYER_CLASS == NMSUtils
+                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
+                        getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
                 .getConf().isInventoryItems())
             return;
 
@@ -495,15 +511,36 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getItemModifier().writeSafely(0, item);
     }
 
+    @SneakyThrows
     private void handleBoss(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        UUID uuid = packet.getPacket().getUUIDs().readSafely(0);
-        Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
-        if (action == Action.REMOVE) {
-            languagePlayer.removeBossbar(uuid);
-            return;
+        val uuid = packet.getPacket().getUUIDs().readSafely(0);
+        WrappedChatComponent bossbar;
+        Object actionObj = null;
+
+        if (getMCVersion() >= 17) {
+            actionObj = packet.getPacket().getModifier().readSafely(1);
+            val method = actionObj.getClass().getMethod("a");
+            method.setAccessible(true);
+            val actionEnum = ((Enum<?>) method.invoke(actionObj)).ordinal();
+            if (actionEnum == 1) {
+                languagePlayer.removeBossbar(uuid);
+                return;
+            }
+            if (actionEnum != 0 && actionEnum != 3) return;
+
+            bossbar = WrappedChatComponent.fromHandle(NMSUtils.getDeclaredField(actionObj, "a"));
+        } else {
+            Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
+            if (action == Action.REMOVE) {
+                languagePlayer.removeBossbar(uuid);
+                return;
+            }
+            if (action != Action.ADD && action != Action.UPDATE_NAME) return;
+
+            bossbar = packet.getPacket().getChatComponents().readSafely(0);
         }
-        if (action != Action.ADD && action != Action.UPDATE_NAME) return;
-        WrappedChatComponent bossbar = packet.getPacket().getChatComponents().readSafely(0);
+
+
         try {
             languagePlayer.setBossbar(uuid, bossbar.getJson());
             BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
@@ -511,7 +548,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (result == null)
                 result = new BaseComponent[]{new TranslatableComponent("")};
             bossbar.setJson(ComponentSerializer.toString(result));
-            packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+            if (getMCVersion() >= 17) {
+                NMSUtils.setDeclaredField(actionObj, "a", bossbar.getHandle());
+            } else {
+                packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+            }
         } catch (RuntimeException e) {
             // TODO Catch 1.16 Hover 'contents' not being parsed correctly
             Triton.get().getLogger()
@@ -583,12 +624,34 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         // Pack name tag visibility, collision rule, team color and friendly flags into list
         val modifiers = packet.getPacket().getModifier();
-        List<Object> options = Stream.of(4, 5, 6, 9).map(modifiers::readSafely).collect(Collectors.toList());
+        List<Object> options;
+        WrappedChatComponent displayName, prefix, suffix;
+        StructureModifier<WrappedChatComponent> chatComponents;
 
-        val chatComponents = packet.getPacket().getChatComponents();
-        val displayName = chatComponents.readSafely(0);
-        val prefix = chatComponents.readSafely(1);
-        val suffix = chatComponents.readSafely(2);
+        if (getMCVersion() >= 17) {
+            Optional<?> meta = (Optional<?>) modifiers.readSafely(3);
+            if (!meta.isPresent()) return;
+
+            val obj = meta.get();
+
+            if (SCOREBOARD_TEAM_METADATA_MODIFIER == null)
+                SCOREBOARD_TEAM_METADATA_MODIFIER = new StructureModifier<>(obj.getClass());
+            val structure = SCOREBOARD_TEAM_METADATA_MODIFIER.withTarget(obj);
+
+            options = Stream.of(3, 4, 5, 6).map(structure::readSafely).collect(Collectors.toList());
+
+            chatComponents = structure.withType(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
+            displayName = chatComponents.read(0);
+            prefix = chatComponents.read(1);
+            suffix = chatComponents.read(2);
+        } else {
+            options = Stream.of(4, 5, 6, 9).map(modifiers::readSafely).collect(Collectors.toList());
+
+            chatComponents = packet.getPacket().getChatComponents();
+            displayName = chatComponents.readSafely(0);
+            prefix = chatComponents.readSafely(1);
+            suffix = chatComponents.readSafely(2);
+        }
 
         languagePlayer.setScoreboardTeam(teamName, displayName.getJson(), prefix.getJson(), suffix.getJson(), options);
 
@@ -599,7 +662,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             .parse(component.getJson()));
             if (result == null) result = new BaseComponent[]{new TextComponent("")};
             component.setJson(ComponentSerializer.toString(result));
-            packet.getPacket().getChatComponents().writeSafely(i++, component);
+            chatComponents.writeSafely(i++, component);
         }
     }
 
@@ -651,7 +714,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             languagePlayer.setInterceptor(this);
         else if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
             handleChat(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.TITLE && main.getConf().isTitles()) {
+        } else if ((packet.getPacketType() == PacketType.Play.Server.TITLE ||
+                packet.getPacketType() == PacketType.Play.Server.SET_TITLE_TEXT ||
+                packet.getPacketType() == PacketType.Play.Server.SET_SUBTITLE_TEXT) && main.getConf().isTitles()) {
             handleTitle(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf()
                 .isTab()) {
@@ -942,12 +1007,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     @Override
+    @SneakyThrows
     public void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String json) {
         if (getMCVersion() <= 8) return;
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BOSS);
         packet.getUUIDs().writeSafely(0, uuid);
-        packet.getEnumModifier(Action.class, 1).writeSafely(0, Action.UPDATE_NAME);
-        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
+        if (getMCVersion() >= 17) {
+            val msg = WrappedChatComponent.fromJson(json);
+            val constructor = BOSSBAR_UPDATE_TITLE_ACTION_CLASS.getDeclaredConstructor(msg.getHandleType());
+            constructor.setAccessible(true);
+            val action = constructor.newInstance(msg.getHandle());
+            packet.getModifier().writeSafely(1, action);
+        } else {
+            packet.getEnumModifier(Action.class, 1).writeSafely(0, Action.UPDATE_NAME);
+            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
+        }
         try {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
         } catch (InvocationTargetException e) {
@@ -976,12 +1050,36 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     .createPacket(PacketType.Play.Server.SCOREBOARD_TEAM);
             packet.getIntegers().writeSafely(0, 2); // Update team info mode
             packet.getStrings().writeSafely(0, key);
-            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
-            packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
-            packet.getChatComponents().writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
-            var j = 0;
-            for (var i : Arrays.asList(4, 5, 6, 9))
-                packet.getModifier().writeSafely(i, value.getOptionData().get(j++));
+            if (getMCVersion() >= 17) {
+                Optional<?> meta = (Optional<?>) packet.getModifier().readSafely(3);
+                if (!meta.isPresent()) {
+                    Triton.get().getLogger().logError("Triton was not able to refresh a scoreboard team, probably due to changes in ProtocolLib!");
+                    return;
+                }
+
+                val obj = meta.get();
+
+                if (SCOREBOARD_TEAM_METADATA_MODIFIER == null)
+                    SCOREBOARD_TEAM_METADATA_MODIFIER = new StructureModifier<>(obj.getClass());
+                val structure = SCOREBOARD_TEAM_METADATA_MODIFIER.withTarget(obj);
+
+                var j = 0;
+                for (var i : Arrays.asList(3, 4, 5, 6))
+                    structure.writeSafely(i, value.getOptionData().get(j++));
+
+                val chatComponents = structure.withType(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
+                chatComponents.writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
+                chatComponents.writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
+                chatComponents.writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
+            } else {
+                packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
+                packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
+                packet.getChatComponents().writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
+                var j = 0;
+                for (var i : Arrays.asList(4, 5, 6, 9))
+                    packet.getModifier().writeSafely(i, value.getOptionData().get(j++));
+            }
+
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
             } catch (InvocationTargetException e) {
@@ -1054,7 +1152,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         Collection<PacketType> types = new ArrayList<>();
         types.add(PacketType.Login.Server.SUCCESS);
         types.add(PacketType.Play.Server.CHAT);
-        types.add(PacketType.Play.Server.TITLE);
+        if (main.getMcVersion() >= 17) { // Title packet split on 1.17
+            types.add(PacketType.Play.Server.SET_TITLE_TEXT);
+            types.add(PacketType.Play.Server.SET_SUBTITLE_TEXT);
+        } else {
+            types.add(PacketType.Play.Server.TITLE);
+        }
         types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
         types.add(PacketType.Play.Server.OPEN_WINDOW);
         types.add(PacketType.Play.Server.ENTITY_METADATA);

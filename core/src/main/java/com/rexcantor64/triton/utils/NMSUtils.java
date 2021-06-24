@@ -129,6 +129,15 @@ public class NMSUtils {
         }
     }
 
+    public static Class<?> getClass(String className) {
+        try {
+            return Class.forName(className);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
     public static Class<?> getNMSClass(String className) {
         String version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
         try {
