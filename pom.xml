@@ -6,7 +6,7 @@
 
     <groupId>com.rexcantor64.triton</groupId>
     <artifactId>api</artifactId>
-    <version>3.2.0</version>
+    <version>3.4.0</version>
     <properties>
         <build.number/>
         <plugin.version>${project.version}-${build.number}</plugin.version>
@@ -32,13 +32,13 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.16.4-R0.1-SNAPSHOT</version>
+            <version>1.17-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.15-SNAPSHOT</version>
+            <version>1.17-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
