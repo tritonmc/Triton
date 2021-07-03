@@ -48,6 +48,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,6 +62,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private Class<?> ADVENTURE_COMPONENT_CLASS;
     private SpigotMLP main;
+    private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
 
     public ProtocolLibListener(SpigotMLP main) {
         this.main = main;
@@ -82,6 +84,41 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } catch (ClassNotFoundException e) {
             ADVENTURE_COMPONENT_CLASS = null;
         }
+        setupPacketHandlers();
+    }
+
+    private void setupPacketHandlers() {
+        packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
+        if (main.getMcVersion() >= 17) { // Title packet split on 1.17
+            packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
+            packetHandlers.put(PacketType.Play.Server.SET_SUBTITLE_TEXT, this::handleTitle);
+        } else {
+            packetHandlers.put(PacketType.Play.Server.TITLE, this::handleTitle);
+        }
+
+        packetHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, this::handlePlayerListHeaderFooter);
+        packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, this::handleOpenWindow);
+        packetHandlers.put(PacketType.Play.Server.ENTITY_METADATA, this::handleEntityMetadata);
+        packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY, this::handleSpawnEntity);
+        packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+        packetHandlers.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, this::handleNamedEntitySpawn);
+        packetHandlers.put(PacketType.Play.Server.ENTITY_DESTROY, this::handleEntityDestroy);
+        packetHandlers.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
+        packetHandlers.put(PacketType.Play.Server.KICK_DISCONNECT, this::handleKickDisconnect);
+        if (main.getMcVersion() >= 13) { // Scoreboard rewrite on 1.13
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, this::handleScoreboardTeam);
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
+        }
+        if (existsSignUpdatePacket()) packetHandlers.put(PacketType.Play.Server.UPDATE_SIGN, this::handleUpdateSign);
+        else {
+            packetHandlers.put(PacketType.Play.Server.MAP_CHUNK, this::handleMapChunk);
+            packetHandlers.put(PacketType.Play.Server.TILE_ENTITY_DATA, this::handleTileEntityData);
+        }
+        packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
+        packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
+        if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
+        if (getMCVersion() >= 14)
+            packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, this::handleMerchantItems);
     }
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -128,6 +165,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isTitles()) return;
+
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         if (msg == null) return;
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
@@ -141,6 +180,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isTab()) return;
+
         WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
         String headerJson = header.getJson();
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
@@ -169,6 +210,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isGuis()) return;
+
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser()
                 .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer
@@ -345,6 +388,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isHologramsAll() && !main.getConf().getHolograms().contains(EntityType.PLAYER)) return;
+
         EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
         List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
         if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
@@ -378,6 +423,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isKick()) return;
+
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
@@ -388,6 +435,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleUpdateSign(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isSigns()) return;
+
         val newPacket = packet.getPacket().shallowClone();
         val pos = newPacket.getBlockPositionModifier().readSafely(0);
         val linesModifier = newPacket.getChatComponentArrays();
@@ -419,6 +468,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleTileEntityData(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isSigns()) return;
+
         if (packet.getPacket().getIntegers().readSafely(0) == 9) {
             val newPacket = packet.getPacket().deepClone();
             val nbt = NbtFactory.asCompound(newPacket.getNbtModifier().readSafely(0));
@@ -450,6 +501,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleMapChunk(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isSigns()) return;
+
         val entities = packet.getPacket().getListNbtModifier().readSafely(0);
         for (val entity : entities) {
             val nbt = NbtFactory.asCompound(entity);
@@ -482,6 +535,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isItems()) return;
+
         if (CONTAINER_PLAYER_CLASS == NMSUtils
                 .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
                         getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
@@ -500,6 +555,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isItems()) return;
+
         if (CONTAINER_PLAYER_CLASS == NMSUtils
                 .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
                         getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
@@ -513,6 +570,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @SneakyThrows
     private void handleBoss(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isBossbars()) return;
+
         val uuid = packet.getPacket().getUUIDs().readSafely(0);
         WrappedChatComponent bossbar;
         Object actionObj = null;
@@ -561,6 +620,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isItems()) return;
+
         try {
             ArrayList<?> recipes = (ArrayList<?>) packet.getPacket()
                     .getSpecificModifier(MERCHANT_RECIPE_LIST_CLASS).readSafely(0);
@@ -612,6 +673,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isScoreboards()) return;
+
         val teamName = packet.getPacket().getStrings().readSafely(0);
         val mode = packet.getPacket().getIntegers().readSafely(0);
 
@@ -667,6 +730,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleScoreboardObjective(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isScoreboards()) return;
+
         val objectiveName = packet.getPacket().getStrings().readSafely(0);
         val mode = packet.getPacket().getIntegers().readSafely(0);
 
@@ -710,62 +775,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             Triton.get().getLogger().logWarning(1, "Language Player is null on packet sending");
             return;
         }
-        if (packet.getPacketType() == PacketType.Login.Server.SUCCESS)
+        if (packet.getPacketType() == PacketType.Login.Server.SUCCESS) {
             languagePlayer.setInterceptor(this);
-        else if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
-            handleChat(packet, languagePlayer);
-        } else if ((packet.getPacketType() == PacketType.Play.Server.TITLE ||
-                (getMCVersion() >= 17 && (packet.getPacketType() == PacketType.Play.Server.SET_TITLE_TEXT ||
-                        packet.getPacketType() == PacketType.Play.Server.SET_SUBTITLE_TEXT))) && main.getConf().isTitles()) {
-            handleTitle(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf()
-                .isTab()) {
-            handlePlayerListHeaderFooter(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && main.getConf().isGuis()) {
-            handleOpenWindow(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.NAMED_ENTITY_SPAWN && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
-            handleNamedEntitySpawn(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY_LIVING && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
-            handleSpawnEntityLiving(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
-            handleSpawnEntity(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_METADATA && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
-            handleEntityMetadata(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.ENTITY_DESTROY && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().size() != 0)) {
-            handleEntityDestroy(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_INFO && (main.getConf()
-                .isHologramsAll() || main.getConf().getHolograms().contains(EntityType.PLAYER))) {
-            handlePlayerInfo(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.KICK_DISCONNECT && main.getConf().isKick()) {
-            handleKickDisconnect(packet, languagePlayer);
-        } else if (existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.UPDATE_SIGN && main
-                .getConf().isSigns()) {
-            handleUpdateSign(packet, languagePlayer);
-        } else if (!existsSignUpdatePacket() && packet
-                .getPacketType() == PacketType.Play.Server.TILE_ENTITY_DATA && main.getConf().isSigns()) {
-            handleTileEntityData(packet, languagePlayer);
-        } else if (!existsSignUpdatePacket() && packet.getPacketType() == PacketType.Play.Server.MAP_CHUNK && main
-                .getConf().isSigns()) {
-            handleMapChunk(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS && main.getConf().isItems()) {
-            handleWindowItems(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SET_SLOT && main.getConf().isItems()) {
-            handleSetSlot(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.BOSS && main.getConf().isBossbars()) {
-            handleBoss(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Login.Server.DISCONNECT && main.getConf().isKick()) {
-            handleKickDisconnect(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.OPEN_WINDOW_MERCHANT && main.getConf().isItems()) {
-            handleMerchantItems(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_TEAM && main.getConf().isScoreboards()) {
-            handleScoreboardTeam(packet, languagePlayer);
-        } else if (packet.getPacketType() == PacketType.Play.Server.SCOREBOARD_OBJECTIVE && main.getConf().isScoreboards()) {
-            handleScoreboardObjective(packet, languagePlayer);
+            return;
+        }
+
+        val handler = packetHandlers.get(packet.getPacketType());
+        if (handler != null) {
+            handler.accept(packet, languagePlayer);
         }
     }
 
@@ -1149,38 +1166,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        Collection<PacketType> types = new ArrayList<>();
-        types.add(PacketType.Login.Server.SUCCESS);
-        types.add(PacketType.Play.Server.CHAT);
-        if (main.getMcVersion() >= 17) { // Title packet split on 1.17
-            types.add(PacketType.Play.Server.SET_TITLE_TEXT);
-            types.add(PacketType.Play.Server.SET_SUBTITLE_TEXT);
-        } else {
-            types.add(PacketType.Play.Server.TITLE);
-        }
-        types.add(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
-        types.add(PacketType.Play.Server.OPEN_WINDOW);
-        types.add(PacketType.Play.Server.ENTITY_METADATA);
-        types.add(PacketType.Play.Server.SPAWN_ENTITY);
-        types.add(PacketType.Play.Server.SPAWN_ENTITY_LIVING);
-        types.add(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
-        types.add(PacketType.Play.Server.ENTITY_DESTROY);
-        types.add(PacketType.Play.Server.PLAYER_INFO);
-        types.add(PacketType.Play.Server.KICK_DISCONNECT);
-        if (main.getMcVersion() >= 13) { // Scoreboard rewrite on 1.13
-            types.add(PacketType.Play.Server.SCOREBOARD_TEAM);
-            types.add(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
-        }
-        if (existsSignUpdatePacket()) types.add(PacketType.Play.Server.UPDATE_SIGN);
-        else {
-            types.add(PacketType.Play.Server.MAP_CHUNK);
-            types.add(PacketType.Play.Server.TILE_ENTITY_DATA);
-        }
-        types.add(PacketType.Play.Server.WINDOW_ITEMS);
-        types.add(PacketType.Play.Server.SET_SLOT);
-        types.add(PacketType.Status.Server.SERVER_INFO);
-        if (getMCVersion() >= 9) types.add(PacketType.Play.Server.BOSS);
-        if (getMCVersion() >= 14) types.add(PacketType.Play.Server.OPEN_WINDOW_MERCHANT);
+        val edgeCases = Stream.of(PacketType.Login.Server.SUCCESS, PacketType.Status.Server.SERVER_INFO);
+
+        val types = Stream.concat(packetHandlers.keySet().stream(), edgeCases).collect(Collectors.toList());
         return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).mergeOptions(ListenerOptions.ASYNC).highest().build();
     }
 
