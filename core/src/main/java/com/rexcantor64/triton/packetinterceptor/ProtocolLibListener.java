@@ -715,8 +715,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         else if (packet.getPacketType() == PacketType.Play.Server.CHAT) {
             handleChat(packet, languagePlayer);
         } else if ((packet.getPacketType() == PacketType.Play.Server.TITLE ||
-                packet.getPacketType() == PacketType.Play.Server.SET_TITLE_TEXT ||
-                packet.getPacketType() == PacketType.Play.Server.SET_SUBTITLE_TEXT) && main.getConf().isTitles()) {
+                (getMCVersion() >= 17 && (packet.getPacketType() == PacketType.Play.Server.SET_TITLE_TEXT ||
+                        packet.getPacketType() == PacketType.Play.Server.SET_SUBTITLE_TEXT))) && main.getConf().isTitles()) {
             handleTitle(packet, languagePlayer);
         } else if (packet.getPacketType() == PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER && main.getConf()
                 .isTab()) {
