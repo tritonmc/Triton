@@ -340,8 +340,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handleEntityDestroy(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         int[] ids = packet.getPacket().getIntegerArrays().readSafely(0);
-        removeEntities(languagePlayer.getEntitiesMap().get(languagePlayer.toBukkit().getWorld()), ids);
-        removeEntities(languagePlayer.getPlayersMap().get(languagePlayer.toBukkit().getWorld()), ids);
+        removeEntities(languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld()), ids);
+        removeEntities(languagePlayer.getPlayersMap().get(packet.getPlayer().getWorld()), ids);
     }
 
     private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
