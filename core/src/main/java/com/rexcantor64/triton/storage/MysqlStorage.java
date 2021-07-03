@@ -137,7 +137,7 @@ public class MysqlStorage extends Storage {
                 stmt.setString(1, uuid.toString());
                 stmt.executeUpdate();
             }
-            if (ip != null) {
+            if (ip != null && Triton.get().getConf().isMotd()) {
                 stmt.setString(1, ip);
                 stmt.executeUpdate();
             }

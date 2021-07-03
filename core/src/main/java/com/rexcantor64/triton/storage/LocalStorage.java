@@ -79,7 +79,7 @@ public class LocalStorage extends Storage {
                     changed = true;
                 }
             }
-            if (ip != null) {
+            if (ip != null && Triton.get().getConf().isMotd()) {
                 String formattedIp = ip.replace(".", "-");
                 if (!newLanguage.getName().equals(languageMap.get(formattedIp))) {
                     languageMap.put(formattedIp, newLanguage.getName());
