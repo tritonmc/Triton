@@ -382,11 +382,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleEntityDestroy(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        int[] ids;
-        if (getMCVersion() >= 17)
-            ids = new int[]{packet.getPacket().getIntegers().readSafely(0)};
+        Stream<Integer> ids;
+        if (packet.getPacket().getIntegers().size() > 0)
+            ids = Stream.of(packet.getPacket().getIntegers().readSafely(0));
+        else if (packet.getPacket().getIntegerArrays().size() > 0)
+            ids = Arrays.stream(packet.getPacket().getIntegerArrays().readSafely(0)).boxed();
         else
-            ids = packet.getPacket().getIntegerArrays().readSafely(0);
+            ids = ((List<Integer>) packet.getPacket().getModifier().readSafely(0)).stream();
         removeEntities(languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld()), ids);
         removeEntities(languagePlayer.getPlayersMap().get(packet.getPlayer().getWorld()), ids);
     }
@@ -1157,9 +1159,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         lp.getEntitiesMap().get(world).put(id, displayName);
     }
 
-    private void removeEntities(HashMap<Integer, ?> map, int[] ids) {
+    private void removeEntities(HashMap<Integer, ?> map, Stream<Integer> ids) {
         if (map == null) return;
-        Arrays.stream(ids).boxed().collect(Collectors.toList()).forEach(map.keySet()::remove);
+        ids.forEach(map.keySet()::remove);
     }
 
     private void addPlayer(World world, int id, Entity player, SpigotLanguagePlayer lp) {
