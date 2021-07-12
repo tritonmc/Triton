@@ -92,6 +92,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (main.getMcVersion() >= 17) { // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
             packetHandlers.put(PacketType.Play.Server.SET_SUBTITLE_TEXT, this::handleTitle);
+
+            // new actionbar packet
+            packetHandlers.put(PacketType.Play.Server.SET_ACTION_BAR_TEXT, this::handleActionbar);
         } else {
             packetHandlers.put(PacketType.Play.Server.TITLE, this::handleTitle);
         }
@@ -162,6 +165,47 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         // Flatten action bar's json
         baseComponentModifier.writeSafely(0, ab ? mergeComponents(result) : result);
+    }
+
+    private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConf().isActionbars()) return;
+
+        val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
+        BaseComponent[] result = null;
+
+        // Hot fix for Paper builds 472+
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
+            Object adventureComponent = adventureModifier.readSafely(0);
+            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
+            adventureModifier.writeSafely(0, null);
+        } else if (baseComponentModifier.readSafely(0) != null) {
+            result = baseComponentModifier.readSafely(0);
+            baseComponentModifier.writeSafely(0, null);
+        } else {
+            val msg = packet.getPacket().getChatComponents().readSafely(0);
+            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
+        }
+
+        // Something went wrong while getting data from the packet, or the packet is empty...?
+        if (result == null) return;
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                main.getConf().getActionbarSyntax(),
+                result);
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        // Flatten action bar's json
+        packet.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
