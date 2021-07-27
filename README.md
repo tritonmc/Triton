@@ -1,5 +1,7 @@
-# Triton 3.4.2
+# Triton
 
+[![Spigot](https://img.shields.io/badge/dynamic/json?color=blue&label=Spigot&prefix=v&query=%24.current_version&url=https%3A%2F%2Fapi.spigotmc.org%2Fsimple%2F0.2%2Findex.php%3Faction%3DgetResource%26id%3D30331)](https://www.spigotmc.org/resources/triton-translate-your-server.30331/)
+[![Spigot Rating](https://img.shields.io/spiget/rating/30331?color=orange)](https://www.spigotmc.org/resources/triton-translate-your-server.30331/)
 [![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#tritonmc/Triton)
 
 _Translate your server! Sends the same message on different languages... Hooks into all plugins!_  
@@ -20,3 +22,8 @@ our [Discord](https://triton.rexcantor64.com/discord)!
 
 Looking for older API versions? Take a look at
 the [download page](https://github.com/diogotcorreia/Triton/wiki/Downloads)!
+
+## Plugin source
+
+This repository only contains the API for Triton.  
+For the full source code, checkout [tritonmc/plugin-core](https://github.com/tritonmc/plugin-core).
