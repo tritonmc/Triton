@@ -380,10 +380,18 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
 
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
+        if (dw == null) {
+            // The DataWatcher.Item List is Nullable
+            // Since it's null, it doesn't have any text to translate anyway, so just ignore it
+            return;
+        }
+
         List<WrappedWatchableObject> dwn = new ArrayList<>();
         boolean forceHideCustomName = false;
-        for (WrappedWatchableObject obj : dw)
-            if (obj.getIndex() == 2)
+        for (WrappedWatchableObject obj : dw) {
+            // Index 2 is "Custom Name" of type "OptChat"
+            // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
+            if (obj.getIndex() == 2) {
                 if (getMCVersion() < 9) {
                     addEntity(packet.getPlayer().getWorld(), entityId, (String) obj.getValue(), languagePlayer);
                     String result = translate((String) obj.getValue(), languagePlayer, main.getConf()
@@ -424,14 +432,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         }
                     } else dwn.add(obj);
                 }
-            else if (obj.getIndex() == 3) {
+            } else if (obj.getIndex() == 3) {
+                // Index 3 is "Is custom name visible" of type "Boolean"
+                // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
                 if (forceHideCustomName) {
                     if (getMCVersion() >= 9)
                         dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), false));
-                    else dwn.add(new WrappedWatchableObject(obj.getIndex(), (byte) 0));
-                } else dwn.add(obj);
-            } else
+                    else
+                        dwn.add(new WrappedWatchableObject(obj.getIndex(), (byte) 0));
+                } else {
+                    dwn.add(obj);
+                }
+            } else {
                 dwn.add(obj);
+            }
+        }
         packet.getPacket().getWatchableCollectionModifier().writeSafely(0, dwn);
     }
 
