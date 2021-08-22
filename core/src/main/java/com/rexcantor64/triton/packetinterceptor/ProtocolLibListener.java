@@ -278,7 +278,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 .contains(EntityType.PLAYER)))
             return;
         Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
-        addPlayer(packet.getPlayer().getWorld(), e.getEntityId(), e, languagePlayer);
+        // TODO For now, it is only possible to translate NPCs that are saved server side
+        if (e != null) {
+            addPlayer(packet.getPlayer().getWorld(), e.getEntityId(), e, languagePlayer);
+        }
     }
 
     private void handleSpawnEntityLiving(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -310,7 +313,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (result != null)
                     dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
                             Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                                    .toString(result))
+                                            .toString(result))
                                     .getHandle())));
                 else {
                     dataWatcher.setObject(2, new WrappedWatchableObject(watchableObject.getWatcherObject(),
@@ -413,7 +416,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         if (result != null)
                             dwn.add(new WrappedWatchableObject(obj.getWatcherObject(),
                                     Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                                            .toString(result))
+                                                    .toString(result))
                                             .getHandle())));
                         else {
                             dwn.add(new WrappedWatchableObject(obj.getWatcherObject(), Optional.empty()));
@@ -946,7 +949,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()));
                     if (result != null)
                         value = Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
-                                .toString(result))
+                                        .toString(result))
                                 .getHandle());
                     else {
                         value = Optional.empty();
