@@ -53,33 +53,34 @@ public class SignCommand implements Command {
                 return true;
             }
 
+            val key = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
             LanguageItem sign = null;
 
             // Find a sign group with a matching key
             collectionLoop:
             for (val collection : Triton.get().getStorage().getCollections().values())
                 for (val item : collection.getItems())
-                    if (item instanceof LanguageSign && item.getKey().equals(args[1])) {
+                    if (item instanceof LanguageSign && item.getKey().equals(key)) {
                         sign = item;
                         break collectionLoop;
                     }
 
             if (sign == null) {
-                sender.sendMessageFormatted("error.sign-not-found", args[1]);
+                sender.sendMessageFormatted("error.sign-not-found", key);
                 return true;
             }
 
             if (Triton.get().getConf().isBungeecord()) {
                 Triton.asSpigot().getBridgeManager()
                         .updateSign(block.getWorld().getName(), block.getX(), block.getY(), block
-                                .getZ(), args[1], Bukkit.getPlayer(sender.getUUID()));
+                                .getZ(), key, Bukkit.getPlayer(sender.getUUID()));
             } else {
                 SignLocation loc = new SignLocation(block.getWorld().getName(), block
                         .getX(), block.getY(), block.getZ());
-                executeSignChange(loc, args[1]);
+                executeSignChange(loc, key);
                 Triton.get().refreshPlayers();
             }
-            sender.sendMessageFormatted("success.sign-set", args[1]);
+            sender.sendMessageFormatted("success.sign-set", key);
         } else if (args[0].equalsIgnoreCase("remove")) {
             if (Triton.get().getConf().isBungeecord()) {
                 Triton.asSpigot().getBridgeManager()
