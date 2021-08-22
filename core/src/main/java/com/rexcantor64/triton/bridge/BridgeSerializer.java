@@ -109,14 +109,16 @@ public class BridgeSerializer {
 
                         var locSize = 0;
                         val locOut = ByteStreams.newDataOutput();
-                        for (val loc : sign.getLocations()) {
-                            if (loc.getServer() != null && !loc.getServer().equals(serverName))
-                                continue;
-                            locOut.writeUTF(loc.getWorld());
-                            locOut.writeInt(loc.getX());
-                            locOut.writeInt(loc.getY());
-                            locOut.writeInt(loc.getZ());
-                            locSize++;
+                        if (sign.getLocations() != null) {
+                            for (val loc : sign.getLocations()) {
+                                if (loc.getServer() != null && !loc.getServer().equals(serverName))
+                                    continue;
+                                locOut.writeUTF(loc.getWorld());
+                                locOut.writeInt(loc.getX());
+                                locOut.writeInt(loc.getY());
+                                locOut.writeInt(loc.getZ());
+                                locSize++;
+                            }
                         }
                         languageItemsOut.writeShort(locSize);
                         languageItemsOut.write(locOut.toByteArray());
