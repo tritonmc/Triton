@@ -1,7 +1,7 @@
 languages:
   # The language name. This will influence the language key in the translation files.
   # It's recommended to follow this syntax: xx_XX
-  # It's also not recommended to change this after someone has joined your server,
+  # It's also not recommended changing this after someone has joined your server,
   # as their language will reset to default.
   en_GB:
     # This is the encoded flag code to show up the banner.
@@ -46,11 +46,11 @@ run-language-commands-on-join: false
 
 # When enabled, the plugin will set the player's Triton language to their game language every time.
 # By default, the plugin only does this when they join the server for the first time.
-# It it recommended to leave this off for user experience reasons.
+# It is recommended to leave this off for user experience reasons.
 force-client-locale-on-join: false
 
 # Automatically reload the plugin (equivalent to /twin reload) every X seconds.
-# Might be useful if you're editing the translations folder with symlinks or another program.
+# Might be useful if you're editing the translations' folder with symlinks or another program.
 # Set to -1 to disable (default)
 config-auto-refresh-interval: -1
 
@@ -108,7 +108,7 @@ storage:
     #  verifyServerCertificate: false
 
 # Here you can enable and disable certain features of the plugin.
-# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
+# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.
 language-creation:
   chat:
