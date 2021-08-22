@@ -97,7 +97,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             safeCounter++;
-            if (safeCounter > 10) {
+            if (safeCounter > Triton.get().getConfig().getMaxPlaceholdersInMessage()) {
                 Triton.get()
                         .getLogger()
                         .logError("The maximum attempts to translate a message have been exceeded. To prevent the " +
@@ -184,7 +184,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         var safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             safeCounter++;
-            if (safeCounter > 10) {
+            if (safeCounter > Triton.get().getConfig().getMaxPlaceholdersInMessage()) {
                 Triton.get()
                         .getLogger()
                         .logError("The maximum attempts to translate a message have been exceeded. To prevent the " +

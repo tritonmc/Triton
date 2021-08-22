@@ -75,6 +75,7 @@ public class MainConfig implements TritonConfig {
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
+    private int maxPlaceholdersInMessage;
 
     private String storageType = "local";
     private String serverName;
@@ -200,6 +201,7 @@ public class MainConfig implements TritonConfig {
         terminal = section.getBoolean("terminal", false);
         terminalAnsi = section.getBoolean("terminalAnsi", true);
         preventPlaceholdersInChat = section.getBoolean("prevent-placeholders-in-chat", true);
+        maxPlaceholdersInMessage = section.getInt("max-placeholders-in-message", 10);
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);

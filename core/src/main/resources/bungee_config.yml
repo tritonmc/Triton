@@ -164,3 +164,8 @@ language-creation:
   # For UX reasons, messages that contain disabled line placeholders aren't touched.
   # Changing this requires a full server restart.
   terminal: false
+  # ADVANCED: DO NOT CHANGE UNLESS YOU KNOW WHAT YOU'RE DOING
+  # How many placeholders the plugin should try to translate before giving up.
+  # This prevents infinite loops where the 404 message has a missing placeholder.
+  # Default is 10
+  max-placeholders-in-message: 10
