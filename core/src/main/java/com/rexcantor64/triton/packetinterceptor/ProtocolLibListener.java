@@ -61,6 +61,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private Class<?> ADVENTURE_COMPONENT_CLASS;
+    private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
+    private final String MERCHANT_RECIPE_DEMAND_FIELD;
+
     private SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
 
@@ -84,6 +87,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } catch (ClassNotFoundException e) {
             ADVENTURE_COMPONENT_CLASS = null;
         }
+
+        MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
+        MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
+
         setupPacketHandlers();
     }
 
@@ -681,8 +688,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             ArrayList<Object> newRecipes = (ArrayList<Object>) MERCHANT_RECIPE_LIST_CLASS.newInstance();
             for (val recipeObject : recipes) {
                 val recipe = (MerchantRecipe) NMSUtils.getMethod(recipeObject, "asBukkit");
-                val originalSpecialPrice = NMSUtils.getDeclaredField(recipeObject, "specialPrice");
-                val originalDemand = NMSUtils.getDeclaredField(recipeObject, "demand");
+                val originalSpecialPrice = NMSUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD);
+                val originalDemand = NMSUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_DEMAND_FIELD);
 
                 val newRecipe = new MerchantRecipe(translateItemStack(recipe.getResult()
                         .clone(), languagePlayer, false), recipe.getUses(), recipe.getMaxUses(), recipe
@@ -693,8 +700,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 Object newCraftRecipe = MethodUtils
                         .invokeExactStaticMethod(CRAFT_MERCHANT_RECIPE_LIST_CLASS, "fromBukkit", newRecipe);
                 Object newNMSRecipe = MethodUtils.invokeExactMethod(newCraftRecipe, "toMinecraft", null);
-                NMSUtils.setDeclaredField(newNMSRecipe, "specialPrice", originalSpecialPrice);
-                NMSUtils.setDeclaredField(newNMSRecipe, "demand", originalDemand);
+                NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD, originalSpecialPrice);
+                NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_DEMAND_FIELD, originalDemand);
                 newRecipes.add(newNMSRecipe);
             }
             packet.getPacket().getModifier().writeSafely(1, newRecipes);
@@ -1273,15 +1280,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
         if (item == null) return null;
-        NbtCompound compound;
+        NbtCompound compound = null;
         try {
             val nbtTagOptional = NbtFactory.fromItemOptional(item);
             if (!nbtTagOptional.isPresent()) return item;
             compound = NbtFactory.asCompound(nbtTagOptional.get());
-        } catch (IllegalArgumentException e) {
-            return item;
+        } catch (IllegalArgumentException ignore) {
+            // This means the item is just an ItemStack and not a CraftItemStack
+            // However we can still translate stuff using the Bukkit ItemMeta API instead of NBT tags
         }
-        if (compound.containsKey("BlockEntityTag")) {
+        if (compound != null && compound.containsKey("BlockEntityTag")) {
             NbtCompound blockEntityTag = compound.getCompoundOrDefault("BlockEntityTag");
             if (blockEntityTag.containsKey("Items")) {
                 NbtBase<?> itemsBase = blockEntityTag.getValue("Items");
@@ -1331,7 +1339,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 meta.setLore(newLore);
             }
             item.setItemMeta(meta);
-            if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
+            // If the compound is null, the item is not a CraftItemStack, therefore it doesn't have NBT data
+            if (compound != null && translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
                 compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
                 if (compound.containsKey("pages")) {
                     NbtList<String> pages = compound.getList("pages");
