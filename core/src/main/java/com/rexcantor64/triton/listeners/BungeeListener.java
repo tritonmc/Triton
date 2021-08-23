@@ -64,7 +64,8 @@ public class BungeeListener implements Listener {
                     .addAfter(PipelineUtils.PACKET_ENCODER, "triton-pre-login-encoder",
                             new PreLoginBungeeEncoder(ip));
         } catch (Exception e) {
-            Triton.get().getLogger().logError("[PacketInjector] Failed to inject client connection for %1", ip);
+            Triton.get().getLogger().logError("[PacketInjector] Failed to inject pre-login client connection for %1", ip);
+            e.printStackTrace();
         }
     }
 

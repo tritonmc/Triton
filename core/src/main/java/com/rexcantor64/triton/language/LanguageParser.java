@@ -269,8 +269,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 Triton.get().getLogger()
                         .logError("Failed to parse JSON translation (%1): %2", jsonInput, e.getMessage());
                 componentResult = TextComponent.fromLegacyText(jsonInput);
-                if (Triton.get().getConfig().getLogLevel() >= 2)
-                    e.printStackTrace();
+                e.printStackTrace();
             }
         } else {
             componentResult = TextComponent.fromLegacyText(translatedResult);

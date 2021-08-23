@@ -124,9 +124,11 @@ public class LanguageMigration {
         } catch (JsonParseException e) {
             Triton.get().getLogger().logError("[Migration] Aborting... Failed to load some json file: bad syntax. %1",
                     e.getMessage());
+            e.printStackTrace();
         } catch (IOException | SecurityException e) {
             Triton.get().getLogger()
                     .logError("[Migration] Aborting... Failed to read from or write to files: %1", e.getMessage());
+            e.printStackTrace();
         }
     }
 

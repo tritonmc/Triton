@@ -79,11 +79,13 @@ public class BungeeMLP extends Triton {
             try {
                 if (getConf().isTerminal())
                     Log4jInjector.injectAppender();
-            } catch (Error | Exception ignored) {
+            } catch (Error | Exception e1) {
                 getLogger()
                         .logError("Failed to inject terminal translations. Some forked BungeeCord servers might not " +
                                 "work " +
                                 "correctly. To hide this message, disable terminal translation on config.");
+                e.printStackTrace();
+                e1.printStackTrace();
             }
         }
     }
@@ -124,6 +126,7 @@ public class BungeeMLP extends Triton {
             channel.pipeline().remove("triton-pre-login-encoder");
         } catch (Exception e) {
             getLogger().logError("[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
+            e.printStackTrace();
         }
     }
 

@@ -113,6 +113,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         } catch (Exception e) {
             logger.logError("Failed to load %1.yml: %2", fileName, e.getMessage());
             logger.logError("You'll likely receive more errors on console until the next restart.");
+            e.printStackTrace();
         }
         return null;
     }
@@ -141,8 +142,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
                 return;
             } catch (Exception e) {
                 logger.logError("Failed to connect to database, falling back to local storage!");
-                if (getConfig().getLogLevel() >= 2)
-                    e.printStackTrace();
+                e.printStackTrace();
                 return;
             }
         }

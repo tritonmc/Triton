@@ -29,11 +29,13 @@ public class BungeePlugin extends Plugin implements PluginLoader {
             try {
                 if (Triton.get().getConf().isTerminal())
                     Log4jInjector.uninjectAppender();
-            } catch (Error | Exception ignored) {
+            } catch (Error | Exception e1) {
                 getLogger()
                         .log(Level.SEVERE, "Failed to uninject terminal translations. Some forked BungeeCord servers " +
                                 "might not work correctly. To hide this message, disable terminal translation on " +
                                 "config.");
+                e.printStackTrace();
+                e1.printStackTrace();
             }
         }
     }

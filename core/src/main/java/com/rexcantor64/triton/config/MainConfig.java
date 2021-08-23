@@ -191,8 +191,7 @@ public class MainConfig implements TritonConfig {
         } catch (Exception e) {
             Triton.get().getLogger().logWarning("Failed to load languages from cache.json! Invalid JSON format: %1",
                     e.getMessage());
-            if (getLogLevel() > 0)
-                e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

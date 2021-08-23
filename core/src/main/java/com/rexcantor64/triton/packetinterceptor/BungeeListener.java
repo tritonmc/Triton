@@ -46,11 +46,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                             continue;
                         } else tabListCache.remove(i.getUuid());
                     } catch (Exception e) {
-                        if (Triton.get().getConf().getLogLevel() > 0)
-                            e.printStackTrace();
+                        e.printStackTrace();
                     }
-                } else
+                } else {
                     tabListCache.remove(i.getUuid());
+                }
             } else if (p.getAction() == PlayerListItem.Action.REMOVE_PLAYER)
                 tabListCache.remove(i.getUuid());
             items.add(i);

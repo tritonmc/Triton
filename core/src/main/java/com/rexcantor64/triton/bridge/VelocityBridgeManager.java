@@ -60,8 +60,7 @@ public class VelocityBridgeManager {
             }
         } catch (Exception e1) {
             Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());
-            if (Triton.get().getConf().getLogLevel() > 0)
-                e1.printStackTrace();
+            e1.printStackTrace();
         }
     }
 
@@ -91,8 +90,7 @@ public class VelocityBridgeManager {
             Triton.get().getLogger()
                     .logError("Failed to send config and language items to other servers! Not everything might work " +
                             "as expected! Error: %1", e.getMessage());
-            if (Triton.get().getConf().getLogLevel() > 0)
-                e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

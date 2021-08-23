@@ -125,8 +125,7 @@ public class TwinCommand implements Command {
             event.getSender().sendMessageFormatted("twin.success");
         } catch (Exception e) {
             event.getSender().sendMessageFormatted("twin.failed-fetch", e.getMessage());
-            if (Triton.get().getConfig().getLogLevel() > 0)
-                e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

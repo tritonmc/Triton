@@ -98,6 +98,7 @@ public class LocalStorage extends Storage {
                         Triton.get().getLogger()
                                 .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
                                         .getMessage());
+                        e.printStackTrace();
                     }
                 });
                 Triton.get().getLogger().logInfo(2, "Saved!");
@@ -108,6 +109,7 @@ public class LocalStorage extends Storage {
             Triton.get().getLogger()
                     .logError("Failed to save language for %1! Could not create players.yml: %2", entity, e
                             .getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -130,6 +132,7 @@ public class LocalStorage extends Storage {
                 CollectionSerializer.toJson(collection, fileWriter);
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to save translations.cache.json: %1", e.getMessage());
+                e.printStackTrace();
             }
             return true;
         }
@@ -172,6 +175,7 @@ public class LocalStorage extends Storage {
                 Triton.get().getLogger()
                         .logError("Failed to save collection %1.json: %2", key, e
                                 .getMessage());
+                e.printStackTrace();
             }
         });
         return success.get();
@@ -221,8 +225,7 @@ public class LocalStorage extends Storage {
                         Triton.get().getLogger()
                                 .logError("Failed to load collection %1 because it has invalid syntax: %2", colFile
                                         .getName(), e.getMessage());
-                        if (Triton.get().getConfig().getLogLevel() >= 2)
-                            e.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
             else

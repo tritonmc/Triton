@@ -197,8 +197,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
-            if (Triton.get().getConf().getLogLevel() >= 1)
-                e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

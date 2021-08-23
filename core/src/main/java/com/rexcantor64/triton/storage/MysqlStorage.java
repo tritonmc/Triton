@@ -97,7 +97,8 @@ public class MysqlStorage extends Storage {
             stmt.close();
             return true;
         } catch (SQLException e) {
-            Triton.get().getLogger().logError("Error connecting to database: %1", e.getMessage());
+            Triton.get().getLogger().logError("Error creating tables on database: %1", e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -164,6 +165,7 @@ public class MysqlStorage extends Storage {
             stmt.close();
         } catch (SQLException e) {
             Triton.get().getLogger().logError("Failed to get value from the database: %1", e.getMessage());
+            e.printStackTrace();
         }
         return result;
     }

@@ -94,7 +94,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                             .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +
                                     "is null", uuid);
             } catch (Exception e) {
-                Triton.get().getLogger().logError("Failed to sent language changed message.");
+                Triton.get().getLogger().logError("Failed to send \"language changed\" message.");
                 e.printStackTrace();
             }
         }

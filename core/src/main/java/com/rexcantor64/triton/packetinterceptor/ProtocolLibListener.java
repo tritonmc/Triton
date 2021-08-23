@@ -530,8 +530,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             .getTextClean();
                 } catch (Exception e) {
                     Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                    if (Triton.get().getConfig().getLogLevel() >= 1)
-                        e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
             return defaultLines;
@@ -564,8 +563,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                        if (Triton.get().getConfig().getLogLevel() >= 1)
-                            e.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
                 return defaultLines;
@@ -598,8 +596,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                         .getTextClean();
                         } catch (Exception e) {
                             Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                            if (Triton.get().getConfig().getLogLevel() >= 1)
-                                e.printStackTrace();
+                            e.printStackTrace();
                         }
                     }
                     return defaultLines;
@@ -691,7 +688,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 packet.getPacket().getChatComponents().writeSafely(0, bossbar);
             }
         } catch (RuntimeException e) {
-            // TODO Catch 1.16 Hover 'contents' not being parsed correctly
+            // Catch 1.16 Hover 'contents' not being parsed correctly
+            // Has been fixed in newer versions of Spigot 1.16
             Triton.get().getLogger()
                     .logError(1, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
         }
@@ -943,6 +941,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                         } catch (InvocationTargetException e) {
                             main.getLogger().logError("Failed to send sign update packet: %1", e.getMessage());
+                            e.printStackTrace();
                         }
                     });
         }))));
@@ -1005,6 +1004,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
                 } catch (InvocationTargetException e) {
                     main.getLogger().logError("Failed to send entity update packet: %1", e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
@@ -1078,11 +1078,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     } catch (InvocationTargetException e) {
                                         main.getLogger().logError("Failed to send player entity update packet: %1", e
                                                 .getMessage());
+                                        e.printStackTrace();
                                     }
                                 }, 4L);
                             }
                         } catch (InvocationTargetException e) {
                             main.getLogger().logError("Failed to send player entity update packet: %1", e.getMessage());
+                            e.printStackTrace();
                         }
                     }
 
@@ -1098,6 +1100,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
         } catch (InvocationTargetException e) {
             main.getLogger().logError("Failed to send tab update packet: %1", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -1121,6 +1124,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
         } catch (InvocationTargetException e) {
             main.getLogger().logError("Failed to send bossbar update packet: %1", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -1137,6 +1141,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
             } catch (InvocationTargetException e) {
                 main.getLogger().logError("Failed to send scoreboard objective update packet: %1", e.getMessage());
+                e.printStackTrace();
             }
         });
 
@@ -1179,6 +1184,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
             } catch (InvocationTargetException e) {
                 main.getLogger().logError("Failed to send scoreboard team update packet: %1", e.getMessage());
+                e.printStackTrace();
             }
         });
     }
@@ -1205,6 +1211,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
                 main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
+                e.printStackTrace();
             }
         } else {
             PacketContainer container =
@@ -1221,6 +1228,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
                 main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
+                e.printStackTrace();
             }
         }
     }

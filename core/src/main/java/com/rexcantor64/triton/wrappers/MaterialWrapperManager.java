@@ -29,7 +29,7 @@ public class MaterialWrapperManager {
             }
         }
         Triton.get().getLogger()
-                .logError("Couldn't find a wrapper for this version! The plugin might not work as expected.");
+                .logError("Couldn't find a wrapper for this version! The plugin might not work as expected. Is it up-to-date?");
     }
 
     public Material getBannerMaterial() {
