@@ -1,15 +1,15 @@
 package com.rexcantor64.triton.terminal;
 
+import lombok.val;
 import net.md_5.bungee.api.ChatColor;
 import org.fusesource.jansi.Ansi;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ChatColorTerminalReplacer {
 
-    private final Map<ChatColor, String> replacements = new EnumMap(ChatColor.class);
-    private final ChatColor[] colors = ChatColor.values();
+    private final Map<ChatColor, String> replacements = new HashMap<>();
 
     ChatColorTerminalReplacer() {
         this.replacements
@@ -54,17 +54,11 @@ public class ChatColorTerminalReplacer {
 
     public String parseMessage(String message) {
         String result = message;
-        ChatColor[] var6;
-        int var5 = (var6 = this.colors).length;
 
-        for (int var4 = 0; var4 < var5; ++var4) {
-            ChatColor color = var6[var4];
-            if (this.replacements.containsKey(color)) {
-                result = result.replaceAll("(?i)" + color.toString(), this.replacements.get(color));
-            } else {
-                result = result.replaceAll("(?i)" + color.toString(), "");
-            }
+        for (val entry : this.replacements.entrySet()) {
+            result = result.replaceAll("(?i)" + entry.getKey().toString(), entry.getValue());
         }
+
         return result + Ansi.ansi().reset().toString();
     }
 
