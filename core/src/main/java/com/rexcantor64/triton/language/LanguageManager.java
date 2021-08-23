@@ -13,10 +13,7 @@ import lombok.val;
 import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,16 +62,19 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     public String getTextFromMain(@NonNull String code, @NonNull Object... args) {
         val langItems = this.textItems.get(this.getMainLanguage().getName());
         if (langItems == null)
-            return ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig().getMessage("error.message-not-found", code));
+            return ChatColor.translateAlternateColorCodes('&',
+                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
 
         val msg = langItems.get(code);
         if (msg == null)
-            return ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig().getMessage("error.message-not-found", code));
+            return ChatColor.translateAlternateColorCodes('&',
+                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
 
         return formatMessage(msg, args);
     }
 
     private String formatMessage(@NonNull String msg, @NonNull Object... args) {
+        // Loop backwards in order to replace %10 before %1 (for example)
         for (int i = args.length - 1; i >= 0; --i)
             msg = msg.replace("%" + (i + 1), String.valueOf(args[i]));
         return ChatColor.translateAlternateColorCodes('&', msg);
