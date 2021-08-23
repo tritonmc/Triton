@@ -17,6 +17,8 @@ public class Log4jInjector {
 
         var originalAppender = logger.getAppenders().get("TerminalConsole");
         if (originalAppender == null) originalAppender = logger.getAppenders().get("rewrite");
+        // Paper now uses an "Async" AppenderRef over the "rewrite" and "rewrite2" refs
+        if (originalAppender == null) originalAppender = logger.getAppenders().get("Async");
         if (originalAppender == null) {
             Triton.get().getLogger().logError("Failed to inject rewrite policy into Log4j. Terminal translation won't work properly.");
             return;
