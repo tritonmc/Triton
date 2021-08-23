@@ -1,6 +1,6 @@
 error:
   no-permission: "&cNo permission. Permission required: &4%1"
-  message-not-found: "ERROR 404: Message not found: '%1'!"
+  message-not-found: "ERROR 404: Message not found: '%1'! Args: %2"
   lang-not-found: "&cLanguage &4%1&c not found! &7&oNote: It's case sensitive. Use TAB to show all the available languages."
   player-not-found-use-uuid: "&cPlayer &4%1&c not found! Use UUID to search through offline players."
   bungee-reload-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'bungee' (or 'b'), 'server' (or 's') and 'all' (or 'a')."
