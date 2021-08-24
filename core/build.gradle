@@ -13,6 +13,11 @@ dependencies {
     compileOnly 'com.velocitypowered:velocity-api:1.1.3'
     annotationProcessor 'com.velocitypowered:velocity-api:1.1.3'
     compileOnly 'com.comphenix.protocol:ProtocolLib:4.7.0-SNAPSHOT'
+
+    // Adventure / MiniMessage
+    implementation 'net.kyori:adventure-text-serializer-gson:4.8.1'
+    implementation 'net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT'
+
     compileOnly 'me.clip:placeholderapi:2.10.6'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.13.2'
     compile 'org.slf4j:slf4j-nop:1.7.25'

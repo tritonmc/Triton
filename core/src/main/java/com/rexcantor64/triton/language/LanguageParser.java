@@ -10,6 +10,8 @@ import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.wrappers.legacy.HoverComponentWrapper;
 import lombok.val;
 import lombok.var;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -267,8 +269,20 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 componentResult = ComponentSerializer.parse(jsonInput);
             } catch (JsonParseException e) {
                 Triton.get().getLogger()
-                        .logError("Failed to parse JSON translation (%1): %2", jsonInput, e.getMessage());
+                        .logError("Failed to parse JSON translation: %1", jsonInput);
                 componentResult = TextComponent.fromLegacyText(jsonInput);
+                e.printStackTrace();
+            }
+        } else if (translatedResult.startsWith("[minimsg]")) {
+            val mmInput = translatedResult.substring(9);
+            try {
+                val textComponent = MiniMessage.get().parse(mmInput);
+                val jsonSerialized = GsonComponentSerializer.gson().serialize(textComponent);
+                componentResult = ComponentSerializer.parse(jsonSerialized);
+            } catch (JsonParseException | NullPointerException e) {
+                Triton.get().getLogger()
+                        .logError("Failed to parse Mini Message translation: %1", mmInput);
+                componentResult = TextComponent.fromLegacyText(mmInput);
                 e.printStackTrace();
             }
         } else {
