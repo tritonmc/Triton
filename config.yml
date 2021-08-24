@@ -3,7 +3,7 @@
 languages:
   # The language name. This will influence the language key in the translation files.
   # It's recommended to follow this syntax: xx_XX
-  # It's also not recommended to change this after someone has joined your server,
+  # It's also not recommended changing this after someone has joined your server,
   # as their language will reset to default.
   en_GB:
     # This is the encoded flag code to show up the banner.
@@ -14,7 +14,7 @@ languages:
     # The Minecraft code is the Minecraft language code. You can find a complete list here:
     # https://minecraft.gamepedia.com/Language
     minecraft-code: [ en_GB, en_AU, en_CA, en_NZ, en_PT, en_UD, en_US ]
-    # This display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
+    # The display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
     display-name: '&3English (UK)'
     # Use this to run commands on language change.
@@ -50,12 +50,12 @@ run-language-commands-on-join: false
 
 # When enabled, the plugin will set the player's Triton language to their game language every time.
 # By default, the plugin only does this when they join the server for the first time.
-# It it recommended to leave this off for user experience reasons.
+# It is recommended to leave this off for user experience reasons.
 # Ignored when bungeecord is enabled.
 force-client-locale-on-join: false
 
 # Automatically reload the plugin (equivalent to /twin reload) every X seconds.
-# Might be useful if you're editing the translations folder with symlinks or another program.
+# Might be useful if you're editing the translations' folder with symlinks or another program.
 # Set to -1 to disable (default)
 config-auto-refresh-interval: -1
 
@@ -121,7 +121,7 @@ storage:
     #  verifyServerCertificate: false
 
 # Here you can enable and disable certain features of the plugin.
-# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. This are used in the placeholders.
+# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.
 language-creation:
   chat:
@@ -215,7 +215,7 @@ language-creation:
     syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
-  # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
+  # Example (assuming you have the default values on your config and you've set disabled-line to 'disabled.line'):
   # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
   disabled-line: ''
   # Translate messages that go through console to the default language.
@@ -225,3 +225,8 @@ language-creation:
   # Should placeholders typed in chat by players be ignored?
   # Default is true
   prevent-placeholders-in-chat: true
+  # ADVANCED: DO NOT CHANGE UNLESS YOU KNOW WHAT YOU'RE DOING
+  # How many placeholders the plugin should try to translate before giving up.
+  # This prevents infinite loops where the 404 message has a missing placeholder.
+  # Default is 10
+  max-placeholders-in-message: 10

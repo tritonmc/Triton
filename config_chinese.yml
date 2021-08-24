@@ -227,3 +227,8 @@ language-creation:
   # 是否忽略玩家消息中发送的变量?
   # 默认为true(开启)
   prevent-placeholders-in-chat: true
+  # ADVANCED: DO NOT CHANGE UNLESS YOU KNOW WHAT YOU'RE DOING
+  # How many placeholders the plugin should try to translate before giving up.
+  # This prevents infinite loops where the 404 message has a missing placeholder.
+  # Default is 10
+  max-placeholders-in-message: 10
