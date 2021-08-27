@@ -140,7 +140,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
         BaseComponent[] result = null;
 
-        // Hot fix for Paper builds 472+
+        // Hot fix for 1.16 Paper builds 472+ (and 1.17+)
         StructureModifier<?> adventureModifier =
                 ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 

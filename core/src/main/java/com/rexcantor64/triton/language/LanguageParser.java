@@ -284,6 +284,9 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                         .logError("Failed to parse Mini Message translation: %1", mmInput);
                 componentResult = TextComponent.fromLegacyText(mmInput);
                 e.printStackTrace();
+            } catch (NoClassDefFoundError e) {
+                Triton.get().getLogger().logError("Failed to parse Mini Message translation because Mini Message is only available on PaperMC (or forks).");
+                componentResult = TextComponent.fromLegacyText(mmInput);
             }
         } else {
             componentResult = TextComponent.fromLegacyText(translatedResult);
