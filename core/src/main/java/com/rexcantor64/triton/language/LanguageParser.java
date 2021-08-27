@@ -199,11 +199,11 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             val placeholder = input.substring(i[2], i[3]);
             val argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
-                if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
-                        .equals(Triton.get().getConf().getDisabledLine()))
+                val code = AdvancedComponent.stripFormatting(placeholder);
+                if (!Triton.get().getConf().getDisabledLine().isEmpty() &&
+                        code.equals(Triton.get().getConf().getDisabledLine()))
                     return null;
-                val result = parseTritonTranslation(Triton.get().getLanguageManager()
-                        .getText(language, ChatColor.stripColor(placeholder)));
+                val result = parseTritonTranslation(Triton.get().getLanguageManager().getText(language, code));
                 advancedComponent.getComponents().putAll(result.getComponents());
                 advancedComponent.getHovers().putAll(result.getHovers());
                 advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
@@ -212,7 +212,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 input = builder.toString();
                 continue;
             }
-            val code = ChatColor.stripColor(placeholder.substring(0, argsIndex[0]));
+            val code = AdvancedComponent.stripFormatting(placeholder.substring(0, argsIndex[0]));
             if (!Triton.get().getConf().getDisabledLine().isEmpty() && code
                     .equals(Triton.get().getConf().getDisabledLine()))
                 return null;

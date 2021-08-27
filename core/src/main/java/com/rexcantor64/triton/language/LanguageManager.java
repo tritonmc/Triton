@@ -50,6 +50,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String getText(@NonNull String language, @NonNull String code, @NonNull Object... args) {
+        System.out.println("code = " + code);
         val langItems = this.textItems.get(language);
         if (langItems == null) return getTextFromMain(code, args);
 

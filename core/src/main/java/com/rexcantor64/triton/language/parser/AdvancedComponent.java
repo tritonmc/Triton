@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class AdvancedComponent {
 
+    private static Pattern FORMATTING_STRIP_PATTERN = Pattern.compile("\\uE400\\d[\\w-]{36}|\\uE500[\\w-]{36}|\\uE401|\\uE501");
     @Getter
     private String text;
     @Getter
@@ -23,6 +25,10 @@ public class AdvancedComponent {
     @Getter
     private HashMap<String, HoverEvent> hovers = new HashMap<>();
 
+    public static String stripFormatting(String str) {
+        str = ChatColor.stripColor(str);
+        return FORMATTING_STRIP_PATTERN.matcher(str).replaceAll("");
+    }
 
     public static AdvancedComponent fromBaseComponent(BaseComponent... components) {
         return fromBaseComponent(false, components);
