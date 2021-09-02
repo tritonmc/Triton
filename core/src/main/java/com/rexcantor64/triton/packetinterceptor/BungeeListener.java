@@ -83,6 +83,17 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         return true;
     }
 
+    private boolean handleSubtitle(DefinedPacket packet) {
+        Subtitle p = (Subtitle) packet;
+        if (p.getText() == null) return true;
+        BaseComponent[] result = Triton.get().getLanguageParser().parseComponent(owner,
+                Triton.get().getConf().getTitleSyntax(), ComponentSerializer.parse(p.getText()));
+        if (result == null)
+            return false;
+        p.setText(ComponentSerializer.toString(result));
+        return true;
+    }
+
     private void handleBossbar(DefinedPacket packet) {
         BossBar p = (BossBar) packet;
         UUID uuid = p.getUuid();
@@ -125,6 +136,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 }
             } else if (Triton.get().getConf().isTitles() && packet instanceof Title) {
                 if (!handleTitle(packet)) {
+                    out.add(false);
+                    return;
+                }
+            } else if (Triton.get().getConf().isTitles() && packet instanceof Subtitle) {
+                if (!handleSubtitle(packet)) {
                     out.add(false);
                     return;
                 }
