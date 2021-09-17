@@ -2,9 +2,10 @@ package com.rexcantor64.triton.placeholderapi;
 
 import com.rexcantor64.triton.SpigotMLP;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.entity.Player;
 
-public class TritonPlaceholderHook extends PlaceholderExpansion {
+public class TritonPlaceholderHook extends PlaceholderExpansion implements Relational {
 
     private final SpigotMLP triton;
 
@@ -37,5 +38,10 @@ public class TritonPlaceholderHook extends PlaceholderExpansion {
         if (params == null) return null;
         if (p == null) return triton.getLanguageManager().getTextFromMain(params);
         return triton.getLanguageManager().getText(triton.getPlayerManager().get(p.getUniqueId()), params);
+    }
+
+    @Override
+    public String onPlaceholderRequest(Player ignore, Player viewer, String params) {
+        return onPlaceholderRequest(viewer, params);
     }
 }
