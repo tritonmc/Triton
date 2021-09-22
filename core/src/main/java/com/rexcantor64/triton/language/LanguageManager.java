@@ -39,8 +39,14 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
             String replacement = entry.getValue().getMessageRegex(language);
             if (replacement == null) replacement = entry.getValue().getMessageRegex(mainLanguage.getName());
             if (replacement == null) continue;
-            Matcher matcher = entry.getKey().matcher(input);
-            input = matcher.replaceAll(ChatColor.translateAlternateColorCodes('&', replacement));
+            try {
+                Matcher matcher = entry.getKey().matcher(input);
+                input = matcher.replaceAll(ChatColor.translateAlternateColorCodes('&', replacement));
+            } catch (IndexOutOfBoundsException e) {
+                Triton.get().getLogger().logError(
+                        "Failed to translate using patterns: translation has more placeholders than regex groups. Translation key: %1",
+                        entry.getValue().getKey());
+            }
         }
         return input;
     }
