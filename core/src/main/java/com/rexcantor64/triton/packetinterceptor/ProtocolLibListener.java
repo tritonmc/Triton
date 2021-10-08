@@ -841,7 +841,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         try {
             languagePlayer =
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
-        } catch (Exception ignore) {
+        } catch (Exception e) {
             Triton.get().getLogger()
                     .logWarning(1, "Failed to translate packet because UUID of the player is unknown (because " +
                             "the player hasn't joined yet).");
