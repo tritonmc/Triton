@@ -845,6 +845,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             Triton.get().getLogger()
                     .logWarning(1, "Failed to translate packet because UUID of the player is unknown (because " +
                             "the player hasn't joined yet).");
+            if (Triton.get().getConfig().getLogLevel() >= 1)
+                e.printStackTrace();
             return;
         }
         if (languagePlayer == null) {
