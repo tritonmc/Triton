@@ -23,7 +23,15 @@ our [Discord](https://triton.rexcantor64.com/discord)!
 Looking for older API versions? Take a look at
 the [download page](https://github.com/diogotcorreia/Triton/wiki/Downloads)!
 
-## Plugin source
+## Compiling from Source
 
-This repository only contains the API for Triton.  
-For the full source code, checkout [tritonmc/plugin-core](https://github.com/tritonmc/plugin-core).
+Triton is still a premium plugin and if you're going to use it,
+it's advised that you purchase it from Spigot or Polymart, as stated above.  
+However, you're still free to compile it yourself if you have the skills to do so.  
+No support will be given to self-compiled versions.
+
+To compile, clone this repository and run the following command:
+
+```sh
+./gradlew shadowJar
+```
