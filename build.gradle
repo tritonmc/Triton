@@ -56,7 +56,7 @@ subprojects {
 }
 
 dependencies {
-    compile project(path: ":core")
+    implementation project(path: ":core")
 }
 
 bukkit {
