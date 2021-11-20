@@ -38,7 +38,6 @@ allprojects {
             name 'CodeMC'
             url 'https://repo.codemc.org/repository/maven-public'
         }
-        maven { url 'https://jitpack.io' }
         maven {
             name 'velocity'
             url 'https://nexus.velocitypowered.com/repository/maven-public/'
@@ -48,8 +47,6 @@ allprojects {
 
 subprojects {
     dependencies {
-        implementation 'com.github.tritonmc:Triton:v3.4.0' // Triton API
-
         compileOnly 'org.projectlombok:lombok:1.18.12'
         annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
