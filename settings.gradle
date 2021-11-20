@@ -1,0 +1,5 @@
+rootProject.name = 'Triton'
+include 'spigot-legacy'
+include 'v1_13'
+include 'core'
+

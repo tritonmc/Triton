@@ -1,0 +1,136 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.3.0'
+    id 'net.minecrell.plugin-yml.bungee' version '0.3.0'
+}
+
+String pluginDescription = project.property("pluginDescription")
+String pluginWebsite = project.property("pluginWebsite")
+String pluginAuthor = project.property("pluginAuthor")
+String pluginApiVersion = project.property("pluginApiVersion")
+String pluginName = project.property("pluginName")
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'net.minecrell.plugin-yml.bukkit'
+apply plugin: 'net.minecrell.plugin-yml.bungee'
+group 'com.rexcantor64.triton'
+
+allprojects {
+    apply plugin: 'java'
+    version '3.5.4'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+            content {
+                includeGroup 'org.bukkit'
+                includeGroup 'org.spigotmc'
+            }
+        }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://repo.dmulloy2.net/nexus/repository/public/' }
+        maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+        maven {
+            name 'CodeMC'
+            url 'https://repo.codemc.org/repository/maven-public'
+        }
+        maven { url 'https://jitpack.io' }
+        maven {
+            name 'velocity'
+            url 'https://nexus.velocitypowered.com/repository/maven-public/'
+        }
+    }
+}
+
+subprojects {
+    dependencies {
+        implementation 'com.github.tritonmc:Triton:v3.4.0' // Triton API
+
+        compileOnly 'org.projectlombok:lombok:1.18.12'
+        annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.12'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    }
+}
+
+dependencies {
+    compile project(path: ":core")
+}
+
+bukkit {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    website = pluginWebsite
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
+    apiVersion = pluginApiVersion
+
+    depend = ['ProtocolLib']
+    softDepend = ['PlaceholderAPI']
+
+    commands {
+        twin {
+            description = 'Upload and download your config to/from the Triton Web INterface.'
+            usage = '/twin [code]'
+        }
+    }
+
+    permissions {
+        'triton.getflag' {
+            setDefault('OP')
+        }
+        'triton.setlanguage' {
+            setDefault('TRUE')
+        }
+        'triton.setlanguage.others' {
+            setDefault('OP')
+        }
+        'triton.openselector' {
+            setDefault('TRUE')
+        }
+        'triton.reload' {
+            setDefault('OP')
+        }
+        'triton.help' {
+            setDefault('TRUE')
+        }
+        'triton.sign' {
+            setDefault('OP')
+        }
+        'triton.database' {
+            setDefault('OP')
+        }
+        'triton.info' {
+            setDefault('TRUE')
+        }
+        'twin.upload' {
+            setDefault('OP')
+        }
+        'twin.download' {
+            setDefault('OP')
+        }
+    }
+}
+
+bungee {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.BungeePlugin'
+}
+
+shadowJar {
+    getArchiveBaseName().set(rootProject.name)
+    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
+    //relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
+    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.shaded.minimessage'
+    relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
+    relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
+}
