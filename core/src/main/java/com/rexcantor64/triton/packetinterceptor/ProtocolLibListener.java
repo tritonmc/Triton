@@ -2,12 +2,23 @@ package com.rexcantor64.triton.packetinterceptor;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.events.ListenerOptions;
+import com.comphenix.protocol.events.ListeningWhitelist;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.*;
+import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.BukkitConverters;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
@@ -22,6 +33,7 @@ import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
@@ -47,7 +59,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,7 +84,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
-    private SpigotMLP main;
+    private final SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
 
     public ProtocolLibListener(SpigotMLP main) {
@@ -94,13 +114,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         setupPacketHandlers();
     }
 
+    @Override
+    public Plugin getPlugin() {
+        return main.getLoader();
+    }
+
     private void setupPacketHandlers() {
         packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
-        if (main.getMcVersion() >= 17) { // Title packet split on 1.17
+        if (main.getMcVersion() >= 17) {
+            // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
             packetHandlers.put(PacketType.Play.Server.SET_SUBTITLE_TEXT, this::handleTitle);
 
-            // new actionbar packet
+            // New actionbar packet
             packetHandlers.put(PacketType.Play.Server.SET_ACTION_BAR_TEXT, this::handleActionbar);
         } else {
             packetHandlers.put(PacketType.Play.Server.TITLE, this::handleTitle);
@@ -130,6 +156,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (getMCVersion() >= 14)
             packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, this::handleMerchantItems);
     }
+
+    /* PACKET HANDLERS */
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         boolean ab = isActionbar(packet.getPacket());
@@ -830,6 +858,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getChatComponents().writeSafely(0, displayName);
     }
 
+    /* PROTOCOL LIB */
+
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
@@ -888,6 +918,22 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                 .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
         }
     }
+
+    @Override
+    public ListeningWhitelist getSendingWhitelist() {
+        val edgeCases = Stream.of(PacketType.Login.Server.SUCCESS, PacketType.Status.Server.SERVER_INFO);
+
+        val types = Stream.concat(packetHandlers.keySet().stream(), edgeCases).collect(Collectors.toList());
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).mergeOptions(ListenerOptions.ASYNC).highest().build();
+    }
+
+    @Override
+    public ListeningWhitelist getReceivingWhitelist() {
+        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS)
+                .highest().build();
+    }
+
+    /* REFRESH */
 
     @Override
     public void refreshSigns(SpigotLanguagePlayer player) {
@@ -1235,6 +1281,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
     }
 
+    /* UTILITIES */
+
     private void addEntity(World world, int id, String displayName, SpigotLanguagePlayer lp) {
         if (!lp.getEntitiesMap().containsKey(world))
             lp.getEntitiesMap().put(world, new HashMap<>());
@@ -1249,25 +1297,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (!lp.getPlayersMap().containsKey(world))
             lp.getPlayersMap().put(world, new HashMap<>());
         lp.getPlayersMap().get(world).put(id, player);
-    }
-
-    @Override
-    public ListeningWhitelist getSendingWhitelist() {
-        val edgeCases = Stream.of(PacketType.Login.Server.SUCCESS, PacketType.Status.Server.SERVER_INFO);
-
-        val types = Stream.concat(packetHandlers.keySet().stream(), edgeCases).collect(Collectors.toList());
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).mergeOptions(ListenerOptions.ASYNC).highest().build();
-    }
-
-    @Override
-    public ListeningWhitelist getReceivingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS)
-                .highest().build();
-    }
-
-    @Override
-    public Plugin getPlugin() {
-        return main.getLoader();
     }
 
     private boolean isActionbar(PacketContainer container) {
@@ -1306,8 +1335,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
     }
 
+    /**
+     * Translates an item stack in one of two ways:
+     * - if the item has a CraftBukkit handler, the item is translated through its NBT tag;
+     * - otherwise, Bukkit's ItemMeta API is used instead.
+     * <p>
+     * Special attention is given to Shulker Boxes (the names of the items inside them are also translated for preview purposes)
+     * and to Written Books (their text is also translated).
+     *
+     * @param item           The item to translate. Might be mutated
+     * @param languagePlayer The language player to translate for
+     * @param translateBooks Whether it should translate written books
+     * @return The translated item stack, which may or may not be the same as the given parameter
+     */
     private ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
-        if (item == null) return null;
+        if (item == null || item.getType() == Material.AIR) return null;
         NbtCompound compound = null;
         try {
             val nbtTagOptional = NbtFactory.fromItemOptional(item);
@@ -1317,6 +1359,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             // This means the item is just an ItemStack and not a CraftItemStack
             // However we can still translate stuff using the Bukkit ItemMeta API instead of NBT tags
         }
+        // Translate the contents of shulker boxes
         if (compound != null && compound.containsKey("BlockEntityTag")) {
             NbtCompound blockEntityTag = compound.getCompoundOrDefault("BlockEntityTag");
             if (blockEntityTag.containsKey("Items")) {
@@ -1328,48 +1371,17 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         NbtCompound invItem = NbtFactory.asCompound(base);
                         if (!invItem.containsKey("tag")) continue;
                         NbtCompound tag = invItem.getCompoundOrDefault("tag");
-                        if (!tag.containsKey("display")) continue;
-                        NbtCompound display = tag.getCompoundOrDefault("display");
-                        if (!display.containsKey("Name")) continue;
-                        String name = display.getStringOrDefault("Name");
-                        if (getMCVersion() >= 13) {
-                            BaseComponent[] result = main.getLanguageParser()
-                                    .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
-                                            .parse(name));
-                            if (result == null)
-                                display.remove("Name");
-                            else
-                                display.put("Name", ComponentSerializer.toString(result));
-                        } else {
-                            String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
-                            if (result == null)
-                                display.remove("Name");
-                            else
-                                display.put("Name", result);
-                        }
+                        translateNbtItem(tag, languagePlayer, false);
                     }
                 }
             }
         }
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta.hasDisplayName())
-                meta.setDisplayName(translate(meta.getDisplayName(),
-                        languagePlayer, main.getConf().getItemsSyntax()));
-            if (meta.hasLore()) {
-                List<String> newLore = new ArrayList<>();
-                for (String lore : meta.getLore()) {
-                    String result = translate(lore, languagePlayer,
-                            main.getConf().getItemsSyntax());
-                    if (result != null)
-                        newLore.addAll(Arrays.asList(result.split("\n")));
-                }
-                meta.setLore(newLore);
-            }
-            item.setItemMeta(meta);
-            // If the compound is null, the item is not a CraftItemStack, therefore it doesn't have NBT data
-            if (compound != null && translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
-                compound = NbtFactory.asCompound(NbtFactory.fromItemTag(item));
+        // If the compound is null, the item is not a CraftItemStack, therefore it doesn't have NBT data
+        if (compound != null) {
+            // try to translate name and lore
+            translateNbtItem(compound, languagePlayer, true);
+            // translate the content of written books
+            if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main.getConf().isBooks()) {
                 if (compound.containsKey("pages")) {
                     NbtList<String> pages = compound.getList("pages");
                     Collection<NbtBase<String>> pagesCollection = pages.asCollection();
@@ -1395,7 +1407,77 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
             }
         }
+        // If the item is not a craft item, use the Bukkit API
+        if (compound == null && item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasDisplayName())
+                meta.setDisplayName(translate(meta.getDisplayName(),
+                        languagePlayer, main.getConf().getItemsSyntax()));
+            if (meta.hasLore()) {
+                List<String> newLore = new ArrayList<>();
+                for (String lore : meta.getLore()) {
+                    String result = translate(lore, languagePlayer,
+                            main.getConf().getItemsSyntax());
+                    if (result != null)
+                        newLore.addAll(Arrays.asList(result.split("\n")));
+                }
+                meta.setLore(newLore);
+            }
+            item.setItemMeta(meta);
+        }
         return item;
+    }
+
+    /**
+     * Translates an item's name (and optionally lore) by their NBT tag, mutating the given compound
+     *
+     * @param compound       The NBT tag of the item
+     * @param languagePlayer The language player to translate for
+     * @param translateLore  Whether to attempt to translate the lore of the item
+     */
+    private void translateNbtItem(NbtCompound compound, LanguagePlayer languagePlayer, boolean translateLore) {
+        if (!compound.containsKey("display")) return;
+        NbtCompound display = compound.getCompoundOrDefault("display");
+        if (display.containsKey("Name")) {
+            String name = display.getStringOrDefault("Name");
+            if (getMCVersion() >= 13) {
+                BaseComponent[] result = main.getLanguageParser()
+                        .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                .parse(name));
+                if (result == null)
+                    display.remove("Name");
+                else
+                    display.put("Name", ComponentSerializer.toString(result));
+            } else {
+                String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
+                if (result == null)
+                    display.remove("Name");
+                else
+                    display.put("Name", result);
+            }
+        }
+        if (translateLore && display.containsKey("Lore")) {
+            NbtList<String> loreNbt = display.getListOrDefault("Lore");
+
+            List<String> newLore = new ArrayList<>();
+            for (String lore : loreNbt) {
+                if (getMCVersion() >= 13) {
+                    BaseComponent[] result = main.getLanguageParser()
+                            .parseComponent(languagePlayer, main.getConf().getItemsSyntax(), ComponentSerializer
+                                    .parse(lore));
+                    if (result != null) {
+                        List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
+                        newLore.addAll(splitLoreLines.stream().map(ComponentSerializer::toString).collect(Collectors.toList()));
+                    }
+                } else {
+                    String result = translate(lore, languagePlayer,
+                            main.getConf().getItemsSyntax());
+                    if (result != null)
+                        newLore.addAll(Arrays.asList(result.split("\n")));
+                }
+            }
+            display.put(NbtFactory.ofList("Lore", newLore));
+        }
     }
 
     private String[] getSignLinesFromLocation(SignLocation loc) {
@@ -1408,6 +1490,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return ((Sign) state).getLines();
     }
 
+    /**
+     * BossBar packet Action wrapper
+     */
     public enum Action {
         ADD, REMOVE, UPDATE_PCT, UPDATE_NAME, UPDATE_STYLE, UPDATE_PROPERTIES
     }

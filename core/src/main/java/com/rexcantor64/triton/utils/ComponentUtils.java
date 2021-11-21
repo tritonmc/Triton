@@ -3,7 +3,10 @@ package com.rexcantor64.triton.utils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -64,6 +67,11 @@ public class ComponentUtils {
         } catch (NoSuchMethodError ignore) {
             // Ignore, it's an outdated server
         }
+        try {
+            target.setFont(origin.getFontRaw());
+        } catch (NoSuchMethodError ignore) {
+            // Ignore, it's an outdated server
+        }
     }
 
     public static ChatColor getColorFromBaseComponent(BaseComponent bc) {
@@ -79,11 +87,15 @@ public class ComponentUtils {
     }
 
     public static boolean haveSameFormatting(BaseComponent c1, BaseComponent c2) {
-        String insertion1 = null;
-        String insertion2 = null;
         try {
-            insertion1 = c1.getInsertion();
-            insertion2 = c2.getInsertion();
+            if (!Objects.equals(c1.getInsertion(), c2.getInsertion()))
+                return false;
+        } catch (NoSuchMethodError ignore) {
+            // Ignore, it's an outdated server
+        }
+        try {
+            if (!Objects.equals(c1.getFontRaw(), c2.getFontRaw()))
+                return false;
         } catch (NoSuchMethodError ignore) {
             // Ignore, it's an outdated server
         }
@@ -93,9 +105,58 @@ public class ComponentUtils {
                 c1.isUnderlinedRaw() == c2.isUnderlinedRaw() &&
                 c1.isStrikethroughRaw() == c2.isStrikethroughRaw() &&
                 c1.isObfuscatedRaw() == c2.isObfuscatedRaw() &&
-                Objects.equals(insertion1, insertion2) &&
                 Objects.equals(c1.getHoverEvent(), c2.getHoverEvent()) &&
                 Objects.equals(c1.getClickEvent(), c2.getClickEvent());
+    }
+
+    /**
+     * Given BaseComponents, splits them by new lines, preserving style and hierarchy.
+     *
+     * @param comps A list of BaseComponent
+     * @return A list of the split BaseComponent lists
+     */
+    public static List<List<BaseComponent>> splitByNewLine(List<BaseComponent> comps) {
+        List<List<BaseComponent>> split = new LinkedList<>();
+        List<BaseComponent> acc = new LinkedList<>();
+        for (BaseComponent comp : comps) {
+            if (!(comp instanceof TextComponent)) {
+                acc.add(comp);
+                continue;
+            }
+            TextComponent textComponent = (TextComponent) comp;
+            String[] textSplit = textComponent.getText().split("\n");
+            for (int i = 0; i < textSplit.length; ++i) {
+                TextComponent newSplit = new TextComponent(textSplit[i]);
+                copyFormatting(textComponent, newSplit);
+                acc.add(newSplit);
+                if (i == textSplit.length - 1) {
+                    // the last split keeps the extras
+                    if (hasExtra(textComponent)) {
+                        List<List<BaseComponent>> extraSplit = splitByNewLine(textComponent.getExtra());
+                        for (int j = 0; j < extraSplit.size(); ++j) {
+                            if (j == 0) {
+                                // the first split add to the parent element
+                                extraSplit.get(i).forEach(newSplit::addExtra);
+                            } else {
+                                // flush accumulator before adding new sibling
+                                split.add(acc);
+                                acc = new LinkedList<>();
+                                BaseComponent extraWrapper = new TextComponent(extraSplit.get(j).toArray(new BaseComponent[0]));
+                                copyFormatting(textComponent, extraWrapper);
+                                acc.add(extraWrapper);
+                            }
+                        }
+                    }
+                } else {
+                    // flush accumulator
+                    split.add(acc);
+                    acc = new LinkedList<>();
+                }
+            }
+        }
+        // flush accumulator
+        if (acc.size() > 0) split.add(acc);
+        return split;
     }
 
 }

@@ -6,6 +6,10 @@ plugins {
 apply plugin: 'net.kyori.blossom'
 group 'com.rexcantor64.triton'
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT'
     compileOnly 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
@@ -37,6 +41,12 @@ dependencies {
     implementation project(path: ":api")
     implementation project(path: ":spigot-legacy")
     implementation project(path: ":v1_13")
+
+    // Test dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    testImplementation 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
 }
 
 blossom {
