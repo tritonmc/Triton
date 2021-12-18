@@ -11,14 +11,7 @@ import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.comphenix.protocol.wrappers.BukkitConverters;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedWatchableObject;
+import com.comphenix.protocol.wrappers.*;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
@@ -30,12 +23,14 @@ import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
+import com.rexcantor64.triton.packetinterceptor.protocollib.SignPacketHandler;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.RegistryUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -80,9 +75,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> BOSSBAR_UPDATE_TITLE_ACTION_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
-    private Class<?> ADVENTURE_COMPONENT_CLASS;
+    private final Class<?> ADVENTURE_COMPONENT_CLASS;
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
+
+    private final SignPacketHandler signPacketHandler = new SignPacketHandler();
 
     private final SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
@@ -102,11 +99,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 NMSUtils.getNMSClass("ContainerPlayer");
         BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? NMSUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
 
-        try {
-            ADVENTURE_COMPONENT_CLASS = Class.forName("net.kyori.adventure.text.Component");
-        } catch (ClassNotFoundException e) {
-            ADVENTURE_COMPONENT_CLASS = null;
-        }
+        ADVENTURE_COMPONENT_CLASS = NMSUtils.getClassOrNull("net.kyori.adventure.text.Component");
 
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
@@ -145,11 +138,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, this::handleScoreboardTeam);
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
         }
-        if (existsSignUpdatePacket()) packetHandlers.put(PacketType.Play.Server.UPDATE_SIGN, this::handleUpdateSign);
-        else {
-            packetHandlers.put(PacketType.Play.Server.MAP_CHUNK, this::handleMapChunk);
-            packetHandlers.put(PacketType.Play.Server.TILE_ENTITY_DATA, this::handleTileEntityData);
-        }
+        signPacketHandler.registerPacketTypes(packetHandlers);
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
         if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
@@ -540,103 +529,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
-    private void handleUpdateSign(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isSigns()) return;
-
-        val newPacket = packet.getPacket().shallowClone();
-        val pos = newPacket.getBlockPositionModifier().readSafely(0);
-        val linesModifier = newPacket.getChatComponentArrays();
-
-        val l = new SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(), pos.getZ());
-        String[] lines = main.getLanguageManager().getSign(languagePlayer, l, () -> {
-            val defaultLinesWrapped = linesModifier.readSafely(0);
-            val defaultLines = new String[4];
-            for (int i = 0; i < 4; i++) {
-                try {
-                    defaultLines[i] = AdvancedComponent
-                            .fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
-                            .getTextClean();
-                } catch (Exception e) {
-                    Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                    e.printStackTrace();
-                }
-            }
-            return defaultLines;
-        });
-        if (lines == null) return;
-        val comps = new WrappedChatComponent[4];
-        for (int i = 0; i < 4; i++)
-            comps[i] =
-                    WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-        linesModifier.writeSafely(0, comps);
-        packet.setPacket(newPacket);
-    }
-
-    private void handleTileEntityData(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isSigns()) return;
-
-        if (packet.getPacket().getIntegers().readSafely(0) == 9) {
-            val newPacket = packet.getPacket().deepClone();
-            val nbt = NbtFactory.asCompound(newPacket.getNbtModifier().readSafely(0));
-            val l = new SignLocation(packet.getPlayer().getWorld().getName(),
-                    nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-            String[] sign = main.getLanguageManager().getSign(languagePlayer, l, () -> {
-                val defaultLines = new String[4];
-                for (int i = 0; i < 4; i++) {
-                    try {
-                        val nbtLine = nbt.getStringOrDefault("Text" + (i + 1));
-                        if (nbtLine != null)
-                            defaultLines[i] = AdvancedComponent
-                                    .fromBaseComponent(ComponentSerializer.parse(nbtLine))
-                                    .getTextClean();
-                    } catch (Exception e) {
-                        Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                        e.printStackTrace();
-                    }
-                }
-                return defaultLines;
-            });
-            if (sign != null) {
-                for (int i = 0; i < 4; i++)
-                    nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
-                packet.setPacket(newPacket);
-            }
-        }
-    }
-
-    private void handleMapChunk(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isSigns()) return;
-
-        val entities = packet.getPacket().getListNbtModifier().readSafely(0);
-        for (val entity : entities) {
-            val nbt = NbtFactory.asCompound(entity);
-            if (nbt.getString("id").equals(getMCVersion() <= 10 ? "Sign" : "minecraft:sign")) {
-                val l = new SignLocation(packet.getPlayer().getWorld().getName(),
-                        nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                String[] sign = main.getLanguageManager().getSign(languagePlayer, l, () -> {
-                    val defaultLines = new String[4];
-                    for (int i = 0; i < 4; i++) {
-                        try {
-                            val nbtLine = nbt.getStringOrDefault("Text" + (i + 1));
-                            if (nbtLine != null)
-                                defaultLines[i] = AdvancedComponent
-                                        .fromBaseComponent(ComponentSerializer.parse(nbtLine))
-                                        .getTextClean();
-                        } catch (Exception e) {
-                            Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                            e.printStackTrace();
-                        }
-                    }
-                    return defaultLines;
-                });
-
-                if (sign != null)
-                    for (int i = 0; i < 4; i++)
-                        nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
-            }
-        }
-    }
-
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isItems()) return;
 
@@ -937,62 +829,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshSigns(SpigotLanguagePlayer player) {
-        val storage = main.getStorage();
-        val filterItems = Triton.get() instanceof SpigotMLP && Triton.get().getConfig().isBungeecord() && !(Triton.get()
-                .getStorage() instanceof LocalStorage);
-        val serverName = Triton.get().getConfig().getServerName();
-
-        storage.getCollections().values().forEach((collection -> collection.getItems().forEach((item -> {
-            if (!(item instanceof LanguageSign)) return;
-            val sign = (LanguageSign) item;
-
-            if (sign.getLocations() == null) return;
-
-            val lines = Optional.ofNullable(sign.getLines(player.getLang().getName()))
-                    .orElse(sign.getLines(main.getLanguageManager().getMainLanguage().getName()));
-            if (lines == null) return;
-
-            sign.getLocations().stream()
-                    .filter((loc) -> !filterItems || loc.getServer() == null || serverName.equals(loc.getServer()))
-                    .forEach(location -> {
-                        val resultLines = main.getLanguageManager()
-                                .formatLines(player.getLang()
-                                        .getName(), lines, () -> getSignLinesFromLocation(location));
-
-                        val packet = ProtocolLibrary.getProtocolManager()
-                                .createPacket(PacketType.Play.Server.UPDATE_SIGN);
-
-                        packet.getBlockPositionModifier().writeSafely(0,
-                                new BlockPosition(location.getX(), location.getY(), location.getZ()));
-
-                        if (existsSignUpdatePacket()) {
-                            val comps = new WrappedChatComponent[4];
-                            for (var i = 0; i < 4; ++i)
-                                comps[i] =
-                                        WrappedChatComponent.fromJson(ComponentSerializer
-                                                .toString(TextComponent.fromLegacyText(resultLines[i])));
-                            packet.getChatComponentArrays().writeSafely(0, comps);
-                        } else {
-                            packet.getIntegers().writeSafely(0, 9);
-                            val compound = NbtFactory.ofCompound(null);
-                            compound.put("x", location.getX());
-                            compound.put("y", location.getY());
-                            compound.put("z", location.getZ());
-                            compound.put("id", getMCVersion() <= 10 ? "Sign" : "minecraft:sign");
-                            for (var i = 0; i < 4; ++i)
-                                compound.put("Text" + (i + 1),
-                                        ComponentSerializer.toString(TextComponent.fromLegacyText(resultLines[i])));
-                            packet.getNbtModifier().writeSafely(0, compound);
-                        }
-
-                        try {
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
-                        } catch (InvocationTargetException e) {
-                            main.getLogger().logError("Failed to send sign update packet: %1", e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
-        }))));
+        signPacketHandler.refreshSignsForPlayer(player);
     }
 
     @Override
@@ -1478,16 +1315,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
             display.put(NbtFactory.ofList("Lore", newLore));
         }
-    }
-
-    private String[] getSignLinesFromLocation(SignLocation loc) {
-        val w = Bukkit.getWorld(loc.getWorld());
-        if (w == null) return new String[4];
-        val l = new Location(w, loc.getX(), loc.getY(), loc.getZ());
-        val state = l.getBlock().getState();
-        if (!(state instanceof Sign))
-            return new String[4];
-        return ((Sign) state).getLines();
     }
 
     /**

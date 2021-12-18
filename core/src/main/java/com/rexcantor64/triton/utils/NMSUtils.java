@@ -47,6 +47,15 @@ public class NMSUtils {
         return null;
     }
 
+    public static Object getStaticField(Class<?> clazz, String fieldName) {
+        try {
+            return clazz.getField(fieldName).get(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static Object getDeclaredField(Object object, String fieldName) {
         return getDeclaredField(object, fieldName, false);
     }
@@ -134,6 +143,14 @@ public class NMSUtils {
             return Class.forName(className);
         } catch (Exception ex) {
             ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Class<?> getClassOrNull(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
             return null;
         }
     }
