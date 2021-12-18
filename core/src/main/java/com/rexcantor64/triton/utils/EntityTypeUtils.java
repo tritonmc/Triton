@@ -19,8 +19,16 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
+            if (Triton.get().getMcVersion() >= 18) {
+                Class<?> registryClass = MinecraftReflection.getIRegistry();
+                Object entityTypeFinder = registryClass.getField("Z").get(null);
+
+                Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("d").invoke(entityTypeFinder);
+                return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(entitySet.toArray()[id].toString()
+                        .replace("minecraft:", "")));
+            }
             if (Triton.get().getMcVersion() >= 17) {
-                Class<?> registryClass = NMSUtils.getClass("net.minecraft.core.IRegistry");
+                Class<?> registryClass = MinecraftReflection.getIRegistry();
                 Object entityTypeFinder = registryClass.getField("Y").get(null);
 
                 Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("keySet").invoke(entityTypeFinder);
@@ -28,7 +36,7 @@ public class EntityTypeUtils {
                         .replace("minecraft:", "")));
             }
             if (Triton.get().getMcVersion() >= 13) {
-                Class<?> registryClass = MinecraftReflection.getMinecraftClass("IRegistry");
+                Class<?> registryClass = MinecraftReflection.getIRegistry();
                 Object entityTypeFinder = registryClass.getField("ENTITY_TYPE").get(null);
                 Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("keySet").invoke(entityTypeFinder);
                 return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(entitySet.toArray()[id].toString()
