@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ComponentUtils {
 
@@ -157,6 +159,29 @@ public class ComponentUtils {
         // flush accumulator
         if (acc.size() > 0) split.add(acc);
         return split;
+    }
+
+    /**
+     * Given a Stream of BaseComponents, ensure they're not italic by setting italic to false if it's not set.
+     * This is useful for translating item names and lores, where Minecraft makes them static by default.
+     * This does not do anything if the given component does not have any formatting whatsoever,
+     * as to preserve the default Minecraft behaviour.
+     *
+     * @param baseComponents The components to check for italic
+     * @return A list of the same components after they've been modified
+     */
+    public static List<BaseComponent> ensureNotItalic(Stream<BaseComponent> baseComponents) {
+        return baseComponents.peek(comp -> {
+            if (comp.isItalicRaw() == null && hasAnyFormatting(comp)) {
+                comp.setItalic(false);
+            }
+        }).collect(Collectors.toList());
+    }
+
+    private static boolean hasAnyFormatting(BaseComponent component) {
+        return component.hasFormatting() ||
+                (component.getExtra() != null &&
+                        component.getExtra().stream().anyMatch(ComponentUtils::hasAnyFormatting));
     }
 
 }

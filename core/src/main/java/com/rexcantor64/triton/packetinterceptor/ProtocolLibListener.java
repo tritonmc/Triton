@@ -1286,7 +1286,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 if (result == null)
                     display.remove("Name");
                 else
-                    display.put("Name", ComponentSerializer.toString(result));
+                    display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
             } else {
                 String result = translate(name, languagePlayer, main.getConf().getItemsSyntax());
                 if (result == null)
@@ -1306,7 +1306,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                                     .parse(lore));
                     if (result != null) {
                         List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
-                        newLore.addAll(splitLoreLines.stream().map(ComponentSerializer::toString).collect(Collectors.toList()));
+                        newLore.addAll(splitLoreLines.stream()
+                                .map(comps -> ComponentUtils.ensureNotItalic(comps.stream()))
+                                .map(ComponentSerializer::toString)
+                                .collect(Collectors.toList()));
                     }
                 } else {
                     String result = translate(lore, languagePlayer,
