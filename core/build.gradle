@@ -16,10 +16,10 @@ dependencies {
     compileOnly 'net.md-5:bungeecord-proxy:1.17-R0.1-SNAPSHOT'
     compileOnly 'com.velocitypowered:velocity-api:1.1.3'
     annotationProcessor 'com.velocitypowered:velocity-api:1.1.3'
-    compileOnly 'com.comphenix.protocol:ProtocolLib:4.7.0-SNAPSHOT'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:4.8.0-SNAPSHOT'
 
     // Adventure / MiniMessage
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.8.1'
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.9.3'
     implementation('net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
@@ -29,13 +29,13 @@ dependencies {
     }
 
     compileOnly 'me.clip:placeholderapi:2.10.6'
-    compileOnly 'org.apache.logging.log4j:log4j-core:2.13.2'
-    implementation 'org.slf4j:slf4j-nop:1.7.25'
+    compileOnly 'org.apache.logging.log4j:log4j-core:2.16.0'
+    implementation 'org.slf4j:slf4j-nop:1.7.32'
     implementation 'com.zaxxer:HikariCP:3.4.5'
     implementation('com.tananaev:json-patch:1.1') {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
-    compileOnly 'com.google.code.gson:gson:2.8.6'
+    compileOnly 'com.google.code.gson:gson:2.8.9'
     implementation 'org.bstats:bstats-bukkit:1.7'
     implementation 'org.bstats:bstats-bungeecord:1.7'
     implementation project(path: ":api")
@@ -43,8 +43,8 @@ dependencies {
     implementation project(path: ":v1_13")
 
     // Test dependencies
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
     testImplementation 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
 }
