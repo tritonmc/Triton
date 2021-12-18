@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,20 @@ public class ComponentUtilsTest {
         assertEquals("[{\"italic\":true,\"extra\":[{\"color\":\"black\",\"text\":\"First line\"}],\"text\":\"\"}]", jsonResult.get(0));
         assertEquals("[{\"italic\":true,\"extra\":[{\"color\":\"black\",\"text\":\"Second \"},{\"bold\":true,\"color\":\"red\",\"extra\":[{\"underlined\":true,\"text\":\"ne\"}],\"text\":\"li\"}],\"text\":\"\"}]", jsonResult.get(1));
         assertEquals("[{\"italic\":true,\"extra\":[{\"bold\":true,\"color\":\"red\",\"extra\":[{\"underlined\":true,\"text\":\"Third line\"}],\"text\":\"\"}],\"text\":\"\"}]", jsonResult.get(2));
+    }
+
+    @Test
+    public void testSplitByNewLineWithSlashNAtTheEnd() {
+        BaseComponent[] root = ComponentSerializer.parse("{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"First line!\\n\"},{\"color\":\"gray\",\"text\":\"Second Line\"}],\"text\":\"\"}");
+
+        val result = ComponentUtils.splitByNewLine(Arrays.asList(root));
+
+        assertEquals(2, result.size());
+
+        val jsonResult = result.stream().map(ComponentSerializer::toString).collect(Collectors.toList());
+
+        assertEquals("[{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"First line!\"}],\"text\":\"\"}]", jsonResult.get(0));
+        assertEquals("[{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"\"},{\"color\":\"gray\",\"text\":\"Second Line\"}],\"text\":\"\"}]", jsonResult.get(1));
     }
 
 }

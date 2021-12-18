@@ -124,7 +124,7 @@ public class ComponentUtils {
                 continue;
             }
             TextComponent textComponent = (TextComponent) comp;
-            String[] textSplit = textComponent.getText().split("\n");
+            String[] textSplit = textComponent.getText().split("\n", -1);
             for (int i = 0; i < textSplit.length; ++i) {
                 TextComponent newSplit = new TextComponent(textSplit[i]);
                 copyFormatting(textComponent, newSplit);
