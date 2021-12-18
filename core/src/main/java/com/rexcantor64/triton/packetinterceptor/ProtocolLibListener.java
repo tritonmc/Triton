@@ -615,6 +615,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isItems()) return;
 
@@ -631,8 +632,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         .clone(), languagePlayer, false), recipe.getUses(), recipe.getMaxUses(), recipe
                         .hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
 
-                for (val ingredient : recipe.getIngredients())
+                for (val ingredient : recipe.getIngredients()) {
                     newRecipe.addIngredient(translateItemStack(ingredient.clone(), languagePlayer, false));
+                }
                 Object newCraftRecipe = MethodUtils
                         .invokeExactStaticMethod(CRAFT_MERCHANT_RECIPE_LIST_CLASS, "fromBukkit", newRecipe);
                 Object newNMSRecipe = MethodUtils.invokeExactMethod(newCraftRecipe, "toMinecraft", null);
@@ -1186,7 +1188,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
      * @return The translated item stack, which may or may not be the same as the given parameter
      */
     private ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
-        if (item == null || item.getType() == Material.AIR) return null;
+        if (item == null || item.getType() == Material.AIR) return item;
         NbtCompound compound = null;
         try {
             val nbtTagOptional = NbtFactory.fromItemOptional(item);
