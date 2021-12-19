@@ -188,7 +188,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         // Flatten action bar's json
-        baseComponentModifier.writeSafely(0, ab ? mergeComponents(result) : result);
+        baseComponentModifier.writeSafely(0, ab && getMCVersion() < 16 ? mergeComponents(result) : result);
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
