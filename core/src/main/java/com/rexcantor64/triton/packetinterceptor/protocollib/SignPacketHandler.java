@@ -213,6 +213,10 @@ public class SignPacketHandler extends PacketHandler {
      * @param player The player to refresh the signs for
      */
     public void refreshSignsForPlayer(SpigotLanguagePlayer player) {
+        val bukkitPlayerOpt = player.toBukkit();
+        if (!bukkitPlayerOpt.isPresent()) return;
+        val bukkitPlayer = bukkitPlayerOpt.get();
+
         val storage = getMain().getStorage();
         val filterItems = Triton.get().getConfig().isBungeecord() && !(Triton.get().getStorage() instanceof LocalStorage);
         val serverName = Triton.get().getConfig().getServerName();
@@ -233,7 +237,7 @@ public class SignPacketHandler extends PacketHandler {
                             .forEach(location -> {
                                 val resultLines = getLanguageManager()
                                         .formatLines(player.getLang()
-                                                .getName(), lines, () -> getSignLinesFromLocation(location));
+                                                .getName(), lines, () -> getSignLinesFromLocation(location).orElse(new String[]{"", "", "", ""}));
 
                                 PacketContainer packet;
                                 if (getMcVersion() >= 18) {
@@ -245,7 +249,7 @@ public class SignPacketHandler extends PacketHandler {
                                 }
 
                                 try {
-                                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
+                                    ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
                                 } catch (InvocationTargetException e) {
                                     logger().logError("Failed to send sign update packet: %1", e.getMessage());
                                     e.printStackTrace();
@@ -385,18 +389,20 @@ public class SignPacketHandler extends PacketHandler {
      * @param location The location of the sign
      * @return An array with length 4, representing each line of the sign
      */
-    private String[] getSignLinesFromLocation(SignLocation location) {
-        val world = Bukkit.getWorld(location.getWorld());
-        if (world == null) return new String[4];
+    private Optional<String[]> getSignLinesFromLocation(SignLocation location) {
+        return Triton.asSpigot().callSync(() -> {
+            val world = Bukkit.getWorld(location.getWorld());
+            if (world == null) return new String[4];
 
-        val bukkitLocation = new Location(world, location.getX(), location.getY(), location.getZ());
+            val bukkitLocation = new Location(world, location.getX(), location.getY(), location.getZ());
 
-        val state = bukkitLocation.getBlock().getState();
-        if (!(state instanceof Sign)) {
-            return new String[4];
-        }
+            val state = bukkitLocation.getBlock().getState();
+            if (!(state instanceof Sign)) {
+                return new String[4];
+            }
 
-        return ((Sign) state).getLines();
+            return ((Sign) state).getLines();
+        });
     }
 
     @Override

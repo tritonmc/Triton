@@ -300,7 +300,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 .contains(EntityType.PLAYER)))
             return;
         // TODO For now, it is only possible to translate NPCs that are saved server side
-        calculateOnServerThread(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
+        Triton.asSpigot().callSync(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                 .ifPresent(entity -> addPlayer(packet.getPlayer().getWorld(), entity.getEntityId(), entity, languagePlayer));
     }
 
@@ -815,8 +815,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
-        if (player.getEntitiesMap().containsKey(player.toBukkit().getWorld()))
-            for (Map.Entry<Integer, Optional<String>> entry : player.getEntitiesMap().get(player.toBukkit().getWorld())
+        if (!player.toBukkit().isPresent()) return;
+        val bukkitPlayer = player.toBukkit().get();
+        if (player.getEntitiesMap().containsKey(bukkitPlayer.getWorld()))
+            for (Map.Entry<Integer, Optional<String>> entry : player.getEntitiesMap().get(bukkitPlayer.getWorld())
                     .entrySet()) {
                 if (!entry.getValue().isPresent()) continue;
                 val displayName = entry.getValue().get();
@@ -868,16 +870,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
                 packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
                 try {
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, false);
+                    ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
                 } catch (InvocationTargetException e) {
                     main.getLogger().logError("Failed to send entity update packet: %1", e.getMessage());
                     e.printStackTrace();
                 }
             }
 
-        if (player.getPlayersMap().containsKey(player.toBukkit().getWorld()))
+        if (player.getPlayersMap().containsKey(bukkitPlayer.getWorld()))
             playerLoop:
-                    for (Map.Entry<Integer, Entity> entry : player.getPlayersMap().get(player.toBukkit().getWorld())
+                    for (Map.Entry<Integer, Entity> entry : player.getPlayersMap().get(bukkitPlayer.getWorld())
                             .entrySet()) {
                         val p = (Player) entry.getValue();
                         for (val op : Bukkit.getOnlinePlayers())
@@ -929,19 +931,19 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         try {
                             val isHiddenEntity = !player.getShownPlayers().contains(p.getUniqueId());
                             ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(player.toBukkit(), packetRemove, true);
+                                    .sendServerPacket(bukkitPlayer, packetRemove, true);
                             ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(player.toBukkit(), packetDestroy, true);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, true);
+                                    .sendServerPacket(bukkitPlayer, packetDestroy, true);
+                            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetAdd, true);
                             ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(player.toBukkit(), packetSpawn, true);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, true);
+                                    .sendServerPacket(bukkitPlayer, packetSpawn, true);
+                            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetLook, true);
                             if (isHiddenEntity) {
                                 Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> {
                                     try {
                                         ProtocolLibrary
                                                 .getProtocolManager()
-                                                .sendServerPacket(player.toBukkit(), packetRemove, true);
+                                                .sendServerPacket(bukkitPlayer, packetRemove, true);
                                     } catch (InvocationTargetException e) {
                                         main.getLogger().logError("Failed to send player entity update packet: %1", e
                                                 .getMessage());
@@ -959,22 +961,28 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshTabHeaderFooter(SpigotLanguagePlayer player, String header, String footer) {
-        PacketContainer packet =
-                ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
-        packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
-        packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
-        try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
-        } catch (InvocationTargetException e) {
-            main.getLogger().logError("Failed to send tab update packet: %1", e.getMessage());
-            e.printStackTrace();
-        }
+        player.toBukkit().ifPresent(bukkitPlayer -> {
+            PacketContainer packet =
+                    ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
+            packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
+            } catch (InvocationTargetException e) {
+                main.getLogger().logError("Failed to send tab update packet: %1", e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
     @SneakyThrows
     public void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String json) {
         if (getMCVersion() <= 8) return;
+        val bukkitPlayerOpt = player.toBukkit();
+        if (!bukkitPlayerOpt.isPresent()) return;
+        val bukkitPlayer = bukkitPlayerOpt.get();
+
         PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BOSS);
         packet.getUUIDs().writeSafely(0, uuid);
         if (getMCVersion() >= 17) {
@@ -988,7 +996,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
         }
         try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         } catch (InvocationTargetException e) {
             main.getLogger().logError("Failed to send bossbar update packet: %1", e.getMessage());
             e.printStackTrace();
@@ -997,6 +1005,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshScoreboard(SpigotLanguagePlayer player) {
+        val bukkitPlayerOpt = player.toBukkit();
+        if (!bukkitPlayerOpt.isPresent()) return;
+        val bukkitPlayer = bukkitPlayerOpt.get();
+
         player.getObjectivesMap().forEach((key, value) -> {
             val packet = ProtocolLibrary.getProtocolManager()
                     .createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
@@ -1005,7 +1017,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getChatJson()));
             packet.getModifier().writeSafely(2, value.getType());
             try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
             } catch (InvocationTargetException e) {
                 main.getLogger().logError("Failed to send scoreboard objective update packet: %1", e.getMessage());
                 e.printStackTrace();
@@ -1034,7 +1046,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 for (var i : Arrays.asList(3, 4, 5, 6))
                     structure.writeSafely(i, value.getOptionData().get(j++));
 
-                val chatComponents = structure.withType(MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
+                val chatComponents = structure.withType(
+                        MinecraftReflection.getIChatBaseComponentClass(), BukkitConverters.getWrappedChatComponentConverter());
                 chatComponents.writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
                 chatComponents.writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
                 chatComponents.writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
@@ -1048,7 +1061,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
 
             try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packet, true);
+                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
             } catch (InvocationTargetException e) {
                 main.getLogger().logError("Failed to send scoreboard team update packet: %1", e.getMessage());
                 e.printStackTrace();
@@ -1294,14 +1307,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
             }
             display.put(NbtFactory.ofList("Lore", newLore));
-        }
-    }
-
-    private <T> Optional<T> calculateOnServerThread(Callable<T> provider) {
-        try {
-            return Optional.ofNullable(Bukkit.getScheduler().callSyncMethod(main.getLoader(), provider).get());
-        } catch (InterruptedException | ExecutionException e) {
-            return Optional.empty();
         }
     }
 
