@@ -36,7 +36,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private boolean waitingForClientLocale = false;
 
     @Getter
-    private Map<World, Map<Integer, String>> entitiesMap = new ConcurrentHashMap<>();
+    private Map<World, Map<Integer, Optional<String>>> entitiesMap = new ConcurrentHashMap<>();
     @Getter
     private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
     @Getter

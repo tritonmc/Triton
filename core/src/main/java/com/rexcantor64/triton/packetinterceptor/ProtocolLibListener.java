@@ -66,6 +66,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -814,11 +815,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
-        // TODO fix concurrency
         if (player.getEntitiesMap().containsKey(player.toBukkit().getWorld()))
-            for (Map.Entry<Integer, String> entry : player.getEntitiesMap().get(player.toBukkit().getWorld())
+            for (Map.Entry<Integer, Optional<String>> entry : player.getEntitiesMap().get(player.toBukkit().getWorld())
                     .entrySet()) {
-                if (entry.getValue() == null) continue;
+                if (!entry.getValue().isPresent()) continue;
+                val displayName = entry.getValue().get();
                 PacketContainer packet =
                         ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
                 packet.getIntegers().writeSafely(0, entry.getKey());
@@ -826,7 +827,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 Object value;
                 if (getMCVersion() >= 13) {
                     BaseComponent[] result = main.getLanguageParser().parseComponent(player, main.getConf()
-                            .getHologramSyntax(), ComponentSerializer.parse(entry.getValue()));
+                            .getHologramSyntax(), ComponentSerializer.parse(displayName));
                     if (result != null)
                         value = Optional.of(WrappedChatComponent.fromJson(ComponentSerializer
                                         .toString(result))
@@ -837,7 +838,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     }
                 } else {
                     value = main.getLanguageParser().replaceLanguages(main.getLanguageManager()
-                                    .matchPattern(entry.getValue(), player), player,
+                                    .matchPattern(displayName, player), player,
                             main.getConf().getHologramSyntax());
                     if (value == null) {
                         value = "";
@@ -1103,8 +1104,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void addEntity(World world, int id, String displayName, SpigotLanguagePlayer lp) {
         if (!lp.getEntitiesMap().containsKey(world))
-            lp.getEntitiesMap().put(world, new HashMap<>());
-        lp.getEntitiesMap().get(world).put(id, displayName);
+            lp.getEntitiesMap().put(world, new ConcurrentHashMap<>());
+        lp.getEntitiesMap().get(world).put(id, Optional.ofNullable(displayName));
     }
 
     @SafeVarargs
@@ -1114,7 +1115,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void addPlayer(World world, int id, Entity player, SpigotLanguagePlayer lp) {
         if (!lp.getPlayersMap().containsKey(world))
-            lp.getPlayersMap().put(world, new HashMap<>());
+            lp.getPlayersMap().put(world, new ConcurrentHashMap<>());
         lp.getPlayersMap().get(world).put(id, player);
     }
 
