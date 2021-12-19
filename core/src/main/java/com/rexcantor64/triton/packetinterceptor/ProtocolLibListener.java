@@ -401,8 +401,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         int entityId = packet.getPacket().getIntegers().readSafely(0);
 
-        HashMap<Integer, String> worldEntitesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
-        if (worldEntitesMap == null || !worldEntitesMap.containsKey(entityId))
+        HashMap<Integer, String> worldEntitiesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
+        if (worldEntitiesMap == null || !worldEntitiesMap.containsKey(entityId))
             return;
 
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
