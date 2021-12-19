@@ -29,6 +29,7 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
+import com.rexcantor64.triton.packetinterceptor.protocollib.AdvancementsPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.protocollib.SignPacketHandler;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -148,6 +149,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
         }
         signPacketHandler.registerPacketTypes(packetHandlers);
+        new AdvancementsPacketHandler().registerPacketTypes(packetHandlers);
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
         if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
