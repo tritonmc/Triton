@@ -9,6 +9,7 @@ import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.packetinterceptor.protocollib.MotdPacketHandler;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -76,8 +77,11 @@ public class SpigotMLP extends Triton {
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getLoader());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getLoader());
         // Use ProtocolLib if available
-        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib"))
-            ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
+        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
+            val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
+            asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this)).start();
+            asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+        }
 
         if (getConf().isBungeecord()) {
             getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +

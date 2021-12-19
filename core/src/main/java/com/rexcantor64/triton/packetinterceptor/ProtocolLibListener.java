@@ -11,7 +11,14 @@ import com.comphenix.protocol.injector.GamePhase;
 import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
-import com.comphenix.protocol.wrappers.*;
+import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.BukkitConverters;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
@@ -20,17 +27,13 @@ import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.packetinterceptor.protocollib.SignPacketHandler;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
-import com.rexcantor64.triton.utils.RegistryUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -40,7 +43,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -63,6 +65,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -188,7 +192,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         // Flatten action bar's json
-        baseComponentModifier.writeSafely(0, ab ? mergeComponents(result) : result);
+        baseComponentModifier.writeSafely(0, ab ? ComponentUtils.mergeComponents(result) : result);
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -286,7 +290,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         .parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
-        msg.setJson(ComponentSerializer.toString(mergeComponents(result)));
+        msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -294,11 +298,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if ((!main.getConf().isHologramsAll() && !main.getConf().getHolograms()
                 .contains(EntityType.PLAYER)))
             return;
-        Entity e = packet.getPacket().getEntityModifier(packet).readSafely(0);
         // TODO For now, it is only possible to translate NPCs that are saved server side
-        if (e != null) {
-            addPlayer(packet.getPlayer().getWorld(), e.getEntityId(), e, languagePlayer);
-        }
+        calculateOnServerThread(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
+                .ifPresent(entity -> addPlayer(packet.getPlayer().getWorld(), entity.getEntityId(), entity, languagePlayer));
     }
 
     private void handleSpawnEntityLiving(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -392,8 +394,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         int entityId = packet.getPacket().getIntegers().readSafely(0);
 
-        HashMap<Integer, String> worldEntitesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
-        if (worldEntitesMap == null || !worldEntitesMap.containsKey(entityId))
+        val worldEntitiesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
+        if (worldEntitiesMap == null || !worldEntitiesMap.containsKey(entityId))
             return;
 
         List<WrappedWatchableObject> dw = packet.getPacket().getWatchableCollectionModifier().readSafely(0);
@@ -648,28 +650,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
     }
 
-    private void handleServerInfo(PacketEvent event) {
-        val lang = Triton.get().getStorage().getLanguageFromIp(Objects
-                .requireNonNull(event.getPlayer().getAddress()).getAddress().getHostAddress()).getName();
-        val syntax = Triton.get().getConfig().getMotdSyntax();
-
-        val serverPing = event.getPacket().getServerPings().readSafely(0);
-        serverPing.setPlayers(serverPing.getPlayers().stream().map((gp) -> {
-            if (gp.getName() == null) return gp;
-            val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
-            if (gp.getName().equals(translatedName)) return gp;
-            if (translatedName == null) return null;
-            return gp.withName(translatedName);
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
-
-        val motd = serverPing.getMotD();
-        val result = main.getLanguageParser()
-                .parseComponent(lang, syntax, ComponentSerializer.parse(motd.getJson()));
-        if (result != null)
-            motd.setJson(ComponentSerializer.toString(mergeComponents(result)));
-        serverPing.setMotD(motd);
-    }
-
     private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isScoreboards()) return;
 
@@ -757,10 +737,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
-        if (packet.getPacketType() == PacketType.Status.Server.SERVER_INFO) {
-            if (main.getConfig().isMotd()) handleServerInfo(packet);
-            return;
-        }
         SpigotLanguagePlayer languagePlayer;
         try {
             languagePlayer =
@@ -775,10 +751,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         if (languagePlayer == null) {
             Triton.get().getLogger().logWarning(1, "Language Player is null on packet sending");
-            return;
-        }
-        if (packet.getPacketType() == PacketType.Login.Server.SUCCESS) {
-            languagePlayer.setInterceptor(this);
             return;
         }
 
@@ -815,16 +787,22 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
-        val edgeCases = Stream.of(PacketType.Login.Server.SUCCESS, PacketType.Status.Server.SERVER_INFO);
-
-        val types = Stream.concat(packetHandlers.keySet().stream(), edgeCases).collect(Collectors.toList());
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(types).mergeOptions(ListenerOptions.ASYNC).highest().build();
+        return ListeningWhitelist.newBuilder()
+                .gamePhase(GamePhase.PLAYING)
+                .types(packetHandlers.keySet())
+                .mergeOptions(ListenerOptions.ASYNC)
+                .highest()
+                .build();
     }
 
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
-        return ListeningWhitelist.newBuilder().gamePhase(GamePhase.PLAYING).types(PacketType.Play.Client.SETTINGS)
-                .highest().build();
+        return ListeningWhitelist.newBuilder()
+                .gamePhase(GamePhase.PLAYING)
+                .types(PacketType.Play.Client.SETTINGS)
+                .mergeOptions(ListenerOptions.ASYNC)
+                .highest()
+                .build();
     }
 
     /* REFRESH */
@@ -836,6 +814,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
+        // TODO fix concurrency
         if (player.getEntitiesMap().containsKey(player.toBukkit().getWorld()))
             for (Map.Entry<Integer, String> entry : player.getEntitiesMap().get(player.toBukkit().getWorld())
                     .entrySet()) {
@@ -951,11 +930,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                             ProtocolLibrary.getProtocolManager()
                                     .sendServerPacket(player.toBukkit(), packetRemove, true);
                             ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(player.toBukkit(), packetDestroy, false);
+                                    .sendServerPacket(player.toBukkit(), packetDestroy, true);
                             ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetAdd, true);
                             ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(player.toBukkit(), packetSpawn, false);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, false);
+                                    .sendServerPacket(player.toBukkit(), packetSpawn, true);
+                            ProtocolLibrary.getProtocolManager().sendServerPacket(player.toBukkit(), packetLook, true);
                             if (isHiddenEntity) {
                                 Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> {
                                     try {
@@ -1128,7 +1107,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         lp.getEntitiesMap().get(world).put(id, displayName);
     }
 
-    private void removeEntities(Stream<Integer> ids, HashMap<Integer, ?>... maps) {
+    @SafeVarargs
+    private final void removeEntities(Stream<Integer> ids, Map<Integer, ?>... maps) {
         ids.forEach(id -> Arrays.stream(maps).filter(Objects::nonNull).forEach(map -> map.keySet().remove(id)));
     }
 
@@ -1155,12 +1135,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean existsSignUpdatePacket() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
-    }
-
-    private BaseComponent[] mergeComponents(BaseComponent... comps) {
-        if (main.getLanguageParser().hasTranslatableComponent(comps))
-            return comps;
-        return new BaseComponent[]{new TextComponent(AdvancedComponent.fromBaseComponent(true, comps).getText())};
     }
 
     private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
@@ -1319,6 +1293,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
             }
             display.put(NbtFactory.ofList("Lore", newLore));
+        }
+    }
+
+    private <T> Optional<T> calculateOnServerThread(Callable<T> provider) {
+        try {
+            return Optional.ofNullable(Bukkit.getScheduler().callSyncMethod(main.getLoader(), provider).get());
+        } catch (InterruptedException | ExecutionException e) {
+            return Optional.empty();
         }
     }
 

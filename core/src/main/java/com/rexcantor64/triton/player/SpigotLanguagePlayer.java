@@ -15,7 +15,13 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpigotLanguagePlayer implements LanguagePlayer {
 
@@ -24,23 +30,21 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private Language lang;
 
-    private PacketInterceptor interceptor;
-
     private String lastTabHeader;
     private String lastTabFooter;
-    private HashMap<UUID, String> bossBars = new HashMap<>();
+    private Map<UUID, String> bossBars = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
 
     @Getter
-    private HashMap<World, HashMap<Integer, String>> entitiesMap = new HashMap<>();
+    private Map<World, Map<Integer, String>> entitiesMap = new ConcurrentHashMap<>();
     @Getter
-    private HashMap<World, HashMap<Integer, Entity>> playersMap = new HashMap<>();
+    private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
     @Getter
     private Set<UUID> shownPlayers = new HashSet<>();
     @Getter
-    private HashMap<String, ScoreboardObjective> objectivesMap = new HashMap<>();
+    private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     @Getter
-    private HashMap<String, ScoreboardTeam> teamsMap = new HashMap<>();
+    private Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -117,37 +121,37 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.waitingForClientLocale = true;
     }
 
+    private Optional<PacketInterceptor> getInterceptor() {
+        return Optional.ofNullable(Triton.asSpigot().getProtocolLibListener());
+    }
+
     public void refreshAll() {
         if (toBukkit() == null)
             return;
         refreshEntities();
         refreshSigns();
         toBukkit().updateInventory();
-        if (interceptor != null && Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
-            interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-        if (interceptor != null && Triton.get().getConf().isBossbars())
-            for (Map.Entry<UUID, String> entry : bossBars.entrySet())
-                interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
-        if (interceptor != null && Triton.get().getConfig().isScoreboards())
-            interceptor.refreshScoreboard(this);
-    }
-
-    public void setInterceptor(PacketInterceptor interceptor) {
-        this.interceptor = interceptor;
+        getInterceptor().ifPresent((interceptor) -> {
+            if (Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+                interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
+            if (Triton.get().getConf().isBossbars())
+                for (Map.Entry<UUID, String> entry : bossBars.entrySet())
+                    interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
+            if (Triton.get().getConfig().isScoreboards())
+                interceptor.refreshScoreboard(this);
+        });
     }
 
     private void refreshSigns() {
         if (!Triton.get().getConf().isSigns())
             return;
-        if (interceptor != null)
-            interceptor.refreshSigns(this);
+        getInterceptor().ifPresent(interceptor -> interceptor.refreshSigns(this));
     }
 
     private void refreshEntities() {
         if (Triton.get().getConf().getHolograms().size() == 0 && !Triton.get().getConf().isHologramsAll())
             return;
-        if (interceptor != null)
-            interceptor.refreshEntities(this);
+        getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
     }
 
     public void setLastTabHeader(String lastTabHeader) {
