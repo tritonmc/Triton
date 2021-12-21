@@ -55,6 +55,7 @@ import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +82,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private final Class<?> ADVENTURE_COMPONENT_CLASS;
+    private final Field PLAYER_ACTIVE_CONTAINER_FIELD;
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
@@ -108,6 +110,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
+
+        val containerClass = MinecraftReflection.getMinecraftClass("world.inventory.Container", "Container");
+        PLAYER_ACTIVE_CONTAINER_FIELD = Arrays.stream(MinecraftReflection.getEntityHumanClass().getDeclaredFields())
+                .filter(field -> field.getType() == containerClass && !field.getName().equals("defaultContainer")).findAny().orElse(null);
 
         setupPacketHandlers();
     }
@@ -193,7 +199,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         // Flatten action bar's json
-        baseComponentModifier.writeSafely(0, ab ? ComponentUtils.mergeComponents(result) : result);
+        baseComponentModifier.writeSafely(0, ab && getMCVersion() < 16 ? ComponentUtils.mergeComponents(result) : result);
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -535,10 +541,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isItems()) return;
 
-        if (CONTAINER_PLAYER_CLASS == NMSUtils
-                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
-                        getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
-                .getConf().isInventoryItems())
+        if (!main.getConf().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
             return;
 
         List<ItemStack> items = getMCVersion() <= 10 ?
@@ -555,10 +558,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isItems()) return;
 
-        if (CONTAINER_PLAYER_CLASS == NMSUtils
-                .getDeclaredField(NMSUtils.getHandle(packet.getPlayer()),
-                        getMCVersion() >= 17 ? "bV" : "activeContainer").getClass() && !main
-                .getConf().isInventoryItems())
+        if (!main.getConf().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
             return;
 
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
@@ -1307,6 +1307,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 }
             }
             display.put(NbtFactory.ofList("Lore", newLore));
+        }
+    }
+
+    private boolean isPlayerInventoryOpen(Player player) {
+        val nmsHandle = NMSUtils.getHandle(player);
+
+        try {
+            return Objects.requireNonNull(PLAYER_ACTIVE_CONTAINER_FIELD).get(nmsHandle).getClass() == CONTAINER_PLAYER_CLASS;
+        } catch (IllegalAccessException | NullPointerException e) {
+            return false;
         }
     }
 
