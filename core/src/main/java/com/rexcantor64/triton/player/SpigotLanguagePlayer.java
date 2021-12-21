@@ -8,6 +8,7 @@ import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
 import lombok.Getter;
+import lombok.val;
 import lombok.var;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,7 +16,13 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpigotLanguagePlayer implements LanguagePlayer {
 
@@ -24,23 +31,21 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private Language lang;
 
-    private PacketInterceptor interceptor;
-
     private String lastTabHeader;
     private String lastTabFooter;
-    private HashMap<UUID, String> bossBars = new HashMap<>();
+    private Map<UUID, String> bossBars = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
 
     @Getter
-    private HashMap<World, HashMap<Integer, String>> entitiesMap = new HashMap<>();
+    private Map<World, Map<Integer, Optional<String>>> entitiesMap = new ConcurrentHashMap<>();
     @Getter
-    private HashMap<World, HashMap<Integer, Entity>> playersMap = new HashMap<>();
+    private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
     @Getter
     private Set<UUID> shownPlayers = new HashSet<>();
     @Getter
-    private HashMap<String, ScoreboardObjective> objectivesMap = new HashMap<>();
+    private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     @Getter
-    private HashMap<String, ScoreboardTeam> teamsMap = new HashMap<>();
+    private Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -86,13 +91,13 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale) {
             try {
-                if (toBukkit() != null)
+                if (toBukkit().isPresent())
                     bukkit.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                             .getMessage("success.detected-language", lang.getDisplayName())));
                 else
                     Triton.get().getLogger()
                             .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +
-                                    "is null", uuid);
+                                    "is unknown", uuid);
             } catch (Exception e) {
                 Triton.get().getLogger().logError("Failed to send \"language changed\" message.");
                 e.printStackTrace();
@@ -117,39 +122,42 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.waitingForClientLocale = true;
     }
 
-    public void refreshAll() {
-        if (toBukkit() == null)
-            return;
-        refreshEntities();
-        refreshSigns();
-        toBukkit().updateInventory();
-        if (interceptor != null && Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
-            interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-        if (interceptor != null && Triton.get().getConf().isBossbars())
-            for (Map.Entry<UUID, String> entry : bossBars.entrySet())
-                interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
-        if (interceptor != null && Triton.get().getConfig().isScoreboards())
-            interceptor.refreshScoreboard(this);
-        if (interceptor != null)
-            interceptor.refreshAdvancements(this);
+    private Optional<PacketInterceptor> getInterceptor() {
+        return Optional.ofNullable(Triton.asSpigot().getProtocolLibListener());
     }
 
-    public void setInterceptor(PacketInterceptor interceptor) {
-        this.interceptor = interceptor;
+    /**
+     * Asynchronously refreshes entities, signs, inventory items, tab header/footer, bossbars and scoreboards
+     * for the given player, that is, packets are sent to ensure they're updated with the player's language.
+     */
+    public void refreshAll() {
+        Triton.get().runAsync(() -> toBukkit().ifPresent(player -> {
+            refreshEntities();
+            refreshSigns();
+            player.updateInventory();
+            getInterceptor().ifPresent((interceptor) -> {
+                if (Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+                    interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
+                if (Triton.get().getConf().isBossbars())
+                    for (Map.Entry<UUID, String> entry : bossBars.entrySet())
+                        interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
+                if (Triton.get().getConfig().isScoreboards())
+                    interceptor.refreshScoreboard(this);
+                interceptor.refreshAdvancements(this);
+            });
+        }));
     }
 
     private void refreshSigns() {
         if (!Triton.get().getConf().isSigns())
             return;
-        if (interceptor != null)
-            interceptor.refreshSigns(this);
+        getInterceptor().ifPresent(interceptor -> interceptor.refreshSigns(this));
     }
 
     private void refreshEntities() {
         if (Triton.get().getConf().getHolograms().size() == 0 && !Triton.get().getConf().isHologramsAll())
             return;
-        if (interceptor != null)
-            interceptor.refreshEntities(this);
+        getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
     }
 
     public void setLastTabHeader(String lastTabHeader) {
@@ -170,30 +178,46 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private void load() {
         lang = Triton.get().getStorage().getLanguage(this);
-        if (toBukkit() != null)
-            Triton.get().getStorage()
-                    .setLanguage(null, toBukkit().getAddress().getAddress().getHostAddress(), lang);
+        toBukkit().ifPresent(player -> {
+            if (player.getAddress() != null) {
+                Triton.get().getStorage()
+                        .setLanguage(null, player.getAddress().getAddress().getHostAddress(), lang);
+            }
+        });
         if (lang != null)
-            Bukkit.getScheduler().runTask(Triton.asSpigot().getLoader(), this::refreshAll);
+            this.refreshAll();
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
     private void save() {
-        Bukkit.getScheduler().runTaskAsynchronously(Triton.asSpigot().getLoader(), () -> {
+        Triton.get().runAsync(() -> {
             String ip = null;
-            if (toBukkit() != null)
-                ip = bukkit.getAddress().getAddress().getHostAddress();
+            if (toBukkit().isPresent()) {
+                val player = toBukkit().get();
+                if (player.getAddress() != null) {
+                    ip = player.getAddress().getAddress().getHostAddress();
+                }
+            }
             Triton.get().getStorage().setLanguage(uuid, ip, lang);
         });
     }
 
-    public Player toBukkit() {
+    /**
+     * Get this LanguagePlayer's Bukkit Player instance.
+     * The value is stored in this object and therefore not recalculated.
+     * If the stored value is null, this tries to get the Player instance by its UUID.
+     * <p>
+     * An empty Optional is returned if the player cannot be found (e.g. either it's offline or it's still joining).
+     *
+     * @return Bukkit's player instance of this Language Player
+     */
+    public Optional<Player> toBukkit() {
         if (bukkit != null && !bukkit.isOnline())
             bukkit = null;
         if (bukkit == null)
             bukkit = Bukkit.getPlayer(uuid);
-        return bukkit;
+        return Optional.ofNullable(bukkit);
     }
 
     @Override
@@ -202,16 +226,16 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void executeCommands() {
-        if (toBukkit() == null)
-            return;
-        for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
-            String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
-                    bukkit.getUniqueId().toString());
-            if (cmd.getType() == ExecutableCommand.Type.SERVER)
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);
-            else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
-                Bukkit.dispatchCommand(bukkit, cmdText);
-        }
+        toBukkit().ifPresent(bukkit -> {
+            for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
+                String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
+                        bukkit.getUniqueId().toString());
+                if (cmd.getType() == ExecutableCommand.Type.SERVER)
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);
+                else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+                    Bukkit.dispatchCommand(bukkit, cmdText);
+            }
+        });
     }
 
     @Data

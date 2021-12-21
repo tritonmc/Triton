@@ -207,7 +207,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
         out.writeByte(0);
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
-        lp.toBukkit().sendPluginMessage(Triton.asSpigot().getLoader(), "triton:main", out.toByteArray());
+        lp.toBukkit().ifPresent(player ->
+                player.sendPluginMessage(Triton.asSpigot().getLoader(), "triton:main", out.toByteArray())
+        );
     }
 
     public void updateSign(String world, int x, int y, int z, String key, Player p) {

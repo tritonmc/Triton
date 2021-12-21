@@ -13,7 +13,10 @@ import lombok.var;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
@@ -72,16 +75,6 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             }
         }
         return result;
-    }
-
-    public boolean hasTranslatableComponent(BaseComponent... comps) {
-        for (BaseComponent c : comps) {
-            if (c instanceof TranslatableComponent)
-                return true;
-            if (c.getExtra() != null && hasTranslatableComponent(c.getExtra().toArray(new BaseComponent[0])))
-                return true;
-        }
-        return false;
     }
 
     public String parseString(String language, FeatureSyntax syntax, String input) {

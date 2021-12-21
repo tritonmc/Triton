@@ -87,15 +87,16 @@ public class AdvancementsPacketHandler extends PacketHandler {
     public void refreshAdvancements(SpigotLanguagePlayer languagePlayer) {
         if (areAdvancementsDisabled()) return;
 
-        val bukkitPlayer = languagePlayer.toBukkit();
-        val nmsPlayer = NMSUtils.getHandle(bukkitPlayer);
+        languagePlayer.toBukkit().ifPresent(bukkitPlayer -> {
+            val nmsPlayer = NMSUtils.getHandle(bukkitPlayer);
 
-        val advancementDataPlayer = ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD.get(nmsPlayer);
-        val minecraftServer = CRAFT_SERVER_GET_SERVER_METHOD.invoke(Bukkit.getServer());
-        val advancementDataWorld = MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD.invoke(minecraftServer);
+            val advancementDataPlayer = ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD.get(nmsPlayer);
+            val minecraftServer = CRAFT_SERVER_GET_SERVER_METHOD.invoke(Bukkit.getServer());
+            val advancementDataWorld = MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD.invoke(minecraftServer);
 
-        ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD.invoke(advancementDataPlayer, advancementDataWorld);
-        ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD.invoke(advancementDataPlayer, nmsPlayer);
+            ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD.invoke(advancementDataPlayer, advancementDataWorld);
+            ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD.invoke(advancementDataPlayer, nmsPlayer);
+        });
     }
 
     @Override

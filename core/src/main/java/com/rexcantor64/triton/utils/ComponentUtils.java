@@ -1,9 +1,11 @@
 package com.rexcantor64.triton.utils;
 
+import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -178,10 +180,45 @@ public class ComponentUtils {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Checks if the given component or any of its children have formatting.
+     *
+     * @param component The component to check for formatting
+     * @return Whether there is any kind of formatting in the given component and its children
+     */
     private static boolean hasAnyFormatting(BaseComponent component) {
         return component.hasFormatting() ||
                 (component.getExtra() != null &&
                         component.getExtra().stream().anyMatch(ComponentUtils::hasAnyFormatting));
+    }
+
+    /**
+     * Converts the given components to legacy text and wraps it in a TextComponent.
+     * For some reason, the Notchian client requires this on some packets in some versions.
+     *
+     * @param comps The components to flatten into legacy text
+     * @return A singleton array with a TextComponent containing legacy text of the given components
+     */
+    public static BaseComponent[] mergeComponents(BaseComponent... comps) {
+        if (hasTranslatableComponent(comps))
+            return comps;
+        return new BaseComponent[]{new TextComponent(AdvancedComponent.fromBaseComponent(true, comps).getText())};
+    }
+
+    /**
+     * Finds whether any of the given components or their children are TranslatableComponents
+     *
+     * @param comps The components to check for TranslatableComponents
+     * @return Whether any of the given components or their children are TranslatableComponents
+     */
+    public static boolean hasTranslatableComponent(BaseComponent... comps) {
+        for (BaseComponent c : comps) {
+            if (c instanceof TranslatableComponent)
+                return true;
+            if (c.getExtra() != null && hasTranslatableComponent(c.getExtra().toArray(new BaseComponent[0])))
+                return true;
+        }
+        return false;
     }
 
 }
