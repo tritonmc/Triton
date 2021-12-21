@@ -9,6 +9,7 @@ import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.packetinterceptor.protocollib.MotdPacketHandler;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -29,7 +30,11 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class SpigotMLP extends Triton {
 
@@ -76,8 +81,11 @@ public class SpigotMLP extends Triton {
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getLoader());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getLoader());
         // Use ProtocolLib if available
-        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib"))
-            ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
+        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
+            val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
+            asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this)).start();
+            asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+        }
 
         if (getConf().isBungeecord()) {
             getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +
@@ -132,28 +140,29 @@ public class SpigotMLP extends Triton {
         if (!(p instanceof SpigotLanguagePlayer)) return;
 
         val slp = (SpigotLanguagePlayer) p;
+        slp.toBukkit().ifPresent(player -> {
+            val commandOverride = getConfig().getOpenSelectorCommandOverride();
+            if (commandOverride != null && !commandOverride.isEmpty()) {
+                player.performCommand(commandOverride);
+                return;
+            }
 
-        val commandOverride = getConfig().getOpenSelectorCommandOverride();
-        if (commandOverride != null && !commandOverride.isEmpty()) {
-            slp.toBukkit().performCommand(commandOverride);
-            return;
-        }
-
-        val language = Triton.get().getLanguageManager();
-        val pLang = p.getLang();
-        val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
-        for (val lang : language.getAllLanguages())
-            gui.addButton(new GuiButton(ItemStackParser
-                    .bannerToItemStack(
-                            ((com.rexcantor64.triton.language.Language) lang).getBanner(),
-                            pLang.equals(lang)
-                    )).setListener(event -> {
-                p.setLang(lang);
-                slp.toBukkit().closeInventory();
-                slp.toBukkit().sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                        .getMessage("success.selector", lang.getDisplayName())));
-            }));
-        gui.open(slp.toBukkit());
+            val language = Triton.get().getLanguageManager();
+            val pLang = p.getLang();
+            val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
+            for (val lang : language.getAllLanguages())
+                gui.addButton(new GuiButton(ItemStackParser
+                        .bannerToItemStack(
+                                ((com.rexcantor64.triton.language.Language) lang).getBanner(),
+                                pLang.equals(lang)
+                        )).setListener(event -> {
+                    p.setLang(lang);
+                    player.closeInventory();
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
+                            .getMessage("success.selector", lang.getDisplayName())));
+                }));
+            gui.open(player);
+        });
     }
 
     @Override
@@ -164,6 +173,14 @@ public class SpigotMLP extends Triton {
     @Override
     public void runAsync(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(getLoader(), runnable);
+    }
+
+    public <T> Optional<T> callSync(Callable<T> callable) {
+        try {
+            return Optional.ofNullable(Bukkit.getScheduler().callSyncMethod(getLoader(), callable).get());
+        } catch (InterruptedException | ExecutionException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
