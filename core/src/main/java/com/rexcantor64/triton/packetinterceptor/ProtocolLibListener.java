@@ -86,6 +86,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
+    private final AdvancementsPacketHandler advancementsPacketHandler = new AdvancementsPacketHandler();
 
     private final SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
@@ -149,7 +150,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
         }
         signPacketHandler.registerPacketTypes(packetHandlers);
-        new AdvancementsPacketHandler().registerPacketTypes(packetHandlers);
+        advancementsPacketHandler.registerPacketTypes(packetHandlers);
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
         if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
@@ -1079,6 +1080,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void refreshAdvancements(SpigotLanguagePlayer languagePlayer) {
+        this.advancementsPacketHandler.refreshAdvancements(languagePlayer);
     }
 
     @Override

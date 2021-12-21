@@ -130,6 +130,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                 interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
         if (interceptor != null && Triton.get().getConfig().isScoreboards())
             interceptor.refreshScoreboard(this);
+        if (interceptor != null)
+            interceptor.refreshAdvancements(this);
     }
 
     public void setInterceptor(PacketInterceptor interceptor) {
