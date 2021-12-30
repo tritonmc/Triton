@@ -5,15 +5,19 @@ import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MotdPacketHandler extends PacketAdapter {
 
@@ -42,13 +46,20 @@ public class MotdPacketHandler extends PacketAdapter {
         val syntax = Triton.get().getConfig().getMotdSyntax();
 
         val serverPing = event.getPacket().getServerPings().readSafely(0);
-        serverPing.setPlayers(serverPing.getPlayers().stream().map((gp) -> {
-            if (gp.getName() == null) return gp;
+        serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
+            if (gp.getName() == null) return Stream.of(gp);
             val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
-            if (gp.getName().equals(translatedName)) return gp;
+            if (gp.getName().equals(translatedName)) return Stream.of(gp);
             if (translatedName == null) return null;
-            return gp.withName(translatedName);
-        }).filter(Objects::nonNull).collect(Collectors.toList()));
+            val translatedNameSplit = translatedName.split("\n", -1);
+            if (translatedNameSplit.length > 1) {
+                return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
+            } else {
+                return Stream.of(gp.withName(translatedName));
+            }
+        }).collect(Collectors.toList()));
+
+        serverPing.setVersionName(Triton.get().getLanguageParser().replaceLanguages(serverPing.getVersionName(), lang, syntax));
 
         val motd = serverPing.getMotD();
         val result = Triton.get().getLanguageParser()
