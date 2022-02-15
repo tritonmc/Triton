@@ -21,6 +21,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
 import org.bstats.bungeecord.Metrics;
+import org.bstats.charts.SingleLineChart;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -47,7 +48,7 @@ public class BungeeMLP extends Triton {
         super.onEnable();
 
         Metrics metrics = new Metrics(getLoader(), 5607);
-        metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
+        metrics.addCustomChart(new SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageManager().getItemCount()));
 
         bridgeManager = new BungeeBridgeManager();

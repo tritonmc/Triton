@@ -23,6 +23,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.ChatColor;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -67,7 +68,7 @@ public class SpigotMLP extends Triton {
         super.onEnable();
 
         Metrics metrics = new Metrics(getLoader(), 5606);
-        metrics.addCustomChart(new Metrics.SingleLineChart("active_placeholders",
+        metrics.addCustomChart(new SingleLineChart("active_placeholders",
                 () -> Triton.get().getLanguageManager().getItemCount()));
 
         // Setup custom managers
