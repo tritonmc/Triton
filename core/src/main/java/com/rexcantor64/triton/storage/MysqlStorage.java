@@ -47,6 +47,8 @@ public class MysqlStorage extends Storage {
 
     @Override
     public void load() {
+        this.ipCache = new IpCache();
+
         config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false" +
                 "&useUnicode=yes&characterEncoding=UTF-8");
         config.setUsername(user);
@@ -63,8 +65,6 @@ public class MysqlStorage extends Storage {
             config.addDataSourceProperty(entry.getKey(), entry.getValue());
 
         this.dataSource = new HikariDataSource(config);
-
-        this.ipCache = new IpCache();
 
         if (!setup()) throw new RuntimeException("Failed to setup database connection");
 
