@@ -27,6 +27,7 @@ dependencies {
         exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
+    testImplementation('net.kyori:adventure-api:4.9.3')
 
     compileOnly 'me.clip:placeholderapi:2.11.1'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'

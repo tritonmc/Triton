@@ -279,7 +279,7 @@ public class MainConfig implements TritonConfig {
     }
 
     @Getter
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
         private final String args;
