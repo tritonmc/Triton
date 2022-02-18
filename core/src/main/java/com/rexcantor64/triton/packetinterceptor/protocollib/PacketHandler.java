@@ -5,6 +5,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.LanguageManager;
+import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 
@@ -25,6 +26,10 @@ public abstract class PacketHandler {
 
     protected LanguageManager getLanguageManager() {
         return getMain().getLanguageManager();
+    }
+
+    protected LanguageParser getLanguageParser() {
+        return getMain().getLanguageParser();
     }
 
     protected int getMcVersion() {

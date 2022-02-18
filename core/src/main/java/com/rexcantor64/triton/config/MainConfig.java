@@ -72,6 +72,8 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax motdSyntax;
     private boolean scoreboards;
     private FeatureSyntax scoreboardSyntax;
+    private boolean advancements;
+    private FeatureSyntax advancementsSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -254,6 +256,10 @@ public class MainConfig implements TritonConfig {
         Configuration scoreboards = section.getSection("scoreboards");
         this.scoreboards = scoreboards.getBoolean("enabled", true);
         this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
+
+        Configuration advancements = section.getSection("advancements");
+        this.advancements = advancements.getBoolean("enabled", false);
+        this.advancementsSyntax = FeatureSyntax.fromSection(advancements);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)
