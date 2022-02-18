@@ -184,8 +184,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                         .setLanguage(null, player.getAddress().getAddress().getHostAddress(), lang);
             }
         });
-        if (lang != null)
-            this.refreshAll();
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }

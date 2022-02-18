@@ -32,8 +32,7 @@ public class BukkitListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLoginSync(PlayerLoginEvent e) {
-        val lp = new SpigotLanguagePlayer(e.getPlayer().getUniqueId());
-        Triton.get().getPlayerManager().registerPlayer(lp);
+        val lp = Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
         if (e.getResult() != PlayerLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
