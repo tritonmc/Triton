@@ -143,7 +143,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
             } catch (Exception e) {
                 logger.logError("Failed to connect to database, falling back to local storage!");
                 e.printStackTrace();
-                return;
             }
         }
         this.storage = new LocalStorage();

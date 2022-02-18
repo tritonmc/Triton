@@ -21,6 +21,7 @@ import net.md_5.bungee.netty.PipelineUtils;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class BungeeListener implements Listener {
 
@@ -94,7 +95,14 @@ public class BungeeListener implements Listener {
                         continue;
                     }
                     if (translatedName == null) continue; // Disabled line
-                    newSample.add(new ServerPing.PlayerInfo(translatedName, playerInfo.getUniqueId()));
+                    val translatedNameSplit = translatedName.split("\n", -1);
+                    if (translatedNameSplit.length > 1) {
+                        for (val split : translatedNameSplit) {
+                            newSample.add(new ServerPing.PlayerInfo(split, UUID.randomUUID()));
+                        }
+                    } else {
+                        newSample.add(new ServerPing.PlayerInfo(translatedName, playerInfo.getUniqueId()));
+                    }
                 }
                 players.setSample(newSample.toArray(new ServerPing.PlayerInfo[0]));
             }

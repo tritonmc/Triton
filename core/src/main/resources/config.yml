@@ -120,6 +120,12 @@ storage:
     #  useSSL: false
     #  verifyServerCertificate: false
 
+# EXPERIMENTAL: Intercept and parse ProtocolLib packets asynchronously.
+# This might cause incompatibilities with other plugins.
+# When stable, this will be enabled by default.
+# Changing this REQUIRES a server restart.
+experimental-async-protocol-lib: false
+
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.
