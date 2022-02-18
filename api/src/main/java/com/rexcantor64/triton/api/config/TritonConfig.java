@@ -208,6 +208,14 @@ public interface TritonConfig {
     boolean isPreventPlaceholdersInChat();
 
     /**
+     * Is Triton intercepting ProtocolLib packets asynchronously?
+     *
+     * @return The value of "experimental-async-protocol-lib" in the config.
+     * @since 3.7.0
+     */
+    boolean isAsyncProtocolLib();
+
+    /**
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat"
      * in the config.
      * @since 1.0.0
