@@ -20,4 +20,6 @@ public interface PacketInterceptor {
 
     void resetSign(Player p, SignLocation location);
 
+    void refreshAdvancements(SpigotLanguagePlayer languagePlayer);
+
 }

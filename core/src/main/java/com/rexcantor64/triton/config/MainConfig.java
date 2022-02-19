@@ -72,10 +72,13 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax motdSyntax;
     private boolean scoreboards;
     private FeatureSyntax scoreboardSyntax;
+    private boolean advancements;
+    private FeatureSyntax advancementsSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
     private int maxPlaceholdersInMessage;
+    private boolean asyncProtocolLib;
 
     private String storageType = "local";
     private String serverName;
@@ -151,6 +154,7 @@ public class MainConfig implements TritonConfig {
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
         this.logLevel = section.getInt("log-level", 0);
         this.configAutoRefresh = section.getInt("config-auto-refresh-interval", -1);
+        this.asyncProtocolLib = section.getBoolean("experimental-async-protocol-lib", false);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
     }
@@ -252,6 +256,10 @@ public class MainConfig implements TritonConfig {
         Configuration scoreboards = section.getSection("scoreboards");
         this.scoreboards = scoreboards.getBoolean("enabled", true);
         this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
+
+        Configuration advancements = section.getSection("advancements");
+        this.advancements = advancements.getBoolean("enabled", false);
+        this.advancementsSyntax = FeatureSyntax.fromSection(advancements);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)

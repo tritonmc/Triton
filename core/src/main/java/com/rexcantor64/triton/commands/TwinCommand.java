@@ -74,6 +74,11 @@ public class TwinCommand implements Command {
             if (response.getStatusCode() != 200) {
                 sender.sendMessageFormatted(downloading ? "twin.failed-fetch" : "twin.failed-upload", Triton.get()
                         .getMessagesConfig().getMessage("twin.incorrect-status", response.getStatusCode()));
+                if (response.getStatusCode() == 404) {
+                    // Warn people that accidentally type "/twin reload" instead of "/triton reload" for example
+                    sender.sendMessageFormatted("twin.suggestion-wrong-command", "/triton " + event.getFullSubCommand());
+
+                }
                 return;
             }
 

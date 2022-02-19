@@ -28,6 +28,8 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.SignLocation;
+import com.rexcantor64.triton.language.parser.AdvancedComponent;
+import com.rexcantor64.triton.packetinterceptor.protocollib.AdvancementsPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.protocollib.SignPacketHandler;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -66,9 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,6 +87,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
+    private final AdvancementsPacketHandler advancementsPacketHandler = new AdvancementsPacketHandler();
 
     private final SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
@@ -150,6 +151,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
         }
         signPacketHandler.registerPacketTypes(packetHandlers);
+        advancementsPacketHandler.registerPacketTypes(packetHandlers);
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
         if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
@@ -260,9 +262,36 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isTab()) return;
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
         WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
-        String headerJson = header.getJson();
+        String headerJson = null;
+        WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
+        String footerJson = null;
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null
+                && adventureModifier.readSafely(1) != null) {
+            // Paper 1.18 builds now have Adventure Component fields for header and footer, handle conversion
+            // In future versions we might implement an Adventure parser
+            Object adventureHeader = adventureModifier.readSafely(0);
+            Object adventureFooter = adventureModifier.readSafely(1);
+
+            headerJson = AdventureComponentWrapper.toJson(adventureHeader);
+            footerJson = AdventureComponentWrapper.toJson(adventureFooter);
+
+            adventureModifier.writeSafely(0, null);
+            adventureModifier.writeSafely(1, null);
+        }
+        if (headerJson == null) {
+            if (header == null || footer == null) {
+                Triton.get().getLogger().logWarning("Could not translate player list header footer because content is null.");
+                return;
+            }
+            headerJson = header.getJson();
+            footerJson = footer.getJson();
+        }
+
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
         if (resultHeader == null)
@@ -274,15 +303,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
                 textComp.setText("§0§1§2§r");
         }
-        header.setJson(ComponentSerializer.toString(resultHeader));
+        header = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultHeader));
         packet.getPacket().getChatComponents().writeSafely(0, header);
-        WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
-        String footerJson = footer.getJson();
+
         BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
         if (resultFooter == null)
             resultFooter = new BaseComponent[]{new TextComponent("")};
-        footer.setJson(ComponentSerializer.toString(resultFooter));
+        footer = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultFooter));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
         languagePlayer.setLastTabFooter(footerJson);
@@ -1067,6 +1095,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void refreshAdvancements(SpigotLanguagePlayer languagePlayer) {
+        this.advancementsPacketHandler.refreshAdvancements(languagePlayer);
     }
 
     @Override

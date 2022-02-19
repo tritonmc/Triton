@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.tananaev.jsonpatch.JsonPatch;
@@ -48,8 +50,12 @@ public class TwinParser {
         // Add
         added.forEach(itemElement -> {
             val itemJson = itemElement.getAsJsonObject();
+            val fileName = itemJson.get("fileName");
+            if (fileName == null || !fileName.isJsonPrimitive()) {
+                throw new JsonParseException("Translation does not belong to any collection: " + itemJson);
+            }
             val collection = collections
-                    .computeIfAbsent(itemJson.get("fileName").getAsString(), (ignore) -> new Collection());
+                    .computeIfAbsent(fileName.getAsString(), (ignore) -> new Collection());
 
             itemJson.remove("fileName");
 
@@ -80,11 +86,18 @@ public class TwinParser {
 
                     changedList.add(result);
 
-                    val newColName = resultJson.getAsJsonObject().get("fileName").getAsString();
-                    if (newColName.equals(colName)) return result;
+                    val newColNameElement = resultJson.getAsJsonObject().get("fileName");
+                    if (newColNameElement == null || !newColNameElement.isJsonPrimitive()) {
+                        Triton.get().getLogger().logWarning("Could not calculate the target collection to move the translation into: " + resultJson);
+                        return result;
+                    } else {
+                        val newColName = resultJson.getAsJsonObject().get("fileName").getAsString();
+                        if (newColName.equals(colName)) return result;
 
-                    movingCollections.put(result, newColName);
-                    return null;
+                        movingCollections.put(result, newColName);
+
+                        return null;
+                    }
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList())));

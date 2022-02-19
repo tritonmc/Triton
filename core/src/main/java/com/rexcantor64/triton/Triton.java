@@ -56,6 +56,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return instance instanceof VelocityMLP;
     }
 
+    public static boolean isSpigot() {
+        return instance instanceof SpigotMLP;
+    }
+
     public static Triton get() {
         return instance;
     }
@@ -143,7 +147,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
             } catch (Exception e) {
                 logger.logError("Failed to connect to database, falling back to local storage!");
                 e.printStackTrace();
-                return;
             }
         }
         this.storage = new LocalStorage();

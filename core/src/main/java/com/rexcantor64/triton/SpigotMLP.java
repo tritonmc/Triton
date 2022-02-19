@@ -35,7 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class SpigotMLP extends Triton {
 
@@ -49,6 +48,8 @@ public class SpigotMLP extends Triton {
     private MaterialWrapperManager wrapperManager;
     @Getter
     private SpigotCommandHandler commandHandler;
+    @Getter
+    private boolean papiEnabled = false;
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
@@ -83,9 +84,16 @@ public class SpigotMLP extends Triton {
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getLoader());
         // Use ProtocolLib if available
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
-            val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
-            asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this)).start();
-            asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+            if (getConfig().isAsyncProtocolLib()) {
+                val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
+                asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this)).start();
+                asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+            } else {
+                ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
+                ProtocolLibrary.getProtocolManager().addPacketListener(new MotdPacketHandler());
+            }
+        } else {
+            getLogger().logError("Could not setup packet interceptor because ProtocolLib is not available!");
         }
 
         if (getConf().isBungeecord()) {
@@ -95,8 +103,10 @@ public class SpigotMLP extends Triton {
                     ":main", bridgeManager = new SpigotBridgeManager());
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new TritonPlaceholderHook(this).register();
+            papiEnabled = true;
+        }
 
         if (getConf().isTerminal())
             Log4jInjector.injectAppender();
@@ -178,8 +188,14 @@ public class SpigotMLP extends Triton {
 
     public <T> Optional<T> callSync(Callable<T> callable) {
         try {
+            if (Bukkit.getServer().isPrimaryThread()) {
+                return Optional.ofNullable(callable.call());
+            }
             return Optional.ofNullable(Bukkit.getScheduler().callSyncMethod(getLoader(), callable).get());
         } catch (InterruptedException | ExecutionException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            e.printStackTrace();
             return Optional.empty();
         }
     }
