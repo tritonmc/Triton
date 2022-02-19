@@ -262,9 +262,36 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConf().isTab()) return;
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
         WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
-        String headerJson = header.getJson();
+        String headerJson = null;
+        WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
+        String footerJson = null;
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null
+                && adventureModifier.readSafely(1) != null) {
+            // Paper 1.18 builds now have Adventure Component fields for header and footer, handle conversion
+            // In future versions we might implement an Adventure parser
+            Object adventureHeader = adventureModifier.readSafely(0);
+            Object adventureFooter = adventureModifier.readSafely(1);
+
+            headerJson = AdventureComponentWrapper.toJson(adventureHeader);
+            footerJson = AdventureComponentWrapper.toJson(adventureFooter);
+
+            adventureModifier.writeSafely(0, null);
+            adventureModifier.writeSafely(1, null);
+        }
+        if (headerJson == null) {
+            if (header == null || footer == null) {
+                Triton.get().getLogger().logWarning("Could not translate player list header footer because content is null.");
+                return;
+            }
+            headerJson = header.getJson();
+            footerJson = footer.getJson();
+        }
+
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
         if (resultHeader == null)
@@ -276,15 +303,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
                 textComp.setText("§0§1§2§r");
         }
-        header.setJson(ComponentSerializer.toString(resultHeader));
+        header = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultHeader));
         packet.getPacket().getChatComponents().writeSafely(0, header);
-        WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
-        String footerJson = footer.getJson();
+
         BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
                 main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
         if (resultFooter == null)
             resultFooter = new BaseComponent[]{new TextComponent("")};
-        footer.setJson(ComponentSerializer.toString(resultFooter));
+        footer = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultFooter));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
         languagePlayer.setLastTabFooter(footerJson);
