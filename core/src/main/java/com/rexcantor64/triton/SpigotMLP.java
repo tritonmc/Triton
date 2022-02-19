@@ -47,6 +47,8 @@ public class SpigotMLP extends Triton {
     private MaterialWrapperManager wrapperManager;
     @Getter
     private SpigotCommandHandler commandHandler;
+    @Getter
+    private boolean papiEnabled = false;
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
@@ -100,8 +102,10 @@ public class SpigotMLP extends Triton {
                     ":main", bridgeManager = new SpigotBridgeManager());
         }
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new TritonPlaceholderHook(this).register();
+            papiEnabled = true;
+        }
 
         if (getConf().isTerminal())
             Log4jInjector.injectAppender();
