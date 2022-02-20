@@ -117,7 +117,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         val langItems = this.signItems.get(language);
         if (langItems == null) return getSignFromMain(location, defaultLines);
 
-        var lines = langItems.get(location);
+        String[] lines = langItems.get(location);
         if (lines == null) return getSignFromMain(location, defaultLines);
 
         return formatLines(language, lines, defaultLines);
@@ -127,7 +127,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         val langItems = this.signItems.get(this.mainLanguage.getName());
         if (langItems == null) return null;
 
-        var lines = langItems.get(location);
+        String[] lines = langItems.get(location);
         if (lines == null) return null;
 
         return formatLines(this.mainLanguage.getName(), lines, defaultLines);
@@ -218,7 +218,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                 .getStorage() instanceof LocalStorage);
         val serverName = Triton.get().getConfig().getServerName();
 
-        var itemCount = 0;
+        int itemCount = 0;
         for (val collection : Triton.get().getStorage().getCollections().values()) {
 
             for (val item : collection.getItems()) {

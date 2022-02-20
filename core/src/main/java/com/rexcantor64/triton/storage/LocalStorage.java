@@ -162,7 +162,7 @@ public class LocalStorage extends Storage {
                     Triton.get().getLogger().logInfo(2, "Deleted translations/%1", file.getName());
         }
 
-        var success = new AtomicBoolean(true);
+        AtomicBoolean success = new AtomicBoolean(true);
 
         collections.forEach((key, value) -> {
             try {

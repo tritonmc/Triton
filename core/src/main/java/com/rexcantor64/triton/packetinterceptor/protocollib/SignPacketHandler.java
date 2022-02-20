@@ -279,7 +279,7 @@ public class SignPacketHandler extends PacketHandler {
         packet.getSpecificModifier((Class<Object>) TILE_ENTITY_TYPES_CLASS).writeSafely(0, type);
 
         val compound = NbtFactory.ofCompound(null);
-        for (var i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             compound.put("Text" + (i + 1),
                     ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
         }
@@ -312,7 +312,7 @@ public class SignPacketHandler extends PacketHandler {
         compound.put("y", location.getY());
         compound.put("z", location.getZ());
         compound.put("id", SIGN_TYPE_ID);
-        for (var i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             compound.put("Text" + (i + 1),
                     ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
         }
@@ -338,7 +338,7 @@ public class SignPacketHandler extends PacketHandler {
                 new BlockPosition(location.getX(), location.getY(), location.getZ()));
 
         val comps = new WrappedChatComponent[4];
-        for (var i = 0; i < 4; ++i)
+        for (int i = 0; i < 4; ++i)
             comps[i] =
                     WrappedChatComponent.fromJson(ComponentSerializer
                             .toString(TextComponent.fromLegacyText(lines[i])));

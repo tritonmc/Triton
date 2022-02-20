@@ -42,9 +42,9 @@ public class BukkitListener implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         if (!Triton.get().getConfig().isPreventPlaceholdersInChat()) return;
 
-        var msg = e.getMessage();
+        String msg = e.getMessage();
         val indexes = LanguageParser.getPatternIndexArray(msg, Triton.get().getConfig().getChatSyntax().getLang());
-        for (var i = 0; i < indexes.size(); ++i) {
+        for (int i = 0; i < indexes.size(); ++i) {
             val index = indexes.get(i);
             msg = msg.substring(0, index[0] + 1 + i) + ChatColor.RESET + msg.substring(index[0] + 1 + i);
         }

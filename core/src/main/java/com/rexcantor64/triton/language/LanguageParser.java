@@ -180,10 +180,10 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     private AdvancedComponent parseAdvancedComponent(String language, FeatureSyntax syntax,
                                                      AdvancedComponent advancedComponent,
                                                      LanguagePlayer contextPlayer) {
-        var input = advancedComponent.getTextClean();
+        String input = advancedComponent.getTextClean();
         input = Triton.get().getLanguageManager().matchPattern(input, language);
         Integer[] i;
-        var safeCounter = 0;
+        int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             safeCounter++;
             if (safeCounter > Triton.get().getConfig().getMaxPlaceholdersInMessage()) {

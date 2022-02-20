@@ -243,7 +243,7 @@ public class AdvancedComponent {
     }
 
     public String getTextClean() {
-        var result = text;
+        String result = text;
         while (result.startsWith(ChatColor.RESET.toString()))
             result = result.substring(2);
         return result;

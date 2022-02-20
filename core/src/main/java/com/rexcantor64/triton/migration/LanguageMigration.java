@@ -81,7 +81,7 @@ public class LanguageMigration {
                     if (!file.getName().endsWith(".json")) continue;
 
                     val fileContent = JSON_PARSER.parse(FileUtils.getReaderFromFile(file));
-                    var collectionUniversal = false;
+                    boolean collectionUniversal = false;
                     JsonArray items;
                     if (fileContent.isJsonObject()) {
                         items = fileContent.getAsJsonObject().getAsJsonArray("items");

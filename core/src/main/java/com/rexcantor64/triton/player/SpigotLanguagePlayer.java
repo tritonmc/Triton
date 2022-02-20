@@ -53,7 +53,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public void setScoreboardObjective(String name, String chatJson, Object type) {
-        var objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
+        ScoreboardObjective objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
         objective.setChatJson(chatJson);
         objective.setType(type);
     }
@@ -64,11 +64,11 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public void setScoreboardTeam(String name, String displayJson, String prefixJson, String suffixJson,
                                   List<Object> optionData) {
-        var objective = this.teamsMap.computeIfAbsent(name, k -> new ScoreboardTeam());
-        objective.setDisplayJson(displayJson);
-        objective.setPrefixJson(prefixJson);
-        objective.setSuffixJson(suffixJson);
-        objective.setOptionData(optionData);
+        ScoreboardTeam team = this.teamsMap.computeIfAbsent(name, k -> new ScoreboardTeam());
+        team.setDisplayJson(displayJson);
+        team.setPrefixJson(prefixJson);
+        team.setSuffixJson(suffixJson);
+        team.setOptionData(optionData);
     }
 
     public void removeScoreboardTeam(String name) {

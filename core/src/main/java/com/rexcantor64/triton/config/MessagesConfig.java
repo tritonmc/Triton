@@ -35,7 +35,7 @@ public class MessagesConfig {
     }
 
     private String getString(String code) {
-        var msg = messages.get(code);
+        Object msg = messages.get(code);
         if (msg == null)
             msg = defaultMessages.get(code);
 
@@ -51,7 +51,7 @@ public class MessagesConfig {
     }
 
     public List<String> getMessageList(String code) {
-        var list = messages.get(code);
+        Object list = messages.get(code);
         if (list == null)
             list = defaultMessages.get(code);
 

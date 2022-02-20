@@ -79,7 +79,7 @@ public abstract class CommandHandler {
         val newLength = args.length + 1;
         val newArray = new String[newLength];
         newArray[0] = subCommand;
-        for (var i = 0; i < args.length; ++i)
+        for (int i = 0; i < args.length; ++i)
             newArray[i + 1] = args[i];
         return newArray;
     }

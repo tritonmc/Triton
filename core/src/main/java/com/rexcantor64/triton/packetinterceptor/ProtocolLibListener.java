@@ -725,9 +725,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         languagePlayer.setScoreboardTeam(teamName, displayName.getJson(), prefix.getJson(), suffix.getJson(), options);
 
-        var i = 0;
-        for (var component : Arrays.asList(displayName, prefix, suffix)) {
-            var result = main.getLanguageParser()
+        int i = 0;
+        for (WrappedChatComponent component : Arrays.asList(displayName, prefix, suffix)) {
+            BaseComponent[] result = main.getLanguageParser()
                     .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
                             .parse(component.getJson()));
             if (result == null) result = new BaseComponent[]{new TextComponent("")};
@@ -753,7 +753,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
 
-        var result = main.getLanguageParser()
+        BaseComponent[] result = main.getLanguageParser()
                 .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
                         .parse(displayName.getJson()));
         if (result == null) result = new BaseComponent[]{new TextComponent("")};
@@ -1070,8 +1070,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     SCOREBOARD_TEAM_METADATA_MODIFIER = new StructureModifier<>(obj.getClass());
                 val structure = SCOREBOARD_TEAM_METADATA_MODIFIER.withTarget(obj);
 
-                var j = 0;
-                for (var i : Arrays.asList(3, 4, 5, 6))
+                int j = 0;
+                for (int i : Arrays.asList(3, 4, 5, 6))
                     structure.writeSafely(i, value.getOptionData().get(j++));
 
                 val chatComponents = structure.withType(
@@ -1083,8 +1083,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getDisplayJson()));
                 packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
                 packet.getChatComponents().writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
-                var j = 0;
-                for (var i : Arrays.asList(4, 5, 6, 9))
+                int j = 0;
+                for (int i : Arrays.asList(4, 5, 6, 9))
                     packet.getModifier().writeSafely(i, value.getOptionData().get(j++));
             }
 

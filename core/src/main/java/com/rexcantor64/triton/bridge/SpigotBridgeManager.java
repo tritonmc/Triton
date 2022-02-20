@@ -60,17 +60,17 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         config.setMainLanguage(in.readUTF());
                         short languageSize = in.readShort();
                         val languages = new ArrayList<Language>();
-                        for (var i = 0; i < languageSize; i++) {
+                        for (int i = 0; i < languageSize; i++) {
                             val name = in.readUTF();
                             val displayName = in.readUTF();
                             val flag = in.readUTF();
                             val fallbackLanguages = new ArrayList<String>();
                             val fallbackSize = in.readShort();
-                            for (var k = 0; k < fallbackSize; k++)
+                            for (int k = 0; k < fallbackSize; k++)
                                 fallbackLanguages.add(in.readUTF());
                             val minecraftCodes = new ArrayList<String>();
                             val mcSize = in.readShort();
-                            for (var k = 0; k < mcSize; k++)
+                            for (int k = 0; k < mcSize; k++)
                                 minecraftCodes.add(in.readUTF());
                             languages.add(new Language(name, flag, minecraftCodes, displayName, fallbackLanguages, null));
                         }
@@ -86,7 +86,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     // Read language files
                     val languageItems = new ArrayList<LanguageItem>();
                     val itemsSize = in.readInt();
-                    for (var i = 0; i < itemsSize; i++) {
+                    for (int i = 0; i < itemsSize; i++) {
                         val type = in.readByte();
                         val key = in.readUTF();
                         switch (type) {
@@ -97,14 +97,14 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                                 val msgs = new HashMap<String, String>();
                                 val langSize = in.readShort();
-                                for (var k = 0; k < langSize; k++)
+                                for (int k = 0; k < langSize; k++)
                                     msgs.put(in.readUTF(), in.readUTF());
                                 textItem.setLanguages(msgs);
 
                                 List<String> patterns = new ArrayList<>();
                                 if (type != 0) {
                                     val matchesSize = in.readShort();
-                                    for (var k = 0; k < matchesSize; k++)
+                                    for (int k = 0; k < matchesSize; k++)
                                         patterns.add(in.readUTF());
                                 }
                                 if (patterns.size() > 0) textItem.setPatterns(patterns);
@@ -124,7 +124,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                                 val signLines = new HashMap<String, String[]>();
                                 val linesSize = in.readShort();
-                                for (var k = 0; k < linesSize; k++)
+                                for (int k = 0; k < linesSize; k++)
                                     signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF()
                                             , in.readUTF()});
                                 signItem.setLines(signLines);
@@ -192,7 +192,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                 val subCommand = in.readBoolean() ? in.readUTF() : null;
                 val args = new String[in.readShort()];
-                for (var i = 0; i < args.length; ++i)
+                for (int i = 0; i < args.length; ++i)
                     args[i] = in.readUTF();
 
                 val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
