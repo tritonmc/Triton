@@ -4,6 +4,7 @@ import com.rexcantor64.triton.banners.Banner;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,16 +14,20 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     private String name;
     private List<String> minecraftCodes;
     private String rawDisplayName;
+    private List<String> fallbackLanguages = Collections.emptyList();
     private transient String displayName;
     private transient Banner banner;
     private String flagCode;
     private List<ExecutableCommand> cmds = new ArrayList<>();
 
-    public Language(String name, String flagCode, List<String> minecraftCodes, String displayName, List<String> cmds) {
+    public Language(String name, String flagCode, List<String> minecraftCodes, String displayName, List<String> fallbackLanguages, List<String> cmds) {
         this.name = name;
         this.rawDisplayName = displayName;
         this.minecraftCodes = minecraftCodes;
         this.flagCode = flagCode;
+        if (fallbackLanguages != null) {
+            this.fallbackLanguages = Collections.unmodifiableList(fallbackLanguages);
+        }
         if (cmds != null)
             for (String cmd : cmds)
                 this.cmds.add(ExecutableCommand.parse(cmd));

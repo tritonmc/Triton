@@ -34,6 +34,9 @@ public class BridgeSerializer {
             languageOut.writeUTF(language.getName());
             languageOut.writeUTF(language.getRawDisplayName());
             languageOut.writeUTF(language.getFlagCode());
+            languageOut.writeShort(language.getFallbackLanguages().size());
+            for (val fallbackLanguage : language.getFallbackLanguages())
+                languageOut.writeUTF(fallbackLanguage);
             languageOut.writeShort(language.getMinecraftCodes().size());
             for (val code : language.getMinecraftCodes())
                 languageOut.writeUTF(code);

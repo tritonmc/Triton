@@ -64,11 +64,15 @@ public class SpigotBridgeManager implements PluginMessageListener {
                             val name = in.readUTF();
                             val displayName = in.readUTF();
                             val flag = in.readUTF();
+                            val fallbackLanguages = new ArrayList<String>();
+                            val fallbackSize = in.readShort();
+                            for (var k = 0; k < fallbackSize; k++)
+                                fallbackLanguages.add(in.readUTF());
                             val minecraftCodes = new ArrayList<String>();
                             val mcSize = in.readShort();
                             for (var k = 0; k < mcSize; k++)
                                 minecraftCodes.add(in.readUTF());
-                            languages.add(new Language(name, flag, minecraftCodes, displayName, null));
+                            languages.add(new Language(name, flag, minecraftCodes, displayName, fallbackLanguages, null));
                         }
                         config.setLanguages(languages);
                         val jsonObj = new JsonObject();
