@@ -284,7 +284,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         } else if (translatedResult.startsWith("[minimsg]")) {
             val mmInput = translatedResult.substring(9);
             try {
-                val textComponent = MiniMessage.get().parse(mmInput);
+                val textComponent = MiniMessage.miniMessage().deserialize(mmInput);
                 val jsonSerialized = GsonComponentSerializer.gson().serialize(textComponent);
                 componentResult = ComponentSerializer.parse(jsonSerialized);
             } catch (JsonParseException | NullPointerException e) {
