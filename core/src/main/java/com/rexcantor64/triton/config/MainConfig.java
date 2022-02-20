@@ -113,9 +113,10 @@ public class MainConfig implements TritonConfig {
                         languagesSection.getString(lang + ".flag", "pa"),
                         YAMLUtils.getStringOrStringList(languagesSection, lang + ".minecraft-code"),
                         languagesSection.getString(lang + ".display-name", "&4Unknown"),
+                        languagesSection.getStringList(lang + ".fallback-languages"),
                         languagesSection.getStringList(lang + ".commands")));
         } else {
-            languages.add(new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>()));
+            languages.add(new Language("temp", "pabk", new ArrayList<>(), "Error", null, null));
         }
         this.languages = languages;
 

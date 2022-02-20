@@ -52,34 +52,48 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String getText(@NonNull LanguagePlayer p, String code, Object... args) {
-        return getText(p.getLang().getName(), code, args);
+        return getText(p.getLang(), code, args);
     }
 
-    public String getText(@NonNull String language, @NonNull String code, @NonNull Object... args) {
-        val langItems = this.textItems.get(language);
-        if (langItems == null) return getTextFromMain(code, args);
+    public String getText(@NonNull String languageName, @NonNull String code, @NonNull Object... args) {
+        val language = getLanguageByName(languageName, false);
+        if (language == null) {
+            return ChatColor.translateAlternateColorCodes('&',
+                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
+        }
 
-        val msg = langItems.get(code);
-        if (msg == null) return getTextFromMain(code, args);
+        return getText(language, code, args);
+    }
 
-        return formatMessage(msg, args);
+    public String getText(@NonNull com.rexcantor64.triton.api.language.Language language, @NonNull String code, @NonNull Object... args) {
+        val text = getTextForLanguage(language.getName(), code, args);
+        if (text.isPresent()) return text.get();
+
+        for (String fallbackLanguage : language.getFallbackLanguages()) {
+            val textFallback = getTextForLanguage(fallbackLanguage, code, args);
+            if (textFallback.isPresent()) return textFallback.get();
+        }
+
+        val textMain = getTextForLanguage(this.getMainLanguage().getName(), code, args);
+        return textMain.orElseGet(() -> ChatColor.translateAlternateColorCodes('&',
+                Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args))));
     }
 
     public String getTextFromMain(@NonNull String code, @NonNull Object... args) {
-        val langItems = this.textItems.get(this.getMainLanguage().getName());
-        if (langItems == null)
-            return ChatColor.translateAlternateColorCodes('&',
-                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
-
-        val msg = langItems.get(code);
-        if (msg == null)
-            return ChatColor.translateAlternateColorCodes('&',
-                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
-
-        return formatMessage(msg, args);
+        return getText(this.getMainLanguage(), code, args);
     }
 
-    private String formatMessage(@NonNull String msg, @NonNull Object... args) {
+    private Optional<String> getTextForLanguage(@NonNull String language, @NonNull String code, @NonNull Object... args) {
+        val langItems = this.textItems.get(language);
+        if (langItems == null) return Optional.empty();
+
+        val msg = langItems.get(code);
+        if (msg == null) return Optional.empty();
+
+        return Optional.of(formatMessage(msg, args));
+    }
+
+    private @NonNull String formatMessage(@NonNull String msg, @NonNull Object... args) {
         // Loop backwards in order to replace %10 before %1 (for example)
         for (int i = args.length - 1; i >= 0; --i)
             msg = msg.replace("%" + (i + 1), String.valueOf(args[i]));
