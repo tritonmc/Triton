@@ -20,7 +20,7 @@ dependencies {
 
     // Adventure / MiniMessage
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.9.3'
-    implementation('net.kyori:adventure-text-minimessage:4.10.0-SNAPSHOT') {
+    implementation('net.kyori:adventure-text-minimessage:4.2.0-SNAPSHOT') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
