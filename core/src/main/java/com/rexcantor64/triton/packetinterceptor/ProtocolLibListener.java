@@ -87,7 +87,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
-    private final AdvancementsPacketHandler advancementsPacketHandler = new AdvancementsPacketHandler();
+    private final AdvancementsPacketHandler advancementsPacketHandler;
 
     private final SpigotMLP main;
     private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
@@ -115,6 +115,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         val containerClass = MinecraftReflection.getMinecraftClass("world.inventory.Container", "Container");
         PLAYER_ACTIVE_CONTAINER_FIELD = Arrays.stream(MinecraftReflection.getEntityHumanClass().getDeclaredFields())
                 .filter(field -> field.getType() == containerClass && !field.getName().equals("defaultContainer")).findAny().orElse(null);
+
+        this.advancementsPacketHandler = getMCVersion() >= 12 ? new AdvancementsPacketHandler() : null;
 
         setupPacketHandlers();
     }
@@ -151,7 +153,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
         }
         signPacketHandler.registerPacketTypes(packetHandlers);
-        advancementsPacketHandler.registerPacketTypes(packetHandlers);
+        if (advancementsPacketHandler != null) {
+            advancementsPacketHandler.registerPacketTypes(packetHandlers);
+        }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
         if (getMCVersion() >= 9) packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
@@ -1099,6 +1103,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public void refreshAdvancements(SpigotLanguagePlayer languagePlayer) {
+        if (this.advancementsPacketHandler == null) return;
+        
         this.advancementsPacketHandler.refreshAdvancements(languagePlayer);
     }
 

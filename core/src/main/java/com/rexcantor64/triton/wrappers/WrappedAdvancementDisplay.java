@@ -8,15 +8,14 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.AbstractWrapper;
 import com.comphenix.protocol.wrappers.BukkitConverters;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedServerPing;
 
 /**
  * Custom ProtocolLib Wrapper of NMS' AdvancementDisplay
  */
 public class WrappedAdvancementDisplay extends AbstractWrapper {
 
-    private static Class<?> ADVANCEMENT_DISPLAY = MinecraftReflection.getMinecraftClass("advancements.AdvancementDisplay");
-    private static Class<?> ADVANCEMENT_FRAME_TYPE_CLASS = MinecraftReflection.getMinecraftClass("advancements.AdvancementFrameType");
+    private static Class<?> ADVANCEMENT_DISPLAY = MinecraftReflection.getMinecraftClass("advancements.AdvancementDisplay", "AdvancementDisplay");
+    private static Class<?> ADVANCEMENT_FRAME_TYPE_CLASS = MinecraftReflection.getMinecraftClass("advancements.AdvancementFrameType", "AdvancementFrameType");
     private static ConstructorAccessor ADVANCEMENT_DISPLAY_CONSTRUTOR = Accessors.getConstructorAccessor(
             ADVANCEMENT_DISPLAY,
             MinecraftReflection.getItemStackClass(),
