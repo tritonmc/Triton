@@ -92,7 +92,7 @@ log-level: 0
 # You can use '/triton database upload' to upload the local translations to a remote storage.
 # This MUST match what is on BungeeCord
 storage:
-  # Valid options: 'local', 'mysql', 'mongodb'
+  # Valid options: 'local', 'mysql'
   type: 'local'
   # This should match the name of this server in BungeeCord's config.yml
   # Used to filter translations for this server only

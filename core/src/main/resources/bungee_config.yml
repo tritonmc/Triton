@@ -82,7 +82,7 @@ log-level: 0
 # You can use '/triton database upload' to upload the local translations to a remote storage.
 # The same settings MUST be placed on the Triton config for all Spigot servers under the same network
 storage:
-  # Valid options: 'local', 'mysql', 'mongodb'
+  # Valid options: 'local', 'mysql'
   type: 'local'
   # The options below this are for non-local storage only
   host: "localhost"

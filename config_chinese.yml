@@ -89,7 +89,7 @@ log-level: 0
 # 你可使用 '/triton database upload' 将本地文件上传到数据库.
 # 此设置必须要与蹦极端配置同步
 storage:
-  # 存储介质: 'local', 'mysql', 'mongodb'
+  # 存储介质: 'local', 'mysql'
   type: 'local'
   # 此选项必须要与 蹦极端的 config.yml 里的服务器名相匹配
   # 用于筛选本服使用的翻译
