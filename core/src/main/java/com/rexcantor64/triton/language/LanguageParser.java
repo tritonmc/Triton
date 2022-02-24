@@ -262,7 +262,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     }
 
     private AdvancedComponent parseTritonTranslation(String translatedResult, LanguagePlayer contextPlayer) {
-        if (Triton.isSpigot() && Triton.asSpigot().isPapiEnabled()) {
+        if (contextPlayer instanceof SpigotLanguagePlayer && Triton.isSpigot() && Triton.asSpigot().isPapiEnabled()) {
             SpigotLanguagePlayer slp = (SpigotLanguagePlayer) contextPlayer;
             val bukkitPlayer = slp.toBukkit();
             if (bukkitPlayer.isPresent()) {
