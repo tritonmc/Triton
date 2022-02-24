@@ -9,15 +9,16 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
+import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
-import lombok.var;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -230,8 +231,40 @@ public class LocalStorage extends Storage {
                 }
             else
                 Triton.get().getLogger().logWarning(2, "An I/O error occurred while loading the translations folder.");
+        } else if (!translationsFolder.exists()) {
+            createSampleTranslationsFolder(translationsFolder);
         }
         return collections;
+    }
+
+    private void createSampleTranslationsFolder(File translationsFolder) {
+        // Create folder with sample collection to guide new users
+        if (!translationsFolder.mkdirs()) {
+            Triton.get().getLogger().logError("Failed to create 'translations' folder. Check if the server has the required permissions.");
+            return;
+        }
+
+        Collection sampleCollection = new Collection();
+        LanguageText sampleTranslation = new LanguageText();
+        sampleTranslation.setKey("example.translation");
+        sampleTranslation.setLanguages(new HashMap<>());
+        sampleTranslation.getLanguages().put("en_GB", "This is an example translation in English. " +
+                "You can use it with the placeholder [lang]example.translation[/lang].");
+        sampleTranslation.getLanguages().put("pt_PT", "Isto é uma tradução exemplo em Português. " +
+                "Podes usá-la com o placeholder [lang]example.translation[/lang].");
+        sampleCollection.getItems().add(sampleTranslation);
+
+        val sampleCollectionFile = new File(translationsFolder, "default.json");
+
+        try {
+            Triton.get().getLogger().logInfo(2, "Saving translations/default.json");
+
+            @Cleanup val fileWriter = FileUtils.getWriterFromFile(sampleCollectionFile);
+            CollectionSerializer.toJson(sampleCollection, fileWriter);
+        } catch (Exception e) {
+            Triton.get().getLogger().logError("Failed to save translations/default.json: %1", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public String toString() {
