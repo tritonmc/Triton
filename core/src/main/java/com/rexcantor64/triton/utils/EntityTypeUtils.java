@@ -1,15 +1,24 @@
 package com.rexcantor64.triton.utils;
 
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.wrappers.MinecraftKey;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
+import lombok.SneakyThrows;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
 public class EntityTypeUtils {
 
-    private static HashMap<Integer, EntityType> cache = new HashMap<>();
+    private static Method registryGetTypeByNumericIdMethod = null;
+    private static Method registryGetMinecraftKeyByTypeMethod = null;
+    private static Object entityTypeRegistry = null;
+    private static final HashMap<Integer, EntityType> cache = new HashMap<>();
 
     public static EntityType getEntityTypeById(int id) {
         if (!cache.containsKey(id))
@@ -19,27 +28,12 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
-            if (Triton.get().getMcVersion() >= 18) {
-                Class<?> registryClass = MinecraftReflection.getIRegistry();
-                Object entityTypeFinder = registryClass.getField("Z").get(null);
-
-                Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("d").invoke(entityTypeFinder);
-                return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(entitySet.toArray()[id].toString()
-                        .replace("minecraft:", "")));
-            }
-            if (Triton.get().getMcVersion() >= 17) {
-                Class<?> registryClass = MinecraftReflection.getIRegistry();
-                Object entityTypeFinder = registryClass.getField("Y").get(null);
-
-                Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("keySet").invoke(entityTypeFinder);
-                return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(entitySet.toArray()[id].toString()
-                        .replace("minecraft:", "")));
-            }
             if (Triton.get().getMcVersion() >= 13) {
-                Class<?> registryClass = MinecraftReflection.getIRegistry();
-                Object entityTypeFinder = registryClass.getField("ENTITY_TYPE").get(null);
-                Set<?> entitySet = (Set<?>) entityTypeFinder.getClass().getMethod("keySet").invoke(entityTypeFinder);
-                return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(entitySet.toArray()[id].toString()
+                calculateEntityRegistrySet();
+
+                Object type = registryGetTypeByNumericIdMethod.invoke(entityTypeRegistry, id);
+                Object minecraftKey = registryGetMinecraftKeyByTypeMethod.invoke(entityTypeRegistry, type);
+                return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromName(minecraftKey.toString()
                         .replace("minecraft:", "")));
             }
             return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromId(id));
@@ -54,6 +48,42 @@ public class EntityTypeUtils {
         for (ObjectIds obj : ObjectIds.values())
             if (obj.id == id) return obj.entityType;
         return EntityType.UNKNOWN;
+    }
+
+    @SneakyThrows
+    private static void calculateEntityRegistrySet() {
+        if (EntityTypeUtils.entityTypeRegistry != null) return;
+
+        Class<?> iRegistry = MinecraftReflection.getIRegistry();
+        Class<?> minecraftKeyClass = MinecraftReflection.getMinecraftKeyClass();
+        Class<?> registryBlocksClass = MinecraftReflection.getMinecraftClass("core.RegistryBlocks", "RegistryBlocks");
+
+        Object entityTypeRegistry = Arrays.stream(iRegistry.getFields())
+                .filter(field -> {
+                    // 1.13-1.16 uses IRegistry as type, 1.17+ uses RegistryBlocks as type
+                    if (field.getType().equals(registryBlocksClass) || field.getType().equals(iRegistry)) {
+                        ParameterizedType type = (ParameterizedType) field.getGenericType();
+                        Type[] actualTypes = type.getActualTypeArguments();
+                        return actualTypes.length == 1 && actualTypes[0].getTypeName().endsWith(".EntityTypes<?>");
+                    }
+                    return false;
+                })
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("Could not get EntityTypes registry. Incompatible Minecraft version."))
+                .get(null);
+
+        registryGetMinecraftKeyByTypeMethod = Arrays.stream(entityTypeRegistry.getClass().getMethods())
+                .filter(method -> minecraftKeyClass.equals(method.getReturnType()) && method.getParameterCount() == 1)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not get RegistryBlocks<EntityType>'s key set"));
+
+        registryGetTypeByNumericIdMethod = Arrays.stream(entityTypeRegistry.getClass().getMethods())
+                .filter(method -> method.getParameterCount() == 1 && method.getParameterTypes()[0].equals(int.class))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Could not get entity numeric id to entity type method"));
+
+        EntityTypeUtils.entityTypeRegistry = entityTypeRegistry;
+
     }
 
     private enum ObjectIds {

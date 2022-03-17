@@ -2,6 +2,7 @@ package com.rexcantor64.triton.utils;
 
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.MinecraftKey;
+import lombok.SneakyThrows;
 import lombok.val;
 
 import java.lang.reflect.ParameterizedType;
@@ -30,6 +31,7 @@ public class RegistryUtils {
                 new Class[]{MinecraftReflection.getMinecraftKeyClass()}, new Object[]{MinecraftKey.getConverter().getGeneric(key)});
     }
 
+    @SneakyThrows
     private static void calculateTileEntityTypeRegistry() {
         if (tileEntityTypeRegistry != null) return;
 
@@ -45,7 +47,8 @@ public class RegistryUtils {
                     return false;
                 })
                 .findAny()
-                .orElseThrow(() -> new RuntimeException("Could not get TileEntityType registry. Incompatible Minecraft version."));
+                .orElseThrow(() -> new RuntimeException("Could not get TileEntityType registry. Incompatible Minecraft version."))
+                .get(null);
     }
 
 
