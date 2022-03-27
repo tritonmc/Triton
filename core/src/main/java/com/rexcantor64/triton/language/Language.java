@@ -37,6 +37,10 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     public void computeProperties() {
         this.displayName = this.rawDisplayName;
         this.banner = new Banner(flagCode, this.displayName);
+        // If loading with Gson, this might be set to null
+        if (fallbackLanguages == null) {
+            fallbackLanguages = Collections.emptyList();
+        }
     }
 
     @Override
