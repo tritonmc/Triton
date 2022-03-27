@@ -117,7 +117,7 @@ public class MysqlStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         String lang = getValueFromStorage(lp.getUUID().toString());
-        if (!Triton.get().getConf().isBungeecord() &&
+        if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConf().isAlwaysCheckClientLocale())))
             lp.waitForClientLocale();
@@ -178,7 +178,7 @@ public class MysqlStorage extends Storage {
     @Override
     public boolean uploadPartiallyToStorage(ConcurrentHashMap<String, Collection> collections,
                                             List<LanguageItem> changed, List<LanguageItem> deleted) {
-        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) return true;
+        if (Triton.get().getConf().isBungeecord() && Triton.isSpigot()) return true;
 
         try {
             @Cleanup val connection = openConnection();

@@ -101,7 +101,7 @@ public class MainConfig implements TritonConfig {
 
     private void setup(Configuration section) {
         this.bungeecord = section.getBoolean("bungeecord", false);
-        if (!this.bungeecord) {
+        if (Triton.isProxy() || !this.bungeecord) {
             this.twinToken = section.getString("twin-token", "");
         }
 
@@ -163,7 +163,7 @@ public class MainConfig implements TritonConfig {
 
     public void setup() {
         setup(main.getConfigYAML());
-        if (this.bungeecord && storageType.equalsIgnoreCase("local"))
+        if (Triton.isSpigot() && this.bungeecord && storageType.equalsIgnoreCase("local"))
             setupFromCache();
     }
 

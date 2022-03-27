@@ -214,7 +214,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
         Map<Pattern, LanguageText> matches = new HashMap<>();
 
-        val filterItems = Triton.get() instanceof SpigotMLP && Triton.get().getConfig().isBungeecord() && !(Triton.get()
+        val filterItems = Triton.isSpigot() && Triton.get().getConfig().isBungeecord() && !(Triton.get()
                 .getStorage() instanceof LocalStorage);
         val serverName = Triton.get().getConfig().getServerName();
 

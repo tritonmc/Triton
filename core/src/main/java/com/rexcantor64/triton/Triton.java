@@ -56,6 +56,10 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return instance instanceof VelocityMLP;
     }
 
+    public static boolean isProxy() {
+        return isBungee() || isVelocity();
+    }
+
     public static boolean isSpigot() {
         return instance instanceof SpigotMLP;
     }

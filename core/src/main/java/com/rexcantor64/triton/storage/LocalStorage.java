@@ -58,7 +58,7 @@ public class LocalStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         String lang = languageMap.get(lp.getUUID().toString());
-        if (!Triton.get().getConf().isBungeecord() &&
+        if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConf().isAlwaysCheckClientLocale())))
             lp.waitForClientLocale();
@@ -118,7 +118,7 @@ public class LocalStorage extends Storage {
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
 
         // Use translations.cache.json
-        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) {
+        if (Triton.get().getConf().isBungeecord() && Triton.isSpigot()) {
             Triton.get().getLogger().logInfo(2, "Saving translations to cache since bungeecord mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
@@ -193,7 +193,7 @@ public class LocalStorage extends Storage {
         val collections = new ConcurrentHashMap<String, Collection>();
 
         // Use translations.cache.json
-        if (Triton.get().getConf().isBungeecord() && Triton.get() instanceof SpigotMLP) {
+        if (Triton.get().getConf().isBungeecord() && Triton.isSpigot()) {
             Triton.get().getLogger().logInfo(2, "Loading translations from cache since bungeecord mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
