@@ -43,7 +43,7 @@ public class LanguageMigration {
             gson.toJson(languageMap, fileWriter);
 
             // cache.json
-            if (!Triton.isBungee()) {
+            if (Triton.isSpigot()) {
                 val cacheFile = new File(Triton.get().getDataFolder(), "cache.json");
                 if (cacheFile.exists()) {
                     val element = JSON_PARSER.parse(FileUtils.getReaderFromFile(cacheFile));

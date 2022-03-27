@@ -46,7 +46,7 @@ public class ExecutableCommand {
                             input, inputSplit[0]);
             type = Type.PLAYER;
         }
-        if (inputSplit.length < 3 || !Triton.isBungee())
+        if (inputSplit.length < 3 || Triton.isSpigot())
             return new ExecutableCommand(StringUtils
                     .join(":", Arrays.copyOfRange(inputSplit, 1, inputSplit.length)), type);
         if (inputSplit[1].isEmpty())
