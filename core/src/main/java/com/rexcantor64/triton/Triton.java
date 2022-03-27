@@ -99,7 +99,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public void reload() {
-        configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
+        configYAML = loadYAML("config", isProxy() ? "bungee_config" : "config");
         config.setup();
         logger.setLogLevel(config.getLogLevel());
         messagesConfig.setup();
