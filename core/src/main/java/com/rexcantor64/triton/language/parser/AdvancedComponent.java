@@ -138,14 +138,14 @@ public class AdvancedComponent {
                     i--;
                     continue;
                 }
+                ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
-                    ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
                     list.add(component);
-                    component = new TextComponent("");
-                    component.setColor(previousColor);
                 }
+                component = new TextComponent("");
+                component.setColor(previousColor);
                 if (ChatColor.BOLD.equals(format)) {
                     component.setBold(true);
                 } else if (ChatColor.ITALIC.equals(format)) {
@@ -167,14 +167,14 @@ public class AdvancedComponent {
                     component.setColor(format);
                 }
             } else if (c == '\uE400' || c == '\uE500') {
+                BaseComponent previousComponent = component;
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
-                    BaseComponent previousComponent = component;
                     list.add(component);
-                    component = new TextComponent("");
-                    ComponentUtils.copyFormatting(previousComponent, component);
                 }
+                component = new TextComponent("");
+                ComponentUtils.copyFormatting(previousComponent, component);
                 if (c == '\uE400') {
                     String uuid = text.substring(i + 2, i + 2 + 36);
                     int actionCode = Integer.parseInt(Character.toString(text.charAt(i + 1)));
@@ -198,7 +198,7 @@ public class AdvancedComponent {
                 List<BaseComponent> extra = toBaseComponent(content.toString());
                 if (extra.size() > 0)
                     component.setExtra(extra);
-                BaseComponent previousComponent = component;
+                previousComponent = component;
                 list.add(component);
                 component = new TextComponent("");
                 ComponentUtils.copyFormatting(previousComponent, component);
