@@ -149,9 +149,11 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void executeCommands(Server overrideServer) {
-        val server = overrideServer == null ? getParent().getServer() : overrideServer;
+        val parent = getParent();
+        if (parent == null) return;
+        val server = overrideServer == null ? parent.getServer() : overrideServer;
         for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
-            val cmdText = cmd.getCmd().replace("%player%", getParent().getName()).replace("%uuid%", uuid.toString());
+            val cmdText = cmd.getCmd().replace("%player%", parent.getName()).replace("%uuid%", uuid.toString());
 
             if (!cmd.isUniversal() && !cmd.getServers().contains(server.getInfo().getName())) continue;
 
@@ -163,7 +165,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(),
                         cmdText);
             else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
-                BungeeCord.getInstance().getPluginManager().dispatchCommand(getParent(), cmdText);
+                BungeeCord.getInstance().getPluginManager().dispatchCommand(parent, cmdText);
         }
     }
 }
