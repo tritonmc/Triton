@@ -35,10 +35,14 @@ public class LanguageText extends LanguageItem {
 
     public void generateRegexStrings() {
         languagesRegex.clear();
-        if (languages != null)
-            for (Map.Entry<String, String> entry : languages.entrySet())
+        if (languages != null) {
+            for (Map.Entry<String, String> entry : languages.entrySet()) {
+                if (entry.getValue() == null) continue;
+
                 languagesRegex
                         .put(entry.getKey(), PATTERN.matcher(entry.getValue().replace("$", "\\$")).replaceAll("\\$$1"));
+            }
+        }
     }
 
     public boolean belongsToServer(Collection.CollectionMetadata metadata, String serverName) {
