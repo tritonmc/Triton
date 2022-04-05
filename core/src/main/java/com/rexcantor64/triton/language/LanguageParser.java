@@ -136,6 +136,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     private List<BaseComponent> removeTritonLinks(BaseComponent... baseComponents) {
         val result = new ArrayList<BaseComponent>();
         for (val component : baseComponents) {
+            if (component == null) continue;
             if (component.getClickEvent() != null && component.getClickEvent()
                     .getAction() == ClickEvent.Action.OPEN_URL && !ComponentUtils
                     .isLink(component.getClickEvent().getValue()))
