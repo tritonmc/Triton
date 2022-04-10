@@ -34,6 +34,12 @@ public class AdvancedComponent {
         return fromBaseComponent(false, components);
     }
 
+    public static AdvancedComponent fromString(String text) {
+        AdvancedComponent advancedComponent = new AdvancedComponent();
+        advancedComponent.setText(text);
+        return advancedComponent;
+    }
+
     public static AdvancedComponent fromBaseComponent(boolean onlyText, BaseComponent... components) {
         AdvancedComponent advancedComponent = new AdvancedComponent();
         StringBuilder builder = new StringBuilder();
@@ -279,6 +285,12 @@ public class AdvancedComponent {
 
     public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
         return translatableArguments;
+    }
+
+    public void inheritSpecialComponents(AdvancedComponent source) {
+        this.components.putAll(source.components);
+        this.hovers.putAll(source.hovers);
+        this.translatableArguments.putAll(source.translatableArguments);
     }
 
     @Override

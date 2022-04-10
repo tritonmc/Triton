@@ -205,9 +205,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                         code.equals(Triton.get().getConf().getDisabledLine()))
                     return null;
                 val result = parseTritonTranslation(Triton.get().getLanguageManager().getText(language, code), contextPlayer);
-                advancedComponent.getComponents().putAll(result.getComponents());
-                advancedComponent.getHovers().putAll(result.getHovers());
-                advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
+                advancedComponent.inheritSpecialComponents(result);
                 builder.append(result.getTextClean());
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
@@ -222,12 +220,17 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             val argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
-                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
+                AdvancedComponent argAdvancedComponent = AdvancedComponent.fromString(args.substring(argIndex[2], argIndex[3]));
+                argAdvancedComponent = parseAdvancedComponent(language, syntax, argAdvancedComponent, contextPlayer);
+                if (argAdvancedComponent == null) {
+                    argList[k] = "";
+                    continue;
+                }
+                argList[k] = argAdvancedComponent.getText();
+                advancedComponent.inheritSpecialComponents(argAdvancedComponent);
             }
             val result = parseTritonTranslation(SpigotMLP.get().getLanguageManager().getText(language, code, argList), contextPlayer);
-            advancedComponent.getComponents().putAll(result.getComponents());
-            advancedComponent.getHovers().putAll(result.getHovers());
-            advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
+            advancedComponent.inheritSpecialComponents(result);
             builder.append(result.getTextClean());
             builder.append(input.substring(i[1]));
             input = builder.toString();
