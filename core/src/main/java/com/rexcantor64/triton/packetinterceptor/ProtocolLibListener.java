@@ -128,6 +128,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private void setupPacketHandlers() {
         packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
+        if (main.getMcVersion() >= 19) {
+            // New chat packets on 1.19
+            packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, this::handleSystemChat);
+        }
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
@@ -143,7 +147,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, this::handleOpenWindow);
         packetHandlers.put(PacketType.Play.Server.ENTITY_METADATA, this::handleEntityMetadata);
         packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY, this::handleSpawnEntity);
-        packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+        if (main.getMcVersion() < 19) {
+            // 1.19 removed this packet
+            packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+        }
         packetHandlers.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, this::handleNamedEntitySpawn);
         packetHandlers.put(PacketType.Play.Server.ENTITY_DESTROY, this::handleEntityDestroy);
         packetHandlers.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
@@ -206,6 +213,43 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         // Flatten action bar's json
         baseComponentModifier.writeSafely(0, ab && getMCVersion() < 16 ? ComponentUtils.mergeComponents(result) : result);
+    }
+
+    /**
+     * Handle a system chat outbound packet, added in Minecraft 1.19.
+     * Apparently most chat messages and actionbars are sent through here in Minecraft 1.19+.
+     *
+     * @param packet         ProtocolLib's packet event
+     * @param languagePlayer The language player this packet is being sent to
+     * @since 3.8.0 (Minecraft 1.19)
+     */
+    private void handleSystemChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        boolean ab = isActionbar(packet.getPacket());
+
+        // Don't bother parsing anything else if it's disabled on config
+        if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
+
+        val stringModifier = packet.getPacket().getStrings();
+        val msgJson = stringModifier.readSafely(0);
+
+        // Packet is empty
+        if (msgJson == null) return;
+
+        BaseComponent[] result = ComponentSerializer.parse(msgJson);
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                ab ? main.getConf().getActionbarSyntax() : main.getConf().getChatSyntax(),
+                result);
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        stringModifier.writeSafely(0, ComponentSerializer.toString(result));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -1137,10 +1181,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private boolean isActionbar(PacketContainer container) {
-        if (getMCVersion() >= 12)
+        if (getMCVersion() >= 19) {
+            return container.getIntegers().readSafely(0) == 2;
+        } else if (getMCVersion() >= 12) {
             return container.getChatTypes().readSafely(0) == EnumWrappers.ChatType.GAME_INFO;
-        else
+        } else {
             return container.getBytes().readSafely(0) == 2;
+        }
     }
 
     private short getMCVersion() {
