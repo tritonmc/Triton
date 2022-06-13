@@ -85,7 +85,17 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
 
     public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
         if (input == null) return null;
-        return replaceLanguages(input, p.getLang().getName(), syntax);
+        val translated = replaceLanguages(input, p.getLang().getName(), syntax);
+
+        if (translated != null && p instanceof SpigotLanguagePlayer && Triton.isSpigot() && Triton.asSpigot().isPapiEnabled()) {
+            SpigotLanguagePlayer slp = (SpigotLanguagePlayer) p;
+            val bukkitPlayer = slp.toBukkit();
+            if (bukkitPlayer.isPresent()) {
+                return PlaceholderAPI.setPlaceholders(bukkitPlayer.get(), translated);
+            }
+        }
+
+        return translated;
     }
 
     public String replaceLanguages(String input, String language, FeatureSyntax syntax) {
