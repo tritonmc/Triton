@@ -28,9 +28,9 @@ public class MessagesConfig {
 
         if (messages.size() != defaultMessages.size()) {
             Triton.get().getLogger()
-                    .logWarning(1, "It seems like your messages.yml file is outdated");
+                    .logWarning("It seems like your messages.yml file is outdated");
             Triton.get().getLogger()
-                    .logWarning(1, "You can get an up-to-date copy at https://triton.rexcantor64.com/messagesyml");
+                    .logWarning("You can get an up-to-date copy at https://triton.rexcantor64.com/messagesyml");
         }
     }
 

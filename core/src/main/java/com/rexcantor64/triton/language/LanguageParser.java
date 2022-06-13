@@ -281,9 +281,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 componentResult = ComponentSerializer.parse(jsonInput);
             } catch (JsonParseException e) {
                 Triton.get().getLogger()
-                        .logError("Failed to parse JSON translation: %1", jsonInput);
+                        .logError(e, "Failed to parse JSON translation: %1", jsonInput);
                 componentResult = TextComponent.fromLegacyText(jsonInput);
-                e.printStackTrace();
             }
         } else if (translatedResult.startsWith("[minimsg]")) {
             val mmInput = translatedResult.substring(9);
@@ -293,11 +292,10 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 componentResult = ComponentSerializer.parse(jsonSerialized);
             } catch (JsonParseException | NullPointerException e) {
                 Triton.get().getLogger()
-                        .logError("Failed to parse Mini Message translation: %1", mmInput);
+                        .logError(e, "Failed to parse Mini Message translation: %1", mmInput);
                 componentResult = TextComponent.fromLegacyText(mmInput);
-                e.printStackTrace();
             } catch (NoClassDefFoundError e) {
-                Triton.get().getLogger().logError("Failed to parse Mini Message translation because Mini Message is only available on PaperMC (or forks).");
+                Triton.get().getLogger().logError(e, "Failed to parse Mini Message translation because Mini Message is only available on PaperMC (or forks).");
                 componentResult = TextComponent.fromLegacyText(mmInput);
             }
         } else {

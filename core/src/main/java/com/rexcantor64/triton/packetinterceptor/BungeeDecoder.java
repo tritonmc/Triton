@@ -27,8 +27,7 @@ public class BungeeDecoder extends MessageToMessageDecoder<PacketWrapper> {
             }
             out.add(wrapper);
         } catch (NullPointerException e) {
-            Triton.get().getLogger().logError("Failed to fetch client locale for player %1!", this.lp.getUUID());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to fetch client locale for player %1!", this.lp.getUUID());
         }
     }
 }

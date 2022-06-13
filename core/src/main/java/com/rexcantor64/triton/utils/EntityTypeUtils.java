@@ -38,8 +38,7 @@ public class EntityTypeUtils {
             }
             return EntityType.fromBukkit(org.bukkit.entity.EntityType.fromId(id));
         } catch (Exception e) {
-            Triton.get().getLogger().logError("Failed to get the EntityType from the type id. Is the plugin up to date?");
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to get the EntityType from the type id. Is the plugin up to date?");
         }
         return EntityType.UNKNOWN;
     }

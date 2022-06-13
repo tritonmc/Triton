@@ -90,9 +90,8 @@ public class TwinManager {
                             }
                         } catch (Exception e) {
                             Triton.get().getLogger()
-                                    .logError("Could not strip blocked languages from translation while uploading " +
+                                    .logError(e, "Could not strip blocked languages from translation while uploading " +
                                             "to TWIN");
-                            e.printStackTrace();
                         }
                     }
 
@@ -105,7 +104,7 @@ public class TwinManager {
 
             if (changed.size() > 0) {
                 main.getStorage().uploadPartiallyToStorage(main.getStorage().getCollections(), changed, null);
-                main.getLogger().logInfo(2, "Updated items to be able to upload to TWIN");
+                main.getLogger().logInfo("Updated items to be able to upload to TWIN");
             }
 
             data.add("data", items);

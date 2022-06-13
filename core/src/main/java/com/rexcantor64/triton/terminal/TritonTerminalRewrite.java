@@ -18,8 +18,7 @@ public final class TritonTerminalRewrite implements RewritePolicy {
         try {
             this.chatColorTerminalReplacer = new ChatColorTerminalReplacer();
         } catch (Exception | Error e) {
-            Triton.get().getLogger().logError("Failed to setup chat color terminal replacer.");
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to setup chat color terminal replacer.");
         }
     }
 

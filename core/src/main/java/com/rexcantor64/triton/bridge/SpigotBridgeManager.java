@@ -46,10 +46,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
             if (action == 0) {
                 if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a local storage option, but this server is " +
+                            .logWarning("You're using BungeeCord with a local storage option, but this server is " +
                                     "using non-local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -133,7 +133,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 break;
                             default:
                                 Triton.get().getLogger()
-                                        .logWarning(2, "Received invalid type language item type while reading " +
+                                        .logError("Received invalid type language item type while reading " +
                                                 "from BungeeCord: %1", type);
                                 break;
                         }
@@ -152,7 +152,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     Triton.get().getStorage().setCollections(collections);
                     Triton.get().getStorage().uploadToStorage(collections);
 
-                    Triton.get().getLogger().logInfo(2, "Received config from BungeeCord and parsed it in %1ms!",
+                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
@@ -171,10 +171,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 val storage = Triton.get().getStorage();
                 if (storage instanceof LocalStorage) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a non-local storage option, but this server " +
+                            .logWarning("You're using BungeeCord with a non-local storage option, but this server " +
                                     "is using local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -200,8 +200,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
-            Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to parse plugin message.");
         }
     }
 

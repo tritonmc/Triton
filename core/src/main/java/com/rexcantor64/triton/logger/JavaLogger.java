@@ -12,41 +12,36 @@ public class JavaLogger implements TritonLogger {
     @Setter
     private int logLevel = 0;
 
-    public void logInfo(String info, Object... arguments) {
-        logInfo(0, info, arguments);
+    public void logTrace(String message, Object... arguments) {
+        if (logLevel < 2) return;
+        logger.log(Level.INFO, "[TRACE] " + parseMessage(message, arguments));
     }
 
-    public void logWarning(String warning, Object... arguments) {
-        logWarning(0, warning, arguments);
+    public void logDebug(String message, Object... arguments) {
+        if (logLevel < 1) return;
+        logger.log(Level.INFO, "[DEBUG] " + parseMessage(message, arguments));
     }
 
-    public void logError(String error, Object... arguments) {
-        logError(0, error, arguments);
+    public void logInfo(String message, Object... arguments) {
+        logger.log(Level.INFO, parseMessage(message, arguments));
     }
 
-    public void logInfo(int level, String info, Object... arguments) {
-        if (level > logLevel) return;
-        logger.log(Level.INFO, getPrefix(level) + parseMessage(info, arguments));
+    public void logWarning(String message, Object... arguments) {
+        logger.log(Level.WARNING, parseMessage(message, arguments));
     }
 
-    public void logWarning(int level, String warning, Object... arguments) {
-        if (level > logLevel) return;
-        logger.log(Level.WARNING, getPrefix(level) + parseMessage(warning, arguments));
+    public void logError(String message, Object... arguments) {
+        logger.log(Level.SEVERE, parseMessage(message, arguments));
     }
 
-    public void logError(int level, String error, Object... arguments) {
-        if (level > logLevel) return;
-        logger.log(Level.SEVERE, getPrefix(level) + parseMessage(error, arguments));
+    public void logError(Throwable error, String message, Object... arguments) {
+        logger.log(Level.SEVERE, parseMessage(message, arguments), error);
     }
 
     private String parseMessage(@NonNull String message, @NonNull Object... arguments) {
         for (int i = 0; i < arguments.length; ++i)
             message = message.replace("%" + (i + 1), String.valueOf(arguments[i]));
         return message;
-    }
-
-    private String getPrefix(int level) {
-        return level > 1 ? "[DEBUG] " : "";
     }
 
 }

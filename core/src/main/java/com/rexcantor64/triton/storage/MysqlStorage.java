@@ -97,8 +97,7 @@ public class MysqlStorage extends Storage {
             stmt.close();
             return true;
         } catch (SQLException e) {
-            Triton.get().getLogger().logError("Error creating tables on database: %1", e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Error creating tables on database.");
         }
         return false;
     }
@@ -128,7 +127,7 @@ public class MysqlStorage extends Storage {
     public void setLanguage(UUID uuid, String ip, Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
         if (uuid == null && ip == null) return;
-        Triton.get().getLogger().logInfo(2, "Saving language for %1...", entity);
+        Triton.get().getLogger().logDebug("Saving language for %1...", entity);
         try (Connection connection = openConnection()) {
             PreparedStatement stmt = connection
                     .prepareStatement("INSERT INTO `" + tablePrefix + "player_data` (`key`, `value`) VALUES (?, ?) ON" +
@@ -143,12 +142,10 @@ public class MysqlStorage extends Storage {
                 stmt.executeUpdate();
             }
             stmt.close();
-            Triton.get().getLogger().logInfo(2, "Saved!");
+            Triton.get().getLogger().logDebug("Saved language for %1!", entity);
         } catch (Exception e) {
-            e.printStackTrace();
             Triton.get().getLogger()
-                    .logError("Failed to save language for %1! Could not insert into database: %2", entity, e
-                            .getMessage());
+                    .logError(e, "Failed to save language for %1! Could not insert into database.", entity);
         }
     }
 
@@ -164,8 +161,7 @@ public class MysqlStorage extends Storage {
             rs.close();
             stmt.close();
         } catch (SQLException e) {
-            Triton.get().getLogger().logError("Failed to get value from the database: %1", e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to get value from the database.");
         }
         return result;
     }

@@ -91,16 +91,16 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale) {
             try {
-                if (toBukkit().isPresent())
+                if (toBukkit().isPresent()) {
                     bukkit.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                             .getMessage("success.detected-language", lang.getDisplayName())));
-                else
+                } else {
                     Triton.get().getLogger()
-                            .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +
+                            .logWarning("Could not automatically set language for %1 because Bukkit Player instance " +
                                     "is unknown", uuid);
+                }
             } catch (Exception e) {
-                Triton.get().getLogger().logError("Failed to send \"language changed\" message.");
-                e.printStackTrace();
+                Triton.get().getLogger().logError(e, "Failed to send \"language changed\" message.");
             }
         }
         this.lang = event.getNewLanguage();

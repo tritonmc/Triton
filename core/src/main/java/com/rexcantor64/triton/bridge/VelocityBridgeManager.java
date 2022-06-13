@@ -51,16 +51,15 @@ public class VelocityBridgeManager {
                 val changed = Triton.get().getStorage().toggleLocationForSignGroup(location, key);
 
                 Triton.get().runAsync(() -> {
-                    Triton.get().getLogger().logInfo(2, "Saving sign to storage...");
+                    Triton.get().getLogger().logDebug("Saving sign to storage...");
                     Triton.get().getStorage()
                             .uploadPartiallyToStorage(Triton.get().getStorage().getCollections(), changed, null);
                     sendConfigToServer(server.getServer(), null);
-                    Triton.get().getLogger().logInfo(2, "Sign saved!");
+                    Triton.get().getLogger().logDebug("Sign saved!");
                 });
             }
         } catch (Exception e1) {
-            Triton.get().getLogger().logError("Failed to read plugin message: %1", e1.getMessage());
-            e1.printStackTrace();
+            Triton.get().getLogger().logError(e1, "Failed to read plugin message.");
         }
     }
 
@@ -79,7 +78,7 @@ public class VelocityBridgeManager {
     }
 
     public void sendConfigToEveryone() {
-        Triton.get().getLogger().logInfo(2, "Sending config and translations to all Spigot servers...");
+        Triton.get().getLogger().logDebug("Sending config and translations to all Spigot servers...");
         try {
             val languageOut = BridgeSerializer.getLanguageDataOutput();
 
@@ -88,15 +87,15 @@ public class VelocityBridgeManager {
                 sendConfigToServer(info, languageOut);
         } catch (Exception e) {
             Triton.get().getLogger()
-                    .logError("Failed to send config and language items to other servers! Not everything might work " +
-                            "as expected! Error: %1", e.getMessage());
+                    .logError(e, "Failed to send config and language items to other servers! Not everything might work " +
+                            "as expected");
             e.printStackTrace();
         }
     }
 
     public void sendConfigToServer(@NonNull RegisteredServer info, byte[] languageOut) {
         Triton.get().getLogger()
-                .logInfo(2, "Sending config and translations to '%1' server...", info.getServerInfo().getName());
+                .logDebug("Sending config and translations to '%1' server...", info.getServerInfo().getName());
 
         if (languageOut == null) languageOut = BridgeSerializer.getLanguageDataOutput();
 

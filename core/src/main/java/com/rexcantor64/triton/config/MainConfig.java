@@ -174,7 +174,7 @@ public class MainConfig implements TritonConfig {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 Triton.get().getLogger()
-                        .logError("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                        .logError(e, "Failed to create %1!", file.getAbsolutePath());
             }
             return;
         }

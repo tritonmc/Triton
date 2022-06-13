@@ -194,7 +194,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public void setup() {
-        Triton.get().getLogger().logInfo(1, "Setting up language manager...");
+        Triton.get().getLogger().logDebug("Setting up language manager...");
 
         val languages = Triton.get().getConf().getLanguages();
         val mainLang = Triton.get().getConf().getMainLanguage();
@@ -264,7 +264,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         this.itemCount = itemCount;
 
         Triton.get().getLogger()
-                .logInfo(1, "Successfully setup the language manager! %1 languages and %2 language items loaded!",
+                .logInfo("Successfully setup the language manager! %1 languages and %2 language items loaded!",
                         this.languages.size(), itemCount);
     }
 
