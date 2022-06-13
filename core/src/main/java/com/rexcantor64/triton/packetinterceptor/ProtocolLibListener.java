@@ -127,10 +127,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void setupPacketHandlers() {
-        packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
         if (main.getMcVersion() >= 19) {
             // New chat packets on 1.19
             packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, this::handleSystemChat);
+        } else {
+            // In 1.19+, this packet is signed, so we cannot edit it.
+            // It's sent by the player anyway, so there's nothing to translate.
+            packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
         }
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
