@@ -101,11 +101,11 @@ public class TwinCommand implements Command {
             val storage = Triton.get().getStorage();
 
             long start = System.currentTimeMillis();
-            Triton.get().getLogger().logInfo(2, "Parsing changes from TWIN...");
+            Triton.get().getLogger().logDebug("[TWIN] Parsing changes from TWIN...");
             val data = new JsonParser().parse(response).getAsJsonObject();
             val twinResponse = TwinParser.parseDownload(storage.getCollections(), data);
 
-            Triton.get().getLogger().logInfo(2, "Saving changes to permanent storage...");
+            Triton.get().getLogger().logDebug("[TWIN] Saving changes to permanent storage...");
             storage.setCollections(twinResponse.getCollections());
             if (!storage.uploadPartiallyToStorage(twinResponse.getCollections(), twinResponse.getChanged(), twinResponse
                     .getDeleted())) {
@@ -113,7 +113,7 @@ public class TwinCommand implements Command {
                 return;
             }
 
-            Triton.get().getLogger().logInfo(2, "Reloading translation manager...");
+            Triton.get().getLogger().logDebug("[TWIN] Reloading translation manager...");
             Triton.get().getLanguageManager().setup();
 
             if (Triton.isBungee())
@@ -124,7 +124,7 @@ public class TwinCommand implements Command {
             Triton.get().refreshPlayers();
 
             Triton.get().getLogger()
-                    .logInfo(2, "[TWIN] Parsed and saved changes and restarted translation manager in %1 ms!",
+                    .logDebug("[TWIN] Parsed and saved changes and restarted translation manager in %1 ms!",
                             System.currentTimeMillis() - start);
 
             event.getSender().sendMessageFormatted("twin.success");

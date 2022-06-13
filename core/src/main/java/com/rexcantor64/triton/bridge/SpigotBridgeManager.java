@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -46,10 +47,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
             if (action == 0) {
                 if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a local storage option, but this server is " +
+                            .logWarning("You're using BungeeCord with a local storage option, but this server is " +
                                     "using non-local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -133,7 +134,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 break;
                             default:
                                 Triton.get().getLogger()
-                                        .logWarning(2, "Received invalid type language item type while reading " +
+                                        .logError("Received invalid type language item type while reading " +
                                                 "from BungeeCord: %1", type);
                                 break;
                         }
@@ -152,7 +153,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     Triton.get().getStorage().setCollections(collections);
                     Triton.get().getStorage().uploadToStorage(collections);
 
-                    Triton.get().getLogger().logInfo(2, "Received config from BungeeCord and parsed it in %1ms!",
+                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
@@ -171,10 +172,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 val storage = Triton.get().getStorage();
                 if (storage instanceof LocalStorage) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a non-local storage option, but this server " +
+                            .logWarning("You're using BungeeCord with a non-local storage option, but this server " +
                                     "is using local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -195,13 +196,15 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 for (int i = 0; i < args.length; ++i)
                     args[i] = in.readUTF();
 
+                Triton.get().getLogger().logTrace("Received forwarded command '%1' with args %2 for player %3",
+                        subCommand, Arrays.toString(args), uuid);
+
                 val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
                         CommandEvent.Environment.SPIGOT);
                 Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
-            Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to parse plugin message.");
         }
     }
 

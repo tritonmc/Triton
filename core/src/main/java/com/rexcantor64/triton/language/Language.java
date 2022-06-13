@@ -2,6 +2,7 @@ package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.banners.Banner;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,7 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     private String rawDisplayName;
     private List<String> fallbackLanguages = Collections.emptyList();
     private transient String displayName;
+    @ToString.Exclude
     private transient Banner banner;
     private String flagCode;
     private List<ExecutableCommand> cmds = new ArrayList<>();

@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.StringUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class ExecutableCommand {
 
     private final String cmd;

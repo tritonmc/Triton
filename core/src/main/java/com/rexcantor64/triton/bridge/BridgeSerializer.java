@@ -154,9 +154,8 @@ public class BridgeSerializer {
             outList.add(out.toByteArray());
         } catch (Exception e) {
             Triton.get().getLogger()
-                    .logError("Failed to send config and language items to '%1' server! Not everything might work " +
-                            "as expected! Error: %2", serverName, e.getMessage());
-            e.printStackTrace();
+                    .logError(e, "Failed to send config and language items to '%1' server! Not everything might work " +
+                            "as expected!", serverName);
         }
         return outList;
     }

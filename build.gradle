@@ -18,7 +18,7 @@ group 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version '3.7.3'
+    version '3.7.4'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     repositories {
@@ -105,6 +105,9 @@ bukkit {
         }
         'triton.info' {
             setDefault('TRUE')
+        }
+        'triton.loglevel' {
+            setDefault('OP')
         }
         'twin.upload' {
             setDefault('OP')

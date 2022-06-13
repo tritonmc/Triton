@@ -690,7 +690,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             // Catch 1.16 Hover 'contents' not being parsed correctly
             // Has been fixed in newer versions of Spigot 1.16
             Triton.get().getLogger()
-                    .logError(1, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
+                    .logError(e, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
         }
     }
 
@@ -724,7 +724,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getPacket().getModifier().writeSafely(1, newRecipes);
         } catch (IllegalAccessException | InstantiationException | NoSuchMethodException |
                  InvocationTargetException e) {
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to translate merchant items.");
         }
     }
 
@@ -821,14 +821,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception e) {
             Triton.get().getLogger()
-                    .logWarning(1, "Failed to translate packet because UUID of the player is unknown (because " +
-                            "the player hasn't joined yet).");
+                    .logWarning("Failed to translate packet because UUID of the player is unknown (possibly " +
+                            "because the player hasn't joined yet).");
             if (Triton.get().getConfig().getLogLevel() >= 1)
                 e.printStackTrace();
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().getLogger().logWarning(1, "Language Player is null on packet sending");
+            Triton.get().getLogger().logWarning("Language Player is null on packet sending");
             return;
         }
 
@@ -847,12 +847,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
-                    .logWarning(1, "Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
-                            "(because the player hasn't joined yet).");
+                    .logWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
+                            "(possibly because the player hasn't joined yet).");
             return;
         }
         if (languagePlayer == null) {
-            Triton.get().getLogger().logWarning(1, "Language Player is null on packet receiving");
+            Triton.get().getLogger().logWarning("Language Player is null on packet receiving");
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
@@ -1138,8 +1138,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
-                main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
-                e.printStackTrace();
+                main.getLogger().logError(e, "Failed refresh sign.");
             }
         } else {
             PacketContainer container =
@@ -1155,8 +1154,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             try {
                 ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
             } catch (Exception e) {
-                main.getLogger().logError("Failed refresh sign: %1", e.getMessage());
-                e.printStackTrace();
+                main.getLogger().logError("Failed refresh sign.");
             }
         }
     }

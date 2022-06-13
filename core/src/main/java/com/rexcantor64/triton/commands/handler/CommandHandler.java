@@ -24,6 +24,7 @@ public abstract class CommandHandler {
         commands.put("sign", new SignCommand());
         commands.put("database", new DatabaseCommand());
         commands.put("twin", new TwinCommand());
+        commands.put("loglevel", new LogLevelCommand());
     }
 
     public void handleCommand(CommandEvent event) {

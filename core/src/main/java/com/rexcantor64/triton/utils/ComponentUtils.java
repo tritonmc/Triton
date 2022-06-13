@@ -16,9 +16,7 @@ import java.util.stream.Stream;
 
 public class ComponentUtils {
 
-    private static final Pattern url = Pattern.compile("^((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)" +
-            "?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??" +
-            "(?:[-\\+=&;%@.\\w_/]*)#?(?:[\\w]*))?)$");
+    private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
 
     public static int encodeClickAction(ClickEvent.Action action) {
         switch (action) {

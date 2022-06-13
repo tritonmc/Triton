@@ -191,8 +191,7 @@ public class SignPacketHandler extends PacketHandler {
                             .fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
                             .getTextClean();
                 } catch (Exception e) {
-                    Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, l);
-                    e.printStackTrace();
+                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, l);
                 }
             }
             return defaultLines;
@@ -361,8 +360,7 @@ public class SignPacketHandler extends PacketHandler {
                                 .fromBaseComponent(ComponentSerializer.parse(nbtLine))
                                 .getTextClean();
                 } catch (Exception e) {
-                    Triton.get().getLogger().logError("Failed to parse sign line %1 at %2.", i + 1, location);
-                    e.printStackTrace();
+                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, location);
                 }
             }
             return defaultLines;

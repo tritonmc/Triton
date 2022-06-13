@@ -11,7 +11,13 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.utils.YAMLUtils;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,10 +26,15 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Getter
+@ToString
 public class MainConfig implements TritonConfig {
 
     private final static JsonParser JSON_PARSER = new JsonParser();
@@ -31,6 +42,7 @@ public class MainConfig implements TritonConfig {
     private static final Type LANGUAGES_TYPE = new TypeToken<List<Language>>() {
     }.getType();
 
+    @ToString.Exclude
     private transient final Triton main;
     @Setter
     private List<Language> languages;
@@ -83,11 +95,17 @@ public class MainConfig implements TritonConfig {
 
     private String storageType = "local";
     private String serverName;
+    @ToString.Exclude
     private String databaseHost;
+    @ToString.Exclude
     private int databasePort;
+    @ToString.Exclude
     private String databaseName;
+    @ToString.Exclude
     private String databaseUser;
+    @ToString.Exclude
     private String databasePassword;
+    @ToString.Exclude
     private String databaseTablePrefix;
     private int databaseMysqlPoolMaxSize;
     private int databaseMysqlPoolMinIdle;
@@ -174,7 +192,7 @@ public class MainConfig implements TritonConfig {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 Triton.get().getLogger()
-                        .logError("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                        .logError(e, "Failed to create %1!", file.getAbsolutePath());
             }
             return;
         }
@@ -289,8 +307,14 @@ public class MainConfig implements TritonConfig {
         return false;
     }
 
+    public void setLogLevel(int logLevel) {
+        this.logLevel = logLevel;
+        main.getLogger().setLogLevel(logLevel);
+    }
+
     @Getter
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
         private final String args;
