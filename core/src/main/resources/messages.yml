@@ -9,6 +9,7 @@ error:
   database-invalid-mode: "&cMode &4%1&c does not exist. Available modes are 'upload' (or 'u') and 'download' (or 'd')."
   database-not-supported: "&cThis command isn't supported on local storage."
   not-available-on-spigot: "&cThis action isn't available on Spigot when using BungeeCord. Please run this through BungeeCord instead."
+  only-console: "&cThis command can only be executed from the server console."
 help:
   menu:
     - "&8-------[ &b&lTriton&8 ]-------"
@@ -19,6 +20,7 @@ help:
   setlanguage: "&7Use &b/%1 setlanguage <language name> [player]"
   sign: "&7Use &b/%1 sign <set|remove> <group key (set only)>&7 to add a sign to a group."
   database: "&7Use &b/%1 database <upload/download/u/d>"
+  loglevel: "&7Use &b/%1 loglevel [number]"
 command:
   help: "Displays this message"
   getflag: "Gives the flag (banner) of a language to you"
@@ -29,6 +31,7 @@ command:
   twin: "Uploads/downloads your config to/from TWIN for easy configuration"
   database: "Uploads/downloads translations to/from a database"
   info: "Shows information about the plugin (version, author, storage, etc)"
+  loglevel: "See or change Triton's log level temporarily"
 success:
   getflag: "&bYou received the &7%1&b flag!"
   selector: "&bYour language has been changed to &7%1"
@@ -40,6 +43,8 @@ success:
   sign-set: "&bSign successfully added to group &7%1"
   sign-remove: "&bSuccessfully removed sign from all groups"
   database: "&bOperation successful"
+  current-loglevel: "&aTriton is currently outputting at log level %1"
+  set-loglevel: "&aTriton's log level has been changed to %1 until the plugin is reloaded"
 twin:
   failed-bungeecord: "&cCan't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."
   no-internet: "&cFailed to upload config. Please check your internet connection and/or firewall! Error description: %1"

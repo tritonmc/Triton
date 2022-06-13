@@ -11,7 +11,13 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.utils.YAMLUtils;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,7 +26,11 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Getter
@@ -295,6 +305,11 @@ public class MainConfig implements TritonConfig {
     public boolean isScoreboardsAdvanced() {
         // Handle deprecated API
         return false;
+    }
+
+    public void setLogLevel(int logLevel) {
+        this.logLevel = logLevel;
+        main.getLogger().setLogLevel(logLevel);
     }
 
     @Getter
