@@ -93,16 +93,20 @@ public class BungeeBridgeManager implements Listener {
     }
 
     public void sendPlayerLanguage(@NonNull LanguagePlayer lp, @NonNull Server server) {
+        Triton.get().getLogger().logTrace("Sending player %1 language to server %2", lp, server.getInfo().getName());
         val out = BridgeSerializer.buildPlayerLanguageData(lp);
         server.sendData("triton:main", out);
     }
 
     public void sendExecutableCommand(String command, @NonNull Server server) {
+        Triton.get().getLogger().logTrace("Sending command '%1' to server %2", command, server.getInfo().getName());
         val out = BridgeSerializer.buildExecutableCommandData(command);
         server.sendData("triton:main", out);
     }
 
     public void forwardCommand(CommandEvent commandEvent) {
+        Triton.get().getLogger().logTrace("Forwarding command '%1' from player '%2'",
+                commandEvent.getFullSubCommand(), commandEvent.getSender().getUUID());
         val out = BridgeSerializer.buildForwardCommandData(commandEvent);
 
         Triton.asBungee().getBungeeCord().getPlayer(commandEvent.getSender().getUUID()).getServer()

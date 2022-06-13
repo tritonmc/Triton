@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -194,6 +195,9 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 val args = new String[in.readShort()];
                 for (int i = 0; i < args.length; ++i)
                     args[i] = in.readUTF();
+
+                Triton.get().getLogger().logTrace("Received forwarded command '%1' with args %2 for player %3",
+                        subCommand, Arrays.toString(args), uuid);
 
                 val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
                         CommandEvent.Environment.SPIGOT);

@@ -68,11 +68,13 @@ public class VelocityBridgeManager {
     }
 
     public void sendPlayerLanguage(@NonNull VelocityLanguagePlayer lp, @NonNull RegisteredServer server) {
+        Triton.get().getLogger().logTrace("Sending player %1 language to server %2", lp, server.getServerInfo().getName());
         val out = BridgeSerializer.buildPlayerLanguageData(lp);
         sendPluginMessage(server, out);
     }
 
     public void sendExecutableCommand(String command, @NonNull RegisteredServer server) {
+        Triton.get().getLogger().logTrace("Sending command '%1' to server %2", command, server.getServerInfo().getName());
         val out = BridgeSerializer.buildExecutableCommandData(command);
         sendPluginMessage(server, out);
     }
@@ -106,6 +108,8 @@ public class VelocityBridgeManager {
     }
 
     public void forwardCommand(CommandEvent commandEvent) {
+        Triton.get().getLogger().logTrace("Forwarding command '%1' from player '%2'",
+                commandEvent.getFullSubCommand(), commandEvent.getSender().getUUID());
         val out = BridgeSerializer.buildForwardCommandData(commandEvent);
 
         Triton.asVelocity().getLoader().getServer().getPlayer(commandEvent.getSender().getUUID())

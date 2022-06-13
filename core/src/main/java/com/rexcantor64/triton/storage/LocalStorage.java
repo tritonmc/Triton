@@ -51,12 +51,14 @@ public class LocalStorage extends Storage {
 
     @Override
     public Language getLanguageFromIp(String ip) {
+        Triton.get().getLogger().logTrace("[Local Storage] Getting language for IP %1", ip);
         String lang = languageMap.get(ip.replace(".", "-"));
         return Triton.get().getLanguageManager().getLanguageByName(lang, true);
     }
 
     @Override
     public Language getLanguage(LanguagePlayer lp) {
+        Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
         String lang = languageMap.get(lp.getUUID().toString());
         if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
                 (lang == null

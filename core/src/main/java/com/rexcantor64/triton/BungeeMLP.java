@@ -115,6 +115,7 @@ public class BungeeMLP extends Triton {
     }
 
     public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
+        Triton.get().getLogger().logTrace("Injecting pipeline for player %1", lp);
         try {
             Object ch = NMSUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");

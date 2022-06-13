@@ -236,6 +236,14 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         });
     }
 
+    @Override
+    public String toString() {
+        return "SpigotLanguagePlayer{" +
+                "uuid=" + uuid +
+                ", lang=" + (lang == null ? "null" : lang.getName()) +
+                '}';
+    }
+
     @Data
     public static class ScoreboardObjective {
         private String chatJson;

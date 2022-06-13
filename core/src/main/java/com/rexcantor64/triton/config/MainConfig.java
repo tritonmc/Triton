@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Getter
+@ToString
 public class MainConfig implements TritonConfig {
 
     private final static JsonParser JSON_PARSER = new JsonParser();
@@ -31,6 +32,7 @@ public class MainConfig implements TritonConfig {
     private static final Type LANGUAGES_TYPE = new TypeToken<List<Language>>() {
     }.getType();
 
+    @ToString.Exclude
     private transient final Triton main;
     @Setter
     private List<Language> languages;
@@ -83,11 +85,17 @@ public class MainConfig implements TritonConfig {
 
     private String storageType = "local";
     private String serverName;
+    @ToString.Exclude
     private String databaseHost;
+    @ToString.Exclude
     private int databasePort;
+    @ToString.Exclude
     private String databaseName;
+    @ToString.Exclude
     private String databaseUser;
+    @ToString.Exclude
     private String databasePassword;
+    @ToString.Exclude
     private String databaseTablePrefix;
     private int databaseMysqlPoolMaxSize;
     private int databaseMysqlPoolMinIdle;
@@ -291,6 +299,7 @@ public class MainConfig implements TritonConfig {
 
     @Getter
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
         private final String args;

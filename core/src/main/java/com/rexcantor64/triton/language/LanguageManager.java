@@ -56,11 +56,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String getText(@NonNull String languageName, @NonNull String code, @NonNull Object... args) {
-        val language = getLanguageByName(languageName, false);
-        if (language == null) {
-            return ChatColor.translateAlternateColorCodes('&',
-                    Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args)));
-        }
+        val language = getLanguageByName(languageName, true);
 
         return getText(language, code, args);
     }
@@ -84,12 +80,14 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     private Optional<String> getTextForLanguage(@NonNull String language, @NonNull String code, @NonNull Object... args) {
+        Triton.get().getLogger().logTrace("Trying to get translation with key '%1' in language '%2'", code, language);
         val langItems = this.textItems.get(language);
         if (langItems == null) return Optional.empty();
 
         val msg = langItems.get(code);
         if (msg == null) return Optional.empty();
 
+        Triton.get().getLogger().logTrace("Found translation with key '%1' in language '%2'", code, language);
         return Optional.of(formatMessage(msg, args));
     }
 
