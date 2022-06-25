@@ -233,12 +233,26 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
         val stringModifier = packet.getPacket().getStrings();
-        val msgJson = stringModifier.readSafely(0);
+
+        BaseComponent[] result = null;
+
+        // Hot fix for Paper builds
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
+            Object adventureComponent = adventureModifier.readSafely(0);
+            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
+            adventureModifier.writeSafely(0, null);
+        } else {
+            val msgJson = stringModifier.readSafely(0);
+            if (msgJson != null) {
+                result = ComponentSerializer.parse(msgJson);
+            }
+        }
 
         // Packet is empty
-        if (msgJson == null) return;
-
-        BaseComponent[] result = ComponentSerializer.parse(msgJson);
+        if (result == null) return;
 
         // Translate the message
         result = main.getLanguageParser().parseComponent(
