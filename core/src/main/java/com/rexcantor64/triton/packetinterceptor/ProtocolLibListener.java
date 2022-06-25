@@ -562,6 +562,28 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 } else {
                     dwn.add(obj);
                 }
+            } else if (obj.getIndex() == 8 && getMCVersion() >= 13) {
+                // Index 8 is "Item" of type "Slot"
+                // https://wiki.vg/Entity_metadata#Entity_Metadata_Format
+                // Used to translate items inside (glowing) item frames
+                val value = obj.getValue();
+                if (!(value instanceof ItemStack)) {
+                    dwn.add(obj);
+                    return;
+                }
+
+                val itemStack = (ItemStack) value;
+                if (itemStack.getType() == Material.AIR) {
+                    dwn.add(obj);
+                    return;
+                }
+
+                val translatedItemStack = translateItemStack(itemStack.clone(), languagePlayer, false);
+                // We cannot pass translated item stack to constructor because it doesn't get unwrapped
+                val newWatchableObject = new WrappedWatchableObject(obj.getWatcherObject(), null);
+                // The setter unwraps the Bukkit class to the NMS class
+                newWatchableObject.setValue(translatedItemStack);
+                dwn.add(newWatchableObject);
             } else {
                 dwn.add(obj);
             }
