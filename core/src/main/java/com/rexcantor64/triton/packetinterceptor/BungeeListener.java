@@ -72,6 +72,26 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         return true;
     }
 
+    /**
+     * Handles a system chat packet, added in Minecraft 1.19.
+     *
+     * @param packet A SystemChat packet.
+     * @return True if the packet should be sent, false if it should be cancelled.
+     */
+    private boolean handleSystemChat(DefinedPacket packet) {
+        SystemChat p = (SystemChat) packet;
+        int type = p.getPosition();
+        if ((type == 2 && !Triton.get().getConf().isActionbars()) || (type != 2 && !Triton.get().getConf().isChat()))
+            return true;
+        BaseComponent[] text = ComponentSerializer.parse(p.getMessage());
+        text = Triton.get().getLanguageParser().parseComponent(owner, type != 2 ?
+                Triton.get().getConf().getChatSyntax() : Triton.get().getConf().getActionbarSyntax(), text);
+        if (text == null)
+            return false;
+        p.setMessage(ComponentSerializer.toString(text));
+        return true;
+    }
+
     private boolean handleTitle(DefinedPacket packet) {
         Title p = (Title) packet;
         if (p.getText() == null) return true;
@@ -127,10 +147,15 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     protected void encode(ChannelHandlerContext ctx, DefinedPacket packet,
                           List<Object> out) {
         try {
-            if (Triton.get().getConf().isTab() && packet instanceof PlayerListItem)
+            if (Triton.get().getConf().isTab() && packet instanceof PlayerListItem) {
                 handlePlayerListItem(packet);
-            else if (packet instanceof Chat) {
+            } else if (packet instanceof Chat) {
                 if (!handleChat(packet)) {
+                    out.add(false);
+                    return;
+                }
+            } else if (packet instanceof SystemChat) {
+                if (!handleSystemChat(packet)) {
                     out.add(false);
                     return;
                 }
@@ -144,12 +169,13 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                     out.add(false);
                     return;
                 }
-            } else if (Triton.get().getConf().isBossbars() && packet instanceof BossBar)
+            } else if (Triton.get().getConf().isBossbars() && packet instanceof BossBar) {
                 handleBossbar(packet);
-            else if (Triton.get().getConf().isTab() && packet instanceof PlayerListHeaderFooter)
+            } else if (Triton.get().getConf().isTab() && packet instanceof PlayerListHeaderFooter) {
                 handlePlayerListHeaderFooter(packet);
-            else if (Triton.get().getConf().isKick() && packet instanceof Kick)
+            } else if (Triton.get().getConf().isKick() && packet instanceof Kick) {
                 handleKick(packet);
+            }
         } catch (Exception | Error e) {
             e.printStackTrace();
         }

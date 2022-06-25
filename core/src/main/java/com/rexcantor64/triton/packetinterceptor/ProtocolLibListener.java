@@ -127,7 +127,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void setupPacketHandlers() {
-        packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
+        if (main.getMcVersion() >= 19) {
+            // New chat packets on 1.19
+            packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, this::handleSystemChat);
+        } else {
+            // In 1.19+, this packet is signed, so we cannot edit it.
+            // It's sent by the player anyway, so there's nothing to translate.
+            packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
+        }
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
@@ -143,7 +150,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, this::handleOpenWindow);
         packetHandlers.put(PacketType.Play.Server.ENTITY_METADATA, this::handleEntityMetadata);
         packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY, this::handleSpawnEntity);
-        packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+        if (main.getMcVersion() < 19) {
+            // 1.19 removed this packet
+            packetHandlers.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+        }
         packetHandlers.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, this::handleNamedEntitySpawn);
         packetHandlers.put(PacketType.Play.Server.ENTITY_DESTROY, this::handleEntityDestroy);
         packetHandlers.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
@@ -206,6 +216,43 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         // Flatten action bar's json
         baseComponentModifier.writeSafely(0, ab && getMCVersion() < 16 ? ComponentUtils.mergeComponents(result) : result);
+    }
+
+    /**
+     * Handle a system chat outbound packet, added in Minecraft 1.19.
+     * Apparently most chat messages and actionbars are sent through here in Minecraft 1.19+.
+     *
+     * @param packet         ProtocolLib's packet event
+     * @param languagePlayer The language player this packet is being sent to
+     * @since 3.8.0 (Minecraft 1.19)
+     */
+    private void handleSystemChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        boolean ab = isActionbar(packet.getPacket());
+
+        // Don't bother parsing anything else if it's disabled on config
+        if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
+
+        val stringModifier = packet.getPacket().getStrings();
+        val msgJson = stringModifier.readSafely(0);
+
+        // Packet is empty
+        if (msgJson == null) return;
+
+        BaseComponent[] result = ComponentSerializer.parse(msgJson);
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                ab ? main.getConf().getActionbarSyntax() : main.getConf().getChatSyntax(),
+                result);
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        stringModifier.writeSafely(0, ComponentSerializer.toString(result));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -902,11 +949,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     watchableObjects.add(customNameVisibility);
                 }
                 packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
-                try {
-                    ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
-                } catch (InvocationTargetException e) {
-                    main.getLogger().logError(e, "Failed to send entity update packet.");
-                }
+                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
             }
 
         if (player.getPlayersMap().containsKey(bukkitPlayer.getWorld()))
@@ -960,29 +1003,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         packetLook.getIntegers().writeSafely(0, p.getEntityId());
                         packetLook.getBytes().writeSafely(0, (byte) (int) (p.getLocation().getYaw() * 256.0F / 360.0F));
 
-                        try {
-                            val isHiddenEntity = !player.getShownPlayers().contains(p.getUniqueId());
-                            ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(bukkitPlayer, packetRemove, true);
-                            ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(bukkitPlayer, packetDestroy, true);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetAdd, true);
-                            ProtocolLibrary.getProtocolManager()
-                                    .sendServerPacket(bukkitPlayer, packetSpawn, true);
-                            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetLook, true);
-                            if (isHiddenEntity) {
-                                Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> {
-                                    try {
-                                        ProtocolLibrary
-                                                .getProtocolManager()
-                                                .sendServerPacket(bukkitPlayer, packetRemove, true);
-                                    } catch (InvocationTargetException e) {
-                                        main.getLogger().logError(e, "Failed to send player entity update packet.");
-                                    }
-                                }, 4L);
-                            }
-                        } catch (InvocationTargetException e) {
-                            main.getLogger().logError(e, "Failed to send player entity update packet.");
+                        val isHiddenEntity = !player.getShownPlayers().contains(p.getUniqueId());
+                        ProtocolLibrary.getProtocolManager()
+                                .sendServerPacket(bukkitPlayer, packetRemove, true);
+                        ProtocolLibrary.getProtocolManager()
+                                .sendServerPacket(bukkitPlayer, packetDestroy, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetAdd, true);
+                        ProtocolLibrary.getProtocolManager()
+                                .sendServerPacket(bukkitPlayer, packetSpawn, true);
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packetLook, true);
+                        if (isHiddenEntity) {
+                            Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> {
+                                ProtocolLibrary
+                                        .getProtocolManager()
+                                        .sendServerPacket(bukkitPlayer, packetRemove, true);
+                            }, 4L);
                         }
                     }
 
@@ -995,11 +1030,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
             packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
-            } catch (InvocationTargetException e) {
-                main.getLogger().logError(e, "Failed to send tab update packet.");
-            }
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
     }
 
@@ -1023,11 +1054,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getEnumModifier(Action.class, 1).writeSafely(0, Action.UPDATE_NAME);
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(json));
         }
-        try {
-            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
-        } catch (InvocationTargetException e) {
-            main.getLogger().logError(e, "Failed to send bossbar update packet.");
-        }
+        ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
     }
 
     @Override
@@ -1043,11 +1070,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             packet.getStrings().writeSafely(0, key);
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getChatJson()));
             packet.getModifier().writeSafely(2, value.getType());
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
-            } catch (InvocationTargetException e) {
-                main.getLogger().logError(e, "Failed to send scoreboard objective update packet.");
-            }
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
 
         player.getTeamsMap().forEach((key, value) -> {
@@ -1086,11 +1109,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     packet.getModifier().writeSafely(i, value.getOptionData().get(j++));
             }
 
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
-            } catch (InvocationTargetException e) {
-                main.getLogger().logError(e, "Failed to send scoreboard team update packet.");
-            }
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
     }
 
@@ -1163,10 +1182,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private boolean isActionbar(PacketContainer container) {
-        if (getMCVersion() >= 12)
+        if (getMCVersion() >= 19) {
+            return container.getIntegers().readSafely(0) == 2;
+        } else if (getMCVersion() >= 12) {
             return container.getChatTypes().readSafely(0) == EnumWrappers.ChatType.GAME_INFO;
-        else
+        } else {
             return container.getBytes().readSafely(0) == 2;
+        }
     }
 
     private short getMCVersion() {

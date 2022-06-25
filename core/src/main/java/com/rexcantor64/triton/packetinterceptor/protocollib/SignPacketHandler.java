@@ -247,11 +247,7 @@ public class SignPacketHandler extends PacketHandler {
                                     packet = buildUpdateSignPacket(location, resultLines);
                                 }
 
-                                try {
-                                    ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
-                                } catch (InvocationTargetException e) {
-                                    logger().logError(e, "Failed to send sign update packet.");
-                                }
+                                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
                             });
                 })
         );
