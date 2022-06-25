@@ -67,7 +67,7 @@ public class VelocityMLP extends Triton {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConf().getConfigAutoRefresh() <= 0) return;
         configRefreshTask = getLoader().getServer().getScheduler().buildTask(getLoader(), this::reload)
-                .repeat(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
+                .delay(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
     }
 
 
