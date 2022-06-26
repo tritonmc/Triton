@@ -1,12 +1,16 @@
 package com.rexcantor64.triton.utils;
 
+import com.comphenix.protocol.reflect.FuzzyReflection;
+import com.comphenix.protocol.reflect.accessors.Accessors;
+import com.comphenix.protocol.reflect.accessors.MethodAccessor;
+import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,6 +27,15 @@ import java.util.stream.Collectors;
 
 public class ItemStackTranslationUtils {
 
+    private static final MethodAccessor NBT_DESERIALIZER_METHOD;
+
+    static {
+        val mojangsonParserClass = MinecraftReflection.getMinecraftClass("nbt.MojangsonParser", "MojangsonParser");
+        FuzzyReflection fuzzy = FuzzyReflection.fromClass(mojangsonParserClass);
+        val method = fuzzy.getMethodByParameters("deserializeNbtCompound", MinecraftReflection.getNBTCompoundClass(), new Class<?>[]{String.class});
+        NBT_DESERIALIZER_METHOD = Accessors.getMethodAccessor(method);
+    }
+
     /**
      * Translates an item stack in one of two ways:
      * - if the item has a CraftBukkit handler, the item is translated through its NBT tag;
@@ -36,7 +49,7 @@ public class ItemStackTranslationUtils {
      * @param translateBooks Whether it should translate written books
      * @return The translated item stack, which may or may not be the same as the given parameter
      */
-    public static ItemStack translateItemStack(ItemStack item, LanguagePlayer languagePlayer, boolean translateBooks) {
+    public static ItemStack translateItemStack(ItemStack item, Localized languagePlayer, boolean translateBooks) {
         if (item == null || item.getType() == Material.AIR) {
             return item;
         }
@@ -133,7 +146,7 @@ public class ItemStackTranslationUtils {
      * @param languagePlayer The language player to translate for
      * @param translateLore  Whether to attempt to translate the lore of the item
      */
-    public static void translateNbtItem(NbtCompound compound, LanguagePlayer languagePlayer, boolean translateLore) {
+    public static void translateNbtItem(NbtCompound compound, Localized languagePlayer, boolean translateLore) {
         if (!compound.containsKey("display")) {
             return;
         }
@@ -197,13 +210,28 @@ public class ItemStackTranslationUtils {
         }
     }
 
-    private static String translate(String string, LanguagePlayer languagePlayer, MainConfig.FeatureSyntax featureSyntax) {
+    public static String translateNbtString(String nbt, Localized localized) {
+        val compound = deserializeItemTagNbt(nbt);
+        translateNbtItem(compound, localized, true);
+        return serializeItemTagNbt(compound);
+    }
+
+    private static NbtCompound deserializeItemTagNbt(String nbt) {
+        val nmsCompound = NBT_DESERIALIZER_METHOD.invoke(null, nbt);
+        return NbtFactory.fromNMSCompound(nmsCompound);
+    }
+
+    private static String serializeItemTagNbt(NbtCompound nbt) {
+        return nbt.getHandle().toString();
+    }
+
+    private static String translate(String string, Localized localized, MainConfig.FeatureSyntax featureSyntax) {
         if (string == null) {
             return null;
         }
         return main().getLanguageParser().replaceLanguages(
-                main().getLanguageManager().matchPattern(string, languagePlayer),
-                languagePlayer,
+                main().getLanguageManager().matchPattern(string, localized),
+                localized,
                 featureSyntax
         );
     }

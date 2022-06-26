@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @since 1.0.0
  */
-public interface Language {
+public interface Language extends Localized {
 
     /**
      * @return The name of the language.

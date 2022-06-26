@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.api.players;
 
 import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.api.language.Localized;
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
  *
  * @since 1.0.0
  */
-public interface LanguagePlayer {
+public interface LanguagePlayer extends Localized {
 
     /**
      * Get the {@link Language language} of the player.

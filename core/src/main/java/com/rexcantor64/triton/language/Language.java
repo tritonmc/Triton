@@ -57,4 +57,9 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     public int hashCode() {
         return Objects.hash(name, minecraftCodes, rawDisplayName, displayName, banner, flagCode, cmds);
     }
+
+    @Override
+    public Language getLanguage() {
+        return this;
+    }
 }

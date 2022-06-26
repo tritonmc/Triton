@@ -1,19 +1,24 @@
 package com.rexcantor64.triton.language;
 
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
+import com.rexcantor64.triton.language.localized.StringLocale;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +37,10 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
     public String matchPattern(String input, LanguagePlayer p) {
         return matchPattern(input, p.getLang().getName());
+    }
+
+    public String matchPattern(String input, Localized localized) {
+        return matchPattern(input, localized.getLanguageId());
     }
 
     public String matchPattern(String input, String language) {
@@ -56,16 +65,14 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String getText(@NonNull String languageName, @NonNull String code, @NonNull Object... args) {
-        val language = getLanguageByName(languageName, true);
-
-        return getText(language, code, args);
+        return getText(new StringLocale(languageName), code, args);
     }
 
-    public String getText(@NonNull com.rexcantor64.triton.api.language.Language language, @NonNull String code, @NonNull Object... args) {
-        val text = getTextForLanguage(language.getName(), code, args);
+    public String getText(@NonNull Localized localized, @NonNull String code, @NonNull Object... args) {
+        val text = getTextForLanguage(localized.getLanguageId(), code, args);
         if (text.isPresent()) return text.get();
 
-        for (String fallbackLanguage : language.getFallbackLanguages()) {
+        for (String fallbackLanguage : localized.getLanguage().getFallbackLanguages()) {
             val textFallback = getTextForLanguage(fallbackLanguage, code, args);
             if (textFallback.isPresent()) return textFallback.get();
         }
