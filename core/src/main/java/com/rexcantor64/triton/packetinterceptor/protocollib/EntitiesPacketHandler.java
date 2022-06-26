@@ -11,6 +11,7 @@ import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
+import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
@@ -58,6 +59,14 @@ public class EntitiesPacketHandler extends PacketHandler {
     }
 
     /**
+     * @param entityType The entity type to check if it should be translated or not.
+     * @return Whether the plugin should attempt to translate the given entity type.
+     */
+    private boolean isEntityTypeDisabled(EntityType entityType) {
+        return !getConfig().isHologramsAll() && !getConfig().getHolograms().contains(entityType);
+    }
+
+    /**
      * Handle a Spawn Entity packet by adding the spawned entity to cache, if
      * translation is enabled for its entity type.
      *
@@ -79,7 +88,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             // On MC 1.8, we need to convert the entity type ID to an actual entity type object
             entityType = EntityTypeUtils.getEntityTypeByObjectId(packet.getPacket().getIntegers().readSafely(9));
         }
-        if (!getConfig().isHologramsAll() && !getConfig().getHolograms().contains(entityType)) {
+        if (isEntityTypeDisabled(entityType)) {
             // Don't add this entity to cache if it shouldn't be translated
             return;
         }
@@ -107,7 +116,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
         int entityTypeId = packet.getPacket().getIntegers().readSafely(1);
         EntityType entityType = EntityTypeUtils.getEntityTypeById(entityTypeId);
-        if (!getConfig().isHologramsAll() && !getConfig().getHolograms().contains(entityType)) {
+        if (isEntityTypeDisabled(entityType)) {
             // Don't add this entity to cache if it shouldn't be translated
             return;
         }
@@ -162,7 +171,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * @param languagePlayer The language player this packet is being sent to.
      */
     private void handleNamedEntitySpawn(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!getConfig().isHologramsAll() && !getConfig().getHolograms().contains(EntityType.PLAYER)) {
+        if (isEntityTypeDisabled(EntityType.PLAYER)) {
             // Don't add this entity to cache if it shouldn't be translated
             return;
         }
@@ -282,6 +291,58 @@ public class EntitiesPacketHandler extends PacketHandler {
                 languagePlayer.getPlayersMap().get(world),
                 languagePlayer.getItemFramesMap().get(world)
         );
+    }
+
+    /**
+     * Handle a Player Info packet by translating the name and display name of all game profiles.
+     * This is more directed to translating the names of human entities, but it can also
+     * translate custom TABs.
+     *
+     * @param packet         ProtocolLib's packet event.
+     * @param languagePlayer The language player this packet is being sent to.
+     */
+    private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (isEntityTypeDisabled(EntityType.PLAYER)) {
+            return;
+        }
+
+        EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
+        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
+        if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
+            for (PlayerInfoData data : dataList) {
+                languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
+            }
+            return;
+        }
+
+        if (infoAction != EnumWrappers.PlayerInfoAction.ADD_PLAYER && infoAction != EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)
+            return;
+
+        List<PlayerInfoData> dataListNew = new ArrayList<>();
+        for (PlayerInfoData data : dataList) {
+            WrappedGameProfile oldGP = data.getProfile();
+            languagePlayer.getShownPlayers().add(oldGP.getUUID());
+            WrappedGameProfile newGP = oldGP.withName(translateAndTruncate(
+                    languagePlayer,
+                    oldGP.getName()
+            ));
+            newGP.getProperties().putAll(oldGP.getProperties());
+            WrappedChatComponent msg = data.getDisplayName();
+            if (msg != null) {
+                BaseComponent[] result = getLanguageParser().parseComponent(
+                        languagePlayer,
+                        getConfig().getHologramSyntax(),
+                        ComponentSerializer.parse(msg.getJson())
+                );
+                if (result == null) {
+                    msg = null;
+                } else {
+                    msg.setJson(ComponentSerializer.toString(result));
+                }
+            }
+            dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
+        }
+        packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
     }
 
     /**
@@ -525,6 +586,26 @@ public class EntitiesPacketHandler extends PacketHandler {
         ids.forEach(id -> Arrays.stream(maps).filter(Objects::nonNull).forEach(map -> map.keySet().remove(id)));
     }
 
+    /**
+     * Translate legacy text using Triton's language parser and truncate it to 16 characters.
+     *
+     * @param languagePlayer The player to translate to.
+     * @param string         The legacy text to translate.
+     * @return The translated legacy text, truncated to 16 characters.
+     */
+    private String translateAndTruncate(LanguagePlayer languagePlayer, String string) {
+        if (string == null) {
+            return null;
+        }
+        val result = getLanguageParser().replaceLanguages(
+                getLanguageManager().matchPattern(string, languagePlayer),
+                languagePlayer,
+                getConfig().getHologramSyntax()
+        );
+        if (result != null && result.length() > 16) return result.substring(0, 16);
+        return result;
+    }
+
     @SuppressWarnings({"deprecation"})
     @Override
     public void registerPacketTypes(Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> registry) {
@@ -536,6 +617,8 @@ public class EntitiesPacketHandler extends PacketHandler {
         registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, this::handleNamedEntitySpawn);
         registry.put(PacketType.Play.Server.ENTITY_METADATA, this::handleEntityMetadata);
         registry.put(PacketType.Play.Server.ENTITY_DESTROY, this::handleEntityDestroy);
+
+        registry.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
     }
 
     private abstract static class DataWatcherHandler {

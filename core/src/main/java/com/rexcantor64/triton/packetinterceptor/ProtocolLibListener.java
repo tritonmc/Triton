@@ -141,7 +141,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         packetHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, this::handlePlayerListHeaderFooter);
         packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, this::handleOpenWindow);
-        packetHandlers.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
         packetHandlers.put(PacketType.Play.Server.KICK_DISCONNECT, this::handleKickDisconnect);
         if (main.getMcVersion() >= 13) {
             // Scoreboard rewrite on 1.13
@@ -388,41 +387,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             result = new BaseComponent[]{new TextComponent("")};
         msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
-    }
-
-    private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isHologramsAll() && !main.getConf().getHolograms().contains(EntityType.PLAYER)) return;
-
-        EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
-        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
-        if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
-            for (PlayerInfoData data : dataList)
-                languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
-            return;
-        }
-
-        if (infoAction != EnumWrappers.PlayerInfoAction.ADD_PLAYER && infoAction != EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)
-            return;
-
-        List<PlayerInfoData> dataListNew = new ArrayList<>();
-        for (PlayerInfoData data : dataList) {
-            WrappedGameProfile oldGP = data.getProfile();
-            languagePlayer.getShownPlayers().add(oldGP.getUUID());
-            WrappedGameProfile newGP = oldGP.withName(translate(languagePlayer, oldGP.getName(), 16,
-                    main.getConf().getHologramSyntax()));
-            newGP.getProperties().putAll(oldGP.getProperties());
-            WrappedChatComponent msg = data.getDisplayName();
-            if (msg != null) {
-                BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                        main.getConf().getHologramSyntax(), ComponentSerializer.parse(msg.getJson()));
-                if (result == null)
-                    msg = null;
-                else
-                    msg.setJson(ComponentSerializer.toString(result));
-            }
-            dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
-        }
-        packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
     }
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -881,17 +845,6 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean existsSignUpdatePacket() {
         return getMCVersion() == 8 || (getMCVersion() == 9 && getMCVersionR() == 1);
-    }
-
-    private String translate(LanguagePlayer lp, String s, int max, MainConfig.FeatureSyntax syntax) {
-        String r = translate(s, lp, syntax);
-        if (r != null && r.length() > max) return r.substring(0, max);
-        return r;
-    }
-
-    private String translate(String s, LanguagePlayer lp, MainConfig.FeatureSyntax syntax) {
-        if (s == null) return null;
-        return main.getLanguageParser().replaceLanguages(main.getLanguageManager().matchPattern(s, lp), lp, syntax);
     }
 
     private boolean isPlayerInventoryOpen(Player player) {
