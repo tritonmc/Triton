@@ -9,12 +9,12 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
 import lombok.Getter;
 import lombok.val;
-import lombok.var;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +40,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private Map<World, Map<Integer, Optional<String>>> entitiesMap = new ConcurrentHashMap<>();
     @Getter
     private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
+    @Getter
+    private Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
     @Getter
     private Set<UUID> shownPlayers = new HashSet<>();
     @Getter
