@@ -65,7 +65,7 @@ public class MotdPacketHandler extends PacketAdapter {
         val result = Triton.get().getLanguageParser()
                 .parseComponent(lang, syntax, ComponentSerializer.parse(motd.getJson()));
         if (result != null)
-            motd.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
+            motd.setJson(ComponentSerializer.toString(result));
         serverPing.setMotD(motd);
     }
 

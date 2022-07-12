@@ -4,7 +4,7 @@
 [![Spigot Rating](https://img.shields.io/spiget/rating/30331?color=orange)](https://www.spigotmc.org/resources/triton-translate-your-server.30331/)
 [![Release](https://jitpack.io/v/diogotcorreia/Triton.svg)](https://jitpack.io/#tritonmc/Triton)
 
-_Translate your server! Sends the same message on different languages... Hooks into all plugins!_  
+_Translate your server! Sends the same message in different languages... Hooks into all plugins!_  
 This repository was previously called MultiLanguagePlugin.
 
 Triton is a Minecraft plugin for Spigot and BungeeCord that helps you translate your Minecraft server!
@@ -27,7 +27,7 @@ the [download page](https://github.com/diogotcorreia/Triton/wiki/Downloads)!
 
 Triton is still a premium plugin and if you're going to use it,
 it's advised that you purchase it from Spigot or Polymart, as stated above.  
-However, you're still free to compile it yourself if you have the skills to do so.  
+Nevertheless, you're still free to compile it yourself if you have the skills to do so.  
 No support will be given to self-compiled versions.
 
 To compile, clone this repository and run the following command:

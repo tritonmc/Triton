@@ -56,6 +56,14 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return instance instanceof VelocityMLP;
     }
 
+    public static boolean isProxy() {
+        return isBungee() || isVelocity();
+    }
+
+    public static boolean isSpigot() {
+        return instance instanceof SpigotMLP;
+    }
+
     public static Triton get() {
         return instance;
     }
@@ -91,7 +99,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public void reload() {
-        configYAML = loadYAML("config", isBungee() ? "bungee_config" : "config");
+        configYAML = loadYAML("config", isProxy() ? "bungee_config" : "config");
         config.setup();
         logger.setLogLevel(config.getLogLevel());
         messagesConfig.setup();
@@ -111,9 +119,8 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
             val stream = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
             return ConfigurationProvider.getProvider(YamlConfiguration.class).load(stream);
         } catch (Exception e) {
-            logger.logError("Failed to load %1.yml: %2", fileName, e.getMessage());
+            logger.logError(e, "Failed to load %1.yml.", fileName);
             logger.logError("You'll likely receive more errors on console until the next restart.");
-            e.printStackTrace();
         }
         return null;
     }
@@ -138,17 +145,15 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
                         .getDatabaseTablePrefix());
                 this.storage = mysqlStorage;
                 mysqlStorage.load();
-                logger.logInfo(1, "Loaded MySQL storage manager");
+                logger.logInfo("Loaded MySQL storage manager");
                 return;
             } catch (Exception e) {
-                logger.logError("Failed to connect to database, falling back to local storage!");
-                e.printStackTrace();
-                return;
+                logger.logError(e, "Failed to connect to database, falling back to local storage!");
             }
         }
         this.storage = new LocalStorage();
         this.storage.load();
-        logger.logInfo(2, "Loaded local storage manager");
+        logger.logInfo("Loaded local storage manager");
     }
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {

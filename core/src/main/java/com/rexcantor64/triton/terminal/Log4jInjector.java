@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.AppenderRefFactory;
 import lombok.var;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.rewrite.RewriteAppender;
 import org.apache.logging.log4j.core.config.AppenderRef;
@@ -15,7 +16,7 @@ public class Log4jInjector {
         Logger logger = (Logger) LogManager.getRootLogger();
         Configuration config = logger.getContext().getConfiguration();
 
-        var originalAppender = logger.getAppenders().get("TerminalConsole");
+        Appender originalAppender = logger.getAppenders().get("TerminalConsole");
         if (originalAppender == null) originalAppender = logger.getAppenders().get("rewrite");
         // Paper now uses an "Async" AppenderRef over the "rewrite" and "rewrite2" refs
         if (originalAppender == null) originalAppender = logger.getAppenders().get("Async");

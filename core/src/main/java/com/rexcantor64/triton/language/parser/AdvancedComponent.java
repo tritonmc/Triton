@@ -34,6 +34,12 @@ public class AdvancedComponent {
         return fromBaseComponent(false, components);
     }
 
+    public static AdvancedComponent fromString(String text) {
+        AdvancedComponent advancedComponent = new AdvancedComponent();
+        advancedComponent.setText(text);
+        return advancedComponent;
+    }
+
     public static AdvancedComponent fromBaseComponent(boolean onlyText, BaseComponent... components) {
         AdvancedComponent advancedComponent = new AdvancedComponent();
         StringBuilder builder = new StringBuilder();
@@ -138,14 +144,14 @@ public class AdvancedComponent {
                     i--;
                     continue;
                 }
+                ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
-                    ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
                     list.add(component);
-                    component = new TextComponent("");
-                    component.setColor(previousColor);
                 }
+                component = new TextComponent("");
+                component.setColor(previousColor);
                 if (ChatColor.BOLD.equals(format)) {
                     component.setBold(true);
                 } else if (ChatColor.ITALIC.equals(format)) {
@@ -167,14 +173,14 @@ public class AdvancedComponent {
                     component.setColor(format);
                 }
             } else if (c == '\uE400' || c == '\uE500') {
+                BaseComponent previousComponent = component;
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
-                    BaseComponent previousComponent = component;
                     list.add(component);
-                    component = new TextComponent("");
-                    ComponentUtils.copyFormatting(previousComponent, component);
                 }
+                component = new TextComponent("");
+                ComponentUtils.copyFormatting(previousComponent, component);
                 if (c == '\uE400') {
                     String uuid = text.substring(i + 2, i + 2 + 36);
                     int actionCode = Integer.parseInt(Character.toString(text.charAt(i + 1)));
@@ -198,7 +204,7 @@ public class AdvancedComponent {
                 List<BaseComponent> extra = toBaseComponent(content.toString());
                 if (extra.size() > 0)
                     component.setExtra(extra);
-                BaseComponent previousComponent = component;
+                previousComponent = component;
                 list.add(component);
                 component = new TextComponent("");
                 ComponentUtils.copyFormatting(previousComponent, component);
@@ -243,7 +249,7 @@ public class AdvancedComponent {
     }
 
     public String getTextClean() {
-        var result = text;
+        String result = text;
         while (result.startsWith(ChatColor.RESET.toString()))
             result = result.substring(2);
         return result;
@@ -279,6 +285,12 @@ public class AdvancedComponent {
 
     public HashMap<String, List<AdvancedComponent>> getAllTranslatableArguments() {
         return translatableArguments;
+    }
+
+    public void inheritSpecialComponents(AdvancedComponent source) {
+        this.components.putAll(source.components);
+        this.hovers.putAll(source.hovers);
+        this.translatableArguments.putAll(source.translatableArguments);
     }
 
     @Override

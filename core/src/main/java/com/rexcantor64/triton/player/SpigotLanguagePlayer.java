@@ -9,12 +9,12 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
 import lombok.Getter;
 import lombok.val;
-import lombok.var;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +41,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     @Getter
     private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
     @Getter
+    private Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
+    @Getter
     private Set<UUID> shownPlayers = new HashSet<>();
     @Getter
     private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
@@ -53,7 +55,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     public void setScoreboardObjective(String name, String chatJson, Object type) {
-        var objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
+        ScoreboardObjective objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
         objective.setChatJson(chatJson);
         objective.setType(type);
     }
@@ -64,11 +66,11 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public void setScoreboardTeam(String name, String displayJson, String prefixJson, String suffixJson,
                                   List<Object> optionData) {
-        var objective = this.teamsMap.computeIfAbsent(name, k -> new ScoreboardTeam());
-        objective.setDisplayJson(displayJson);
-        objective.setPrefixJson(prefixJson);
-        objective.setSuffixJson(suffixJson);
-        objective.setOptionData(optionData);
+        ScoreboardTeam team = this.teamsMap.computeIfAbsent(name, k -> new ScoreboardTeam());
+        team.setDisplayJson(displayJson);
+        team.setPrefixJson(prefixJson);
+        team.setSuffixJson(suffixJson);
+        team.setOptionData(optionData);
     }
 
     public void removeScoreboardTeam(String name) {
@@ -91,16 +93,16 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (event.isCancelled()) return;
         if (this.waitingForClientLocale) {
             try {
-                if (toBukkit() != null)
+                if (toBukkit().isPresent()) {
                     bukkit.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                             .getMessage("success.detected-language", lang.getDisplayName())));
-                else
+                } else {
                     Triton.get().getLogger()
-                            .logError(1, "Could not automatically set language for %1 because Bukkit Player instance " +
-                                    "is null", uuid);
+                            .logWarning("Could not automatically set language for %1 because Bukkit Player instance " +
+                                    "is unknown", uuid);
+                }
             } catch (Exception e) {
-                Triton.get().getLogger().logError("Failed to send \"language changed\" message.");
-                e.printStackTrace();
+                Triton.get().getLogger().logError(e, "Failed to send \"language changed\" message.");
             }
         }
         this.lang = event.getNewLanguage();
@@ -143,6 +145,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                         interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
                 if (Triton.get().getConfig().isScoreboards())
                     interceptor.refreshScoreboard(this);
+                interceptor.refreshAdvancements(this);
             });
         }));
     }
@@ -183,8 +186,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                         .setLanguage(null, player.getAddress().getAddress().getHostAddress(), lang);
             }
         });
-        if (lang != null)
-            this.refreshAll();
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
@@ -235,6 +236,14 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                     Bukkit.dispatchCommand(bukkit, cmdText);
             }
         });
+    }
+
+    @Override
+    public String toString() {
+        return "SpigotLanguagePlayer{" +
+                "uuid=" + uuid +
+                ", lang=" + (lang == null ? "null" : lang.getName()) +
+                '}';
     }
 
     @Data

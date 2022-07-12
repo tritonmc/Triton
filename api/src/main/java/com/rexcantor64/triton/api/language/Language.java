@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @since 1.0.0
  */
-public interface Language {
+public interface Language extends Localized {
 
     /**
      * @return The name of the language.
@@ -38,5 +38,14 @@ public interface Language {
      * @since 1.0.0
      */
     String getFlagCode();
+
+    /**
+     * Get the list of languages to fall back to if this language does not have the requested key.
+     * The main language is always a fall back language even if not in this list.
+     *
+     * @return The languages to fall back to if this language does not have the requested key.
+     * @since 3.7.0
+     */
+    List<String> getFallbackLanguages();
 
 }

@@ -149,21 +149,35 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void executeCommands(Server overrideServer) {
-        val server = overrideServer == null ? getParent().getServer() : overrideServer;
+        Triton.get().getLogger().logTrace("Executing language commands for player %1", this);
+        val parent = getParent();
+        if (parent == null) return;
+        val server = overrideServer == null ? parent.getServer() : overrideServer;
         for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
-            val cmdText = cmd.getCmd().replace("%player%", getParent().getName()).replace("%uuid%", uuid.toString());
+            val cmdText = cmd.getCmd().replace("%player%", parent.getName()).replace("%uuid%", uuid.toString());
+
+            Triton.get().getLogger().logTrace("-- Command[TYPE=%2]: %1", cmdText, cmd.getType());
 
             if (!cmd.isUniversal() && !cmd.getServers().contains(server.getInfo().getName())) continue;
 
-            if (cmd.getType() == ExecutableCommand.Type.SERVER)
+            if (cmd.getType() == ExecutableCommand.Type.SERVER) {
                 Triton.asBungee().getBridgeManager().sendExecutableCommand(cmdText, server);
-            else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+            } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
                 server.unsafe().sendPacket(new Chat("/" + cmdText));
-            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE)
+            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE) {
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(),
                         cmdText);
-            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
-                BungeeCord.getInstance().getPluginManager().dispatchCommand(getParent(), cmdText);
+            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER) {
+                BungeeCord.getInstance().getPluginManager().dispatchCommand(parent, cmdText);
+            }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "BungeeLanguagePlayer{" +
+                "uuid=" + uuid +
+                ", language=" + (language == null ? "null" : language.getName()) +
+                '}';
     }
 }

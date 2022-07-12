@@ -21,6 +21,7 @@ public class InfoCommand implements Command {
                         Triton.get().getStorage().toString(),
                         event.getEnvironment().isProxy() || Triton.get().getConfig().isBungeecord()
                 )));
+        Triton.get().getLogger().logTrace("Current config: %1", Triton.get().getConfig());
 
         return true;
     }

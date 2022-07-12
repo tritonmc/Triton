@@ -11,14 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ComponentUtils {
 
-    private static final Pattern url = Pattern.compile("^((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)" +
-            "?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??" +
-            "(?:[-\\+=&;%@.\\w_/]*)#?(?:[\\w]*))?)$");
+    private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,})(/\\S*)?$");
 
     public static int encodeClickAction(ClickEvent.Action action) {
         switch (action) {
@@ -165,19 +162,19 @@ public class ComponentUtils {
 
     /**
      * Given a Stream of BaseComponents, ensure they're not italic by setting italic to false if it's not set.
-     * This is useful for translating item names and lores, where Minecraft makes them static by default.
+     * This is useful for translating item names and lores, where Minecraft makes them italic by default.
      * This does not do anything if the given component does not have any formatting whatsoever,
      * as to preserve the default Minecraft behaviour.
      *
      * @param baseComponents The components to check for italic
-     * @return A list of the same components after they've been modified
+     * @return An array of the same components after they've been modified
      */
-    public static List<BaseComponent> ensureNotItalic(Stream<BaseComponent> baseComponents) {
+    public static BaseComponent[] ensureNotItalic(Stream<BaseComponent> baseComponents) {
         return baseComponents.peek(comp -> {
             if (comp.isItalicRaw() == null && hasAnyFormatting(comp)) {
                 comp.setItalic(false);
             }
-        }).collect(Collectors.toList());
+        }).toArray(BaseComponent[]::new);
     }
 
     /**

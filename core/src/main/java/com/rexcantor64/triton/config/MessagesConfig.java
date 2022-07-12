@@ -28,14 +28,14 @@ public class MessagesConfig {
 
         if (messages.size() != defaultMessages.size()) {
             Triton.get().getLogger()
-                    .logWarning(1, "It seems like your messages.yml file is outdated");
+                    .logWarning("It seems like your messages.yml file is outdated");
             Triton.get().getLogger()
-                    .logWarning(1, "You can get an up-to-date copy at https://triton.rexcantor64.com/messagesyml");
+                    .logWarning("You can get an up-to-date copy at https://triton.rexcantor64.com/messagesyml");
         }
     }
 
     private String getString(String code) {
-        var msg = messages.get(code);
+        Object msg = messages.get(code);
         if (msg == null)
             msg = defaultMessages.get(code);
 
@@ -51,7 +51,7 @@ public class MessagesConfig {
     }
 
     public List<String> getMessageList(String code) {
-        var list = messages.get(code);
+        Object list = messages.get(code);
         if (list == null)
             list = defaultMessages.get(code);
 

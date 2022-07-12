@@ -40,8 +40,13 @@ public class CollectionSerializer implements JsonDeserializer<Collection> {
             items = json.getAsJsonArray();
         } else if (json.isJsonObject()) {
             items = json.getAsJsonObject().getAsJsonArray("items");
-            collection.setMetadata(context
-                    .deserialize(json.getAsJsonObject().get("metadata"), Collection.CollectionMetadata.class));
+            final Collection.CollectionMetadata metadata = context.deserialize(
+                    json.getAsJsonObject().get("metadata"),
+                    Collection.CollectionMetadata.class
+            );
+            if (metadata != null) {
+                collection.setMetadata(metadata);
+            }
         } else {
             throw new JsonParseException("Invalid JSON while deserializing Collection");
         }

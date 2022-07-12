@@ -2,8 +2,10 @@ package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.banners.Banner;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,16 +15,21 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     private String name;
     private List<String> minecraftCodes;
     private String rawDisplayName;
+    private List<String> fallbackLanguages = Collections.emptyList();
     private transient String displayName;
+    @ToString.Exclude
     private transient Banner banner;
     private String flagCode;
     private List<ExecutableCommand> cmds = new ArrayList<>();
 
-    public Language(String name, String flagCode, List<String> minecraftCodes, String displayName, List<String> cmds) {
+    public Language(String name, String flagCode, List<String> minecraftCodes, String displayName, List<String> fallbackLanguages, List<String> cmds) {
         this.name = name;
         this.rawDisplayName = displayName;
         this.minecraftCodes = minecraftCodes;
         this.flagCode = flagCode;
+        if (fallbackLanguages != null) {
+            this.fallbackLanguages = Collections.unmodifiableList(fallbackLanguages);
+        }
         if (cmds != null)
             for (String cmd : cmds)
                 this.cmds.add(ExecutableCommand.parse(cmd));
@@ -32,6 +39,10 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     public void computeProperties() {
         this.displayName = this.rawDisplayName;
         this.banner = new Banner(flagCode, this.displayName);
+        // If loading with Gson, this might be set to null
+        if (fallbackLanguages == null) {
+            fallbackLanguages = Collections.emptyList();
+        }
     }
 
     @Override
@@ -45,5 +56,10 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     @Override
     public int hashCode() {
         return Objects.hash(name, minecraftCodes, rawDisplayName, displayName, banner, flagCode, cmds);
+    }
+
+    @Override
+    public Language getLanguage() {
+        return this;
     }
 }

@@ -40,8 +40,8 @@ public class TwinManager {
 
     public HttpResponse upload(List<String> allowedCollections, List<String> allowedLanguages) {
         try {
-            val bungee = Triton.isBungee();
-            if (!bungee && main.getConf().isBungeecord())
+            val isProxy = Triton.isProxy();
+            if (!isProxy && main.getConf().isBungeecord())
                 return null;
 
             val data = new JsonObject();
@@ -50,7 +50,7 @@ public class TwinManager {
             data.addProperty("user", "%%__USER__%%");
             data.addProperty("resource", "%%__RESOURCE__%%-" + main.getVersion());
             data.addProperty("nonce", "%%__NONCE__%%");
-            data.addProperty("bungee", bungee);
+            data.addProperty("bungee", isProxy);
 
             if (allowedCollections != null || allowedLanguages != null) {
                 val limit = new JsonObject();
@@ -90,26 +90,27 @@ public class TwinManager {
                             }
                         } catch (Exception e) {
                             Triton.get().getLogger()
-                                    .logError("Could not strip blocked languages from translation while uploading " +
+                                    .logError(e, "Could not strip blocked languages from translation while uploading " +
                                             "to TWIN");
-                            e.printStackTrace();
                         }
                     }
 
                     items.add(jsonItem);
                 }
-                if (bungee)
+                if (isProxy) {
                     metadata.add(collection.getKey(), gson.toJsonTree(collection.getValue().getMetadata()));
+                }
             }
 
             if (changed.size() > 0) {
                 main.getStorage().uploadPartiallyToStorage(main.getStorage().getCollections(), changed, null);
-                main.getLogger().logInfo(2, "Updated items to be able to upload to TWIN");
+                main.getLogger().logInfo("Updated items to be able to upload to TWIN");
             }
 
             data.add("data", items);
-            if (bungee)
+            if (isProxy) {
                 data.add("metadata", metadata);
+            }
 
             val encodedData = data.toString();
             val u = new URL(BASE_URL + "/api/v1/upload");
@@ -152,7 +153,7 @@ public class TwinManager {
 
     public HttpResponse download(String id) {
         try {
-            if (main.getLoader().getType() != PluginLoader.PluginType.BUNGEE && main.getConf().isBungeecord())
+            if (Triton.isSpigot() && main.getConf().isBungeecord())
                 return null;
 
             URL u = new URL(BASE_URL + "/api/v1/get/" + id);

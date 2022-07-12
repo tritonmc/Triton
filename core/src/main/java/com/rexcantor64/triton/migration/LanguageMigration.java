@@ -43,7 +43,7 @@ public class LanguageMigration {
             gson.toJson(languageMap, fileWriter);
 
             // cache.json
-            if (!Triton.isBungee()) {
+            if (Triton.isSpigot()) {
                 val cacheFile = new File(Triton.get().getDataFolder(), "cache.json");
                 if (cacheFile.exists()) {
                     val element = JSON_PARSER.parse(FileUtils.getReaderFromFile(cacheFile));
@@ -81,7 +81,7 @@ public class LanguageMigration {
                     if (!file.getName().endsWith(".json")) continue;
 
                     val fileContent = JSON_PARSER.parse(FileUtils.getReaderFromFile(file));
-                    var collectionUniversal = false;
+                    boolean collectionUniversal = false;
                     JsonArray items;
                     if (fileContent.isJsonObject()) {
                         items = fileContent.getAsJsonObject().getAsJsonArray("items");
@@ -122,13 +122,10 @@ public class LanguageMigration {
             Triton.get().getLogger()
                     .logInfo("[Migration] Feel free to delete players.yml!");
         } catch (JsonParseException e) {
-            Triton.get().getLogger().logError("[Migration] Aborting... Failed to load some json file: bad syntax. %1",
-                    e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "[Migration] Aborting... Failed to load some json file: bad syntax.");
         } catch (IOException | SecurityException e) {
             Triton.get().getLogger()
-                    .logError("[Migration] Aborting... Failed to read from or write to files: %1", e.getMessage());
-            e.printStackTrace();
+                    .logError(e, "[Migration] Aborting... Failed to read from or write to files.");
         }
     }
 

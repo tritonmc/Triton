@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -46,10 +47,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
             if (action == 0) {
                 if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a local storage option, but this server is " +
+                            .logWarning("You're using BungeeCord with a local storage option, but this server is " +
                                     "using non-local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -60,15 +61,19 @@ public class SpigotBridgeManager implements PluginMessageListener {
                         config.setMainLanguage(in.readUTF());
                         short languageSize = in.readShort();
                         val languages = new ArrayList<Language>();
-                        for (var i = 0; i < languageSize; i++) {
+                        for (int i = 0; i < languageSize; i++) {
                             val name = in.readUTF();
                             val displayName = in.readUTF();
                             val flag = in.readUTF();
+                            val fallbackLanguages = new ArrayList<String>();
+                            val fallbackSize = in.readShort();
+                            for (int k = 0; k < fallbackSize; k++)
+                                fallbackLanguages.add(in.readUTF());
                             val minecraftCodes = new ArrayList<String>();
                             val mcSize = in.readShort();
-                            for (var k = 0; k < mcSize; k++)
+                            for (int k = 0; k < mcSize; k++)
                                 minecraftCodes.add(in.readUTF());
-                            languages.add(new Language(name, flag, minecraftCodes, displayName, null));
+                            languages.add(new Language(name, flag, minecraftCodes, displayName, fallbackLanguages, null));
                         }
                         config.setLanguages(languages);
                         val jsonObj = new JsonObject();
@@ -82,7 +87,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     // Read language files
                     val languageItems = new ArrayList<LanguageItem>();
                     val itemsSize = in.readInt();
-                    for (var i = 0; i < itemsSize; i++) {
+                    for (int i = 0; i < itemsSize; i++) {
                         val type = in.readByte();
                         val key = in.readUTF();
                         switch (type) {
@@ -93,14 +98,14 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                                 val msgs = new HashMap<String, String>();
                                 val langSize = in.readShort();
-                                for (var k = 0; k < langSize; k++)
+                                for (int k = 0; k < langSize; k++)
                                     msgs.put(in.readUTF(), in.readUTF());
                                 textItem.setLanguages(msgs);
 
                                 List<String> patterns = new ArrayList<>();
                                 if (type != 0) {
                                     val matchesSize = in.readShort();
-                                    for (var k = 0; k < matchesSize; k++)
+                                    for (int k = 0; k < matchesSize; k++)
                                         patterns.add(in.readUTF());
                                 }
                                 if (patterns.size() > 0) textItem.setPatterns(patterns);
@@ -120,7 +125,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                                 val signLines = new HashMap<String, String[]>();
                                 val linesSize = in.readShort();
-                                for (var k = 0; k < linesSize; k++)
+                                for (int k = 0; k < linesSize; k++)
                                     signLines.put(in.readUTF(), new String[]{in.readUTF(), in.readUTF(), in.readUTF()
                                             , in.readUTF()});
                                 signItem.setLines(signLines);
@@ -129,7 +134,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                                 break;
                             default:
                                 Triton.get().getLogger()
-                                        .logWarning(2, "Received invalid type language item type while reading " +
+                                        .logError("Received invalid type language item type while reading " +
                                                 "from BungeeCord: %1", type);
                                 break;
                         }
@@ -148,7 +153,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                     Triton.get().getStorage().setCollections(collections);
                     Triton.get().getStorage().uploadToStorage(collections);
 
-                    Triton.get().getLogger().logInfo(2, "Received config from BungeeCord and parsed it in %1ms!",
+                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
@@ -167,10 +172,10 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 val storage = Triton.get().getStorage();
                 if (storage instanceof LocalStorage) {
                     Triton.get().getLogger()
-                            .logWarning(0, "You're using BungeeCord with a non-local storage option, but this server " +
+                            .logWarning("You're using BungeeCord with a non-local storage option, but this server " +
                                     "is using local storage.");
                     Triton.get().getLogger()
-                            .logWarning(0, "All servers must share the same storage settings, otherwise translations " +
+                            .logWarning("All servers must share the same storage settings, otherwise translations " +
                                     "might not be loaded.");
                     return;
                 }
@@ -188,16 +193,18 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
                 val subCommand = in.readBoolean() ? in.readUTF() : null;
                 val args = new String[in.readShort()];
-                for (var i = 0; i < args.length; ++i)
+                for (int i = 0; i < args.length; ++i)
                     args[i] = in.readUTF();
+
+                Triton.get().getLogger().logTrace("Received forwarded command '%1' with args %2 for player %3",
+                        subCommand, Arrays.toString(args), uuid);
 
                 val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
                         CommandEvent.Environment.SPIGOT);
                 Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
-            Triton.get().getLogger().logError("Failed to parse plugin message: %1", e.getMessage());
-            e.printStackTrace();
+            Triton.get().getLogger().logError(e, "Failed to parse plugin message.");
         }
     }
 

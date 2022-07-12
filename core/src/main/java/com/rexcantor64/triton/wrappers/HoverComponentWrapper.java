@@ -2,9 +2,12 @@ package com.rexcantor64.triton.wrappers;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
+import com.rexcantor64.triton.api.language.Localized;
+import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ItemTag;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
 import net.md_5.bungee.api.chat.hover.content.Entity;
@@ -16,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HoverComponentWrapper {
 
-    public static HoverEvent handleHoverEvent(HoverEvent hoverEvent, String language, FeatureSyntax syntax) {
+    public static HoverEvent handleHoverEvent(HoverEvent hoverEvent, Localized language, FeatureSyntax syntax) {
         val changed = new AtomicBoolean(false);
 
         val contents = hoverEvent.getContents();
@@ -43,7 +46,8 @@ public class HoverComponentWrapper {
                 val item = (Item) content;
                 if (item.getTag() != null) {
                     val tag = item.getTag();
-                    // TODO
+                    val newTag = ItemTag.ofNbt(ItemStackTranslationUtils.translateNbtString(tag.getNbt(), language));
+                    item.setTag(newTag);
                 }
                 newContents.add(item);
             } else if (content instanceof Entity) {

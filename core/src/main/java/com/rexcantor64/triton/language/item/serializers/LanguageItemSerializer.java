@@ -32,7 +32,9 @@ public class LanguageItemSerializer implements JsonDeserializer<LanguageItem> {
     @Override
     public LanguageItem deserialize(JsonElement json, Type t, JsonDeserializationContext context) throws JsonParseException {
         val obj = json.getAsJsonObject();
-        val type = obj.get("type").getAsString();
+        val typeElement = obj.get("type");
+        if (typeElement == null || !typeElement.isJsonPrimitive()) throw new JsonParseException("Translation type is not present: " + json);
+        val type = typeElement.getAsString();
 
         if (type.equalsIgnoreCase("text"))
             return context.deserialize(json, LanguageText.class);

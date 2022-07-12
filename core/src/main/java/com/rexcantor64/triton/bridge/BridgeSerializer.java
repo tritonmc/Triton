@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.bridge;
 
+import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
@@ -34,6 +35,9 @@ public class BridgeSerializer {
             languageOut.writeUTF(language.getName());
             languageOut.writeUTF(language.getRawDisplayName());
             languageOut.writeUTF(language.getFlagCode());
+            languageOut.writeShort(language.getFallbackLanguages().size());
+            for (val fallbackLanguage : language.getFallbackLanguages())
+                languageOut.writeUTF(fallbackLanguage);
             languageOut.writeShort(language.getMinecraftCodes().size());
             for (val code : language.getMinecraftCodes())
                 languageOut.writeUTF(code);
@@ -57,8 +61,8 @@ public class BridgeSerializer {
 
             val languageList = Triton.get().getLanguageManager().getAllLanguages();
 
-            var size = 0;
-            var languageItemsOut = ByteStreams.newDataOutput();
+            int size = 0;
+            ByteArrayDataOutput languageItemsOut = ByteStreams.newDataOutput();
             for (val collection : Triton.get().getStorage().getCollections().values())
                 for (val item : collection.getItems()) {
                     if (languageItemsOut.toByteArray().length > 29000) {
@@ -84,7 +88,7 @@ public class BridgeSerializer {
                         // Send type (2) (type 0, but with pattern data)
                         languageItemsOut.writeByte(2);
                         languageItemsOut.writeUTF(item.getKey());
-                        var langSize = 0;
+                        int langSize = 0;
                         val langOut2 = ByteStreams.newDataOutput();
                         for (val lang : languageList) {
                             val msg = text.getMessage(lang.getName());
@@ -107,7 +111,7 @@ public class BridgeSerializer {
                         languageItemsOut.writeByte(1);
                         languageItemsOut.writeUTF(item.getKey());
 
-                        var locSize = 0;
+                        int locSize = 0;
                         val locOut = ByteStreams.newDataOutput();
                         if (sign.getLocations() != null) {
                             for (val loc : sign.getLocations()) {
@@ -122,7 +126,7 @@ public class BridgeSerializer {
                         }
                         languageItemsOut.writeShort(locSize);
                         languageItemsOut.write(locOut.toByteArray());
-                        var langSize = 0;
+                        int langSize = 0;
                         val langOut = ByteStreams.newDataOutput();
                         for (val lang : languageList) {
                             val lines = sign.getLines(lang.getName());
@@ -150,9 +154,8 @@ public class BridgeSerializer {
             outList.add(out.toByteArray());
         } catch (Exception e) {
             Triton.get().getLogger()
-                    .logError("Failed to send config and language items to '%1' server! Not everything might work " +
-                            "as expected! Error: %2", serverName, e.getMessage());
-            e.printStackTrace();
+                    .logError(e, "Failed to send config and language items to '%1' server! Not everything might work " +
+                            "as expected!", serverName);
         }
         return outList;
     }

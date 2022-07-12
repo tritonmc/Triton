@@ -17,6 +17,10 @@ languages:
     # The display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
     display-name: '&3English (UK)'
+    # The languages to check for translations when this language does not have them.
+    # The main language is also always checked last, even if you leave this empty.
+    fallback-languages:
+      - pt_PT
     # Use this to run commands on language change.
     # The commands must not start with a slash.
     # Prefix with the desired type. Available types: 'PLAYER', 'SERVER'
@@ -31,6 +35,7 @@ languages:
     flag: bacLlt
     minecraft-code: [ pt_PT, pt_BR ]
     display-name: '&3Portuguese (Portugal)'
+    fallback-languages: []
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 
@@ -76,10 +81,9 @@ command-aliases:
   - language
 
 # Determines how verbose the logging will be. A lower value means less verbose.
-# 0 (default): Only errors and startup messages are logged to the console.
-# 1: Also outputs details about config initialization and other relevant information (translation count, startup time, stack traces etc).
-# 2: Also outputs information related to reading/writing files, as well as communication with BungeeCord and a database.
-# 3: Logs EVERYTHING. Only recommended for debugging purposes. When enabled, every translation job will be logged to the console.
+# 0 (default): Corresponds to INFO. Logs useful information, such as successfully loading configurations.
+# 1: Corresponds to DEBUG. Logs more detailed information about each event.
+# 2: Corresponds to TRACE. Logs every action made by the plugin. Useful for reporting issues, but will print a lot of information.
 log-level: 0
 
 # This section controls the storage location of player data and translations.
@@ -87,7 +91,7 @@ log-level: 0
 # You can use '/triton database upload' to upload the local translations to a remote storage.
 # This MUST match what is on BungeeCord
 storage:
-  # Valid options: 'local', 'mysql', 'mongodb'
+  # Valid options: 'local', 'mysql'
   type: 'local'
   # This should match the name of this server in BungeeCord's config.yml
   # Used to filter translations for this server only
@@ -119,6 +123,12 @@ storage:
     #  characterEncoding: utf8
     #  useSSL: false
     #  verifyServerCertificate: false
+
+# EXPERIMENTAL: Intercept and parse ProtocolLib packets asynchronously.
+# This might cause incompatibilities with other plugins.
+# When stable, this will be enabled by default.
+# Changing this REQUIRES a server restart.
+experimental-async-protocol-lib: false
 
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
@@ -213,6 +223,18 @@ language-creation:
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
+  advancements:
+    # Should the plugin check for placeholders in advancements?
+    # Only works on 1.12 and above
+    # This is intended for plugins that add custom advancements, since Minecraft's default advancements are already translated.
+    enabled: false
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
+    # EXPERIMENTAL: Should the advancements be refreshed when the language changes?
+    # There might be some issues with this enabled, disable if you have those issues.
+    # Without this enabled, players will have to leave and join the server for the language of custom advancements to be updated.
+    experimental-advancements-refresh: false
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you've set disabled-line to 'disabled.line'):

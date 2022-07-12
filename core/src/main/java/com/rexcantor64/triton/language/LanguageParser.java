@@ -4,12 +4,14 @@ import com.google.gson.JsonParseException;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
+import com.rexcantor64.triton.api.language.Localized;
+import com.rexcantor64.triton.language.localized.StringLocale;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.wrappers.legacy.HoverComponentWrapper;
 import lombok.val;
-import lombok.var;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
@@ -81,9 +83,19 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         return replaceLanguages(input, language, syntax);
     }
 
-    public String replaceLanguages(String input, LanguagePlayer p, FeatureSyntax syntax) {
+    public String replaceLanguages(String input, Localized p, FeatureSyntax syntax) {
         if (input == null) return null;
-        return replaceLanguages(input, p.getLang().getName(), syntax);
+        val translated = replaceLanguages(input, p.getLanguageId(), syntax);
+
+        if (translated != null && p instanceof SpigotLanguagePlayer && Triton.isSpigot() && Triton.asSpigot().isPapiEnabled()) {
+            SpigotLanguagePlayer slp = (SpigotLanguagePlayer) p;
+            val bukkitPlayer = slp.toBukkit();
+            if (bukkitPlayer.isPresent()) {
+                return PlaceholderAPI.setPlaceholders(bukkitPlayer.get(), translated);
+            }
+        }
+
+        return translated;
     }
 
     public String replaceLanguages(String input, String language, FeatureSyntax syntax) {
@@ -134,6 +146,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     private List<BaseComponent> removeTritonLinks(BaseComponent... baseComponents) {
         val result = new ArrayList<BaseComponent>();
         for (val component : baseComponents) {
+            if (component == null) continue;
             if (component.getClickEvent() != null && component.getClickEvent()
                     .getAction() == ClickEvent.Action.OPEN_URL && !ComponentUtils
                     .isLink(component.getClickEvent().getValue()))
@@ -158,11 +171,11 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         return result;
     }
 
-    public BaseComponent[] parseComponent(LanguagePlayer p, FeatureSyntax syntax, BaseComponent... text) {
-        return parseComponent(p.getLang().getName(), syntax, text);
+    public BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... text) {
+        return parseComponent(new StringLocale(language), syntax, text);
     }
 
-    public BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... text) {
+    public BaseComponent[] parseComponent(Localized language, FeatureSyntax syntax, BaseComponent... text) {
         text = ComponentSerializer.parse(ComponentSerializer.toString(text));
         text = removeTritonLinks(text).toArray(new BaseComponent[0]);
         val advancedComponent = parseAdvancedComponent(language, syntax, AdvancedComponent.fromBaseComponent(text));
@@ -171,12 +184,12 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         return advancedComponent.toBaseComponent();
     }
 
-    private AdvancedComponent parseAdvancedComponent(String language, FeatureSyntax syntax,
+    private AdvancedComponent parseAdvancedComponent(Localized language, FeatureSyntax syntax,
                                                      AdvancedComponent advancedComponent) {
-        var input = advancedComponent.getTextClean();
+        String input = advancedComponent.getTextClean();
         input = Triton.get().getLanguageManager().matchPattern(input, language);
         Integer[] i;
-        var safeCounter = 0;
+        int safeCounter = 0;
         while ((i = getPatternIndex(input, syntax.getLang())) != null) {
             safeCounter++;
             if (safeCounter > Triton.get().getConfig().getMaxPlaceholdersInMessage()) {
@@ -196,10 +209,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 if (!Triton.get().getConf().getDisabledLine().isEmpty() &&
                         code.equals(Triton.get().getConf().getDisabledLine()))
                     return null;
-                val result = parseTritonTranslation(Triton.get().getLanguageManager().getText(language, code));
-                advancedComponent.getComponents().putAll(result.getComponents());
-                advancedComponent.getHovers().putAll(result.getHovers());
-                advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
+                val result = parseTritonTranslation(Triton.get().getLanguageManager().getText(language, code), language);
+                advancedComponent.inheritSpecialComponents(result);
                 builder.append(result.getTextClean());
                 builder.append(input.substring(i[1]));
                 input = builder.toString();
@@ -214,12 +225,17 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             val argList = new Object[argIndexList.size()];
             for (int k = 0; k < argIndexList.size(); k++) {
                 Integer[] argIndex = argIndexList.get(k);
-                argList[k] = replaceLanguages(args.substring(argIndex[2], argIndex[3]), language, syntax);
+                AdvancedComponent argAdvancedComponent = AdvancedComponent.fromString(args.substring(argIndex[2], argIndex[3]));
+                argAdvancedComponent = parseAdvancedComponent(language, syntax, argAdvancedComponent);
+                if (argAdvancedComponent == null) {
+                    argList[k] = "";
+                    continue;
+                }
+                argList[k] = argAdvancedComponent.getText();
+                advancedComponent.inheritSpecialComponents(argAdvancedComponent);
             }
-            val result = parseTritonTranslation(SpigotMLP.get().getLanguageManager().getText(language, code, argList));
-            advancedComponent.getComponents().putAll(result.getComponents());
-            advancedComponent.getHovers().putAll(result.getHovers());
-            advancedComponent.getAllTranslatableArguments().putAll(result.getAllTranslatableArguments());
+            val result = parseTritonTranslation(SpigotMLP.get().getLanguageManager().getText(language, code, argList), language);
+            advancedComponent.inheritSpecialComponents(result);
             builder.append(result.getTextClean());
             builder.append(input.substring(i[1]));
             input = builder.toString();
@@ -239,8 +255,9 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 val replaced = replaceLanguages(Triton.get().getLanguageManager()
                         .matchPattern(string, language), language, syntax);
                 if (replaced == null) {
-                    if (entry.getValue().getAction() != HoverEvent.Action.SHOW_ITEM)
+                    if (entry.getValue().getAction() != HoverEvent.Action.SHOW_ITEM) {
                         entry.setValue(null);
+                    }
                     continue;
                 }
                 entry.setValue(HoverComponentWrapper
@@ -248,13 +265,22 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             }
         }
 
-        for (val entry : advancedComponent.getAllTranslatableArguments().entrySet())
+        for (val entry : advancedComponent.getAllTranslatableArguments().entrySet()) {
             advancedComponent.getAllTranslatableArguments().put(entry.getKey(), entry.getValue().stream()
                     .map(comp -> parseAdvancedComponent(language, syntax, comp)).collect(Collectors.toList()));
+        }
         return advancedComponent;
     }
 
-    private AdvancedComponent parseTritonTranslation(String translatedResult) {
+    private AdvancedComponent parseTritonTranslation(String translatedResult, Localized contextPlayer) {
+        if (contextPlayer instanceof SpigotLanguagePlayer && Triton.isSpigot() && Triton.asSpigot().isPapiEnabled()) {
+            SpigotLanguagePlayer slp = (SpigotLanguagePlayer) contextPlayer;
+            val bukkitPlayer = slp.toBukkit();
+            if (bukkitPlayer.isPresent()) {
+                translatedResult = PlaceholderAPI.setPlaceholders(bukkitPlayer.get(), translatedResult);
+            }
+        }
+
         BaseComponent[] componentResult;
         if (translatedResult.startsWith("[triton_json]")) {
             val jsonInput = translatedResult.substring(13);
@@ -262,9 +288,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 componentResult = ComponentSerializer.parse(jsonInput);
             } catch (JsonParseException e) {
                 Triton.get().getLogger()
-                        .logError("Failed to parse JSON translation: %1", jsonInput);
+                        .logError(e, "Failed to parse JSON translation: %1", jsonInput);
                 componentResult = TextComponent.fromLegacyText(jsonInput);
-                e.printStackTrace();
             }
         } else if (translatedResult.startsWith("[minimsg]")) {
             val mmInput = translatedResult.substring(9);
@@ -274,11 +299,10 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 componentResult = ComponentSerializer.parse(jsonSerialized);
             } catch (JsonParseException | NullPointerException e) {
                 Triton.get().getLogger()
-                        .logError("Failed to parse Mini Message translation: %1", mmInput);
+                        .logError(e, "Failed to parse Mini Message translation: %1", mmInput);
                 componentResult = TextComponent.fromLegacyText(mmInput);
-                e.printStackTrace();
             } catch (NoClassDefFoundError e) {
-                Triton.get().getLogger().logError("Failed to parse Mini Message translation because Mini Message is only available on PaperMC (or forks).");
+                Triton.get().getLogger().logError(e, "Failed to parse Mini Message translation because Mini Message is only available on PaperMC (or forks).");
                 componentResult = TextComponent.fromLegacyText(mmInput);
             }
         } else {

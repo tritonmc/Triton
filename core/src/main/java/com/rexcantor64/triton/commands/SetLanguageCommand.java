@@ -53,7 +53,7 @@ public class SetLanguageCommand implements Command {
             Triton.get().getPlayerManager().get(target).setLang(lang);
         else {
             if (event.getEnvironment() == CommandEvent.Environment.SPIGOT && Triton.get().getConfig().isBungeecord()) {
-                sender.sendMessage("Changing the language of offline players must be done through the BungeeCord " +
+                sender.sendMessage("Changing the language of offline players must be done through the proxy " +
                         "console.");
                 return true;
             }

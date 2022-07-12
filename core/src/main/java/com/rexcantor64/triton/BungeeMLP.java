@@ -82,11 +82,9 @@ public class BungeeMLP extends Triton {
                     Log4jInjector.injectAppender();
             } catch (Error | Exception e1) {
                 getLogger()
-                        .logError("Failed to inject terminal translations. Some forked BungeeCord servers might not " +
-                                "work " +
-                                "correctly. To hide this message, disable terminal translation on config.");
-                e.printStackTrace();
-                e1.printStackTrace();
+                        .logError(e, "Failed to inject terminal translations. Some forked BungeeCord servers might not " +
+                                "work correctly. To hide this message, disable terminal translation on config.");
+                getLogger().logError(e1, "");
             }
         }
     }
@@ -117,6 +115,7 @@ public class BungeeMLP extends Triton {
     }
 
     public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
+        Triton.get().getLogger().logTrace("Injecting pipeline for player %1", lp);
         try {
             Object ch = NMSUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");

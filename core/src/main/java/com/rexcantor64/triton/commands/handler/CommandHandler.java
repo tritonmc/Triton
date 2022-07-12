@@ -24,6 +24,7 @@ public abstract class CommandHandler {
         commands.put("sign", new SignCommand());
         commands.put("database", new DatabaseCommand());
         commands.put("twin", new TwinCommand());
+        commands.put("loglevel", new LogLevelCommand());
     }
 
     public void handleCommand(CommandEvent event) {
@@ -79,7 +80,7 @@ public abstract class CommandHandler {
         val newLength = args.length + 1;
         val newArray = new String[newLength];
         newArray[0] = subCommand;
-        for (var i = 0; i < args.length; ++i)
+        for (int i = 0; i < args.length; ++i)
             newArray[i + 1] = args[i];
         return newArray;
     }

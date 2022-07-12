@@ -11,7 +11,13 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.utils.YAMLUtils;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Cleanup;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,10 +26,15 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Getter
+@ToString
 public class MainConfig implements TritonConfig {
 
     private final static JsonParser JSON_PARSER = new JsonParser();
@@ -31,6 +42,7 @@ public class MainConfig implements TritonConfig {
     private static final Type LANGUAGES_TYPE = new TypeToken<List<Language>>() {
     }.getType();
 
+    @ToString.Exclude
     private transient final Triton main;
     @Setter
     private List<Language> languages;
@@ -72,18 +84,28 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax motdSyntax;
     private boolean scoreboards;
     private FeatureSyntax scoreboardSyntax;
+    private boolean advancements;
+    private FeatureSyntax advancementsSyntax;
+    private boolean advancementsRefresh;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
     private int maxPlaceholdersInMessage;
+    private boolean asyncProtocolLib;
 
     private String storageType = "local";
     private String serverName;
+    @ToString.Exclude
     private String databaseHost;
+    @ToString.Exclude
     private int databasePort;
+    @ToString.Exclude
     private String databaseName;
+    @ToString.Exclude
     private String databaseUser;
+    @ToString.Exclude
     private String databasePassword;
+    @ToString.Exclude
     private String databaseTablePrefix;
     private int databaseMysqlPoolMaxSize;
     private int databaseMysqlPoolMinIdle;
@@ -97,7 +119,7 @@ public class MainConfig implements TritonConfig {
 
     private void setup(Configuration section) {
         this.bungeecord = section.getBoolean("bungeecord", false);
-        if (!this.bungeecord) {
+        if (Triton.isProxy() || !this.bungeecord) {
             this.twinToken = section.getString("twin-token", "");
         }
 
@@ -110,9 +132,10 @@ public class MainConfig implements TritonConfig {
                         languagesSection.getString(lang + ".flag", "pa"),
                         YAMLUtils.getStringOrStringList(languagesSection, lang + ".minecraft-code"),
                         languagesSection.getString(lang + ".display-name", "&4Unknown"),
+                        languagesSection.getStringList(lang + ".fallback-languages"),
                         languagesSection.getStringList(lang + ".commands")));
         } else {
-            languages.add(new Language("temp", "pabk", new ArrayList<>(), "Error", new ArrayList<>()));
+            languages.add(new Language("temp", "pabk", new ArrayList<>(), "Error", null, null));
         }
         this.languages = languages;
 
@@ -151,13 +174,14 @@ public class MainConfig implements TritonConfig {
         this.alwaysCheckClientLocale = section.getBoolean("force-client-locale-on-join", false);
         this.logLevel = section.getInt("log-level", 0);
         this.configAutoRefresh = section.getInt("config-auto-refresh-interval", -1);
+        this.asyncProtocolLib = section.getBoolean("experimental-async-protocol-lib", false);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
     }
 
     public void setup() {
         setup(main.getConfigYAML());
-        if (this.bungeecord && storageType.equalsIgnoreCase("local"))
+        if (Triton.isSpigot() && this.bungeecord && storageType.equalsIgnoreCase("local"))
             setupFromCache();
     }
 
@@ -168,7 +192,7 @@ public class MainConfig implements TritonConfig {
                 Files.write(file.toPath(), "{}".getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             } catch (Exception e) {
                 Triton.get().getLogger()
-                        .logError("Failed to create %1! Error: %2", file.getAbsolutePath(), e.getMessage());
+                        .logError(e, "Failed to create %1!", file.getAbsolutePath());
             }
             return;
         }
@@ -253,6 +277,11 @@ public class MainConfig implements TritonConfig {
         this.scoreboards = scoreboards.getBoolean("enabled", true);
         this.scoreboardSyntax = FeatureSyntax.fromSection(scoreboards);
 
+        Configuration advancements = section.getSection("advancements");
+        this.advancements = advancements.getBoolean("enabled", false);
+        this.advancementsSyntax = FeatureSyntax.fromSection(advancements);
+        this.advancementsRefresh = advancements.getBoolean("experimental-advancements-refresh", false);
+
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)
             try {
@@ -278,8 +307,14 @@ public class MainConfig implements TritonConfig {
         return false;
     }
 
+    public void setLogLevel(int logLevel) {
+        this.logLevel = logLevel;
+        main.getLogger().setLogLevel(logLevel);
+    }
+
     @Getter
     @RequiredArgsConstructor
+    @ToString
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
         private final String args;

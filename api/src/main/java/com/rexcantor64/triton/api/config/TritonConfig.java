@@ -194,6 +194,12 @@ public interface TritonConfig {
     boolean isMotd();
 
     /**
+     * @return The value of "language-creation.advancements.enabled" in the config.
+     * @since 3.7.0
+     */
+    boolean isAdvancements();
+
+    /**
      * @return The value of "language-creation.terminal" in the config.
      * @since 2.6.0
      */
@@ -206,6 +212,14 @@ public interface TritonConfig {
      * @since 3.0.0
      */
     boolean isPreventPlaceholdersInChat();
+
+    /**
+     * Is Triton intercepting ProtocolLib packets asynchronously?
+     *
+     * @return The value of "experimental-async-protocol-lib" in the config.
+     * @since 3.7.0
+     */
+    boolean isAsyncProtocolLib();
 
     /**
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.chat"
@@ -302,5 +316,11 @@ public interface TritonConfig {
      * @since 2.6.0
      */
     FeatureSyntax getMotdSyntax();
+
+    /**
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .advancements" in the config.
+     */
+    FeatureSyntax getAdvancementsSyntax();
 
 }
