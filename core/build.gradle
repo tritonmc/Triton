@@ -19,15 +19,16 @@ dependencies {
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
 
     // Adventure / MiniMessage
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.9.3'
-    implementation('net.kyori:adventure-text-minimessage:4.10.0-SNAPSHOT') {
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.11.0'
+    implementation('net.kyori:adventure-text-minimessage:4.11.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
-    testImplementation('net.kyori:adventure-api:4.9.3')
+    testImplementation 'net.kyori:adventure-api:4.11.0'
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
 
     compileOnly 'me.clip:placeholderapi:2.11.1'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
