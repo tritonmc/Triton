@@ -9,6 +9,7 @@ import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.guiapi.ScrollableGui;
 import com.rexcantor64.triton.listeners.BukkitListener;
 import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction;
 import com.rexcantor64.triton.packetinterceptor.protocollib.MotdPacketHandler;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
@@ -86,10 +87,11 @@ public class SpigotMLP extends Triton {
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
             if (getConfig().isAsyncProtocolLib()) {
                 val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
-                asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this)).start();
+                asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC)).start();
                 asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+                ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibListener(this, HandlerFunction.HandlerType.SYNC));
             } else {
-                ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this));
+                ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC, HandlerFunction.HandlerType.SYNC));
                 ProtocolLibrary.getProtocolManager().addPacketListener(new MotdPacketHandler());
             }
         } else {

@@ -14,20 +14,16 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.BukkitConverters;
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.wrappers.EntityType;
-import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.packetinterceptor.protocollib.AdvancementsPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.protocollib.EntitiesPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction;
 import com.rexcantor64.triton.packetinterceptor.protocollib.SignPacketHandler;
-import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
@@ -44,7 +40,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
@@ -60,10 +55,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asAsync;
+import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asSync;
 
 @SuppressWarnings({"deprecation"})
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
@@ -83,10 +79,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final EntitiesPacketHandler entitiesPacketHandler = new EntitiesPacketHandler();
 
     private final SpigotMLP main;
-    private final Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> packetHandlers = new HashMap<>();
+    private final List<HandlerFunction.HandlerType> allowedTypes;
+    private final Map<PacketType, HandlerFunction> packetHandlers = new HashMap<>();
 
-    public ProtocolLibListener(SpigotMLP main) {
+    public ProtocolLibListener(SpigotMLP main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
+        this.allowedTypes = Arrays.asList(allowedTypes);
         if (main.getMcVersion() >= 17)
             MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getClass("net.minecraft.world.item.trading.MerchantRecipeList");
         else if (main.getMcVersion() >= 14)
@@ -122,41 +120,41 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private void setupPacketHandlers() {
         if (main.getMcVersion() >= 19) {
             // New chat packets on 1.19
-            packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, this::handleSystemChat);
+            packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, asAsync(this::handleSystemChat));
         } else {
             // In 1.19+, this packet is signed, so we cannot edit it.
             // It's sent by the player anyway, so there's nothing to translate.
-            packetHandlers.put(PacketType.Play.Server.CHAT, this::handleChat);
+            packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
         }
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
-            packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, this::handleTitle);
-            packetHandlers.put(PacketType.Play.Server.SET_SUBTITLE_TEXT, this::handleTitle);
+            packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, asAsync(this::handleTitle));
+            packetHandlers.put(PacketType.Play.Server.SET_SUBTITLE_TEXT, asAsync(this::handleTitle));
 
             // New actionbar packet
-            packetHandlers.put(PacketType.Play.Server.SET_ACTION_BAR_TEXT, this::handleActionbar);
+            packetHandlers.put(PacketType.Play.Server.SET_ACTION_BAR_TEXT, asAsync(this::handleActionbar));
         } else {
-            packetHandlers.put(PacketType.Play.Server.TITLE, this::handleTitle);
+            packetHandlers.put(PacketType.Play.Server.TITLE, asAsync(this::handleTitle));
         }
 
-        packetHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, this::handlePlayerListHeaderFooter);
-        packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, this::handleOpenWindow);
-        packetHandlers.put(PacketType.Play.Server.KICK_DISCONNECT, this::handleKickDisconnect);
+        packetHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER, asAsync(this::handlePlayerListHeaderFooter));
+        packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW, asAsync(this::handleOpenWindow));
+        packetHandlers.put(PacketType.Play.Server.KICK_DISCONNECT, asSync(this::handleKickDisconnect));
         if (main.getMcVersion() >= 13) {
             // Scoreboard rewrite on 1.13
             // It allows unlimited length team prefixes and suffixes
-            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, this::handleScoreboardTeam);
-            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, this::handleScoreboardObjective);
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, asAsync(this::handleScoreboardTeam));
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, asAsync(this::handleScoreboardObjective));
         }
-        packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, this::handleWindowItems);
-        packetHandlers.put(PacketType.Play.Server.SET_SLOT, this::handleSetSlot);
+        packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
+        packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
         if (getMCVersion() >= 9) {
             // Bossbars were only added on MC 1.9
-            packetHandlers.put(PacketType.Play.Server.BOSS, this::handleBoss);
+            packetHandlers.put(PacketType.Play.Server.BOSS, asAsync(this::handleBoss));
         }
         if (getMCVersion() >= 14) {
             // Villager merchant interface redesign on 1.14
-            packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, this::handleMerchantItems);
+            packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, asAsync(this::handleMerchantItems));
         }
 
 
@@ -623,7 +621,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         val handler = packetHandlers.get(packet.getPacketType());
         if (handler != null) {
-            handler.accept(packet, languagePlayer);
+            handler.getHandlerFunction().accept(packet, languagePlayer);
         }
     }
 
@@ -654,9 +652,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @Override
     public ListeningWhitelist getSendingWhitelist() {
+        val types = packetHandlers.entrySet().stream()
+                .filter(entry -> this.allowedTypes.contains(entry.getValue().getHandlerType()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
         return ListeningWhitelist.newBuilder()
                 .gamePhase(GamePhase.PLAYING)
-                .types(packetHandlers.keySet())
+                .types(types)
                 .mergeOptions(ListenerOptions.ASYNC)
                 .highest()
                 .build();
