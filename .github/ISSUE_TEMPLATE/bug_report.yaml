@@ -64,7 +64,7 @@ body:
     attributes:
       label: Which proxy are you using?
       options:
-        - "None"
+        - "I'm not using a proxy"
         - "BungeeCord"
         - "Waterfall"
         - "FlameCord"
