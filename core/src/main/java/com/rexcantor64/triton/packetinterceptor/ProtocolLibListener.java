@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,6 +82,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final SpigotMLP main;
     private final List<HandlerFunction.HandlerType> allowedTypes;
     private final Map<PacketType, HandlerFunction> packetHandlers = new HashMap<>();
+    private final AtomicBoolean firstRun = new AtomicBoolean(true);
 
     public ProtocolLibListener(SpigotMLP main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
@@ -602,6 +604,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     @Override
     public void onPacketSending(PacketEvent packet) {
         if (!packet.isServerPacket()) return;
+
+        if (firstRun.compareAndSet(true, false) && !Bukkit.getServer().isPrimaryThread()) {
+            Thread.currentThread().setName("Triton Async Packet Handler");
+        }
+
         SpigotLanguagePlayer languagePlayer;
         try {
             languagePlayer =
