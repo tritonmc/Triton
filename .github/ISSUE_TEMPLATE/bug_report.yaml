@@ -1,0 +1,112 @@
+name: Bug Report
+description: Have you found a bug while using Triton? Report it here and help us improve!
+labels: ["bug"]
+assignees:
+  - diogotcorreia
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for opening a bug report! Please fill out the following information so it can be fixed as soon as possible.
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is. Please include screenshots if possible!
+    validations:
+      required: true
+  - type: textarea
+    id: how_to_reproduce
+    attributes:
+      label: How can the bug be reproduced?
+      description: >-
+        Give a list of step-by-step instructions on how to reproduce this problem.
+        Include configs for related plugins if possible.
+      placeholder: |
+        1. Install plugin X
+        2. Change Y on `config.yml`
+        3. Run command `/z`
+        4. ...
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: >-
+        What should have happened instead?
+      placeholder: |
+        Instead of plugin X showing message Y, it should've showed message Z.
+    validations:
+      required: false
+  - type: dropdown
+    id: spigot_fork
+    attributes:
+      label: Which Spigot fork are you using?
+      options:
+        - "Vanilla Spigot (from BuildTools)"
+        - "Vanilla Spigot (from a JAR mirroring website)"
+        - "PaperMC"
+        - "Purpur"
+        - "Airplane"
+        - "Other (specify below)"
+    validations:
+      required: true
+  - type: input
+    id: spigot_version
+    attributes:
+      label: What's your server version?
+      description: Run `/version` on your server to get an accurate version
+      placeholder: "3551-Spigot-14a2382-9a8e080 (MC: 1.19)"
+    validations:
+      required: true
+  - type: dropdown
+    id: proxy_fork
+    attributes:
+      label: Which proxy are you using?
+      options:
+        - "None"
+        - "BungeeCord"
+        - "Waterfall"
+        - "FlameCord"
+        - "Aegis"
+        - "Velocity"
+        - "Other (specify below)"
+    validations:
+      required: true
+  - type: input
+    id: proxy_version
+    attributes:
+      label: What's your proxy version?
+      description: It probably appears when you start the proxy. Otherwise, put the maximum MC version supported.
+      placeholder: "git:BungeeCord-Bootstrap:1.19-R0.1-SNAPSHOT:12e4514:1654"
+    validations:
+      required: false
+  - type: input
+    id: client_version
+    attributes:
+      label: What's the MC version of your client?
+      description: The Minecraft version of the client (player) you're using.
+      placeholder: "1.19"
+    validations:
+      required: true
+  - type: input
+    id: triton_version
+    attributes:
+      label: What's the Triton version you're using?
+      description: Before submitting a bug report, check if it is the latest one.
+      placeholder: "3.8.0"
+    validations:
+      required: true
+  - type: textarea
+    id: additional_information
+    attributes:
+      label: Additional Information
+      description: >-
+        If you responded "other" to any of the questions above, this is where you should specify.
+
+        You should also place versions of related plugins here.
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to fill out this form. Click the "Submit new issue" button below.
