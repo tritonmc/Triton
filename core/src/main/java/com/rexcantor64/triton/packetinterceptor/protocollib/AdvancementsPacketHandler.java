@@ -18,7 +18,8 @@ import org.bukkit.Bukkit;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.BiConsumer;
+
+import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asAsync;
 
 public class AdvancementsPacketHandler extends PacketHandler {
 
@@ -124,7 +125,7 @@ public class AdvancementsPacketHandler extends PacketHandler {
     }
 
     @Override
-    public void registerPacketTypes(Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> registry) {
-        registry.put(PacketType.Play.Server.ADVANCEMENTS, this::handleAdvancements);
+    public void registerPacketTypes(Map<PacketType, HandlerFunction> registry) {
+        registry.put(PacketType.Play.Server.ADVANCEMENTS, asAsync(this::handleAdvancements));
     }
 }

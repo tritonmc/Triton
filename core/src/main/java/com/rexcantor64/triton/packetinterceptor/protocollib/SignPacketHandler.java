@@ -20,18 +20,17 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.utils.RegistryUtils;
 import lombok.val;
-import lombok.var;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
+
+import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asAsync;
 
 @SuppressWarnings({"deprecation"})
 public class SignPacketHandler extends PacketHandler {
@@ -399,15 +398,15 @@ public class SignPacketHandler extends PacketHandler {
     }
 
     @Override
-    public void registerPacketTypes(Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> registry) {
+    public void registerPacketTypes(Map<PacketType, HandlerFunction> registry) {
         if (getMcVersion() >= 18) {
-            registry.put(PacketType.Play.Server.MAP_CHUNK, this::handleLevelChunk);
-            registry.put(PacketType.Play.Server.TILE_ENTITY_DATA, this::handleTileEntityDataPost1_18);
+            registry.put(PacketType.Play.Server.MAP_CHUNK, asAsync(this::handleLevelChunk));
+            registry.put(PacketType.Play.Server.TILE_ENTITY_DATA, asAsync(this::handleTileEntityDataPost1_18));
         } else if (!MinecraftReflection.signUpdateExists()) {
-            registry.put(PacketType.Play.Server.MAP_CHUNK, this::handleMapChunk);
-            registry.put(PacketType.Play.Server.TILE_ENTITY_DATA, this::handleTileEntityDataPre1_18);
+            registry.put(PacketType.Play.Server.MAP_CHUNK, asAsync(this::handleMapChunk));
+            registry.put(PacketType.Play.Server.TILE_ENTITY_DATA, asAsync(this::handleTileEntityDataPre1_18));
         } else {
-            registry.put(PacketType.Play.Server.UPDATE_SIGN, this::handleUpdateSign);
+            registry.put(PacketType.Play.Server.UPDATE_SIGN, asAsync(this::handleUpdateSign));
         }
     }
 }
