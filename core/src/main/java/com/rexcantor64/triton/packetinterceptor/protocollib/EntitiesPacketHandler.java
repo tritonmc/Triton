@@ -904,13 +904,12 @@ public class EntitiesPacketHandler extends PacketHandler {
                 WrappedWatchableObject watchableObject,
                 Consumer<String> saveToCache,
                 @Nullable Consumer<Boolean> hasCustomNameConsumer) {
-            // Optional<IChatBaseComponent>
-            val displayName = (Optional<Object>) watchableObject.getValue();
+            val displayName = (Optional<WrappedChatComponent>) watchableObject.getValue();
             if (!displayName.isPresent()) {
                 return Optional.empty();
             }
 
-            val displayNameJson = WrappedChatComponent.fromHandle(displayName.get()).getJson();
+            val displayNameJson = displayName.get().getJson();
 
             // Save to cache before translating
             saveToCache.accept(displayNameJson);

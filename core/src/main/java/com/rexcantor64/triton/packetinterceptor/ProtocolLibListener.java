@@ -8,8 +8,9 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.events.PacketListener;
 import com.comphenix.protocol.injector.GamePhase;
-import com.comphenix.protocol.reflect.MethodUtils;
 import com.comphenix.protocol.reflect.StructureModifier;
+import com.comphenix.protocol.reflect.accessors.Accessors;
+import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.BukkitConverters;
@@ -66,7 +67,8 @@ import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFuncti
 public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final Class<?> CONTAINER_PLAYER_CLASS;
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
-    private final Class<?> CRAFT_MERCHANT_RECIPE_LIST_CLASS;
+    private final MethodAccessor CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD;
+    private final MethodAccessor CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD;
     private final Class<?> BOSSBAR_UPDATE_TITLE_ACTION_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
@@ -87,14 +89,21 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     public ProtocolLibListener(SpigotMLP main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
         this.allowedTypes = Arrays.asList(allowedTypes);
-        if (main.getMcVersion() >= 17)
+        if (main.getMcVersion() >= 17) {
             MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getClass("net.minecraft.world.item.trading.MerchantRecipeList");
-        else if (main.getMcVersion() >= 14)
+        } else if (main.getMcVersion() >= 14) {
             MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getNMSClass("MerchantRecipeList");
-        else
+        } else {
             MERCHANT_RECIPE_LIST_CLASS = null;
-        CRAFT_MERCHANT_RECIPE_LIST_CLASS = main.getMcVersion() >= 14 ? NMSUtils
-                .getCraftbukkitClass("inventory.CraftMerchantRecipe") : null;
+        }
+        if (main.getMcVersion() >= 14) {
+            val craftMerchantRecipeClass = NMSUtils.getCraftbukkitClass("inventory.CraftMerchantRecipe");
+            CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD = Accessors.getMethodAccessor(craftMerchantRecipeClass, "fromBukkit", MerchantRecipe.class);
+            CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD = Accessors.getMethodAccessor(craftMerchantRecipeClass, "toMinecraft");
+        } else {
+            CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD = null;
+            CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD = null;
+        }
         CONTAINER_PLAYER_CLASS = main.getMcVersion() >= 17 ?
                 NMSUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
                 NMSUtils.getNMSClass("ContainerPlayer");
@@ -503,16 +512,15 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 for (val ingredient : recipe.getIngredients()) {
                     newRecipe.addIngredient(ItemStackTranslationUtils.translateItemStack(ingredient.clone(), languagePlayer, false));
                 }
-                Object newCraftRecipe = MethodUtils
-                        .invokeExactStaticMethod(CRAFT_MERCHANT_RECIPE_LIST_CLASS, "fromBukkit", newRecipe);
-                Object newNMSRecipe = MethodUtils.invokeExactMethod(newCraftRecipe, "toMinecraft", null);
+
+                Object newCraftRecipe = CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD.invoke(null, newRecipe);
+                Object newNMSRecipe = CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD.invoke(newCraftRecipe);
                 NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD, originalSpecialPrice);
                 NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_DEMAND_FIELD, originalDemand);
                 newRecipes.add(newNMSRecipe);
             }
             packet.getPacket().getModifier().writeSafely(1, newRecipes);
-        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException |
-                 InvocationTargetException e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             Triton.get().getLogger().logError(e, "Failed to translate merchant items.");
         }
     }

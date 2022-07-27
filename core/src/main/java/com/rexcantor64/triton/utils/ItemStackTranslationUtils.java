@@ -32,7 +32,7 @@ public class ItemStackTranslationUtils {
     static {
         val mojangsonParserClass = MinecraftReflection.getMinecraftClass("nbt.MojangsonParser", "MojangsonParser");
         FuzzyReflection fuzzy = FuzzyReflection.fromClass(mojangsonParserClass);
-        val method = fuzzy.getMethodByParameters("deserializeNbtCompound", MinecraftReflection.getNBTCompoundClass(), new Class<?>[]{String.class});
+        val method = fuzzy.getMethodByReturnTypeAndParameters("deserializeNbtCompound", MinecraftReflection.getNBTCompoundClass(), String.class);
         NBT_DESERIALIZER_METHOD = Accessors.getMethodAccessor(method);
     }
 
