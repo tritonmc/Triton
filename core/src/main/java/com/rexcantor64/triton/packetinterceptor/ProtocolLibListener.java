@@ -47,7 +47,6 @@ import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -845,6 +844,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     private boolean isActionbar(PacketContainer container) {
         if (getMCVersion() >= 19) {
+            val booleans = container.getBooleans();
+            if (booleans.size() > 0) {
+                return booleans.readSafely(0);
+            }
             return container.getIntegers().readSafely(0) == 2;
         } else if (getMCVersion() >= 12) {
             return container.getChatTypes().readSafely(0) == EnumWrappers.ChatType.GAME_INFO;
