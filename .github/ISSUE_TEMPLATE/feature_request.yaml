@@ -1,0 +1,21 @@
+name: Feature Request
+description: Do you have an idea for a new feature? This is where you should request it!
+labels: ["feature"]
+assignees:
+  - diogotcorreia
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for opening a feature request! Please fill out the following information so it can be implemented as soon as possible.
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: Describe the Feature
+      description: |
+        Please describe the feature you want as clearly as possible.
+        When helpful, include screenshots or other information that could help us understand the feature.
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Thank you for taking the time to fill out this form. Click the "Submit new issue" button below.

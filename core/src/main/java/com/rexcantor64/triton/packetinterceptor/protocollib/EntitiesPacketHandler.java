@@ -37,9 +37,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asSync;
 
 public class EntitiesPacketHandler extends PacketHandler {
 
@@ -608,17 +609,17 @@ public class EntitiesPacketHandler extends PacketHandler {
 
     @SuppressWarnings({"deprecation"})
     @Override
-    public void registerPacketTypes(Map<PacketType, BiConsumer<PacketEvent, SpigotLanguagePlayer>> registry) {
-        registry.put(PacketType.Play.Server.SPAWN_ENTITY, this::handleSpawnEntity);
+    public void registerPacketTypes(Map<PacketType, HandlerFunction> registry) {
+        registry.put(PacketType.Play.Server.SPAWN_ENTITY, asSync(this::handleSpawnEntity));
         if (getMcVersion() < 19) {
             // 1.19 removed this packet
-            registry.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, this::handleSpawnEntityLiving);
+            registry.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, asSync(this::handleSpawnEntityLiving));
         }
-        registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, this::handleNamedEntitySpawn);
-        registry.put(PacketType.Play.Server.ENTITY_METADATA, this::handleEntityMetadata);
-        registry.put(PacketType.Play.Server.ENTITY_DESTROY, this::handleEntityDestroy);
+        registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, asSync(this::handleNamedEntitySpawn));
+        registry.put(PacketType.Play.Server.ENTITY_METADATA, asSync(this::handleEntityMetadata));
+        registry.put(PacketType.Play.Server.ENTITY_DESTROY, asSync(this::handleEntityDestroy));
 
-        registry.put(PacketType.Play.Server.PLAYER_INFO, this::handlePlayerInfo);
+        registry.put(PacketType.Play.Server.PLAYER_INFO, asSync(this::handlePlayerInfo));
     }
 
     private abstract static class DataWatcherHandler {
@@ -903,13 +904,12 @@ public class EntitiesPacketHandler extends PacketHandler {
                 WrappedWatchableObject watchableObject,
                 Consumer<String> saveToCache,
                 @Nullable Consumer<Boolean> hasCustomNameConsumer) {
-            // Optional<IChatBaseComponent>
-            val displayName = (Optional<Object>) watchableObject.getValue();
+            val displayName = (Optional<WrappedChatComponent>) watchableObject.getValue();
             if (!displayName.isPresent()) {
                 return Optional.empty();
             }
 
-            val displayNameJson = WrappedChatComponent.fromHandle(displayName.get()).getJson();
+            val displayNameJson = displayName.get().getJson();
 
             // Save to cache before translating
             saveToCache.accept(displayNameJson);

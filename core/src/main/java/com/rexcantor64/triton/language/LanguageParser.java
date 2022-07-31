@@ -9,6 +9,7 @@ import com.rexcantor64.triton.language.localized.StringLocale;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.wrappers.legacy.HoverComponentWrapper;
 import lombok.val;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -245,23 +246,34 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             advancedComponent.setComponent(entry.getKey(), replaceLanguages(entry.getValue(), language, syntax));
 
         try {
+            // MC 1.16 and up
             for (val entry : advancedComponent.getHovers().entrySet())
                 entry.setValue(com.rexcantor64.triton.wrappers.HoverComponentWrapper
                         .handleHoverEvent(entry.getValue(), language, syntax));
         } catch (NoSuchMethodError e) {
+            // MC 1.15 and below
             for (val entry : advancedComponent.getHovers().entrySet()) {
                 val comps = HoverComponentWrapper.getValue(entry.getValue());
-                val string = TextComponent.toLegacyText(comps);
-                val replaced = replaceLanguages(Triton.get().getLanguageManager()
-                        .matchPattern(string, language), language, syntax);
-                if (replaced == null) {
-                    if (entry.getValue().getAction() != HoverEvent.Action.SHOW_ITEM) {
-                        entry.setValue(null);
+                if (entry.getValue().getAction() == HoverEvent.Action.SHOW_ITEM) {
+                    val nbtItemData = HoverComponentWrapper.getNbtItemData(comps);
+                    if (!nbtItemData.isPresent()) {
+                        continue;
                     }
-                    continue;
+
+                    val nbtTagData = nbtItemData.get().getCompoundOrDefault("tag");
+                    ItemStackTranslationUtils.translateNbtItem(nbtTagData, language, true);
+                    val serializedNbtData = HoverComponentWrapper.fromNbtItemData(nbtItemData.get());
+                    entry.setValue(HoverComponentWrapper.setValue(entry.getValue(), serializedNbtData));
+                } else {
+                    val string = TextComponent.toLegacyText(comps);
+                    val replaced = replaceLanguages(Triton.get().getLanguageManager()
+                            .matchPattern(string, language), language, syntax);
+                    if (replaced == null) {
+                        continue;
+                    }
+                    entry.setValue(HoverComponentWrapper
+                            .setValue(entry.getValue(), TextComponent.fromLegacyText(replaced)));
                 }
-                entry.setValue(HoverComponentWrapper
-                        .setValue(entry.getValue(), TextComponent.fromLegacyText(replaced)));
             }
         }
 
