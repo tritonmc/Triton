@@ -63,8 +63,7 @@ public class AdventureParser {
             String[] textSplit = state.splitString(textComponent.content());
             for (int i = 0; i < textSplit.length; ++i) {
                 // TODO merge style
-                TextComponent newSplit = Component.text().content(textSplit[i]).build();
-                acc.add(newSplit);
+                TextComponent newSplit = Component.text().content(textSplit[i]).mergeStyle(textComponent).build();
                 if (i == textSplit.length - 1) {
                     // the last split keeps the extras
                     if (!textComponent.children().isEmpty()) {
@@ -72,7 +71,8 @@ public class AdventureParser {
                         for (int j = 0; j < extraSplit.size(); ++j) {
                             if (j == 0) {
                                 // the first split add to the parent element
-                                newSplit = newSplit.children(Collections.singletonList(extraSplit.get(i)));
+                                newSplit = newSplit.children(Collections.singletonList(extraSplit.get(j)));
+                                acc.add(newSplit);
                             } else {
                                 // flush accumulator before adding new sibling
                                 if (acc.size() == 1) {
@@ -84,12 +84,15 @@ public class AdventureParser {
                                 acc = new LinkedList<>();
                                 Component extraWrapper = extraSplit.get(j);
                                 // TODO merge style
-                                extraWrapper = extraWrapper.style(textComponent.style());
+                                extraWrapper = extraWrapper.applyFallbackStyle(textComponent.style());
                                 acc.add(extraWrapper);
                             }
                         }
+                    } else {
+                        acc.add(newSplit);
                     }
                 } else {
+                    acc.add(newSplit);
                     // flush accumulator
                     if (acc.size() == 1) {
                         split.add(acc.get(0));

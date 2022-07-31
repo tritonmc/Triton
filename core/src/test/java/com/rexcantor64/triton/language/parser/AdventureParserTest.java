@@ -4,7 +4,10 @@ import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.localized.StringLocale;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -38,7 +41,7 @@ public class AdventureParserTest {
     }
 
     @Test
-    public void testSplitComponentsWithoutStyles() {
+    public void testSplitComponentWithoutStyles() {
         Component toSplit = Component.text("Test splitting a component without styles");
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 36})
                 .collect(Collectors.toCollection(LinkedList::new));
@@ -54,6 +57,90 @@ public class AdventureParserTest {
 
         assertEquals(4, result.size());
         for (int i = 0; i < 4; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testSplitComponentWithStyles() {
+        // |Lorem i|psum dol|or sit amet, consectetur adipi|scing eli|t. Cras tincidunt ligula vel an|te laoreet tempor.
+        Component toSplit = Component.text()
+                .content("Lorem ipsum ")
+                .color(NamedTextColor.RED)
+                .decorate(TextDecoration.BOLD)
+                .append(
+                        Component.text("dolor sit amet, consectetur")
+                                .color(TextColor.color(0x123456))
+                                .append(
+                                        Component.text(" adipiscing").decorate(TextDecoration.ITALIC)
+                                ),
+                        Component.text(" elit. ")
+                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com")),
+                        Component.text("Cras tincidunt ligula vel ante laoreet tempor.")
+                                .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 7, 15, 45, 54, 85})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.text("")
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD),
+                Component.text("Lorem i").color(NamedTextColor.RED).decorate(TextDecoration.BOLD),
+                Component.text("psum ")
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD)
+                        .append(Component.text("dol").color(TextColor.color(0x123456))),
+                Component.text()
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD)
+                        .append(
+                                Component.text("or sit amet, consectetur")
+                                        .color(TextColor.color(0x123456))
+                                        .append(
+                                                Component.text(" adipi").decorate(TextDecoration.ITALIC)
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD)
+                        .append(
+                                Component.text()
+                                        .color(TextColor.color(0x123456))
+                                        .append(
+                                                Component.text("scing").decorate(TextDecoration.ITALIC)
+                                        ),
+                                Component.text(" eli")
+                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD)
+                        .append(
+                                Component.text("t. ")
+                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com")),
+                                Component.text("Cras tincidunt ligula vel an")
+                                        .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.RED)
+                        .decorate(TextDecoration.BOLD)
+                        .append(
+                                Component.text("te laoreet tempor.")
+                                        .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                        )
+                        .asComponent()
+        };
+
+        assertEquals(7, result.size());
+        for (int i = 0; i < 7; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
