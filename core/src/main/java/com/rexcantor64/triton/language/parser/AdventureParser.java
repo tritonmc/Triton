@@ -48,7 +48,7 @@ public class AdventureParser {
      * @return A list of the split Component lists
      */
     public List<Component> splitComponent(Component component, Queue<Integer> indexes) {
-        return splitComponent(component.children(), new SplitState(indexes));
+        return splitComponent(Collections.singletonList(component), new SplitState(indexes));
     }
 
     private List<Component> splitComponent(List<Component> comps, SplitState state) {
