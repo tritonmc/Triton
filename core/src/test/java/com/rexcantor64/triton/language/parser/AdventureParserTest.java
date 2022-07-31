@@ -5,6 +5,7 @@ import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.localized.StringLocale;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -135,6 +136,169 @@ public class AdventureParserTest {
                         .append(
                                 Component.text("te laoreet tempor.")
                                         .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                        )
+                        .asComponent()
+        };
+
+        assertEquals(7, result.size());
+        for (int i = 0; i < 7; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testSplitComponentWithDeepTree() {
+        // Lorem ipsum do|lor s|it am|et, consec|tetur adipi|scing e|lit
+        Component toSplit = Component.text()
+                .content("Lorem ipsum ")
+                .color(NamedTextColor.GREEN)
+                .decorate(TextDecoration.STRIKETHROUGH)
+                .append(
+                        Component.text()
+                                .decorate(TextDecoration.ITALIC)
+                                .append(
+                                        Component.text()
+                                                .content("dolor ")
+                                                .append(
+                                                        Component.text("sit ")
+                                                                .color(TextColor.color(0xabc123)),
+                                                        Component.text("amet")
+                                                                .decorate(TextDecoration.UNDERLINED)
+                                                                .insertion("insertion text")
+                                                                .hoverEvent(HoverEvent.showText(Component.text("hover text")))
+                                                ),
+                                        Component.text(", consectetur ")
+                                                .decorate(TextDecoration.BOLD)
+                                ),
+                        Component.text()
+                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                .append(
+                                        Component.text()
+                                                .content("adipiscing elit")
+                                                .color(TextColor.color(0x987654))
+                                                .decorate(TextDecoration.OBFUSCATED)
+                                )
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{14, 19, 24, 34, 45, 52})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.text()
+                        .content("Lorem ipsum ")
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .decorate(TextDecoration.ITALIC)
+                                        .append(
+                                                Component.text().content("do")
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .decorate(TextDecoration.ITALIC)
+                                        .append(
+                                                Component.text()
+                                                        .content("lor ")
+                                                        .append(
+                                                                Component.text("s")
+                                                                        .color(TextColor.color(0xabc123))
+                                                        )
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .decorate(TextDecoration.ITALIC)
+                                        .append(
+                                                Component.text()
+                                                        .append(
+                                                                Component.text("it ")
+                                                                        .color(TextColor.color(0xabc123)),
+                                                                Component.text("am")
+                                                                        .decorate(TextDecoration.UNDERLINED)
+                                                                        .insertion("insertion text")
+                                                                        .hoverEvent(HoverEvent.showText(Component.text("hover text")))
+                                                        )
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .decorate(TextDecoration.ITALIC)
+                                        .append(
+                                                Component.text()
+                                                        .append(
+                                                                Component.text("et")
+                                                                        .decorate(TextDecoration.UNDERLINED)
+                                                                        .insertion("insertion text")
+                                                                        .hoverEvent(HoverEvent.showText(Component.text("hover text")))
+                                                        ),
+                                                Component.text(", consec")
+                                                        .decorate(TextDecoration.BOLD)
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .decorate(TextDecoration.ITALIC)
+                                        .append(
+                                                Component.text("tetur ")
+                                                        .decorate(TextDecoration.BOLD)
+                                        ),
+                                Component.text()
+                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .append(
+                                                Component.text()
+                                                        .content("adipi")
+                                                        .color(TextColor.color(0x987654))
+                                                        .decorate(TextDecoration.OBFUSCATED)
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .append(
+                                                Component.text()
+                                                        .content("scing e")
+                                                        .color(TextColor.color(0x987654))
+                                                        .decorate(TextDecoration.OBFUSCATED)
+                                        )
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .decorate(TextDecoration.STRIKETHROUGH)
+                        .append(
+                                Component.text()
+                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .append(
+                                                Component.text()
+                                                        .content("lit")
+                                                        .color(TextColor.color(0x987654))
+                                                        .decorate(TextDecoration.OBFUSCATED)
+                                        )
                         )
                         .asComponent()
         };
