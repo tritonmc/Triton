@@ -144,7 +144,7 @@ public class AdventureParser {
             int lastIndex = 0;
             List<String> fragments = new ArrayList<>();
 
-            while (!splitIndexes.isEmpty() && splitIndexes.peek() < atIndex() + str.length()) {
+            while (!splitIndexes.isEmpty() && splitIndexes.peek() <= atIndex() + str.length()) {
                 int i = splitIndexes.poll();
                 fragments.add(str.substring(lastIndex, i - atIndex()));
                 lastIndex = i - this.index;
