@@ -1,15 +1,14 @@
 package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.api.config.FeatureSyntax;
-import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.localized.StringLocale;
+import com.rexcantor64.triton.utils.DefaultFeatureSyntax;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -23,24 +22,57 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AdventureParserTest {
 
     private final AdventureParser parser = new AdventureParser();
-    private final FeatureSyntax defaultSyntax = new MainConfig.FeatureSyntax("lang", "args", "arg");
+    private final FeatureSyntax defaultSyntax = new DefaultFeatureSyntax();
 
     @Test
-    @Disabled
-    public void testComponentWithoutFormatting() {
-        Component comp = Component.text().color(TextColor.color(0x0000ff)).append(
-                Component.text().color(TextColor.color(0xff000)).content("Text [lang]translation."),
-                Component.text().content("key[/lang][lang]test[/lang] more text"),
-                Component.text().color(TextColor.color(0x00ff00)).content(" and this doesn't have placeholders")
-        ).asComponent();
+    public void testParseComponentWithoutFormatting() {
+        Component comp = Component.text("Text [lang]translation.key[/lang] more text");
 
-        //Component comp = Component.text("Text [lang]translation.key[/lang] more text");
-
-        Component result = parser.parseComponent(new StringLocale("en_GB"), defaultSyntax, comp);
+        TranslationResult result = parser.parseComponent(new StringLocale("en_GB"), defaultSyntax, comp);
 
         Component expected = Component.text("Text replaced placeholder more text");
 
-        assertEquals(expected, result);
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithSideBySideComponents() {
+        Component comp = Component.text()
+                .color(TextColor.color(0x0000ff))
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text [lang]translation."),
+                        Component.text()
+                                .content("key[/lang][lang]test[/lang] more text"),
+                        Component.text()
+                                .color(TextColor.color(0x00ff00))
+                                .content(" and this doesn't have placeholders")
+                ).asComponent();
+
+        TranslationResult result = parser.parseComponent(new StringLocale("en_GB"), defaultSyntax, comp);
+
+        // TODO the replaced placeholders should keep current styles
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .content("replaced placeholderreplaced placeholder"),
+                        Component.text()
+                                .color(TextColor.color(0x0000ff))
+                                .content(" more text")
+                                .append(
+                                        Component.text()
+                                                .color(TextColor.color(0x00ff00))
+                                                .content(" and this doesn't have placeholders")
+                                )
+                ).asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
     }
 
     @Test

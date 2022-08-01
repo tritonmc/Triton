@@ -3,10 +3,10 @@ package com.rexcantor64.triton.language.parser;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.language.LanguageParser;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
@@ -20,24 +20,50 @@ import java.util.stream.Collectors;
 
 public class AdventureParser {
 
-    public Component parseComponent(Localized language, FeatureSyntax syntax, Component component) {
-        return parseComponent(component, new State(syntax, language));
+    public TranslationResult parseComponent(Localized language, FeatureSyntax syntax, Component component) {
+        return parseComponent(component, new TranslationConfiguration(syntax, language));
     }
 
-    private Component parseComponent(Component component, State state) {
+    private TranslationResult parseComponent(Component component, TranslationConfiguration state) {
+        // FIXME this doesn't account for non-text components
         String plainText = PlainTextComponentSerializer.plainText().serialize(component);
         val indexes = LanguageParser.getPatternIndexArray(plainText, state.getFeatureSyntax().getLang());
+
+        if (indexes.size() == 0) {
+            return TranslationResult.unchanged();
+        }
 
         Queue<Integer> indexesToSplitAt = indexes.stream()
                 .flatMap(Arrays::stream)
                 .sorted()
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        List<Component> splittedComponents = splitComponent(component, indexesToSplitAt);
+        List<Component> splitComponents = splitComponent(component, indexesToSplitAt);
+        List<Component> acc = new LinkedList<>();
 
-        // TODO
+        // Splits are cyclic: 0 is normal text, 1 is the placeholder start,
+        // 2 is the inside of the placeholder and 3 is the placeholder end
+        for (int i = 0; i < splitComponents.size(); i++) {
+            if (i % 2 == 1) {
+                // odd indexes are placeholder tags, ignore them
+                continue;
+            }
+            Component part = splitComponents.get(i);
+            if (i % 4 == 0) {
+                // normal text, add to accumulator
+                acc.add(part);
+                continue;
+            }
+            // TODO support placeholder arguments
+            String key = PlainTextComponentSerializer.plainText().serialize(part);
+            // TODO fetch from somewhere
+            Component result = Component.text("replaced placeholder");
+            acc.add(result);
+        }
 
-        return component;
+        // TODO parse hover events
+
+        return TranslationResult.changed(Component.join(JoinConfiguration.noSeparators(), acc));
     }
 
     /**
@@ -134,17 +160,6 @@ public class AdventureParser {
             }
         }
         return accumulator;
-    }
-
-    public enum Result {
-        UNCHANGED, CHANGED, REMOVE
-    }
-
-    @Data
-    private static class State {
-        final FeatureSyntax featureSyntax;
-        final Localized targetLocale;
-        Result result;
     }
 
     @RequiredArgsConstructor
