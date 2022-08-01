@@ -1,7 +1,6 @@
 package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.api.config.FeatureSyntax;
-import com.rexcantor64.triton.language.localized.StringLocale;
 import com.rexcantor64.triton.utils.DefaultFeatureSyntax;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -24,13 +23,26 @@ public class AdventureParserTest {
     private final AdventureParser parser = new AdventureParser();
     private final FeatureSyntax defaultSyntax = new DefaultFeatureSyntax();
 
+    private final TranslationConfiguration configuration = new TranslationConfiguration(
+            defaultSyntax,
+            (key) -> {
+                if (key.equals("without.formatting")) {
+                    return Component.text("This is text without formatting");
+                }
+                if (key.equals("with.colors")) {
+                    return Component.text("This text is green").color(NamedTextColor.GREEN);
+                }
+                return Component.text("unknown placeholder");
+            }
+    );
+
     @Test
     public void testParseComponentWithoutFormatting() {
-        Component comp = Component.text("Text [lang]translation.key[/lang] more text");
+        Component comp = Component.text("Text [lang]without.formatting[/lang] more text");
 
-        TranslationResult result = parser.parseComponent(new StringLocale("en_GB"), defaultSyntax, comp);
+        TranslationResult result = parser.parseComponent(comp, configuration);
 
-        Component expected = Component.text("Text replaced placeholder more text");
+        Component expected = Component.text("Text This is text without formatting more text");
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
         assertEquals(expected.compact(), result.getResult().compact());
@@ -43,15 +55,15 @@ public class AdventureParserTest {
                 .append(
                         Component.text()
                                 .color(TextColor.color(0xff000))
-                                .content("Text [lang]translation."),
+                                .content("Text [lang]without."),
                         Component.text()
-                                .content("key[/lang][lang]test[/lang] more text"),
+                                .content("formatting[/lang][lang]with.colors[/lang] more text"),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
                                 .content(" and this doesn't have placeholders")
                 ).asComponent();
 
-        TranslationResult result = parser.parseComponent(new StringLocale("en_GB"), defaultSyntax, comp);
+        TranslationResult result = parser.parseComponent(comp, configuration);
 
         // TODO the replaced placeholders should keep current styles
         Component expected = Component.text()
@@ -60,7 +72,10 @@ public class AdventureParserTest {
                                 .color(TextColor.color(0xff000))
                                 .content("Text "),
                         Component.text()
-                                .content("replaced placeholderreplaced placeholder"),
+                                .content("This is text without formatting"),
+                        Component.text()
+                                .content("This text is green")
+                                .color(NamedTextColor.GREEN),
                         Component.text()
                                 .color(TextColor.color(0x0000ff))
                                 .content(" more text")
@@ -464,5 +479,7 @@ public class AdventureParserTest {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
+
+    // TODO test splitting twice on same index before/after non-text component
 
 }

@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.language.parser;
 
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.language.LanguageParser;
@@ -9,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +23,19 @@ import java.util.stream.Collectors;
 public class AdventureParser {
 
     public TranslationResult parseComponent(Localized language, FeatureSyntax syntax, Component component) {
-        return parseComponent(component, new TranslationConfiguration(syntax, language));
+        TranslationConfiguration configuration = new TranslationConfiguration(
+                syntax,
+                // TODO properly integrate this
+                (key) -> Component.text(Triton.get().getLanguageManager().getText(language, key))
+        );
+        return parseComponent(component, configuration);
     }
 
-    private TranslationResult parseComponent(Component component, TranslationConfiguration state) {
+    @VisibleForTesting
+    TranslationResult parseComponent(Component component, TranslationConfiguration configuration) {
         // FIXME this doesn't account for non-text components
         String plainText = PlainTextComponentSerializer.plainText().serialize(component);
-        val indexes = LanguageParser.getPatternIndexArray(plainText, state.getFeatureSyntax().getLang());
+        val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
             return TranslationResult.unchanged();
@@ -57,7 +65,7 @@ public class AdventureParser {
             // TODO support placeholder arguments
             String key = PlainTextComponentSerializer.plainText().serialize(part);
             // TODO fetch from somewhere
-            Component result = Component.text("replaced placeholder");
+            Component result = configuration.translationSupplier.apply(key);
             acc.add(result);
         }
 
