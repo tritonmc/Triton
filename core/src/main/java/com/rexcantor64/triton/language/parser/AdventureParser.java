@@ -114,23 +114,24 @@ public class AdventureParser {
      * @return The new accumulator
      */
     private List<Component> handleChildren(Component parent, List<Component> children, List<Component> accumulator, List<Component> splits, SplitState state) {
-        if (!children.isEmpty()) {
-            List<Component> extraSplit = splitComponent(children, state);
-            for (int j = 0; j < extraSplit.size(); ++j) {
-                if (j == 0) {
-                    // add the first split to the parent element
-                    parent = parent.children(Collections.singletonList(extraSplit.get(j)));
-                    accumulator.add(parent);
-                } else {
-                    // flush accumulator before adding new sibling
-                    accumulator = flushAccumulator(accumulator, splits);
-                    Component extraWrapper = extraSplit.get(j);
-                    extraWrapper = extraWrapper.applyFallbackStyle(parent.style());
-                    accumulator.add(extraWrapper);
-                }
-            }
-        } else {
+        if (children.isEmpty()) {
             accumulator.add(parent);
+            return accumulator;
+        }
+
+        List<Component> extraSplit = splitComponent(children, state);
+        for (int j = 0; j < extraSplit.size(); ++j) {
+            if (j == 0) {
+                // add the first split to the parent element
+                parent = parent.children(Collections.singletonList(extraSplit.get(j)));
+                accumulator.add(parent);
+            } else {
+                // flush accumulator before adding new sibling
+                accumulator = flushAccumulator(accumulator, splits);
+                Component extraWrapper = extraSplit.get(j);
+                extraWrapper = extraWrapper.applyFallbackStyle(parent.style());
+                accumulator.add(extraWrapper);
+            }
         }
         return accumulator;
     }
