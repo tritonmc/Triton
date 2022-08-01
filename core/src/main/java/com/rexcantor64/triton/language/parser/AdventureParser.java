@@ -4,6 +4,8 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.language.LanguageParser;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
@@ -13,13 +15,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.VisibleForTesting;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AdventureParser {
@@ -36,7 +32,7 @@ public class AdventureParser {
     @VisibleForTesting
     TranslationResult parseComponent(Component component, TranslationConfiguration configuration) {
         // FIXME this doesn't account for non-text components
-        String plainText = PlainTextComponentSerializer.plainText().serialize(component);
+        String plainText = componentToString(component);
         val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
@@ -65,16 +61,51 @@ public class AdventureParser {
                 continue;
             }
             // TODO support placeholder arguments
-            String key = PlainTextComponentSerializer.plainText().serialize(part);
-            Style defaultStyle = getStyleOfFirstCharacter(part);
-            // TODO fetch from somewhere
-            Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
-            acc.add(result);
+            acc.add(handlePlaceholder(part, configuration));
         }
 
         // TODO parse hover events
 
         return TranslationResult.changed(Component.join(JoinConfiguration.noSeparators(), acc));
+    }
+
+    private Component handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
+        String placeholderStr = componentToString(placeholder);
+        val indexes = LanguageParser.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
+        Queue<Integer> indexesToSplitAt = indexes.stream()
+                .flatMap(Arrays::stream)
+                .sorted()
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> splitComponents = splitComponent(placeholder, indexesToSplitAt);
+        String key = "";
+        List<Component> arguments = new LinkedList<>();
+
+        // Splits are cyclic: 0 is normal text, 1 is the open tag,
+        // 2 is the argument and 3 is the close tag
+        for (int i = 0; i < splitComponents.size(); i++) {
+            Component part = splitComponents.get(i);
+            if (i == 0) {
+                key = PlainTextComponentSerializer.plainText().serialize(part);
+                // The [args] tag is optional since v4.0.0, so strip it if it's present
+                if (key.endsWith("[" + configuration.getFeatureSyntax().getArgs() + "]")) {
+                    key = key.substring(0, key.length() - configuration.getFeatureSyntax().getArgs().length() - 2);
+                }
+            }
+            if (i % 4 == 2) {
+                // Parse argument to allow nested placeholders
+                parseComponent(part, configuration)
+                        .ifChanged(arguments::add)
+                        .ifToRemove(() -> arguments.add(Component.empty()))
+                        .ifUnchanged(() -> arguments.add(part));
+            }
+        }
+
+        Style defaultStyle = getStyleOfFirstCharacter(placeholder);
+        Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
+
+        // TODO this should probably be parsed again, in case the resulting translation has placeholders
+        return replaceArguments(result, arguments);
     }
 
     /**
@@ -101,6 +132,71 @@ public class AdventureParser {
 
         style = component.style().merge(style);
         return style;
+    }
+
+    private String componentToString(Component component) {
+        // TODO custom serializer to include non-text components
+        return PlainTextComponentSerializer.plainText().serialize(component);
+    }
+
+    private Component replaceArguments(Component component, List<Component> arguments) {
+        PriorityQueue<PriorityPair<Component>> replacementMap = new PriorityQueue<>(Comparator.comparing(PriorityPair::getPriority));
+        Queue<Integer> indexesToSplitAt = new LinkedList<>();
+        String plainText = componentToString(component);
+
+        boolean trackingNumber = false;
+        int startIndex = 0;
+        int number = 0;
+        for (int i = 0; i < plainText.length(); ++i) {
+            char c = plainText.charAt(i);
+            if (trackingNumber) {
+                // Check if we reached a non-digit
+                if (c < '0' || c > '9') {
+                    // flush
+                    if (number > 0 && number <= arguments.size()) {
+                        replacementMap.add(PriorityPair.of(arguments.get(number - 1), startIndex));
+                        indexesToSplitAt.add(startIndex);
+                        indexesToSplitAt.add(i);
+                    }
+                    trackingNumber = false;
+                    startIndex = 0;
+                    number = 0;
+                } else {
+                    int digit = c - '0';
+                    number = number * 10 + digit;
+                }
+            }
+            if (c == '%') {
+                trackingNumber = true;
+                startIndex = i;
+            }
+        }
+        if (trackingNumber) {
+            // flush
+            if (number > 0 && number <= arguments.size()) {
+                replacementMap.add(PriorityPair.of(arguments.get(number - 1), startIndex));
+                indexesToSplitAt.add(startIndex);
+            }
+        }
+
+        if (indexesToSplitAt.isEmpty()) {
+            return component;
+        }
+
+        List<Component> splitComponents = splitComponent(component, indexesToSplitAt);
+        List<Component> acc = new LinkedList<>();
+
+        // Even indexes hold text, odd indexes should be discarded and replaced with arguments
+        for (int i = 0; i < splitComponents.size(); ++i) {
+            Component part = splitComponents.get(i);
+            if (i % 2 == 0) {
+                acc.add(part);
+                continue;
+            }
+            acc.add(Objects.requireNonNull(replacementMap.poll()).getKey());
+        }
+
+        return Component.join(JoinConfiguration.noSeparators(), acc);
     }
 
     /**
@@ -233,6 +329,17 @@ public class AdventureParser {
             advanceBy(str.length());
 
             return fragments.toArray(new String[0]);
+        }
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
+    private static class PriorityPair<K> {
+        final K key;
+        final Integer priority;
+
+        static <K> PriorityPair<K> of(K key, Integer priority) {
+            return new PriorityPair<>(key, priority);
         }
     }
 

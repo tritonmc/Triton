@@ -39,6 +39,19 @@ public class TranslationResult {
         return this;
     }
 
+    /**
+     * Run the given action if the result is UNCHANGED.
+     *
+     * @param action A runnable which will be run if the component has not changed
+     * @return Itself, to allow chaining
+     */
+    public TranslationResult ifUnchanged(Runnable action) {
+        if (state == ResultState.UNCHANGED) {
+            action.run();
+        }
+        return this;
+    }
+
 
     /**
      * The given component did not have any placeholders and therefore was not changed.

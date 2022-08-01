@@ -8,6 +8,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -29,12 +30,24 @@ public class AdventureParserTest {
                 if (key.equals("without.formatting")) {
                     return Component.text("This is text without formatting");
                 }
+                if (key.equals("without.formatting.with.args")) {
+                    return Component.text("This is text without formatting but with arguments (%1)");
+                }
                 if (key.equals("with.colors")) {
                     return Component.text("This text is green").color(NamedTextColor.GREEN);
                 }
                 return Component.text("unknown placeholder");
             }
     );
+
+    @Test
+    public void testParseComponentWithoutPlaceholders() {
+        Component comp = Component.text("Text without any placeholders whatsoever");
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        assertEquals(TranslationResult.ResultState.UNCHANGED, result.getState());
+    }
 
     @Test
     public void testParseComponentWithoutFormatting() {
@@ -61,7 +74,8 @@ public class AdventureParserTest {
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
                                 .content(" and this doesn't have placeholders")
-                ).asComponent();
+                )
+                .asComponent();
 
         TranslationResult result = parser.parseComponent(comp, configuration);
 
@@ -81,7 +95,83 @@ public class AdventureParserTest {
                                                 .color(TextColor.color(0x00ff00))
                                                 .content(" and this doesn't have placeholders")
                                 )
-                ).asComponent();
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithOneArgument() {
+        Component comp = Component.text()
+                .color(TextColor.color(0x0000ff))
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text [lang]without."),
+                        Component.text("formatting.with.args[arg]test[/arg][/lang] more text")
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("Text ")
+                                .color(TextColor.color(0xff000)),
+                        Component.text()
+                                .append(
+                                        Component.text()
+                                                .content("This is text without formatting but with arguments (")
+                                                .color(TextColor.color(0xff000)),
+                                        Component.text()
+                                                .content("test")
+                                                .color(TextColor.color(0x0000ff)),
+                                        Component.text()
+                                                .content(")")
+                                                .color(TextColor.color(0xff000))
+                                ),
+                        Component.text()
+                                .color(TextColor.color(0x0000ff))
+                                .content(" more text")
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    @Disabled
+    public void testParseComponentWithTwoArguments() {
+        Component comp = Component.text()
+                .color(TextColor.color(0x0000ff))
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .color(TextColor.color(0x00ff00))
+                                .content("[lang]with.colors.two.args[arg]")
+                                .append(
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
+                                        Component.text("[/arg][arg]"),
+                                        Component.text()
+                                                .content("second arg")
+                                                .color(NamedTextColor.BLACK),
+                                        Component.text("[/arg][/lang]")
+                                )
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
         assertEquals(expected.compact(), result.getResult().compact());
