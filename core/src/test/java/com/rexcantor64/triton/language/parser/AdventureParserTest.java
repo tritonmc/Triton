@@ -327,6 +327,7 @@ public class AdventureParserTest {
 
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 28, 55})
                 .collect(Collectors.toCollection(LinkedList::new));
+
         List<Component> result = parser.splitComponent(toSplit, splitIndexes);
 
         Component[] expected = new Component[]{
@@ -366,7 +367,70 @@ public class AdventureParserTest {
         }
     }
 
-    // TODO test splitting on component border (including beginning and end
-    // TODO test with non-text components (i.e. translatable components)
+    @Test
+    public void testSplitComponentWithNonTextComponents() {
+        // Lorem ipsum |Xdol|or sit amet, X|consectetur adip|iscing elit
+        Component toSplit = Component.text()
+                .content("Lorem ipsum ")
+                .color(NamedTextColor.GREEN)
+                .append(
+                        Component.translatable("test translatable")
+                                .append(Component.text("dolor ")),
+                        Component.text("sit amet, ")
+                                .decorate(TextDecoration.ITALIC),
+                        Component.keybind("ALT"),
+                        Component.text("consectetur adipiscing elit")
+                                .color(TextColor.color(0x123456))
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{12, 16, 30, 46})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.text()
+                        .content("Lorem ipsum ")
+                        .color(NamedTextColor.GREEN)
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.translatable("test translatable")
+                                        .append(Component.text("dol"))
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text()
+                                        .append(Component.text("or ")),
+                                Component.text("sit amet, ")
+                                        .decorate(TextDecoration.ITALIC),
+                                Component.keybind("ALT")
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text("consectetur adip")
+                                        .color(TextColor.color(0x123456))
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text("iscing elit")
+                                        .color(TextColor.color(0x123456))
+                        )
+                        .asComponent()
+        };
+
+        assertEquals(5, result.size());
+        for (int i = 0; i < 5; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
 
 }

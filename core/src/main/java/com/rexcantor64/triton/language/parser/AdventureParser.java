@@ -42,6 +42,7 @@ public class AdventureParser {
 
     /**
      * Given a list of Components, splits them by text index, preserving style and hierarchy.
+     * Non-text components (e.g. TranslatableComponent, KeybindComponent, etc.) are assumed to have a size of 1.
      *
      * @param component The Component to split
      * @param indexes   The indexes to split at
@@ -56,64 +57,82 @@ public class AdventureParser {
         List<Component> acc = new LinkedList<>();
         for (Component comp : comps) {
             if (!(comp instanceof TextComponent)) {
-                acc.add(comp);
+                if (state.advanceByAndCheckSplitOfNonTextComponent()) {
+                    acc = flushAccumulator(acc, split);
+                }
+                acc = handleChildren(comp, comp.children(), acc, split, state);
                 continue;
             }
             TextComponent textComponent = (TextComponent) comp;
             String[] textSplit = state.splitString(textComponent.content());
             for (int i = 0; i < textSplit.length; ++i) {
-                // TODO merge style
                 TextComponent newSplit = Component.text().content(textSplit[i]).mergeStyle(textComponent).build();
                 if (i == textSplit.length - 1) {
                     // the last split keeps the extras
-                    if (!textComponent.children().isEmpty()) {
-                        List<Component> extraSplit = splitComponent(textComponent.children(), state);
-                        for (int j = 0; j < extraSplit.size(); ++j) {
-                            if (j == 0) {
-                                // the first split add to the parent element
-                                newSplit = newSplit.children(Collections.singletonList(extraSplit.get(j)));
-                                acc.add(newSplit);
-                            } else {
-                                // flush accumulator before adding new sibling
-                                if (acc.size() == 1) {
-                                    split.add(acc.get(0));
-                                } else {
-                                    // wrap component list with empty component
-                                    split.add(Component.textOfChildren(acc.toArray(new Component[0])));
-                                }
-                                acc = new LinkedList<>();
-                                Component extraWrapper = extraSplit.get(j);
-                                // TODO merge style
-                                extraWrapper = extraWrapper.applyFallbackStyle(textComponent.style());
-                                acc.add(extraWrapper);
-                            }
-                        }
-                    } else {
-                        acc.add(newSplit);
-                    }
+                    acc = handleChildren(newSplit, textComponent.children(), acc, split, state);
                 } else {
                     acc.add(newSplit);
-                    // flush accumulator
-                    if (acc.size() == 1) {
-                        split.add(acc.get(0));
-                    } else {
-                        // wrap component list with empty component
-                        split.add(Component.textOfChildren(acc.toArray(new Component[0])));
-                    }
-                    acc = new LinkedList<>();
+                    acc = flushAccumulator(acc, split);
                 }
             }
         }
-        // flush accumulator
-        if (acc.size() > 0) {
-            if (acc.size() == 1) {
-                split.add(acc.get(0));
-            } else {
-                // wrap component list with empty component
-                split.add(Component.textOfChildren(acc.toArray(new Component[0])));
-            }
-        }
+
+        flushAccumulator(acc, split);
         return split;
+    }
+
+    /**
+     * Utility function to flush a Component accumulator.
+     *
+     * @param accumulator The accumulator to flush
+     * @param splits      The result list to flush to
+     * @return An empty LinkedList, as a new accumulator
+     */
+    private List<Component> flushAccumulator(List<Component> accumulator, List<Component> splits) {
+        if (accumulator.size() == 0) {
+            return accumulator;
+        }
+
+        if (accumulator.size() == 1) {
+            splits.add(accumulator.get(0));
+        } else {
+            // wrap component list with empty component
+            splits.add(Component.textOfChildren(accumulator.toArray(new Component[0])));
+        }
+        return new LinkedList<>();
+    }
+
+    /**
+     * Utility function to handle splitting the children of a parent component.
+     * Since components are immutable, this also adds the parent component to the accumulator.
+     *
+     * @param parent      The target component to place the children on
+     * @param children    The children of the original component
+     * @param accumulator The accumulator of the split process
+     * @param splits      The split list of the split process
+     * @param state       The state of the split process
+     * @return The new accumulator
+     */
+    private List<Component> handleChildren(Component parent, List<Component> children, List<Component> accumulator, List<Component> splits, SplitState state) {
+        if (!children.isEmpty()) {
+            List<Component> extraSplit = splitComponent(children, state);
+            for (int j = 0; j < extraSplit.size(); ++j) {
+                if (j == 0) {
+                    // add the first split to the parent element
+                    parent = parent.children(Collections.singletonList(extraSplit.get(j)));
+                    accumulator.add(parent);
+                } else {
+                    // flush accumulator before adding new sibling
+                    accumulator = flushAccumulator(accumulator, splits);
+                    Component extraWrapper = extraSplit.get(j);
+                    extraWrapper = extraWrapper.applyFallbackStyle(parent.style());
+                    accumulator.add(extraWrapper);
+                }
+            }
+        } else {
+            accumulator.add(parent);
+        }
+        return accumulator;
     }
 
     public enum Result {
@@ -134,6 +153,14 @@ public class AdventureParser {
 
         void advanceBy(int size) {
             this.index += size;
+        }
+
+        /**
+         * @return true if there is a split at the beginning of this component
+         */
+        boolean advanceByAndCheckSplitOfNonTextComponent() {
+            this.advanceBy(1);
+            return !splitIndexes.isEmpty() && splitIndexes.peek() == atIndex() - 1;
         }
 
         int atIndex() {
