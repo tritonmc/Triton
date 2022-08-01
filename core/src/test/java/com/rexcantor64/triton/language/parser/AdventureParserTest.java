@@ -65,14 +65,11 @@ public class AdventureParserTest {
 
         TranslationResult result = parser.parseComponent(comp, configuration);
 
-        // TODO the replaced placeholders should keep current styles
         Component expected = Component.text()
                 .append(
                         Component.text()
                                 .color(TextColor.color(0xff000))
-                                .content("Text "),
-                        Component.text()
-                                .content("This is text without formatting"),
+                                .content("Text This is text without formatting"),
                         Component.text()
                                 .content("This text is green")
                                 .color(NamedTextColor.GREEN),

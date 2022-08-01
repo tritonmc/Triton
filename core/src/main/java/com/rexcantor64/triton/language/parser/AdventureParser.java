@@ -9,12 +9,14 @@ import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -64,14 +66,41 @@ public class AdventureParser {
             }
             // TODO support placeholder arguments
             String key = PlainTextComponentSerializer.plainText().serialize(part);
+            Style defaultStyle = getStyleOfFirstCharacter(part);
             // TODO fetch from somewhere
-            Component result = configuration.translationSupplier.apply(key);
+            Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
             acc.add(result);
         }
 
         // TODO parse hover events
 
         return TranslationResult.changed(Component.join(JoinConfiguration.noSeparators(), acc));
+    }
+
+    /**
+     * Recursively gets the styles applied to the first character in a component,
+     * merging styles from parent components with child components.
+     * If the component does not include text, an empty style is returned.
+     *
+     * @param component The component containing the text
+     * @return The styles applied to the first character in the component
+     */
+    private Style getStyleOfFirstCharacter(Component component) {
+        if (component instanceof TextComponent) {
+            TextComponent textComponent = (TextComponent) component;
+            if (!textComponent.content().isEmpty()) {
+                return component.style();
+            }
+        }
+
+        Iterator<Component> it = component.children().iterator();
+        Style style = Style.empty();
+        while (it.hasNext() && style.isEmpty()) {
+            style = getStyleOfFirstCharacter(it.next());
+        }
+
+        style = component.style().merge(style);
+        return style;
     }
 
     /**
