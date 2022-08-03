@@ -267,6 +267,52 @@ public class AdventureParserTest {
     }
 
     @Test
+    public void testParseComponentWithFewerArgumentsThanExpected() {
+        Component comp = Component.text()
+                .color(TextColor.color(0x0000ff))
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .color(TextColor.color(0x00ff00))
+                                .content("[lang]with.colors.two.args[arg]")
+                                .append(
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
+                                        Component.text("[/arg][/lang]")
+                                )
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .append(
+                                        Component.text()
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                                .content("This text is pink and has two arguments ("),
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
+                                        Component.text()
+                                                .content(" and %2)")
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
     public void testSplitComponentWithoutStyles() {
         Component toSplit = Component.text("Test splitting a component without styles");
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 36})
