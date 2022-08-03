@@ -313,6 +313,34 @@ public class AdventureParserTest {
     }
 
     @Test
+    public void testParseComponentBackwardsCompatibilityWithArgsTag() {
+        Component comp = Component.text("Text [lang]with.colors.two.args[args][arg]test[/arg][/args][/lang] more text");
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text("Text "),
+                        Component.text()
+                                .append(
+                                        Component.text()
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                                .content("This text is pink and has two arguments ("),
+                                        Component.text()
+                                                .content("test"),
+                                        Component.text()
+                                                .content(" and %2)")
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                ),
+                        Component.text(" more text")
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
     public void testSplitComponentWithoutStyles() {
         Component toSplit = Component.text("Test splitting a component without styles");
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 36})
