@@ -11,6 +11,7 @@ import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -19,6 +20,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AdventureParser {
+
+    private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
+            .mapper(TextComponent.class, TextComponent::content)
+            .unknownMapper(comp -> "?")
+            .build();
+    private final static PlainTextComponentSerializer PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder()
+            .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
+            .build();
 
     public TranslationResult parseComponent(Localized language, FeatureSyntax syntax, Component component) {
         TranslationConfiguration configuration = new TranslationConfiguration(
@@ -31,7 +40,6 @@ public class AdventureParser {
 
     @VisibleForTesting
     TranslationResult parseComponent(Component component, TranslationConfiguration configuration) {
-        // FIXME this doesn't account for non-text components
         String plainText = componentToString(component);
         val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
@@ -135,8 +143,7 @@ public class AdventureParser {
     }
 
     private String componentToString(Component component) {
-        // TODO custom serializer to include non-text components
-        return PlainTextComponentSerializer.plainText().serialize(component);
+        return PLAIN_TEXT_SERIALIZER.serialize(component);
     }
 
     private Component replaceArguments(Component component, List<Component> arguments) {
