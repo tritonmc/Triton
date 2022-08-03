@@ -38,6 +38,9 @@ public class AdventureParserTest {
                 if (key.equals("with.colors.two.args")) {
                     return Component.text("This text is pink and has two arguments (%1 and %2)").color(NamedTextColor.LIGHT_PURPLE);
                 }
+                if (key.equals("with.colors.repeated.args")) {
+                    return Component.text("This text is pink and has three arguments (%1 and %2 and %1)").color(NamedTextColor.LIGHT_PURPLE);
+                }
                 return Component.text("unknown placeholder");
             }
     );
@@ -190,6 +193,68 @@ public class AdventureParserTest {
                                         Component.text()
                                                 .content("second arg")
                                                 .color(NamedTextColor.BLACK),
+                                        Component.text()
+                                                .content(")")
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithRepeatedArguments() {
+        Component comp = Component.text()
+                .color(TextColor.color(0x0000ff))
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .color(TextColor.color(0x00ff00))
+                                .content("[lang]with.colors.repeated.args[arg]")
+                                .append(
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
+                                        Component.text("[/arg][arg]"),
+                                        Component.text()
+                                                .content("second arg")
+                                                .color(NamedTextColor.BLACK),
+                                        Component.text("[/arg][/lang]")
+                                )
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .color(TextColor.color(0xff000))
+                                .content("Text "),
+                        Component.text()
+                                .append(
+                                        Component.text()
+                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                                .content("This text is pink and has three arguments ("),
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
+                                        Component.text()
+                                                .content(" and ")
+                                                .color(NamedTextColor.LIGHT_PURPLE),
+                                        Component.text()
+                                                .content("second arg")
+                                                .color(NamedTextColor.BLACK),
+                                        Component.text()
+                                                .content(" and ")
+                                                .color(NamedTextColor.LIGHT_PURPLE),
+                                        Component.text()
+                                                .content("first arg")
+                                                .color(NamedTextColor.AQUA),
                                         Component.text()
                                                 .content(")")
                                                 .color(NamedTextColor.LIGHT_PURPLE)
