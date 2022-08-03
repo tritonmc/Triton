@@ -225,7 +225,7 @@ public class AdventureParser {
             TextComponent textComponent = (TextComponent) comp;
             String[] textSplit = state.splitString(textComponent.content());
             for (int i = 0; i < textSplit.length; ++i) {
-                TextComponent newSplit = Component.text().content(textSplit[i]).mergeStyle(textComponent).build();
+                Component newSplit = convertEmptyComponent(Component.text().content(textSplit[i]).mergeStyle(textComponent).build());
                 if (i == textSplit.length - 1) {
                     // the last split keeps the extras
                     acc = handleChildren(newSplit, textComponent.children(), acc, split, state);
@@ -283,7 +283,7 @@ public class AdventureParser {
             if (j == 0) {
                 // add the first split to the parent element
                 parent = parent.children(Collections.singletonList(extraSplit.get(j)));
-                accumulator.add(parent);
+                accumulator.add(convertEmptyComponent(parent));
             } else {
                 // flush accumulator before adding new sibling
                 accumulator = flushAccumulator(accumulator, splits);
@@ -293,6 +293,25 @@ public class AdventureParser {
             }
         }
         return accumulator;
+    }
+
+    /**
+     * Adventure has an issue where some components might not become empty
+     * components, even though they should be. This is a fix for that, while
+     * it doesn't get fixed upstream.
+     * <a href="https://github.com/KyoriPowered/adventure/issues/807">Related GitHub Issue</a>
+     *
+     * @param component The component to check
+     * @return The same component or an empty component
+     */
+    private Component convertEmptyComponent(Component component) {
+        if (component instanceof TextComponent) {
+            TextComponent textComponent = (TextComponent) component;
+            if (textComponent.content().isEmpty() && textComponent.children().isEmpty() && textComponent.style().isEmpty()) {
+                return Component.empty();
+            }
+        }
+        return component;
     }
 
     @RequiredArgsConstructor
