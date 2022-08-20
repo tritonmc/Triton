@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.val;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -316,8 +317,9 @@ public class MainConfig implements TritonConfig {
     }
 
     @Getter
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor
     @ToString
+    @VisibleForTesting
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
         private final String args;

@@ -137,7 +137,7 @@ public class ComponentUtils {
                         for (int j = 0; j < extraSplit.size(); ++j) {
                             if (j == 0) {
                                 // the first split add to the parent element
-                                extraSplit.get(i).forEach(newSplit::addExtra);
+                                extraSplit.get(j).forEach(newSplit::addExtra);
                             } else {
                                 // flush accumulator before adding new sibling
                                 split.add(acc);
