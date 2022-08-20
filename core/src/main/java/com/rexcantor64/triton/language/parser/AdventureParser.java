@@ -11,12 +11,14 @@ import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class AdventureParser {
@@ -44,7 +46,7 @@ public class AdventureParser {
         val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
-            return TranslationResult.unchanged();
+            return handleNonContentText(component, configuration);
         }
 
         Queue<Integer> indexesToSplitAt = indexes.stream()
@@ -68,13 +70,16 @@ public class AdventureParser {
                 acc.add(part);
                 continue;
             }
-            // TODO support placeholder arguments
             acc.add(handlePlaceholder(part, configuration));
         }
 
-        // TODO parse hover events
+        Component resultComponent = Component.join(JoinConfiguration.noSeparators(), acc);
 
-        return TranslationResult.changed(Component.join(JoinConfiguration.noSeparators(), acc));
+        resultComponent = handleNonContentText(resultComponent, configuration)
+                .getChanged()
+                .orElse(resultComponent);
+
+        return TranslationResult.changed(resultComponent);
     }
 
     private Component handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
@@ -114,6 +119,65 @@ public class AdventureParser {
 
         // TODO this should probably be parsed again, in case the resulting translation has placeholders
         return replaceArguments(result, arguments);
+    }
+
+    /**
+     * Searches the given component's hover events and TranslatableComponent's arguments
+     * for Triton placeholders, replacing them with the respective translations.
+     * <p>
+     * If a "disabled line" is present on a hover component, the hover component is discarded.
+     * If a "disabled line" is present on a TranslatableComponent argument, that argument is set to empty.
+     *
+     * @param component     The component to search in.
+     * @param configuration The translation configuration to use.
+     * @return The given component with the placeholders replaced, wrapped in a TranslationResult.
+     */
+    private TranslationResult handleNonContentText(Component component, TranslationConfiguration configuration) {
+        boolean changed = false;
+        if (component.style().hoverEvent() != null) {
+            // TODO
+        }
+
+        if (component instanceof TranslatableComponent) {
+            TranslatableComponent translatableComponent = (TranslatableComponent) component;
+            AtomicBoolean argumentsChanged = new AtomicBoolean(false);
+            List<Component> translatedArguments = new ArrayList<>(translatableComponent.args().size());
+            for (Component argument : translatableComponent.args()) {
+                parseComponent(argument, configuration)
+                        .ifChanged(newArgument -> {
+                            argumentsChanged.set(true);
+                            translatedArguments.add(newArgument);
+                        })
+                        .ifUnchanged(() -> translatedArguments.add(argument))
+                        .ifToRemove(() -> translatedArguments.add(Component.empty()));
+            }
+
+            if (argumentsChanged.get()) {
+                changed = true;
+                component = translatableComponent.args(translatedArguments);
+            }
+        }
+
+        AtomicBoolean childrenChanged = new AtomicBoolean(false);
+        List<Component> translatedChildren = new ArrayList<>(component.children().size());
+        for (Component argument : component.children()) {
+            parseComponent(argument, configuration)
+                    .ifChanged(newArgument -> {
+                        childrenChanged.set(true);
+                        translatedChildren.add(newArgument);
+                    })
+                    .ifUnchanged(() -> translatedChildren.add(argument));
+        }
+
+        if (childrenChanged.get()) {
+            changed = true;
+            component = component.children(translatedChildren);
+        }
+
+        if (!changed) {
+            return TranslationResult.unchanged();
+        }
+        return TranslationResult.changed(component);
     }
 
     /**

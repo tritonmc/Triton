@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -50,6 +51,18 @@ public class TranslationResult {
             action.run();
         }
         return this;
+    }
+
+    /**
+     * Get the result if state is changed.
+     *
+     * @return The result if the state is changed, empty optional otherwise.
+     */
+    public Optional<Component> getChanged() {
+        if (state == ResultState.CHANGED) {
+            return Optional.of(this.result);
+        }
+        return Optional.empty();
     }
 
 

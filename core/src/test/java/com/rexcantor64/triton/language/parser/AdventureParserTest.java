@@ -368,6 +368,59 @@ public class AdventureParserTest {
     }
 
     @Test
+    public void testParseComponentWithPlaceholdersOnlyInTranslatableComponentArguments() {
+        Component comp = Component.translatable(
+                "translatable.key",
+                Component.text("[lang]without.formatting[/lang]")
+        );
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.translatable(
+                "translatable.key",
+                Component.text()
+                        .append(Component.text("This is text without formatting"))
+        );
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersInTranslatableComponentArguments() {
+        Component comp = Component.text()
+                .content("Text ")
+                .append(
+                        Component.translatable(
+                                "translatable.key",
+                                Component.text("[lang]without.formatting[/lang]")
+                        ),
+                        Component.text("[lang]without.formatting[/lang] more text")
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("Text ")
+                                .append(
+                                        Component.translatable(
+                                                "translatable.key",
+                                                Component.text()
+                                                        .append(Component.text("This is text without formatting"))
+                                        )
+                                ),
+                        Component.text("This is text without formatting more text")
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
     public void testSplitComponentWithoutStyles() {
         Component toSplit = Component.text("Test splitting a component without styles");
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 36})
