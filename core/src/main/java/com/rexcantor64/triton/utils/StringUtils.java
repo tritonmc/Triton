@@ -1,14 +1,18 @@
 package com.rexcantor64.triton.utils;
 
+import java.util.Arrays;
+import java.util.StringJoiner;
+
 public class StringUtils {
 
     public static String join(String delimiter, String... strings) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < strings.length; i++) {
-            if (i != 0) builder.append(delimiter);
-            builder.append(strings[i]);
-        }
-        return builder.toString();
+        StringJoiner joiner = new StringJoiner(delimiter);
+        Arrays.stream(strings).forEach(joiner::add);
+        return joiner.toString();
+    }
+
+    public static boolean isEmptyOrNull(String str) {
+        return str == null || str.trim().isEmpty();
     }
 
 }
