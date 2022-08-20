@@ -22,6 +22,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+/**
+ * A message parser for Kyori's Adventure library.
+ *
+ * @since 4.0.0
+ */
 public class AdventureParser {
 
     private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
@@ -32,17 +37,41 @@ public class AdventureParser {
             .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
             .build();
 
-    public TranslationResult parseComponent(Localized language, FeatureSyntax syntax, Component component) {
+    /**
+     * Find and replace Triton placeholders in a Component.
+     * <p>
+     * A translation can yield three states:
+     * <ul>
+     *     <li>placeholders are found and therefore translated;</li>
+     *     <li>placeholders aren't found and therefore the component is left unchanged;</li>
+     *     <li>a "disabled line" placeholder is found.</li>
+     * </ul>
+     * See {@link TranslationResult} for more details.
+     *
+     * @param component The component to find and replace Triton placeholders on.
+     * @param language  The language to fetch translations on.
+     * @param syntax    The syntax to use while searching for Triton placeholders.
+     * @return The result of the translation
+     * @since 4.0.0
+     */
+    public TranslationResult translateComponent(Component component, Localized language, FeatureSyntax syntax) {
         TranslationConfiguration configuration = new TranslationConfiguration(
                 syntax,
                 // TODO properly integrate this
                 (key) -> Component.text(Triton.get().getLanguageManager().getText(language, key))
         );
-        return parseComponent(component, configuration);
+        return translateComponent(component, configuration);
     }
 
+    /**
+     * @param component     The component to find and replace Triton placeholders on.
+     * @param configuration The settings to apply to this translation.
+     * @return The result of the translation
+     * @see AdventureParser#translateComponent(Component, Localized, FeatureSyntax)
+     * @since 4.0.0
+     */
     @VisibleForTesting
-    TranslationResult parseComponent(Component component, TranslationConfiguration configuration) {
+    TranslationResult translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
         val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
@@ -83,6 +112,18 @@ public class AdventureParser {
         return TranslationResult.changed(resultComponent);
     }
 
+    /**
+     * An auxiliary method to {@link AdventureParser#translateComponent(Component, TranslationConfiguration)}
+     * that handles translating the component inside the <code>[lang][/lang]</code> tags.
+     * The <code>[args][/args]</code> tags are optional since Triton v4.0.0.
+     * <p>
+     * This method gets the translation for the key and replaces its arguments, if any.
+     *
+     * @param placeholder   The Component inside the <code>[lang][/lang]</code> tags.
+     * @param configuration The settings to apply to this translation.
+     * @return The translation of this placeholder.
+     * @since 4.0.0
+     */
     private Component handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
         String placeholderStr = componentToString(placeholder);
         val indexes = LanguageParser.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
@@ -108,7 +149,7 @@ public class AdventureParser {
             }
             if (i % 4 == 2) {
                 // Parse argument to allow nested placeholders
-                parseComponent(part, configuration)
+                translateComponent(part, configuration)
                         .ifChanged(arguments::add)
                         .ifToRemove(() -> arguments.add(Component.empty()))
                         .ifUnchanged(() -> arguments.add(part));
@@ -132,6 +173,7 @@ public class AdventureParser {
      * @param component     The component to search in.
      * @param configuration The translation configuration to use.
      * @return The given component with the placeholders replaced, wrapped in a TranslationResult.
+     * @since 4.0.0
      */
     @SuppressWarnings("unchecked")
     private TranslationResult handleNonContentText(Component component, TranslationConfiguration configuration) {
@@ -141,7 +183,7 @@ public class AdventureParser {
             if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
                 HoverEvent<Component> textHoverEvent = (HoverEvent<Component>) hoverEvent;
                 Component value = textHoverEvent.value();
-                TranslationResult result = parseComponent(value, configuration);
+                TranslationResult result = translateComponent(value, configuration);
                 if (result.getState() == TranslationResult.ResultState.REMOVE) {
                     changed = true;
                     component = component.hoverEvent(null);
@@ -154,7 +196,7 @@ public class AdventureParser {
                 HoverEvent<HoverEvent.ShowEntity> entityHoverEvent = (HoverEvent<HoverEvent.ShowEntity>) hoverEvent;
                 HoverEvent.ShowEntity value = entityHoverEvent.value();
                 if (value.name() != null) {
-                    TranslationResult result = parseComponent(value.name(), configuration);
+                    TranslationResult result = translateComponent(value.name(), configuration);
                     if (result.getState() == TranslationResult.ResultState.REMOVE) {
                         changed = true;
                         component = component.hoverEvent(null);
@@ -174,7 +216,7 @@ public class AdventureParser {
             AtomicBoolean argumentsChanged = new AtomicBoolean(false);
             List<Component> translatedArguments = new ArrayList<>(translatableComponent.args().size());
             for (Component argument : translatableComponent.args()) {
-                parseComponent(argument, configuration)
+                translateComponent(argument, configuration)
                         .ifChanged(newArgument -> {
                             argumentsChanged.set(true);
                             translatedArguments.add(newArgument);
@@ -192,7 +234,7 @@ public class AdventureParser {
         AtomicBoolean childrenChanged = new AtomicBoolean(false);
         List<Component> translatedChildren = new ArrayList<>(component.children().size());
         for (Component argument : component.children()) {
-            parseComponent(argument, configuration)
+            translateComponent(argument, configuration)
                     .ifChanged(newArgument -> {
                         childrenChanged.set(true);
                         translatedChildren.add(newArgument);
@@ -218,6 +260,7 @@ public class AdventureParser {
      *
      * @param component The component containing the text
      * @return The styles applied to the first character in the component
+     * @since 4.0.0
      */
     private Style getStyleOfFirstCharacter(Component component) {
         if (component instanceof TextComponent) {
@@ -237,10 +280,26 @@ public class AdventureParser {
         return style;
     }
 
+    /**
+     * Serializes a Component as a string, replacing
+     * non-text components with a '?' (question mark) character.
+     *
+     * @param component The component to serialize.
+     * @return The serialization result.
+     * @since 4.0.0
+     */
     private String componentToString(Component component) {
         return PLAIN_TEXT_SERIALIZER.serialize(component);
     }
 
+    /**
+     * Given a Component with "%1", "%2", etc., replace these with the given arguments.
+     *
+     * @param component The component with % placeholders.
+     * @param arguments The list of arguments available to use as replacements.
+     * @return The component with % placeholders replaced with arguments.
+     * @since 4.0.0
+     */
     private Component replaceArguments(Component component, List<Component> arguments) {
         PriorityQueue<PriorityPair<Component>> replacementMap = new PriorityQueue<>(Comparator.comparing(PriorityPair::getPriority));
         Queue<Integer> indexesToSplitAt = new LinkedList<>();
@@ -308,11 +367,15 @@ public class AdventureParser {
      * @param component The Component to split
      * @param indexes   The indexes to split at
      * @return A list of the split Component lists
+     * @since 4.0.0
      */
     public List<Component> splitComponent(Component component, Queue<Integer> indexes) {
         return splitComponent(Collections.singletonList(component), new SplitState(indexes));
     }
 
+    /**
+     * @see AdventureParser#splitComponent(Component, Queue)
+     */
     private List<Component> splitComponent(List<Component> comps, SplitState state) {
         List<Component> split = new LinkedList<>();
         List<Component> acc = new LinkedList<>();
@@ -357,6 +420,7 @@ public class AdventureParser {
      * @param accumulator The accumulator to flush
      * @param splits      The result list to flush to
      * @return An empty LinkedList, as a new accumulator
+     * @since 4.0.0
      */
     private List<Component> flushAccumulator(List<Component> accumulator, List<Component> splits) {
         if (accumulator.size() == 0) {
@@ -382,6 +446,7 @@ public class AdventureParser {
      * @param splits      The split list of the split process
      * @param state       The state of the split process
      * @return The new accumulator
+     * @since 4.0.0
      */
     private List<Component> handleChildren(Component parent, List<Component> children, List<Component> accumulator, List<Component> splits, SplitState state) {
         if (children.isEmpty()) {
@@ -414,6 +479,7 @@ public class AdventureParser {
      *
      * @param component The component to check
      * @return The same component or an empty component
+     * @since 4.0.0
      */
     private Component convertEmptyComponent(Component component) {
         if (component instanceof TextComponent) {
@@ -425,6 +491,12 @@ public class AdventureParser {
         return component;
     }
 
+    /**
+     * Holds the state for a component split action
+     * (i.e. a call to {@link AdventureParser#splitComponent(Component, Queue)}).
+     *
+     * @since 4.0.0
+     */
     @RequiredArgsConstructor
     private static class SplitState {
         final Queue<Integer> splitIndexes;
@@ -465,6 +537,12 @@ public class AdventureParser {
         }
     }
 
+    /**
+     * A weighted value to be used in a priority queue.
+     *
+     * @param <K> The type of the value this object holds.
+     * @since 4.0.0
+     */
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
     private static class PriorityPair<K> {

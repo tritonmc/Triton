@@ -51,7 +51,7 @@ public class AdventureParserTest {
     public void testParseComponentWithoutPlaceholders() {
         Component comp = Component.text("Text without any placeholders whatsoever");
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         assertEquals(TranslationResult.ResultState.UNCHANGED, result.getState());
     }
@@ -60,7 +60,7 @@ public class AdventureParserTest {
     public void testParseComponentWithoutFormatting() {
         Component comp = Component.text("Text [lang]without.formatting[/lang] more text");
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text("Text This is text without formatting more text");
 
@@ -84,7 +84,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -121,7 +121,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -174,7 +174,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -230,7 +230,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -288,7 +288,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -318,7 +318,7 @@ public class AdventureParserTest {
     public void testParseComponentBackwardsCompatibilityWithArgsTag() {
         Component comp = Component.text("Text [lang]with.colors.two.args[args][arg]test[/arg][/args][/lang] more text");
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -352,7 +352,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -376,7 +376,7 @@ public class AdventureParserTest {
                 Component.text("[lang]without.formatting[/lang]")
         );
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.translatable(
                 "translatable.key",
@@ -401,7 +401,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -429,7 +429,7 @@ public class AdventureParserTest {
                 .hoverEvent(HoverEvent.showText(Component.text("[lang]without.formatting[/lang]")))
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .content("some text")
@@ -458,7 +458,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.parseComponent(comp, configuration);
+        TranslationResult result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .content("some text")
