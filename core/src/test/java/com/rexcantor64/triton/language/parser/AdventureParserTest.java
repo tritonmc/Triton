@@ -27,6 +27,7 @@ public class AdventureParserTest {
 
     private final TranslationConfiguration configuration = new TranslationConfiguration(
             defaultSyntax,
+            "disabled.line",
             (key) -> {
                 if (key.equals("without.formatting")) {
                     return Component.text("This is text without formatting");
@@ -497,6 +498,15 @@ public class AdventureParserTest {
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
         assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithDisabledLine() {
+        Component comp = Component.text("[lang]disabled.line[/lang]");
+
+        TranslationResult result = parser.translateComponent(comp, configuration);
+
+        assertEquals(TranslationResult.ResultState.REMOVE, result.getState());
     }
 
     @Test

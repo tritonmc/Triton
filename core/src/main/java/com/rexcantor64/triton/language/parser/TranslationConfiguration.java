@@ -9,5 +9,6 @@ import java.util.function.Function;
 @Data
 public class TranslationConfiguration {
     final FeatureSyntax featureSyntax;
+    final String disabledLine;
     final Function<String, Component> translationSupplier;
 }

@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ public class AdventureParser {
     public TranslationResult translateComponent(Component component, Localized language, FeatureSyntax syntax) {
         TranslationConfiguration configuration = new TranslationConfiguration(
                 syntax,
+                Triton.get().getConfig().getDisabledLine(),
                 // TODO properly integrate this
                 (key) -> Component.text(Triton.get().getLanguageManager().getText(language, key))
         );
@@ -149,6 +151,9 @@ public class AdventureParser {
                 // The [args] tag is optional since v4.0.0, so strip it if it's present
                 if (key.endsWith("[" + configuration.getFeatureSyntax().getArgs() + "]")) {
                     key = key.substring(0, key.length() - configuration.getFeatureSyntax().getArgs().length() - 2);
+                }
+                if (!StringUtils.isEmptyOrNull(configuration.getDisabledLine()) && configuration.getDisabledLine().equals(key)) {
+                    return Optional.empty();
                 }
             }
             if (i % 4 == 2) {
