@@ -31,8 +31,8 @@ import java.util.UUID;
 public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    static Triton instance;
-    PluginLoader loader;
+    protected static Triton instance;
+    protected PluginLoader loader;
     GuiManager guiManager;
     // File-related variables
     private File translationsFolder;
@@ -80,7 +80,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return (VelocityMLP) instance;
     }
 
-    void onEnable() {
+    protected void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 
         logger = loader.getTritonLogger();

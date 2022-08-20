@@ -1,8 +1,9 @@
-package com.rexcantor64.triton.player;
+package com.rexcantor64.triton.velocity.player;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
+import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;

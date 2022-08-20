@@ -1,4 +1,4 @@
-package com.rexcantor64.triton.listeners;
+package com.rexcantor64.triton.velocity.listeners;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.player.VelocityLanguagePlayer;

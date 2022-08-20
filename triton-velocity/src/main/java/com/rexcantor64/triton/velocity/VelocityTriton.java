@@ -1,10 +1,11 @@
-package com.rexcantor64.triton;
+package com.rexcantor64.triton.velocity;
 
-import com.rexcantor64.triton.bridge.VelocityBridgeManager;
-import com.rexcantor64.triton.commands.handler.VelocityCommandHandler;
-import com.rexcantor64.triton.listeners.VelocityListener;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
+import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
+import com.rexcantor64.triton.velocity.listeners.VelocityListener;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import com.rexcantor64.triton.plugin.VelocityPlugin;
+import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
@@ -17,7 +18,7 @@ import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class VelocityMLP extends Triton {
+public class VelocityTriton extends Triton {
 
     @Getter
     private VelocityBridgeManager bridgeManager;
@@ -25,7 +26,7 @@ public class VelocityMLP extends Triton {
     private ChannelIdentifier bridgeChannelIdentifier;
     private ScheduledTask configRefreshTask;
 
-    public VelocityMLP(PluginLoader loader) {
+    public VelocityTriton(PluginLoader loader) {
         super.loader = loader;
     }
 

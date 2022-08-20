@@ -1,6 +1,7 @@
-package com.rexcantor64.triton.bridge;
+package com.rexcantor64.triton.velocity.bridge;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bridge.BridgeSerializer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.player.VelocityLanguagePlayer;

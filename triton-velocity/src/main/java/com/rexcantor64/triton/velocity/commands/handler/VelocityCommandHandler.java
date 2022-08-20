@@ -1,5 +1,7 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.velocity.commands.handler;
 
+import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.velocitypowered.api.command.SimpleCommand;
 import lombok.val;
 
