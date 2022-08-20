@@ -43,6 +43,12 @@ public class AdventureParserTest {
                 if (key.equals("with.colors.repeated.args")) {
                     return Component.text("This text is pink and has three arguments (%1 and %2 and %1)").color(NamedTextColor.LIGHT_PURPLE);
                 }
+                if (key.equals("nested")) {
+                    return Component.text()
+                            .content("some text")
+                            .append(Component.text("[lang]without.formatting[/lang]"))
+                            .asComponent();
+                }
                 return Component.text("unknown placeholder");
             }
     );
@@ -471,6 +477,22 @@ public class AdventureParserTest {
                                         .asComponent()
                         )
                 )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithNestedPlaceholders() {
+        Component comp = Component.text("[lang]nested[/lang]");
+
+        TranslationResult result = parser.translateComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .content("some text")
+                .append(
+                        Component.text("This is text without formatting"))
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());

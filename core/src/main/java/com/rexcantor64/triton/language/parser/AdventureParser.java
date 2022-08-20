@@ -100,7 +100,11 @@ public class AdventureParser {
                 acc.add(part);
                 continue;
             }
-            acc.add(handlePlaceholder(part, configuration));
+            Optional<Component> resultPlaceholder = handlePlaceholder(part, configuration);
+            if (!resultPlaceholder.isPresent()) {
+                return TranslationResult.remove();
+            }
+            acc.add(resultPlaceholder.get());
         }
 
         Component resultComponent = Component.join(JoinConfiguration.noSeparators(), acc);
@@ -121,10 +125,10 @@ public class AdventureParser {
      *
      * @param placeholder   The Component inside the <code>[lang][/lang]</code> tags.
      * @param configuration The settings to apply to this translation.
-     * @return The translation of this placeholder.
+     * @return The translation of this placeholder. Empty optional if the translation is "disabled line".
      * @since 4.0.0
      */
-    private Component handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
+    private Optional<Component> handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
         String placeholderStr = componentToString(placeholder);
         val indexes = LanguageParser.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
         Queue<Integer> indexesToSplitAt = indexes.stream()
@@ -158,9 +162,14 @@ public class AdventureParser {
 
         Style defaultStyle = getStyleOfFirstCharacter(placeholder);
         Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
+        result = replaceArguments(result, arguments);
 
-        // TODO this should probably be parsed again, in case the resulting translation has placeholders
-        return replaceArguments(result, arguments);
+        TranslationResult translationResult = translateComponent(result, configuration);
+        if (translationResult.getState() == TranslationResult.ResultState.REMOVE) {
+            return Optional.empty();
+        }
+
+        return Optional.of(translationResult.getChanged().orElse(result));
     }
 
     /**
@@ -234,7 +243,7 @@ public class AdventureParser {
         AtomicBoolean childrenChanged = new AtomicBoolean(false);
         List<Component> translatedChildren = new ArrayList<>(component.children().size());
         for (Component argument : component.children()) {
-            translateComponent(argument, configuration)
+            handleNonContentText(argument, configuration)
                     .ifChanged(newArgument -> {
                         childrenChanged.set(true);
                         translatedChildren.add(newArgument);
