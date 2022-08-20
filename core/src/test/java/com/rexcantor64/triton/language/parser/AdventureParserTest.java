@@ -421,6 +421,29 @@ public class AdventureParserTest {
     }
 
     @Test
+    public void testParseComponentWithPlaceholdersInShowTextHoverAction() {
+        Component comp = Component.text()
+                .content("some text")
+                .hoverEvent(HoverEvent.showText(Component.text("[lang]without.formatting[/lang]")))
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showText(
+                                Component.text()
+                                        .append(Component.text("This is text without formatting"))
+                        )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
     public void testSplitComponentWithoutStyles() {
         Component toSplit = Component.text("Test splitting a component without styles");
         Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 12, 36})

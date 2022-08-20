@@ -12,6 +12,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -132,10 +133,28 @@ public class AdventureParser {
      * @param configuration The translation configuration to use.
      * @return The given component with the placeholders replaced, wrapped in a TranslationResult.
      */
+    @SuppressWarnings("unchecked")
     private TranslationResult handleNonContentText(Component component, TranslationConfiguration configuration) {
         boolean changed = false;
-        if (component.style().hoverEvent() != null) {
-            // TODO
+        HoverEvent<?> hoverEvent = component.hoverEvent();
+        if (hoverEvent != null) {
+            if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
+                HoverEvent<Component> textHoverEvent = (HoverEvent<Component>) hoverEvent;
+                Component value = textHoverEvent.value();
+                TranslationResult result = parseComponent(value, configuration);
+                if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                    changed = true;
+                    component = component.hoverEvent(null);
+                }
+                if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                    changed = true;
+                    component = component.hoverEvent(textHoverEvent.value(result.getResult()));
+                }
+            } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ENTITY) {
+                // TODO
+            } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ITEM) {
+                // TODO
+            }
         }
 
         if (component instanceof TranslatableComponent) {
