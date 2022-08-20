@@ -223,10 +223,19 @@ public class AdventureParser {
         List<Component> acc = new LinkedList<>();
         for (Component comp : comps) {
             if (!(comp instanceof TextComponent)) {
-                if (state.advanceByAndCheckSplitOfNonTextComponent()) {
+                while (state.checkAndConsumeSplitOfNonTextComponent()) {
+                    acc.add(Component.empty());
                     acc = flushAccumulator(acc, split);
                 }
+                state.advanceBy(1); // non-text components always have length 1
+                int beforeIndex = state.atIndex();
                 acc = handleChildren(comp, comp.children(), acc, split, state);
+
+                while (beforeIndex == state.atIndex() && state.checkAndConsumeSplitOfNonTextComponent()) {
+                    acc = flushAccumulator(acc, split);
+                    acc.add(Component.empty());
+                }
+
                 continue;
             }
             TextComponent textComponent = (TextComponent) comp;
@@ -331,11 +340,14 @@ public class AdventureParser {
         }
 
         /**
-         * @return true if there is a split at the beginning of this component
+         * @return true if there is a split at the beginning of this (non text) component
          */
-        boolean advanceByAndCheckSplitOfNonTextComponent() {
-            this.advanceBy(1);
-            return !splitIndexes.isEmpty() && splitIndexes.peek() == atIndex() - 1;
+        boolean checkAndConsumeSplitOfNonTextComponent() {
+            if (!splitIndexes.isEmpty() && splitIndexes.peek() == atIndex()) {
+                splitIndexes.remove();
+                return true;
+            }
+            return false;
         }
 
         int atIndex() {

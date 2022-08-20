@@ -382,8 +382,8 @@ public class AdventureParserTest {
                 Component.text("tyles")
         };
 
-        assertEquals(4, result.size());
-        for (int i = 0; i < 4; i++) {
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
@@ -466,8 +466,8 @@ public class AdventureParserTest {
                         .asComponent()
         };
 
-        assertEquals(7, result.size());
-        for (int i = 0; i < 7; i++) {
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
@@ -629,8 +629,8 @@ public class AdventureParserTest {
                         .asComponent()
         };
 
-        assertEquals(7, result.size());
-        for (int i = 0; i < 7; i++) {
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
@@ -685,8 +685,8 @@ public class AdventureParserTest {
                         .asComponent(),
         };
 
-        assertEquals(5, result.size());
-        for (int i = 0; i < 5; i++) {
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
@@ -751,12 +751,159 @@ public class AdventureParserTest {
                         .asComponent()
         };
 
-        assertEquals(5, result.size());
-        for (int i = 0; i < 5; i++) {
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
         }
     }
 
-    // TODO test splitting twice on same index before/after non-text component
+    @Test
+    public void testSplitComponentWithNonTextComponentsWithRepeatedIndexes() {
+        // Lorem ipsum |||Xdol|or sit amet, X|||consectetur adip|iscing elit
+        Component toSplit = Component.text()
+                .content("Lorem ipsum ")
+                .color(NamedTextColor.GREEN)
+                .append(
+                        Component.translatable("test translatable")
+                                .append(Component.text("dolor ")),
+                        Component.text("sit amet, ")
+                                .decorate(TextDecoration.ITALIC),
+                        Component.keybind("ALT"),
+                        Component.text("consectetur adipiscing elit")
+                                .color(TextColor.color(0x123456))
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{12, 12, 12, 16, 30, 30, 30, 46})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.text()
+                        .content("Lorem ipsum ")
+                        .color(NamedTextColor.GREEN)
+                        .asComponent(),
+                Component.empty(),
+                Component.empty(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.translatable("test translatable")
+                                        .append(Component.text("dol"))
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text()
+                                        .append(Component.text("or ")),
+                                Component.text("sit amet, ")
+                                        .decorate(TextDecoration.ITALIC),
+                                Component.keybind("ALT")
+                        )
+                        .asComponent(),
+                Component.empty(),
+                Component.empty(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text("consectetur adip")
+                                        .color(TextColor.color(0x123456))
+                        )
+                        .asComponent(),
+                Component.text()
+                        .color(NamedTextColor.GREEN)
+                        .append(
+                                Component.text("iscing elit")
+                                        .color(TextColor.color(0x123456))
+                        )
+                        .asComponent()
+        };
+
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testSplitComponentWithSequentialNonTextComponents() {
+        // X|X
+        Component toSplit = Component.text()
+                .append(
+                        Component.keybind("CTRL"),
+                        Component.keybind("ALT")
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{1})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.keybind("CTRL"),
+                Component.keybind("ALT")
+        };
+
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testSplitComponentWithSequentialNonTextComponentsWithRepeatedIndexes() {
+        // |X||X|
+        Component toSplit = Component.text()
+                .append(
+                        Component.keybind("CTRL"),
+                        Component.keybind("ALT")
+                )
+                .asComponent();
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 1, 1, 2})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.empty(),
+                Component.keybind("CTRL"),
+                Component.empty(),
+                Component.keybind("ALT"),
+                Component.empty()
+        };
+
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testSplitComponentWithSingleNonTextComponentWithRepeatedIndexes() {
+        // ||X||
+        Component toSplit = Component.keybind("CTRL");
+
+        Queue<Integer> splitIndexes = Arrays.stream(new Integer[]{0, 0, 1, 1})
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        List<Component> result = parser.splitComponent(toSplit, splitIndexes);
+
+        Component[] expected = new Component[]{
+                Component.empty(),
+                Component.empty(),
+                Component.keybind("CTRL"),
+                Component.empty(),
+                Component.empty()
+        };
+
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
 
 }
