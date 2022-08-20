@@ -2,6 +2,7 @@ package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.utils.DefaultFeatureSyntax;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -435,6 +437,38 @@ public class AdventureParserTest {
                         HoverEvent.showText(
                                 Component.text()
                                         .append(Component.text("This is text without formatting"))
+                        )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertEquals(expected.compact(), result.getResult().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersInShowEntityHoverAction() {
+        Component comp = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showEntity(
+                                Key.key("creeper"),
+                                new UUID(0, 0),
+                                Component.text("[lang]without.formatting[/lang]")
+                        )
+                )
+                .asComponent();
+
+        TranslationResult result = parser.parseComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showEntity(
+                                Key.key("creeper"),
+                                new UUID(0, 0),
+                                Component.text()
+                                        .append(Component.text("This is text without formatting"))
+                                        .asComponent()
                         )
                 )
                 .asComponent();

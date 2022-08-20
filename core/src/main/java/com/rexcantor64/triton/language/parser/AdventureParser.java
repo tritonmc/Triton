@@ -151,9 +151,21 @@ public class AdventureParser {
                     component = component.hoverEvent(textHoverEvent.value(result.getResult()));
                 }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ENTITY) {
-                // TODO
+                HoverEvent<HoverEvent.ShowEntity> entityHoverEvent = (HoverEvent<HoverEvent.ShowEntity>) hoverEvent;
+                HoverEvent.ShowEntity value = entityHoverEvent.value();
+                if (value.name() != null) {
+                    TranslationResult result = parseComponent(value.name(), configuration);
+                    if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                        changed = true;
+                        component = component.hoverEvent(null);
+                    }
+                    if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                        changed = true;
+                        component = component.hoverEvent(entityHoverEvent.value(value.name(result.getResult())));
+                    }
+                }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ITEM) {
-                // TODO
+                // TODO maybe use this library https://github.com/Eisenwave/eisen-nbt
             }
         }
 
