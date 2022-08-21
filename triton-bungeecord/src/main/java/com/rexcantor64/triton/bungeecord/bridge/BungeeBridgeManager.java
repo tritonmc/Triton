@@ -3,9 +3,10 @@ package com.rexcantor64.triton.bungeecord.bridge;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.bridge.BridgeSerializer;
+import com.rexcantor64.triton.bungeecord.BungeeTriton;
+import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.NonNull;
 import lombok.val;
@@ -71,7 +72,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
             val languageOut = BridgeSerializer.getLanguageDataOutput();
 
             // Send language files
-            for (val info : Triton.asBungee().getBungeeCord().getServers().values())
+            for (val info : BungeeTriton.asBungee().getBungeeCord().getServers().values())
                 sendConfigToServer(info, languageOut);
         } catch (Exception e) {
             Triton.get().getLogger()
@@ -111,7 +112,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
                 commandEvent.getFullSubCommand(), commandEvent.getSender().getUUID());
         val out = BridgeSerializer.buildForwardCommandData(commandEvent);
 
-        Triton.asBungee().getBungeeCord().getPlayer(commandEvent.getSender().getUUID()).getServer()
+        BungeeTriton.asBungee().getBungeeCord().getPlayer(commandEvent.getSender().getUUID()).getServer()
                 .sendData("triton:main", out);
     }
 

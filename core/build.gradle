@@ -1,9 +1,7 @@
 plugins {
     id 'java'
-    id "net.kyori.blossom" version "1.3.0"
 }
 
-apply plugin: 'net.kyori.blossom'
 group 'com.rexcantor64.triton'
 
 test {
@@ -15,7 +13,9 @@ dependencies {
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
 
     // Adventure / MiniMessage
+    // TODO check which of these should be compileOnly or implementation
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.11.0'
+    compileOnly 'net.kyori:adventure-text-serializer-plain:4.11.0'
     implementation('net.kyori:adventure-text-minimessage:4.11.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
@@ -24,7 +24,12 @@ dependencies {
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
 
-    // Terminal replacement
+    // md_5's chat library
+    // TODO remove this for 4.0.0, rely on Adventure instead
+    compileOnly 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
+    testImplementation 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
+
+    // Terminal translation
     compileOnly 'org.fusesource.jansi:jansi:2.4.0'
 
     compileOnly 'me.clip:placeholderapi:2.11.1'
@@ -35,19 +40,15 @@ dependencies {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     compileOnly 'com.google.code.gson:gson:2.9.0'
-    implementation 'org.bstats:bstats-bukkit:2.2.1'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
     implementation project(path: ":api")
     implementation project(path: ":spigot-legacy")
     implementation project(path: ":v1_13")
 
     // Test dependencies
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
     testImplementation 'net.kyori:adventure-api:4.11.0'
     testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
-}
-
-blossom {
-    replaceToken '@version@', project.version
 }

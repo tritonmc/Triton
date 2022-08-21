@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.bungeecord.listeners;
 
-import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.PreLoginBungeeEncoder;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.NMSUtils;
@@ -11,7 +11,11 @@ import lombok.val;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.event.*;
+import net.md_5.bungee.api.event.LoginEvent;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PlayerHandshakeEvent;
+import net.md_5.bungee.api.event.ProxyPingEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -27,11 +31,11 @@ public class BungeeListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        BungeeLanguagePlayer lp = Triton.asBungee().getPlayerManager()
+        BungeeLanguagePlayer lp = BungeeTriton.asBungee().getPlayerManager()
                 .get(event.getPlayer().getUniqueId());
         Triton.get().getLogger().logTrace("Player %1 connected to a new server", lp);
 
-        Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
+        BungeeTriton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
 
         if (Triton.get().getConfig().isRunLanguageCommandsOnLogin()) {
             lp.executeCommands(event.getServer());
@@ -41,12 +45,12 @@ public class BungeeListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onLogin(LoginEvent event) {
         if (event.isCancelled()) return;
-        Plugin plugin = Triton.asBungee().getLoader();
+        Plugin plugin = BungeeTriton.asBungee().getLoader();
         event.registerIntent(plugin);
-        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
+        BungeeTriton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
-            Triton.asBungee().getPlayerManager().registerPlayer(lp);
-            BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
+            BungeeTriton.asBungee().getPlayerManager().registerPlayer(lp);
+            BungeeTriton.asBungee().injectPipeline(lp, event.getConnection());
             event.completeIntent(plugin);
         });
     }
@@ -73,14 +77,14 @@ public class BungeeListener implements Listener {
 
     @EventHandler(priority = 127)
     public void onMotd(ProxyPingEvent event) {
-        Plugin plugin = Triton.asBungee().getLoader();
+        Plugin plugin = BungeeTriton.asBungee().getLoader();
 
         if (!Triton.get().getConfig().isMotd())
             return;
 
         event.registerIntent(plugin);
 
-        Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
+        BungeeTriton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val ipAddress = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
             val lang = Triton.get().getStorage().getLanguageFromIp(ipAddress).getName();
             Triton.get().getLogger().logTrace("Translating MOTD in language '%1' for IP address '%2'", lang, ipAddress);

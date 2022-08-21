@@ -57,6 +57,7 @@ subprojects {
 
 dependencies {
     implementation project(path: ":core")
+    implementation project(path: ":triton-bungeecord")
     implementation project(path: ":triton-velocity")
 }
 
@@ -124,7 +125,7 @@ bungee {
     version = project.version
     description = pluginDescription
     author = pluginAuthor
-    main = 'com.rexcantor64.triton.plugin.BungeePlugin'
+    main = 'com.rexcantor64.triton.bungeecord.plugin.BungeePlugin'
 }
 
 shadowJar {

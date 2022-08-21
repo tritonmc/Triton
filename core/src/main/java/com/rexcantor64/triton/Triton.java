@@ -84,10 +84,6 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         return (SpigotMLP) instance;
     }
 
-    public static BungeeMLP asBungee() {
-        return (BungeeMLP) instance;
-    }
-
     protected void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 

@@ -7,11 +7,11 @@ import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommandHandler;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
-import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.bungeecord.plugin.BungeePlugin;
+import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
+import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
-import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
@@ -41,6 +41,10 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         super.loader = loader;
     }
 
+    public static BungeeTriton asBungee() {
+        return (BungeeTriton) instance;
+    }
+
     public BungeePlugin getLoader() {
         return (BungeePlugin) this.loader;
     }
@@ -61,7 +65,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         getBungeeCord().registerChannel("triton:main");
 
         for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
-            BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
+            BungeeLanguagePlayer lp = getPlayerManager().get(p.getUniqueId());
             injectPipeline(lp, p);
         }
 
