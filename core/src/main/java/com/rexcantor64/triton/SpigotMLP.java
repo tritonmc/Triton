@@ -12,6 +12,7 @@ import com.rexcantor64.triton.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction;
 import com.rexcantor64.triton.packetinterceptor.protocollib.MotdPacketHandler;
 import com.rexcantor64.triton.placeholderapi.TritonPlaceholderHook;
+import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.SpigotPlugin;
@@ -37,7 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class SpigotMLP extends Triton {
+public class SpigotMLP extends Triton<SpigotLanguagePlayer> {
 
     @Getter
     private final short mcVersion;
@@ -54,6 +55,7 @@ public class SpigotMLP extends Triton {
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
+        super(new PlayerManager<>(SpigotLanguagePlayer::new));
         val versionSplit = Bukkit.getServer().getClass().getPackage().getName().split("_");
         mcVersion = Short.parseShort(versionSplit[1]);
         minorMcVersion = Short.parseShort(versionSplit[2].substring(1));
@@ -98,7 +100,7 @@ public class SpigotMLP extends Triton {
             getLogger().logError("Could not setup packet interceptor because ProtocolLib is not available!");
         }
 
-        if (getConf().isBungeecord()) {
+        if (getConfig().isBungeecord()) {
             getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +
                     ":main");
             getLoader().getServer().getMessenger().registerIncomingPluginChannel(getLoader(), "triton" +
@@ -110,7 +112,7 @@ public class SpigotMLP extends Triton {
             papiEnabled = true;
         }
 
-        if (getConf().isTerminal())
+        if (getConfig().isTerminal())
             Log4jInjector.injectAppender();
     }
 
@@ -120,7 +122,7 @@ public class SpigotMLP extends Triton {
         constructor.setAccessible(true);
         val command = (PluginCommand) constructor.newInstance("triton", getLoader());
 
-        command.setAliases(getConf().getCommandAliases());
+        command.setAliases(getConfig().getCommandAliases());
         command.setDescription("The main command of Triton.");
 
         val commandMap = (CommandMap) NMSUtils.getDeclaredField(Bukkit.getServer(), "commandMap");
@@ -132,9 +134,9 @@ public class SpigotMLP extends Triton {
     @Override
     protected void startConfigRefreshTask() {
         if (refreshTaskId != -1) Bukkit.getScheduler().cancelTask(refreshTaskId);
-        if (getConf().getConfigAutoRefresh() <= 0) return;
+        if (getConfig().getConfigAutoRefresh() <= 0) return;
         refreshTaskId = Bukkit.getScheduler()
-                .scheduleSyncDelayedTask(getLoader(), this::reload, getConf().getConfigAutoRefresh() * 20L);
+                .scheduleSyncDelayedTask(getLoader(), this::reload, getConfig().getConfigAutoRefresh() * 20L);
     }
 
     public ProtocolLibListener getProtocolLibListener() {

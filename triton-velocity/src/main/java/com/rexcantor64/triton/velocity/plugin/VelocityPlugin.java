@@ -1,10 +1,10 @@
 package com.rexcantor64.triton.velocity.plugin;
 
 import com.google.inject.Inject;
-import com.rexcantor64.triton.VelocityMLP;
 import com.rexcantor64.triton.logger.SLF4JLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.velocity.VelocityTriton;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
@@ -36,7 +36,7 @@ public class VelocityPlugin implements PluginLoader {
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
-        new VelocityMLP(this).onEnable();
+        new VelocityTriton(this).onEnable();
     }
 
     @Override

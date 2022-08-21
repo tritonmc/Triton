@@ -57,7 +57,7 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 try {
                     val firstSend = in.readBoolean();
                     if (firstSend) {
-                        val config = Triton.get().getConf();
+                        val config = Triton.get().getConfig();
                         config.setMainLanguage(in.readUTF());
                         short languageSize = in.readShort();
                         val languages = new ArrayList<Language>();

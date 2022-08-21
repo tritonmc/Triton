@@ -25,10 +25,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends LanguagePlayer> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
     protected static Triton instance;
@@ -44,16 +45,24 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private LanguageManager languageManager;
     private LanguageParser languageParser;
     private TwinManager twinManager;
-    private PlayerManager playerManager;
+    protected final PlayerManager<P> playerManager;
     private Storage storage;
     private TritonLogger logger;
 
+    protected Triton(PlayerManager<P> playerManager) {
+        this.playerManager = playerManager;
+    }
+
+    public static PluginLoader.PluginType type() {
+        return instance.getLoader().getType();
+    }
+
     public static boolean isBungee() {
-        return instance instanceof BungeeMLP;
+        return type() == PluginLoader.PluginType.BUNGEE;
     }
 
     public static boolean isVelocity() {
-        return instance instanceof VelocityMLP;
+        return type() == PluginLoader.PluginType.VELOCITY;
     }
 
     public static boolean isProxy() {
@@ -61,7 +70,7 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public static boolean isSpigot() {
-        return instance instanceof SpigotMLP;
+        return type() == PluginLoader.PluginType.SPIGOT;
     }
 
     public static Triton get() {
@@ -76,10 +85,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return (BungeeMLP) instance;
     }
 
-    public static VelocityMLP asVelocity() {
-        return (VelocityMLP) instance;
-    }
-
     protected void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 
@@ -87,7 +92,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
 
         config = new MainConfig(this);
         languageManager = new LanguageManager();
-        playerManager = new PlayerManager();
         messagesConfig = new MessagesConfig();
 
         LanguageMigration.migrate();
@@ -116,17 +120,13 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public Configuration loadYAML(String fileName, String internalFileName) {
         File f = FileUtils.getResource(fileName + ".yml", internalFileName + ".yml");
         try {
-            val stream = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            val stream = new InputStreamReader(Files.newInputStream(f.toPath()), StandardCharsets.UTF_8);
             return ConfigurationProvider.getProvider(YamlConfiguration.class).load(stream);
         } catch (Exception e) {
             logger.logError(e, "Failed to load %1.yml.", fileName);
             logger.logError("You'll likely receive more errors on console until the next restart.");
         }
         return null;
-    }
-
-    public MainConfig getConf() {
-        return config;
     }
 
     public abstract String getVersion();

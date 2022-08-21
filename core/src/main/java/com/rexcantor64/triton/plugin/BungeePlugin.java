@@ -23,11 +23,11 @@ public class BungeePlugin extends Plugin implements PluginLoader {
     public void onDisable() {
         // Set the formatter back to default
         try {
-            if (Triton.get().getConf().isTerminal())
+            if (Triton.get().getConfig().isTerminal())
                 BungeeTerminalManager.uninjectTerminalFormatter();
         } catch (Error | Exception e) {
             try {
-                if (Triton.get().getConf().isTerminal())
+                if (Triton.get().getConfig().isTerminal())
                     Log4jInjector.uninjectAppender();
             } catch (Error | Exception e1) {
                 getLogger()

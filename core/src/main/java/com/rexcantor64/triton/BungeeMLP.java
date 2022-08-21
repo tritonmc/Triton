@@ -6,6 +6,7 @@ import com.rexcantor64.triton.commands.handler.BungeeCommandHandler;
 import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.BungeePlugin;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
@@ -28,13 +29,14 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class BungeeMLP extends Triton {
+public class BungeeMLP extends Triton<BungeeLanguagePlayer> {
 
     @Getter
     private BungeeBridgeManager bridgeManager;
     private ScheduledTask configRefreshTask;
 
     public BungeeMLP(PluginLoader loader) {
+        super(new PlayerManager<>(BungeeLanguagePlayer::new));
         super.loader = loader;
     }
 
@@ -74,11 +76,11 @@ public class BungeeMLP extends Triton {
             bridgeManager.sendConfigToEveryone();
 
         try {
-            if (getConf().isTerminal())
+            if (getConfig().isTerminal())
                 BungeeTerminalManager.injectTerminalFormatter();
         } catch (Error | Exception e) {
             try {
-                if (getConf().isTerminal())
+                if (getConfig().isTerminal())
                     Log4jInjector.injectAppender();
             } catch (Error | Exception e1) {
                 getLogger()
@@ -99,9 +101,9 @@ public class BungeeMLP extends Triton {
     @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
-        if (getConf().getConfigAutoRefresh() <= 0) return;
+        if (getConfig().getConfigAutoRefresh() <= 0) return;
         configRefreshTask = getBungeeCord().getScheduler()
-                .schedule(getLoader(), this::reload, getConf().getConfigAutoRefresh(), TimeUnit.SECONDS);
+                .schedule(getLoader(), this::reload, getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS);
     }
 
 

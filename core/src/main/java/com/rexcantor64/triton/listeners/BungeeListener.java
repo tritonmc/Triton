@@ -33,7 +33,7 @@ public class BungeeListener implements Listener {
 
         Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
 
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {
+        if (Triton.get().getConfig().isRunLanguageCommandsOnLogin()) {
             lp.executeCommands(event.getServer());
         }
     }
@@ -75,7 +75,7 @@ public class BungeeListener implements Listener {
     public void onMotd(ProxyPingEvent event) {
         Plugin plugin = Triton.asBungee().getLoader();
 
-        if (!Triton.get().getConf().isMotd())
+        if (!Triton.get().getConfig().isMotd())
             return;
 
         event.registerIntent(plugin);
@@ -84,7 +84,7 @@ public class BungeeListener implements Listener {
             val ipAddress = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
             val lang = Triton.get().getStorage().getLanguageFromIp(ipAddress).getName();
             Triton.get().getLogger().logTrace("Translating MOTD in language '%1' for IP address '%2'", lang, ipAddress);
-            val syntax = Triton.get().getConf().getMotdSyntax();
+            val syntax = Triton.get().getConfig().getMotdSyntax();
 
             val players = event.getResponse().getPlayers();
             if (players.getSample() != null) {

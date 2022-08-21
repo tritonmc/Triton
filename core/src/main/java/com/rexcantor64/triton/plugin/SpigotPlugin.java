@@ -20,7 +20,7 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
 
     @Override
     public void onDisable() {
-        if (Triton.get().getConf().isTerminal())
+        if (Triton.get().getConfig().isTerminal())
             Log4jInjector.uninjectAppender();
     }
 

@@ -32,11 +32,11 @@ public final class TritonTerminalRewrite implements RewritePolicy {
         Language lang = Triton.get().getLanguageManager().getMainLanguage();
         if (lang == null) return event;
         String translated = Triton.get().getLanguageParser()
-                .replaceLanguages(event.getMessage().getFormattedMessage(), lang.getName(), Triton.get().getConf()
+                .replaceLanguages(event.getMessage().getFormattedMessage(), lang.getName(), Triton.get().getConfig()
                         .getChatSyntax());
         if (translated == null)
             return event;
-        if (chatColorTerminalReplacer != null && Triton.get().getConf().isTerminalAnsi())
+        if (chatColorTerminalReplacer != null && Triton.get().getConfig().isTerminalAnsi())
             translated = chatColorTerminalReplacer.parseMessage(translated);
 
         try {

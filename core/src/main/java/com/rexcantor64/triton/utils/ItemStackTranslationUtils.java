@@ -84,7 +84,7 @@ public class ItemStackTranslationUtils {
             // try to translate name and lore
             translateNbtItem(compound, languagePlayer, true);
             // translate the content of written books
-            if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main().getConf().isBooks()) {
+            if (translateBooks && item.getType() == Material.WRITTEN_BOOK && main().getConfig().isBooks()) {
                 if (compound.containsKey("pages")) {
                     NbtList<String> pages = compound.getList("pages");
                     Collection<NbtBase<String>> pagesCollection = pages.asCollection();
@@ -94,7 +94,7 @@ public class ItemStackTranslationUtils {
                             String result = translate(
                                     page.getValue().substring(1, page.getValue().length() - 1),
                                     languagePlayer,
-                                    main().getConf().getItemsSyntax()
+                                    main().getConfig().getItemsSyntax()
                             );
                             if (result != null) {
                                 newPagesCollection.add(
@@ -105,7 +105,7 @@ public class ItemStackTranslationUtils {
                             BaseComponent[] result = main().getLanguageParser()
                                     .parseComponent(
                                             languagePlayer,
-                                            main().getConf().getItemsSyntax(),
+                                            main().getConfig().getItemsSyntax(),
                                             ComponentSerializer.parse(page.getValue())
                                     );
                             if (result != null) {
@@ -122,13 +122,13 @@ public class ItemStackTranslationUtils {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName()) {
                 meta.setDisplayName(translate(meta.getDisplayName(),
-                        languagePlayer, main().getConf().getItemsSyntax()));
+                        languagePlayer, main().getConfig().getItemsSyntax()));
             }
             if (meta.hasLore()) {
                 List<String> newLore = new ArrayList<>();
                 for (String lore : meta.getLore()) {
                     String result = translate(lore, languagePlayer,
-                            main().getConf().getItemsSyntax());
+                            main().getConfig().getItemsSyntax());
                     if (result != null)
                         newLore.addAll(Arrays.asList(result.split("\n")));
                 }
@@ -158,7 +158,7 @@ public class ItemStackTranslationUtils {
                 BaseComponent[] result = main().getLanguageParser()
                         .parseComponent(
                                 languagePlayer,
-                                main().getConf().getItemsSyntax(),
+                                main().getConfig().getItemsSyntax(),
                                 ComponentSerializer.parse(name)
                         );
                 if (result == null) {
@@ -167,7 +167,7 @@ public class ItemStackTranslationUtils {
                     display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
                 }
             } else {
-                String result = translate(name, languagePlayer, main().getConf().getItemsSyntax());
+                String result = translate(name, languagePlayer, main().getConfig().getItemsSyntax());
                 if (result == null) {
                     display.remove("Name");
                 } else {
@@ -185,7 +185,7 @@ public class ItemStackTranslationUtils {
                     BaseComponent[] result = main().getLanguageParser()
                             .parseComponent(
                                     languagePlayer,
-                                    main().getConf().getItemsSyntax(),
+                                    main().getConfig().getItemsSyntax(),
                                     ComponentSerializer.parse(lore)
                             );
                     if (result != null) {
@@ -199,7 +199,7 @@ public class ItemStackTranslationUtils {
                     String result = translate(
                             lore,
                             languagePlayer,
-                            main().getConf().getItemsSyntax()
+                            main().getConfig().getItemsSyntax()
                     );
                     if (result != null) {
                         newLore.addAll(Arrays.asList(result.split("\n")));

@@ -103,9 +103,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     public void refreshAll() {
         if (listener == null) return;
         listener.refreshTab();
-        if (Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+        if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null)
             listener.refreshTabHeaderFooter(lastTabHeader, lastTabFooter);
-        if (Triton.get().getConf().isBossbars())
+        if (Triton.get().getConfig().isBossbars())
             for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                 listener.refreshBossbar(entry.getKey(), entry.getValue());
     }

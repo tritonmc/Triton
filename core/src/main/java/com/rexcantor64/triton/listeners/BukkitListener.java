@@ -27,7 +27,7 @@ public class BukkitListener implements Listener {
         Triton.get().getPlayerManager().registerPlayer(lp);
         if (e.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
-                    .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
+                    .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConfig().getKickSyntax()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -35,7 +35,7 @@ public class BukkitListener implements Listener {
         val lp = Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
         if (e.getResult() != PlayerLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
-                    .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConf().getKickSyntax()));
+                    .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConfig().getKickSyntax()));
     }
 
     @EventHandler

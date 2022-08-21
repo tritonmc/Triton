@@ -51,7 +51,7 @@ public class SignPacketHandler extends PacketHandler {
      * @return Whether the plugin should attempt to translate signs
      */
     private boolean areSignsDisabled() {
-        return !getMain().getConf().isSigns();
+        return !getMain().getConfig().isSigns();
     }
 
     /**

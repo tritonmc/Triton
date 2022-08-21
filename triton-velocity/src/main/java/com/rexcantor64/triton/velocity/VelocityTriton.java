@@ -1,10 +1,12 @@
 package com.rexcantor64.triton.velocity;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
 import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
 import com.rexcantor64.triton.velocity.listeners.VelocityListener;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -18,7 +20,7 @@ import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class VelocityTriton extends Triton {
+public class VelocityTriton extends Triton<VelocityLanguagePlayer> {
 
     @Getter
     private VelocityBridgeManager bridgeManager;
@@ -27,7 +29,12 @@ public class VelocityTriton extends Triton {
     private ScheduledTask configRefreshTask;
 
     public VelocityTriton(PluginLoader loader) {
+        super(new PlayerManager<>(VelocityLanguagePlayer::fromUUID));
         super.loader = loader;
+    }
+
+    public static VelocityTriton asVelocity() {
+        return (VelocityTriton) instance;
     }
 
     public VelocityPlugin getLoader() {

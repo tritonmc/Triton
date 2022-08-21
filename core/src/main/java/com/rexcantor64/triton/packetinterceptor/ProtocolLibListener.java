@@ -208,7 +208,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         // Translate the message
         result = main.getLanguageParser().parseComponent(
                 languagePlayer,
-                ab ? main.getConf().getActionbarSyntax() : main.getConf().getChatSyntax(),
+                ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax(),
                 result);
 
         // Handle disabled line
@@ -260,7 +260,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         // Translate the message
         result = main.getLanguageParser().parseComponent(
                 languagePlayer,
-                ab ? main.getConf().getActionbarSyntax() : main.getConf().getChatSyntax(),
+                ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax(),
                 result);
 
         // Handle disabled line
@@ -273,7 +273,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isActionbars()) return;
+        if (!main.getConfig().isActionbars()) return;
 
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
         BaseComponent[] result = null;
@@ -300,7 +300,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         // Translate the message
         result = main.getLanguageParser().parseComponent(
                 languagePlayer,
-                main.getConf().getActionbarSyntax(),
+                main.getConfig().getActionbarSyntax(),
                 result);
 
         // Handle disabled line
@@ -314,12 +314,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isTitles()) return;
+        if (!main.getConfig().isTitles()) return;
 
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         if (msg == null) return;
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()));
+                main.getConfig().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()));
         if (result == null) {
             packet.setCancelled(true);
             return;
@@ -329,7 +329,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isTab()) return;
+        if (!main.getConfig().isTab()) return;
         StructureModifier<?> adventureModifier =
                 ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
@@ -361,7 +361,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
+                main.getConfig().getTabSyntax(), ComponentSerializer.parse(headerJson));
         if (resultHeader == null)
             resultHeader = new BaseComponent[]{new TextComponent("")};
         else if (resultHeader.length == 1 && resultHeader[0] instanceof TextComponent) {
@@ -375,7 +375,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         packet.getPacket().getChatComponents().writeSafely(0, header);
 
         BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
+                main.getConfig().getTabSyntax(), ComponentSerializer.parse(footerJson));
         if (resultFooter == null)
             resultFooter = new BaseComponent[]{new TextComponent("")};
         footer = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultFooter));
@@ -385,11 +385,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isGuis()) return;
+        if (!main.getConfig().isGuis()) return;
 
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer
+                .parseComponent(languagePlayer, main.getConfig().getGuiSyntax(), ComponentSerializer
                         .parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
@@ -398,11 +398,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isKick()) return;
+        if (!main.getConfig().isKick()) return;
 
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
+                main.getConfig().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
         msg.setJson(ComponentSerializer.toString(result));
@@ -410,9 +410,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isItems()) return;
+        if (!main.getConfig().isItems()) return;
 
-        if (!main.getConf().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
+        if (!main.getConfig().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
             return;
 
         List<ItemStack> items = getMCVersion() <= 10 ?
@@ -429,9 +429,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleSetSlot(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isItems()) return;
+        if (!main.getConfig().isItems()) return;
 
-        if (!main.getConf().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
+        if (!main.getConfig().isInventoryItems() && isPlayerInventoryOpen(packet.getPlayer()))
             return;
 
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
@@ -441,7 +441,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @SneakyThrows
     private void handleBoss(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isBossbars()) return;
+        if (!main.getConfig().isBossbars()) return;
 
         val uuid = packet.getPacket().getUUIDs().readSafely(0);
         WrappedChatComponent bossbar;
@@ -474,7 +474,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         try {
             languagePlayer.setBossbar(uuid, bossbar.getJson());
             BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                    main.getConf().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
+                    main.getConfig().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
             if (result == null)
                 result = new BaseComponent[]{new TranslatableComponent("")};
             bossbar.setJson(ComponentSerializer.toString(result));
@@ -493,7 +493,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     @SuppressWarnings({"unchecked"})
     private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isItems()) return;
+        if (!main.getConfig().isItems()) return;
 
         try {
             ArrayList<?> recipes = (ArrayList<?>) packet.getPacket()
@@ -525,7 +525,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleScoreboardTeam(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isScoreboards()) return;
+        if (!main.getConfig().isScoreboards()) return;
 
         val teamName = packet.getPacket().getStrings().readSafely(0);
         val mode = packet.getPacket().getIntegers().readSafely(0);
@@ -573,7 +573,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         int i = 0;
         for (WrappedChatComponent component : Arrays.asList(displayName, prefix, suffix)) {
             BaseComponent[] result = main.getLanguageParser()
-                    .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                    .parseComponent(languagePlayer, main.getConfig().getScoreboardSyntax(), ComponentSerializer
                             .parse(component.getJson()));
             if (result == null) result = new BaseComponent[]{new TextComponent("")};
             component.setJson(ComponentSerializer.toString(result));
@@ -582,7 +582,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     }
 
     private void handleScoreboardObjective(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (!main.getConf().isScoreboards()) return;
+        if (!main.getConfig().isScoreboards()) return;
 
         val objectiveName = packet.getPacket().getStrings().readSafely(0);
         val mode = packet.getPacket().getIntegers().readSafely(0);
@@ -599,7 +599,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
 
         BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                .parseComponent(languagePlayer, main.getConfig().getScoreboardSyntax(), ComponentSerializer
                         .parse(displayName.getJson()));
         if (result == null) result = new BaseComponent[]{new TextComponent("")};
         displayName.setJson(ComponentSerializer.toString(result));

@@ -138,9 +138,9 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
             refreshSigns();
             player.updateInventory();
             getInterceptor().ifPresent((interceptor) -> {
-                if (Triton.get().getConf().isTab() && lastTabHeader != null && lastTabFooter != null)
+                if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null)
                     interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-                if (Triton.get().getConf().isBossbars())
+                if (Triton.get().getConfig().isBossbars())
                     for (Map.Entry<UUID, String> entry : bossBars.entrySet())
                         interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
                 if (Triton.get().getConfig().isScoreboards())
@@ -151,13 +151,13 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     private void refreshSigns() {
-        if (!Triton.get().getConf().isSigns())
+        if (!Triton.get().getConfig().isSigns())
             return;
         getInterceptor().ifPresent(interceptor -> interceptor.refreshSigns(this));
     }
 
     private void refreshEntities() {
-        if (Triton.get().getConf().getHolograms().size() == 0 && !Triton.get().getConf().isHologramsAll())
+        if (Triton.get().getConfig().getHolograms().size() == 0 && !Triton.get().getConfig().isHologramsAll())
             return;
         getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
     }
@@ -186,7 +186,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                         .setLanguage(null, player.getAddress().getAddress().getHostAddress(), lang);
             }
         });
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
+        if (Triton.get().getConfig().isRunLanguageCommandsOnLogin())
             executeCommands();
     }
 
