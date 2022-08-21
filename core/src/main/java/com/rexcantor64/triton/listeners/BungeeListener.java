@@ -27,13 +27,13 @@ public class BungeeListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
+        BungeeLanguagePlayer lp = Triton.asBungee().getPlayerManager()
                 .get(event.getPlayer().getUniqueId());
         Triton.get().getLogger().logTrace("Player %1 connected to a new server", lp);
 
         Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
 
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {
+        if (Triton.get().getConfig().isRunLanguageCommandsOnLogin()) {
             lp.executeCommands(event.getServer());
         }
     }
@@ -45,7 +45,7 @@ public class BungeeListener implements Listener {
         event.registerIntent(plugin);
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
-            Triton.get().getPlayerManager().registerPlayer(lp);
+            Triton.asBungee().getPlayerManager().registerPlayer(lp);
             BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
             event.completeIntent(plugin);
         });
@@ -75,7 +75,7 @@ public class BungeeListener implements Listener {
     public void onMotd(ProxyPingEvent event) {
         Plugin plugin = Triton.asBungee().getLoader();
 
-        if (!Triton.get().getConf().isMotd())
+        if (!Triton.get().getConfig().isMotd())
             return;
 
         event.registerIntent(plugin);
@@ -84,7 +84,7 @@ public class BungeeListener implements Listener {
             val ipAddress = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
             val lang = Triton.get().getStorage().getLanguageFromIp(ipAddress).getName();
             Triton.get().getLogger().logTrace("Translating MOTD in language '%1' for IP address '%2'", lang, ipAddress);
-            val syntax = Triton.get().getConf().getMotdSyntax();
+            val syntax = Triton.get().getConfig().getMotdSyntax();
 
             val players = event.getResponse().getPlayers();
             if (players.getSample() != null) {

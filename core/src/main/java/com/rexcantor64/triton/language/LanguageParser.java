@@ -116,8 +116,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             StringBuilder builder = new StringBuilder();
             builder.append(input, 0, i[0]);
             String placeholder = input.substring(i[2], i[3]);
-            if (!Triton.get().getConf().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
-                    .equals(Triton.get().getConf().getDisabledLine()))
+            if (!Triton.get().getConfig().getDisabledLine().isEmpty() && ChatColor.stripColor(placeholder)
+                    .equals(Triton.get().getConfig().getDisabledLine()))
                 return null;
             Integer[] argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
@@ -207,8 +207,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             val argsIndex = getPatternIndex(placeholder, syntax.getArgs());
             if (argsIndex == null) {
                 val code = AdvancedComponent.stripFormatting(placeholder);
-                if (!Triton.get().getConf().getDisabledLine().isEmpty() &&
-                        code.equals(Triton.get().getConf().getDisabledLine()))
+                if (!Triton.get().getConfig().getDisabledLine().isEmpty() &&
+                        code.equals(Triton.get().getConfig().getDisabledLine()))
                     return null;
                 val result = parseTritonTranslation(Triton.get().getLanguageManager().getText(language, code), language);
                 advancedComponent.inheritSpecialComponents(result);
@@ -218,8 +218,8 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
                 continue;
             }
             val code = AdvancedComponent.stripFormatting(placeholder.substring(0, argsIndex[0]));
-            if (!Triton.get().getConf().getDisabledLine().isEmpty() && code
-                    .equals(Triton.get().getConf().getDisabledLine()))
+            if (!Triton.get().getConfig().getDisabledLine().isEmpty() && code
+                    .equals(Triton.get().getConfig().getDisabledLine()))
                 return null;
             val args = placeholder.substring(argsIndex[2], argsIndex[3]);
             val argIndexList = getPatternIndexArray(args, syntax.getArg());

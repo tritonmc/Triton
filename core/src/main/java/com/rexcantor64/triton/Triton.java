@@ -1,5 +1,6 @@
 package com.rexcantor64.triton;
 
+import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.MessagesConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
@@ -12,6 +13,7 @@ import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
+import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
@@ -22,17 +24,17 @@ import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    static Triton instance;
-    PluginLoader loader;
+    protected static Triton<?, ?> instance;
+    protected PluginLoader loader;
     GuiManager guiManager;
     // File-related variables
     private File translationsFolder;
@@ -44,27 +46,37 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     private LanguageManager languageManager;
     private LanguageParser languageParser;
     private TwinManager twinManager;
-    private PlayerManager playerManager;
+    protected final PlayerManager<P> playerManager;
+    protected final B bridgeManager;
     private Storage storage;
     private TritonLogger logger;
 
+    protected Triton(PlayerManager<P> playerManager, B bridgeManager) {
+        this.playerManager = playerManager;
+        this.bridgeManager = bridgeManager;
+    }
+
+    public static Platform platform() {
+        return instance.getLoader().getPlatform();
+    }
+
     public static boolean isBungee() {
-        return instance instanceof BungeeMLP;
+        return platform() == Platform.BUNGEE;
     }
 
     public static boolean isVelocity() {
-        return instance instanceof VelocityMLP;
+        return platform() == Platform.VELOCITY;
     }
 
     public static boolean isProxy() {
-        return isBungee() || isVelocity();
+        return platform().isProxy();
     }
 
     public static boolean isSpigot() {
-        return instance instanceof SpigotMLP;
+        return platform() == Platform.SPIGOT;
     }
 
-    public static Triton get() {
+    public static Triton<?, ?> get() {
         return instance;
     }
 
@@ -76,18 +88,13 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
         return (BungeeMLP) instance;
     }
 
-    public static VelocityMLP asVelocity() {
-        return (VelocityMLP) instance;
-    }
-
-    void onEnable() {
+    protected void onEnable() {
         translationsFolder = new File(getDataFolder(), "translations");
 
         logger = loader.getTritonLogger();
 
         config = new MainConfig(this);
         languageManager = new LanguageManager();
-        playerManager = new PlayerManager();
         messagesConfig = new MessagesConfig();
 
         LanguageMigration.migrate();
@@ -116,17 +123,13 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public Configuration loadYAML(String fileName, String internalFileName) {
         File f = FileUtils.getResource(fileName + ".yml", internalFileName + ".yml");
         try {
-            val stream = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
+            val stream = new InputStreamReader(Files.newInputStream(f.toPath()), StandardCharsets.UTF_8);
             return ConfigurationProvider.getProvider(YamlConfiguration.class).load(stream);
         } catch (Exception e) {
             logger.logError(e, "Failed to load %1.yml.", fileName);
             logger.logError("You'll likely receive more errors on console until the next restart.");
         }
         return null;
-    }
-
-    public MainConfig getConf() {
-        return config;
     }
 
     public abstract String getVersion();

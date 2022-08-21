@@ -60,9 +60,9 @@ public class LocalStorage extends Storage {
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
         String lang = languageMap.get(lp.getUUID().toString());
-        if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
+        if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
                 (lang == null
-                        || (Triton.get().getConf().isAlwaysCheckClientLocale())))
+                        || (Triton.get().getConfig().isAlwaysCheckClientLocale())))
             lp.waitForClientLocale();
         return Triton.get().getLanguageManager().getLanguageByName(lang, true);
     }
@@ -82,7 +82,7 @@ public class LocalStorage extends Storage {
                     changed = true;
                 }
             }
-            if (ip != null && Triton.get().getConf().isMotd()) {
+            if (ip != null && Triton.get().getConfig().isMotd()) {
                 String formattedIp = ip.replace(".", "-");
                 if (!newLanguage.getName().equals(languageMap.get(formattedIp))) {
                     languageMap.put(formattedIp, newLanguage.getName());
@@ -117,7 +117,7 @@ public class LocalStorage extends Storage {
     public boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections) {
 
         // Use translations.cache.json
-        if (Triton.get().getConf().isBungeecord() && Triton.isSpigot()) {
+        if (Triton.get().getConfig().isBungeecord() && Triton.isSpigot()) {
             Triton.get().getLogger().logDebug("Saving translations to cache since bungeecord mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
@@ -199,7 +199,7 @@ public class LocalStorage extends Storage {
         val collections = new ConcurrentHashMap<String, Collection>();
 
         // Use translations.cache.json
-        if (Triton.get().getConf().isBungeecord() && Triton.isSpigot()) {
+        if (Triton.get().getConfig().isBungeecord() && Triton.isSpigot()) {
             Triton.get().getLogger().logDebug("Loading translations from cache since bungeecord mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");

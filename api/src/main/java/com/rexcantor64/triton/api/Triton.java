@@ -15,15 +15,18 @@ public interface Triton {
 
     /**
      * Get the {@link TritonConfig config}.
+     * Alias of {@link Triton#getConfig()}
      *
      * @return The {@link TritonConfig config}.
      * @since 1.0.0
+     * @deprecated Use {@link Triton#getConfig()} instead.
      */
-    TritonConfig getConf();
+    default TritonConfig getConf() {
+        return getConfig();
+    }
 
     /**
      * Get the {@link TritonConfig config}.
-     * Alias of {@link Triton#getConf()}
      *
      * @return The {@link TritonConfig config}.
      * @since 3.0.0

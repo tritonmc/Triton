@@ -59,7 +59,7 @@ public class AdvancementsPacketHandler extends PacketHandler {
      * @return Whether the plugin should attempt to translate advancements
      */
     private boolean areAdvancementsDisabled() {
-        return !getMain().getConf().isAdvancements();
+        return !getMain().getConfig().isAdvancements();
     }
 
     /**
@@ -83,8 +83,8 @@ public class AdvancementsPacketHandler extends PacketHandler {
             val originalTitle = ComponentSerializer.parse(advancementDisplay.getTitle().getJson());
             val originalDescription = ComponentSerializer.parse(advancementDisplay.getDescription().getJson());
 
-            val translatedTitle = getLanguageParser().parseComponent(languagePlayer, getMain().getConf().getAdvancementsSyntax(), originalTitle);
-            val translatedDescription = getLanguageParser().parseComponent(languagePlayer, getMain().getConf().getAdvancementsSyntax(), originalDescription);
+            val translatedTitle = getLanguageParser().parseComponent(languagePlayer, getMain().getConfig().getAdvancementsSyntax(), originalTitle);
+            val translatedDescription = getLanguageParser().parseComponent(languagePlayer, getMain().getConfig().getAdvancementsSyntax(), originalDescription);
 
             advancementDisplay.setTitle(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedTitle)));
             advancementDisplay.setDescription(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedDescription)));

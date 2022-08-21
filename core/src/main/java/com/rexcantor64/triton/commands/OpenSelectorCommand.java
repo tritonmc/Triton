@@ -3,6 +3,7 @@ package com.rexcantor64.triton.commands;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.plugin.Platform;
 import lombok.val;
 
 import java.util.Collections;
@@ -15,8 +16,9 @@ public class OpenSelectorCommand implements Command {
         val sender = event.getSender();
         val uuid = sender.getUUID();
 
-        if (event.getEnvironment() != CommandEvent.Environment.SPIGOT && uuid != null)
+        if (event.getPlatform() != Platform.SPIGOT && uuid != null) {
             return false;
+        }
 
         sender.assertPermission("triton.openselector", "multilanguageplugin.openselector");
 

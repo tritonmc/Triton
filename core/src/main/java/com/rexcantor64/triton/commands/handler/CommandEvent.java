@@ -1,8 +1,8 @@
 package com.rexcantor64.triton.commands.handler;
 
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.plugin.Platform;
 import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.StringJoiner;
@@ -13,7 +13,6 @@ public class CommandEvent {
     private final String subCommand;
     private final String[] args;
     private final String label;
-    private final Environment environment;
 
     /**
      * Join the sub command with the arguments,
@@ -45,12 +44,8 @@ public class CommandEvent {
         return String.join(" ", this.args);
     }
 
-    @RequiredArgsConstructor
-    @Getter
-    public enum Environment {
-        SPIGOT(false), BUNGEE(true), VELOCITY(true);
-
-        private final boolean proxy;
+    public Platform getPlatform() {
+        return Triton.platform();
     }
 
 }

@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.plugin.Platform;
 import com.velocitypowered.api.proxy.Player;
 import lombok.val;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -55,7 +56,7 @@ public class SetLanguageCommand implements Command {
         if (Triton.get().getPlayerManager().hasPlayer(target))
             Triton.get().getPlayerManager().get(target).setLang(lang);
         else {
-            if (event.getEnvironment() == CommandEvent.Environment.SPIGOT && Triton.get().getConfig().isBungeecord()) {
+            if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
                 sender.sendMessage("Changing the language of offline players must be done through the proxy " +
                         "console.");
                 return true;
@@ -86,11 +87,13 @@ public class SetLanguageCommand implements Command {
                         .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partialName))
                         .collect(Collectors.toList());
             } else if (Triton.isVelocity()) {
+                /* FIXME
                 val partialName = event.getArgs()[1].toLowerCase(Locale.ROOT);
                 return Triton.asVelocity().getLoader().getServer().getAllPlayers().stream()
                         .map(Player::getUsername)
                         .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partialName))
                         .collect(Collectors.toList());
+                 */
             }
         }
 

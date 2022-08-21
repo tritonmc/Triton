@@ -1,11 +1,14 @@
-package com.rexcantor64.triton;
+package com.rexcantor64.triton.velocity;
 
-import com.rexcantor64.triton.bridge.VelocityBridgeManager;
-import com.rexcantor64.triton.commands.handler.VelocityCommandHandler;
-import com.rexcantor64.triton.listeners.VelocityListener;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import com.rexcantor64.triton.plugin.VelocityPlugin;
 import com.rexcantor64.triton.storage.LocalStorage;
+import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
+import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
+import com.rexcantor64.triton.velocity.listeners.VelocityListener;
+import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
@@ -17,16 +20,19 @@ import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class VelocityMLP extends Triton {
+public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager> {
 
-    @Getter
-    private VelocityBridgeManager bridgeManager;
     @Getter
     private ChannelIdentifier bridgeChannelIdentifier;
     private ScheduledTask configRefreshTask;
 
-    public VelocityMLP(PluginLoader loader) {
+    public VelocityTriton(PluginLoader loader) {
+        super(new PlayerManager<>(VelocityLanguagePlayer::fromUUID), new VelocityBridgeManager());
         super.loader = loader;
+    }
+
+    public static VelocityTriton asVelocity() {
+        return (VelocityTriton) instance;
     }
 
     public VelocityPlugin getLoader() {
@@ -38,7 +44,6 @@ public class VelocityMLP extends Triton {
         instance = this;
         super.onEnable();
 
-        this.bridgeManager = new VelocityBridgeManager();
         getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
         getLoader().getServer().getEventManager().register(getLoader(), bridgeManager);
 
@@ -65,7 +70,7 @@ public class VelocityMLP extends Triton {
     @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
-        if (getConf().getConfigAutoRefresh() <= 0) return;
+        if (getConfig().getConfigAutoRefresh() <= 0) return;
         configRefreshTask = getLoader().getServer().getScheduler().buildTask(getLoader(), this::reload)
                 .delay(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
     }

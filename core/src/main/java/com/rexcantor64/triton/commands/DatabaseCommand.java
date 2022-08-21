@@ -3,6 +3,7 @@ package com.rexcantor64.triton.commands;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
 
@@ -19,7 +20,7 @@ public class DatabaseCommand implements Command {
 
         sender.assertPermission("triton.database");
 
-        if (event.getEnvironment() == CommandEvent.Environment.SPIGOT && Triton.get().getConfig().isBungeecord()) {
+        if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
             sender.sendMessageFormatted("error.not-available-on-spigot");
             return true;
         }
@@ -49,10 +50,9 @@ public class DatabaseCommand implements Command {
                     Triton.get().getStorage().setCollections(collections);
 
                     Triton.get().getLanguageManager().setup();
-                    if (Triton.isBungee())
-                        Triton.asBungee().getBridgeManager().sendConfigToEveryone();
-                    if (Triton.isVelocity())
-                        Triton.asVelocity().getBridgeManager().sendConfigToEveryone();
+                    if (Triton.isProxy()) {
+                        Triton.get().getBridgeManager().sendConfigToEveryone();
+                    }
                     Triton.get().refreshPlayers();
 
                     sender.sendMessageFormatted("success.database");
