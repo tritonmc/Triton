@@ -28,15 +28,15 @@ public abstract class CommandHandler {
     }
 
     public void handleCommand(CommandEvent event) {
-        if (event.getLabel().equalsIgnoreCase("twin"))
+        if (event.getLabel().equalsIgnoreCase("twin")) {
             event = new CommandEvent(event.getSender(),
                     "twin",
                     event.getSubCommand() == null ?
                             new String[0] :
                             mergeSubcommandWithArgs(event.getSubCommand(), event.getArgs()),
-                    "twin",
-                    event.getPlatform()
+                    "twin"
             );
+        }
 
         try {
             // No args given

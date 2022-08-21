@@ -30,8 +30,7 @@ public class VelocityCommandHandler extends CommandHandler implements SimpleComm
                 new VelocitySender(invocation.source()),
                 subCommand,
                 subArgs,
-                invocation.alias(),
-                Platform.VELOCITY
+                invocation.alias()
         );
     }
 }

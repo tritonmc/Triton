@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.commands.handler;
 
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.plugin.Platform;
 import lombok.Data;
 import lombok.Getter;
@@ -14,7 +15,6 @@ public class CommandEvent {
     private final String subCommand;
     private final String[] args;
     private final String label;
-    private final Platform platform;
 
     /**
      * Join the sub command with the arguments,
@@ -35,6 +35,10 @@ public class CommandEvent {
             Arrays.stream(this.args).forEach(joiner::add);
         }
         return joiner.toString();
+    }
+
+    public Platform getPlatform() {
+        return Triton.platform();
     }
 
 }
