@@ -3,6 +3,7 @@ package com.rexcantor64.triton.velocity.plugin;
 import com.google.inject.Inject;
 import com.rexcantor64.triton.logger.SLF4JLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
+import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.velocity.VelocityTriton;
 import com.velocitypowered.api.event.Subscribe;
@@ -40,8 +41,8 @@ public class VelocityPlugin implements PluginLoader {
     }
 
     @Override
-    public PluginType getType() {
-        return PluginType.VELOCITY;
+    public Platform getPlatform() {
+        return Platform.VELOCITY;
     }
 
     @Override

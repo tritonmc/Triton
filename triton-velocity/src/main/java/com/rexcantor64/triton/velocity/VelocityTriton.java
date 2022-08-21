@@ -20,16 +20,14 @@ import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class VelocityTriton extends Triton<VelocityLanguagePlayer> {
+public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager> {
 
-    @Getter
-    private VelocityBridgeManager bridgeManager;
     @Getter
     private ChannelIdentifier bridgeChannelIdentifier;
     private ScheduledTask configRefreshTask;
 
     public VelocityTriton(PluginLoader loader) {
-        super(new PlayerManager<>(VelocityLanguagePlayer::fromUUID));
+        super(new PlayerManager<>(VelocityLanguagePlayer::fromUUID), new VelocityBridgeManager());
         super.loader = loader;
     }
 
@@ -46,7 +44,6 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer> {
         instance = this;
         super.onEnable();
 
-        this.bridgeManager = new VelocityBridgeManager();
         getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
         getLoader().getServer().getEventManager().register(getLoader(), bridgeManager);
 

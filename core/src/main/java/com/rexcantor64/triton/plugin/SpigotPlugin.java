@@ -5,6 +5,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.logger.JavaLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.terminal.Log4jInjector;
+import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.InputStream;
@@ -25,8 +26,8 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
     }
 
     @Override
-    public PluginType getType() {
-        return PluginType.SPIGOT;
+    public Platform getPlatform() {
+        return Platform.SPIGOT;
     }
 
     @Override

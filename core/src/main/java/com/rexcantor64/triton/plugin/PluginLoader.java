@@ -6,14 +6,10 @@ import java.io.InputStream;
 
 public interface PluginLoader {
 
-    PluginType getType();
+    Platform getPlatform();
 
     TritonLogger getTritonLogger();
 
     InputStream getResourceAsStream(String fileName);
-
-    enum PluginType {
-        SPIGOT, BUNGEE, VELOCITY
-    }
 
 }

@@ -29,14 +29,14 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class BungeeMLP extends Triton<BungeeLanguagePlayer> {
+public class BungeeMLP extends Triton<BungeeLanguagePlayer, BungeeBridgeManager> {
 
     @Getter
     private BungeeBridgeManager bridgeManager;
     private ScheduledTask configRefreshTask;
 
     public BungeeMLP(PluginLoader loader) {
-        super(new PlayerManager<>(BungeeLanguagePlayer::new));
+        super(new PlayerManager<>(BungeeLanguagePlayer::new), new BungeeBridgeManager());
         super.loader = loader;
     }
 

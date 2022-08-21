@@ -1,5 +1,6 @@
 package com.rexcantor64.triton;
 
+import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.MessagesConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
@@ -12,6 +13,7 @@ import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
+import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
@@ -22,17 +24,16 @@ import lombok.Getter;
 import lombok.val;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton<P extends LanguagePlayer> implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    protected static Triton instance;
+    protected static Triton<?, ?> instance;
     protected PluginLoader loader;
     GuiManager guiManager;
     // File-related variables
@@ -46,34 +47,36 @@ public abstract class Triton<P extends LanguagePlayer> implements com.rexcantor6
     private LanguageParser languageParser;
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
+    protected final B bridgeManager;
     private Storage storage;
     private TritonLogger logger;
 
-    protected Triton(PlayerManager<P> playerManager) {
+    protected Triton(PlayerManager<P> playerManager, B bridgeManager) {
         this.playerManager = playerManager;
+        this.bridgeManager = bridgeManager;
     }
 
-    public static PluginLoader.PluginType type() {
-        return instance.getLoader().getType();
+    public static Platform type() {
+        return instance.getLoader().getPlatform();
     }
 
     public static boolean isBungee() {
-        return type() == PluginLoader.PluginType.BUNGEE;
+        return type() == Platform.BUNGEE;
     }
 
     public static boolean isVelocity() {
-        return type() == PluginLoader.PluginType.VELOCITY;
+        return type() == Platform.VELOCITY;
     }
 
     public static boolean isProxy() {
-        return isBungee() || isVelocity();
+        return type().isProxy();
     }
 
     public static boolean isSpigot() {
-        return type() == PluginLoader.PluginType.SPIGOT;
+        return type() == Platform.SPIGOT;
     }
 
-    public static Triton get() {
+    public static Triton<?, ?> get() {
         return instance;
     }
 

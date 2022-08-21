@@ -38,14 +38,13 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class SpigotMLP extends Triton<SpigotLanguagePlayer> {
+public class SpigotMLP extends Triton<SpigotLanguagePlayer, SpigotBridgeManager> {
 
     @Getter
     private final short mcVersion;
     @Getter
     private final short minorMcVersion;
     private ProtocolLibListener protocolLibListener;
-    private SpigotBridgeManager bridgeManager;
     @Getter
     private MaterialWrapperManager wrapperManager;
     @Getter
@@ -55,7 +54,7 @@ public class SpigotMLP extends Triton<SpigotLanguagePlayer> {
     private int refreshTaskId = -1;
 
     public SpigotMLP(PluginLoader loader) {
-        super(new PlayerManager<>(SpigotLanguagePlayer::new));
+        super(new PlayerManager<>(SpigotLanguagePlayer::new), new SpigotBridgeManager());
         val versionSplit = Bukkit.getServer().getClass().getPackage().getName().split("_");
         mcVersion = Short.parseShort(versionSplit[1]);
         minorMcVersion = Short.parseShort(versionSplit[2].substring(1));
@@ -101,10 +100,9 @@ public class SpigotMLP extends Triton<SpigotLanguagePlayer> {
         }
 
         if (getConfig().isBungeecord()) {
-            getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +
-                    ":main");
-            getLoader().getServer().getMessenger().registerIncomingPluginChannel(getLoader(), "triton" +
-                    ":main", bridgeManager = new SpigotBridgeManager());
+            val messenger = getLoader().getServer().getMessenger();
+            messenger.registerOutgoingPluginChannel(getLoader(), "triton:main");
+            messenger.registerIncomingPluginChannel(getLoader(), "triton:main", getBridgeManager());
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

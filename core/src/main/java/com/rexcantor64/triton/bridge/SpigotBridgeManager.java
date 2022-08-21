@@ -11,6 +11,7 @@ import com.rexcantor64.triton.commands.handler.SpigotSender;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
+import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
 import lombok.var;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpigotBridgeManager implements PluginMessageListener {
+public class SpigotBridgeManager implements PluginMessageListener, BridgeManager {
 
     private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -199,8 +200,13 @@ public class SpigotBridgeManager implements PluginMessageListener {
                 Triton.get().getLogger().logTrace("Received forwarded command '%1' with args %2 for player %3",
                         subCommand, Arrays.toString(args), uuid);
 
-                val commandEvent = new CommandEvent(new SpigotSender(p), subCommand, args, "triton",
-                        CommandEvent.Environment.SPIGOT);
+                val commandEvent = new CommandEvent(
+                        new SpigotSender(p),
+                        subCommand,
+                        args,
+                        "triton",
+                        Platform.SPIGOT
+                );
                 Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
@@ -233,4 +239,13 @@ public class SpigotBridgeManager implements PluginMessageListener {
         p.sendPluginMessage(Triton.asSpigot().getLoader(), "triton:main", out.toByteArray());
     }
 
+    @Override
+    public void forwardCommand(CommandEvent commandEvent) {
+        throw new UnsupportedOperationException("Cannot forward command on non-proxy platform");
+    }
+
+    @Override
+    public void sendConfigToEveryone() {
+        throw new UnsupportedOperationException("Cannot send config to everyone on non-proxy platform");
+    }
 }

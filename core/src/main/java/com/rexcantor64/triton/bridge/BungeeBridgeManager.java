@@ -17,7 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.UUID;
 
-public class BungeeBridgeManager implements Listener {
+public class BungeeBridgeManager implements Listener, BridgeManager {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {

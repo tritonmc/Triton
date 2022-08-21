@@ -15,11 +15,11 @@ public class ReloadCommand implements Command {
     @Override
     public boolean handleCommand(CommandEvent event) {
         val sender = event.getSender();
-        val isBungee = event.getEnvironment() == CommandEvent.Environment.BUNGEE;
+        val isProxy = event.getPlatform().isProxy();
 
         sender.assertPermission("triton.reload", "multilanguageplugin.reload");
 
-        if (isBungee) {
+        if (isProxy) {
             val action = event.getArgs().length >= 1 && sender.getUUID() != null ? event.getArgs()[0] : "bungee";
 
             switch (action) {
@@ -41,7 +41,7 @@ public class ReloadCommand implements Command {
         }
 
         Triton.get().reload();
-        sender.sendMessageFormatted(isBungee ? "success.bungee-reload" : "success.reload");
+        sender.sendMessageFormatted(isProxy ? "success.bungee-reload" : "success.reload");
         return true;
     }
 

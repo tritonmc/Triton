@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.commands.handler;
 
+import com.rexcantor64.triton.plugin.Platform;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,12 @@ public class CommandEvent {
     private final String subCommand;
     private final String[] args;
     private final String label;
-    private final Environment environment;
+    private final Platform platform;
 
     /**
      * Join the sub command with the arguments,
      * in order to recreate the original sub command typed by the player.
-     *
+     * <p>
      * If the player typed "/triton setlanguage en_GB Player1",
      * this will return "setlanguage en_GB Player1"
      *
@@ -34,14 +35,6 @@ public class CommandEvent {
             Arrays.stream(this.args).forEach(joiner::add);
         }
         return joiner.toString();
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    public enum Environment {
-        SPIGOT(false), BUNGEE(true), VELOCITY(true);
-
-        private final boolean proxy;
     }
 
 }

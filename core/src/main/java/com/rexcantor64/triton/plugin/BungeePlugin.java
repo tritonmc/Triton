@@ -7,6 +7,7 @@ import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import net.md_5.bungee.api.plugin.Plugin;
+import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 
 import java.util.logging.Level;
 
@@ -41,8 +42,8 @@ public class BungeePlugin extends Plugin implements PluginLoader {
     }
 
     @Override
-    public PluginType getType() {
-        return PluginType.BUNGEE;
+    public Platform getPlatform() {
+        return Platform.BUNGEE;
     }
 
     @Override

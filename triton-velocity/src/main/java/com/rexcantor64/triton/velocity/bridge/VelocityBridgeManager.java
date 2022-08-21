@@ -1,10 +1,12 @@
 package com.rexcantor64.triton.velocity.bridge;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.bridge.BridgeSerializer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.VelocityTriton;
+import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.Player;
@@ -13,14 +15,18 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.NonNull;
 import lombok.val;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.UUID;
 
-public class VelocityBridgeManager {
+public class VelocityBridgeManager implements BridgeManager {
     private final Map<RegisteredServer, Queue<byte[]>> queue = new HashMap<>();
 
     @Subscribe
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getIdentifier().equals(Triton.asVelocity().getBridgeChannelIdentifier()) ||
+        if (!e.getIdentifier().equals(VelocityTriton.asVelocity().getBridgeChannelIdentifier()) ||
                 !(e.getSource() instanceof ServerConnection)) return;
 
         val in = e.dataAsDataStream();
@@ -33,7 +39,7 @@ public class VelocityBridgeManager {
                 val uuid = UUID.fromString(in.readUTF());
                 val language = in.readUTF();
 
-                val player = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(uuid);
+                val player =  VelocityTriton.asVelocity().getPlayerManager().get(uuid);
                 if (player != null)
                     Triton.get().runAsync(() -> player
                             .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true), false));
