@@ -56,24 +56,24 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         this.bridgeManager = bridgeManager;
     }
 
-    public static Platform type() {
+    public static Platform platform() {
         return instance.getLoader().getPlatform();
     }
 
     public static boolean isBungee() {
-        return type() == Platform.BUNGEE;
+        return platform() == Platform.BUNGEE;
     }
 
     public static boolean isVelocity() {
-        return type() == Platform.VELOCITY;
+        return platform() == Platform.VELOCITY;
     }
 
     public static boolean isProxy() {
-        return type().isProxy();
+        return platform().isProxy();
     }
 
     public static boolean isSpigot() {
-        return type() == Platform.SPIGOT;
+        return platform() == Platform.SPIGOT;
     }
 
     public static Triton<?, ?> get() {
