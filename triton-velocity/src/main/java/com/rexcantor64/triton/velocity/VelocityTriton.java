@@ -15,6 +15,8 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.val;
+import org.bstats.charts.SingleLineChart;
+import org.bstats.velocity.Metrics;
 
 import java.io.File;
 import java.util.UUID;
@@ -44,8 +46,14 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
         instance = this;
         super.onEnable();
 
-        getLoader().getServer().getEventManager().register(getLoader(), new VelocityListener());
-        getLoader().getServer().getEventManager().register(getLoader(), bridgeManager);
+        // bStats
+        Metrics metrics = getLoader().getMetricsFactory().make(getLoader(), 16222);
+        metrics.addCustomChart(new SingleLineChart("active_placeholders",
+                () -> this.getLanguageManager().getItemCount()));
+
+        val eventManager = getLoader().getServer().getEventManager();
+        eventManager.register(getLoader(), new VelocityListener());
+        eventManager.register(getLoader(), bridgeManager);
 
         this.bridgeChannelIdentifier = MinecraftChannelIdentifier.create("triton", "main");
         getLoader().getServer().getChannelRegistrar().register(this.bridgeChannelIdentifier);
