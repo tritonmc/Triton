@@ -1,16 +1,17 @@
-package com.rexcantor64.triton;
+package com.rexcantor64.triton.bungeecord;
 
-import com.rexcantor64.triton.bridge.BungeeBridgeManager;
-import com.rexcantor64.triton.commands.handler.BungeeCommand;
-import com.rexcantor64.triton.commands.handler.BungeeCommandHandler;
-import com.rexcantor64.triton.packetinterceptor.BungeeDecoder;
-import com.rexcantor64.triton.packetinterceptor.BungeeListener;
-import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bungeecord.bridge.BungeeBridgeManager;
+import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommand;
+import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommandHandler;
+import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeDecoder;
+import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
+import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.plugin.BungeePlugin;
+import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.player.PlayerManager;
-import com.rexcantor64.triton.plugin.BungeePlugin;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
-import com.rexcantor64.triton.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.Channel;
@@ -29,15 +30,19 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class BungeeMLP extends Triton<BungeeLanguagePlayer, BungeeBridgeManager> {
+public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManager> {
 
     @Getter
     private BungeeBridgeManager bridgeManager;
     private ScheduledTask configRefreshTask;
 
-    public BungeeMLP(PluginLoader loader) {
+    public BungeeTriton(PluginLoader loader) {
         super(new PlayerManager<>(BungeeLanguagePlayer::new), new BungeeBridgeManager());
         super.loader = loader;
+    }
+
+    public static BungeeTriton asBungee() {
+        return (BungeeTriton) instance;
     }
 
     public BungeePlugin getLoader() {
@@ -56,11 +61,11 @@ public class BungeeMLP extends Triton<BungeeLanguagePlayer, BungeeBridgeManager>
         bridgeManager = new BungeeBridgeManager();
         getBungeeCord().getPluginManager().registerListener(getLoader(), bridgeManager);
         getBungeeCord().getPluginManager()
-                .registerListener(getLoader(), new com.rexcantor64.triton.listeners.BungeeListener());
+                .registerListener(getLoader(), new com.rexcantor64.triton.bungeecord.listeners.BungeeListener());
         getBungeeCord().registerChannel("triton:main");
 
         for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
-            BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
+            BungeeLanguagePlayer lp = getPlayerManager().get(p.getUniqueId());
             injectPipeline(lp, p);
         }
 
@@ -154,12 +159,7 @@ public class BungeeMLP extends Triton<BungeeLanguagePlayer, BungeeBridgeManager>
     }
 
     @Override
-    public short getMcVersion() {
-        return 0;
-    }
-
-    @Override
-    public short getMinorMcVersion() {
-        return 0;
+    protected String getConfigFileName() {
+        return "config_bungeecord";
     }
 }

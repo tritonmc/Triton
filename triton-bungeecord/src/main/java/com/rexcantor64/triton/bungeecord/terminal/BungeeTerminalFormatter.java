@@ -1,4 +1,4 @@
-package com.rexcantor64.triton.terminal;
+package com.rexcantor64.triton.bungeecord.terminal;
 
 import com.rexcantor64.triton.Triton;
 import net.md_5.bungee.log.ConciseFormatter;

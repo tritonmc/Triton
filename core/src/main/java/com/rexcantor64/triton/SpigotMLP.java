@@ -217,6 +217,11 @@ public class SpigotMLP extends Triton<SpigotLanguagePlayer, SpigotBridgeManager>
     }
 
     @Override
+    protected String getConfigFileName() {
+        return "config";
+    }
+
+    @Override
     public void runAsync(Runnable runnable) {
         Bukkit.getScheduler().runTaskAsynchronously(getLoader(), runnable);
     }

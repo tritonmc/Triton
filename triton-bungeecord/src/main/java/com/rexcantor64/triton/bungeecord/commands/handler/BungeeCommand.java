@@ -1,4 +1,4 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.bungeecord.commands.handler;
 
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;

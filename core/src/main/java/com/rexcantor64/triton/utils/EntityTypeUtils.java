@@ -28,7 +28,7 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
-            if (Triton.get().getMcVersion() >= 13) {
+            if (Triton.asSpigot().getMcVersion() >= 13) {
                 calculateEntityRegistrySet();
 
                 Object type = registryGetTypeByNumericIdMethod.invoke(entityTypeRegistry, id);

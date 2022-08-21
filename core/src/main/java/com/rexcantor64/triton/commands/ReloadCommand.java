@@ -25,11 +25,11 @@ public class ReloadCommand implements Command {
             switch (action) {
                 case "server":
                 case "s":
-                    Triton.asBungee().getBridgeManager().forwardCommand(event);
+                    Triton.get().getBridgeManager().forwardCommand(event);
                     return true;
                 case "all":
                 case "a":
-                    Triton.asBungee().getBridgeManager().forwardCommand(event);
+                    Triton.get().getBridgeManager().forwardCommand(event);
                     break;
                 case "bungee":
                 case "b":

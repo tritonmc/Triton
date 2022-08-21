@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.language;
 
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.banners.Banner;
 import lombok.Data;
 import lombok.ToString;
@@ -30,15 +31,19 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
         if (fallbackLanguages != null) {
             this.fallbackLanguages = Collections.unmodifiableList(fallbackLanguages);
         }
-        if (cmds != null)
-            for (String cmd : cmds)
+        if (cmds != null) {
+            for (String cmd : cmds) {
                 this.cmds.add(ExecutableCommand.parse(cmd));
+            }
+        }
         computeProperties();
     }
 
     public void computeProperties() {
         this.displayName = this.rawDisplayName;
-        this.banner = new Banner(flagCode, this.displayName);
+        if (Triton.isSpigot()) {
+            this.banner = new Banner(flagCode, this.displayName);
+        }
         // If loading with Gson, this might be set to null
         if (fallbackLanguages == null) {
             fallbackLanguages = Collections.emptyList();
@@ -55,7 +60,7 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, minecraftCodes, rawDisplayName, displayName, banner, flagCode, cmds);
+        return Objects.hash(name, minecraftCodes, rawDisplayName, flagCode, cmds);
     }
 
     @Override

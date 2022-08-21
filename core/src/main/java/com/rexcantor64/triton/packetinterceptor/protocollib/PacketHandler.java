@@ -38,7 +38,7 @@ public abstract class PacketHandler {
     }
 
     protected int getMcVersion() {
-        return Triton.get().getMcVersion();
+        return Triton.asSpigot().getMcVersion();
     }
 
 
