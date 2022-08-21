@@ -2,13 +2,13 @@ package com.rexcantor64.triton.velocity;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.player.PlayerManager;
+import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
 import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
 import com.rexcantor64.triton.velocity.listeners.VelocityListener;
-import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
-import com.rexcantor64.triton.storage.LocalStorage;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
@@ -70,7 +70,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
-        if (getConf().getConfigAutoRefresh() <= 0) return;
+        if (getConfig().getConfigAutoRefresh() <= 0) return;
         configRefreshTask = getLoader().getServer().getScheduler().buildTask(getLoader(), this::reload)
                 .delay(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
     }

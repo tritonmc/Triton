@@ -27,7 +27,7 @@ public class BungeeListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(ServerConnectedEvent event) {
-        BungeeLanguagePlayer lp = (BungeeLanguagePlayer) Triton.get().getPlayerManager()
+        BungeeLanguagePlayer lp = Triton.asBungee().getPlayerManager()
                 .get(event.getPlayer().getUniqueId());
         Triton.get().getLogger().logTrace("Player %1 connected to a new server", lp);
 
@@ -45,7 +45,7 @@ public class BungeeListener implements Listener {
         event.registerIntent(plugin);
         Triton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
-            Triton.get().getPlayerManager().registerPlayer(lp);
+            Triton.asBungee().getPlayerManager().registerPlayer(lp);
             BungeeMLP.asBungee().injectPipeline(lp, event.getConnection());
             event.completeIntent(plugin);
         });

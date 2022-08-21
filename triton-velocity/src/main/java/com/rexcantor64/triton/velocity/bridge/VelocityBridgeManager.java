@@ -39,7 +39,7 @@ public class VelocityBridgeManager implements BridgeManager {
                 val uuid = UUID.fromString(in.readUTF());
                 val language = in.readUTF();
 
-                val player =  VelocityTriton.asVelocity().getPlayerManager().get(uuid);
+                val player = VelocityTriton.asVelocity().getPlayerManager().get(uuid);
                 if (player != null)
                     Triton.get().runAsync(() -> player
                             .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true), false));
@@ -92,8 +92,9 @@ public class VelocityBridgeManager implements BridgeManager {
             val languageOut = BridgeSerializer.getLanguageDataOutput();
 
             // Send language files
-            for (val info : Triton.asVelocity().getLoader().getServer().getAllServers())
+            for (val info : VelocityTriton.asVelocity().getLoader().getServer().getAllServers()) {
                 sendConfigToServer(info, languageOut);
+            }
         } catch (Exception e) {
             Triton.get().getLogger()
                     .logError(e, "Failed to send config and language items to other servers! Not everything might work " +
@@ -119,13 +120,13 @@ public class VelocityBridgeManager implements BridgeManager {
                 commandEvent.getFullSubCommand(), commandEvent.getSender().getUUID());
         val out = BridgeSerializer.buildForwardCommandData(commandEvent);
 
-        Triton.asVelocity().getLoader().getServer().getPlayer(commandEvent.getSender().getUUID())
+        VelocityTriton.asVelocity().getLoader().getServer().getPlayer(commandEvent.getSender().getUUID())
                 .flatMap(Player::getCurrentServer)
                 .ifPresent(serverConnection -> sendPluginMessage(serverConnection.getServer(), out));
     }
 
     private void sendPluginMessage(@NonNull RegisteredServer info, byte[] data) {
-        if (!info.sendPluginMessage(Triton.asVelocity().getBridgeChannelIdentifier(), data)) {
+        if (!info.sendPluginMessage(VelocityTriton.asVelocity().getBridgeChannelIdentifier(), data)) {
             queue.computeIfAbsent(info, server -> new LinkedList<>()).add(data);
         }
     }
@@ -136,7 +137,7 @@ public class VelocityBridgeManager implements BridgeManager {
         if (queue == null) return;
 
         while ((data = queue.poll()) != null) {
-            server.sendPluginMessage(Triton.asVelocity().getBridgeChannelIdentifier(), data);
+            server.sendPluginMessage(VelocityTriton.asVelocity().getBridgeChannelIdentifier(), data);
         }
     }
 }

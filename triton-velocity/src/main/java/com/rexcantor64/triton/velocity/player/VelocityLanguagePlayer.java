@@ -5,6 +5,7 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
+import com.rexcantor64.triton.velocity.VelocityTriton;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.val;
@@ -29,7 +30,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     }
 
     public static VelocityLanguagePlayer fromUUID(UUID uuid) {
-        val player = Triton.asVelocity().getLoader().getServer().getPlayer(uuid);
+        val player = VelocityTriton.asVelocity().getLoader().getServer().getPlayer(uuid);
         return player.map(VelocityLanguagePlayer::new).orElse(null);
     }
 
@@ -77,8 +78,9 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         this.language = language;
         this.waitingForClientLocale = false;
 
-        if (sendToSpigot && getParent() != null)
-            Triton.asVelocity().getBridgeManager().sendPlayerLanguage(this);
+        if (sendToSpigot && getParent() != null) {
+            VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(this);
+        }
 
         save();
         refreshAll();
@@ -114,24 +116,26 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     public void executeCommands(RegisteredServer overrideServer) {
         val currentServer = getParent().getCurrentServer();
         if (overrideServer == null && !currentServer.isPresent()) return;
-        val server = overrideServer == null ? getParent().getCurrentServer().get().getServer() : overrideServer;
+        val server = overrideServer == null ? currentServer.get().getServer() : overrideServer;
         for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
             val cmdText = cmd.getCmd().replace("%player%", getParent().getUsername())
                     .replace("%uuid%", getParent().getUniqueId().toString());
 
-            if (!cmd.isUniversal() && !cmd.getServers().contains(server.getServerInfo().getName()))
+            if (!cmd.isUniversal() && !cmd.getServers().contains(server.getServerInfo().getName())) {
                 continue;
+            }
 
-            val velocity = Triton.asVelocity().getLoader().getServer();
+            val velocity = VelocityTriton.asVelocity().getLoader().getServer();
 
-            if (cmd.getType() == ExecutableCommand.Type.SERVER)
-                Triton.asVelocity().getBridgeManager().sendExecutableCommand(cmdText, server);
-            else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
+            if (cmd.getType() == ExecutableCommand.Type.SERVER) {
+                VelocityTriton.asVelocity().getBridgeManager().sendExecutableCommand(cmdText, server);
+            } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
                 getParent().spoofChatInput("/" + cmdText);
-            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE)
+            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE) {
                 velocity.getCommandManager().executeAsync(velocity.getConsoleCommandSource(), cmdText);
-            else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
+            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER) {
                 velocity.getCommandManager().executeAsync(getParent(), cmdText);
+            }
         }
     }
 }

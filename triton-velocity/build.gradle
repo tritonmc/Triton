@@ -5,6 +5,7 @@ plugins {
 group 'com.rexcantor64.triton'
 
 dependencies {
+    compileOnly project(path: ":api")
     compileOnly project(path: ":core")
 
     compileOnly 'com.velocitypowered:velocity-api:3.1.0'
