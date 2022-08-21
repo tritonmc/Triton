@@ -12,6 +12,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
+import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
@@ -27,12 +28,14 @@ public class VelocityPlugin implements PluginLoader {
     private final ProxyServer server;
     private final TritonLogger tritonLogger;
     private final Path dataDirectory;
+    private final Metrics.Factory metricsFactory;
 
     @Inject
-    public VelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public VelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
         this.server = server;
         this.tritonLogger = new SLF4JLogger(logger);
         this.dataDirectory = dataDirectory;
+        this.metricsFactory = metricsFactory;
     }
 
     @Subscribe
