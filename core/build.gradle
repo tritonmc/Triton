@@ -1,9 +1,15 @@
 plugins {
     id 'java'
-    id "net.kyori.blossom" version "1.3.0"
+    id 'net.minecrell.plugin-yml.bukkit' version '0.5.2'
 }
 
-apply plugin: 'net.kyori.blossom'
+String pluginDescription = project.property("pluginDescription")
+String pluginWebsite = project.property("pluginWebsite")
+String pluginAuthor = project.property("pluginAuthor")
+String pluginApiVersion = project.property("pluginApiVersion")
+String pluginName = project.property("pluginName")
+
+apply plugin: 'net.minecrell.plugin-yml.bukkit'
 group 'com.rexcantor64.triton'
 
 test {
@@ -12,14 +18,12 @@ test {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-proxy:1.19-R0.1-SNAPSHOT'
-    compileOnly 'com.velocitypowered:velocity-api:3.1.0'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.1.0'
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
 
     // Adventure / MiniMessage
+    // TODO check which of these should be compileOnly or implementation
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.11.0'
+    compileOnly 'net.kyori:adventure-text-serializer-plain:4.11.0'
     implementation('net.kyori:adventure-text-minimessage:4.11.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
@@ -27,8 +31,14 @@ dependencies {
         exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
-    testImplementation 'net.kyori:adventure-api:4.11.0'
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
+
+    // md_5's chat library
+    // TODO remove this for 4.0.0, rely on Adventure instead
+    compileOnly 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
+    testImplementation 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
+
+    // Terminal translation
+    compileOnly 'org.fusesource.jansi:jansi:2.4.0'
 
     compileOnly 'me.clip:placeholderapi:2.11.1'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
@@ -38,19 +48,74 @@ dependencies {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     compileOnly 'com.google.code.gson:gson:2.9.0'
-    implementation 'org.bstats:bstats-bukkit:2.2.1'
-    implementation 'org.bstats:bstats-bungeecord:2.2.1'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
     implementation project(path: ":api")
     implementation project(path: ":spigot-legacy")
     implementation project(path: ":v1_13")
 
     // Test dependencies
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
-    testImplementation 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
+    testImplementation 'net.kyori:adventure-api:4.11.0'
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
 }
 
-blossom {
-    replaceToken '@version@', project.version
+bukkit {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    website = pluginWebsite
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
+    apiVersion = pluginApiVersion
+
+    depend = ['ProtocolLib']
+    softDepend = ['PlaceholderAPI']
+
+    commands {
+        twin {
+            description = 'Upload and download your config to/from the Triton Web INterface.'
+            usage = '/twin [code]'
+        }
+    }
+
+    permissions {
+        'triton.getflag' {
+            setDefault('OP')
+        }
+        'triton.setlanguage' {
+            setDefault('TRUE')
+        }
+        'triton.setlanguage.others' {
+            setDefault('OP')
+        }
+        'triton.openselector' {
+            setDefault('TRUE')
+        }
+        'triton.reload' {
+            setDefault('OP')
+        }
+        'triton.help' {
+            setDefault('TRUE')
+        }
+        'triton.sign' {
+            setDefault('OP')
+        }
+        'triton.database' {
+            setDefault('OP')
+        }
+        'triton.info' {
+            setDefault('TRUE')
+        }
+        'triton.loglevel' {
+            setDefault('OP')
+        }
+        'twin.upload' {
+            setDefault('OP')
+        }
+        'twin.download' {
+            setDefault('OP')
+        }
+    }
 }
