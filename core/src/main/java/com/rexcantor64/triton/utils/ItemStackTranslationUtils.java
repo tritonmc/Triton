@@ -8,6 +8,7 @@ import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
+import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.config.MainConfig;
@@ -236,8 +237,8 @@ public class ItemStackTranslationUtils {
         );
     }
 
-    private static Triton main() {
-        return Triton.get();
+    private static SpigotMLP main() {
+        return Triton.asSpigot();
     }
 
 }

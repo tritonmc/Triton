@@ -106,7 +106,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     }
 
     public void reload() {
-        configYAML = loadYAML("config", isProxy() ? "bungee_config" : "config");
+        configYAML = loadYAML("config", getConfigFileName());
         config.setup();
         logger.setLogLevel(config.getLogLevel());
         messagesConfig.setup();
@@ -140,6 +140,12 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
 
     public abstract File getDataFolder();
 
+    /**
+     * @return config filename inside the JAR without extension for the current platform
+     * @since 4.0.0
+     */
+    protected abstract String getConfigFileName();
+
     private void setupStorage() {
         if (config.getStorageType().equalsIgnoreCase("mysql")) {
             try {
@@ -163,9 +169,5 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     }
 
     public abstract UUID getPlayerUUIDFromString(String input);
-
-    public abstract short getMcVersion();
-
-    public abstract short getMinorMcVersion();
 
 }

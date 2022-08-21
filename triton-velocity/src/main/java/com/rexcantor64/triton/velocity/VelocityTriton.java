@@ -107,12 +107,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     }
 
     @Override
-    public short getMcVersion() {
-        return 0;
-    }
-
-    @Override
-    public short getMinorMcVersion() {
-        return 0;
+    protected String getConfigFileName() {
+        return "config_velocity";
     }
 }

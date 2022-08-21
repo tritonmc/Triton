@@ -154,12 +154,7 @@ public class BungeeMLP extends Triton<BungeeLanguagePlayer, BungeeBridgeManager>
     }
 
     @Override
-    public short getMcVersion() {
-        return 0;
-    }
-
-    @Override
-    public short getMinorMcVersion() {
-        return 0;
+    protected String getConfigFileName() {
+        return "bungee_config";
     }
 }
