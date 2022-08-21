@@ -6,6 +6,7 @@ import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
+import com.rexcantor64.triton.plugin.Platform;
 import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
@@ -29,8 +30,9 @@ public class SignCommand implements Command {
             return true;
         }
 
-        if (event.getEnvironment() != CommandEvent.Environment.SPIGOT)
+        if (event.getPlatform() != Platform.SPIGOT) {
             return false;
+        }
 
         sender.assertPermission("triton.sign");
 
@@ -70,7 +72,7 @@ public class SignCommand implements Command {
                 return true;
             }
 
-            if (Triton.get().getConf().isBungeecord()) {
+            if (Triton.get().getConfig().isBungeecord()) {
                 Triton.asSpigot().getBridgeManager()
                         .updateSign(block.getWorld().getName(), block.getX(), block.getY(), block
                                 .getZ(), key, Bukkit.getPlayer(sender.getUUID()));
@@ -82,7 +84,7 @@ public class SignCommand implements Command {
             }
             sender.sendMessageFormatted("success.sign-set", key);
         } else if (args[0].equalsIgnoreCase("remove")) {
-            if (Triton.get().getConf().isBungeecord()) {
+            if (Triton.get().getConfig().isBungeecord()) {
                 Triton.asSpigot().getBridgeManager()
                         .updateSign(block.getWorld().getName(), block.getX(), block.getY(), block.getZ(), null, Bukkit
                                 .getPlayer(sender.getUUID()));

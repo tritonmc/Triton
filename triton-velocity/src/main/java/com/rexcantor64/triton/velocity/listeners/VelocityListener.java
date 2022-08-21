@@ -1,7 +1,8 @@
-package com.rexcantor64.triton.listeners;
+package com.rexcantor64.triton.velocity.listeners;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.VelocityTriton;
+import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
@@ -14,25 +15,25 @@ public class VelocityListener {
 
     @Subscribe
     public void onServerConnect(ServerConnectedEvent e) {
-        val lp = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
+        val lp = VelocityTriton.asVelocity().getPlayerManager().get(e.getPlayer().getUniqueId());
 
-        Triton.asVelocity().getBridgeManager().sendPlayerLanguage(lp, e.getServer());
+        VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(lp, e.getServer());
 
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
+        if (Triton.get().getConfig().isRunLanguageCommandsOnLogin())
             lp.executeCommands(e.getServer());
     }
 
     @Subscribe
     public void afterServerConnect(ServerPostConnectEvent e) {
         if (e.getPlayer().getCurrentServer().isPresent())
-            Triton.asVelocity().getBridgeManager().executeQueue(e.getPlayer().getCurrentServer().get().getServer());
+            VelocityTriton.asVelocity().getBridgeManager().executeQueue(e.getPlayer().getCurrentServer().get().getServer());
     }
 
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerLogin(LoginEvent e) {
         val player = e.getPlayer();
         val lp = new VelocityLanguagePlayer(player);
-        Triton.get().getPlayerManager().registerPlayer(lp);
+        VelocityTriton.asVelocity().getPlayerManager().registerPlayer(lp);
     }
 
     @Subscribe

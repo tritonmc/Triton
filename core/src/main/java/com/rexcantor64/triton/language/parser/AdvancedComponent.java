@@ -60,7 +60,7 @@ public class AdvancedComponent {
                     builder.append(ChatColor.MAGIC.toString());
                 if (!onlyText) {
                     if (comp.getClickEvent() != null && !comp.getClickEvent().getValue()
-                            .endsWith("[/" + Triton.get().getConf().getChatSyntax().getLang() + "]")) {
+                            .endsWith("[/" + Triton.get().getConfig().getChatSyntax().getLang() + "]")) {
                         builder.append("\uE400");
                         builder.append(ComponentUtils.encodeClickAction(comp.getClickEvent().getAction()));
                         UUID uuid = UUID.randomUUID();

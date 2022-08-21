@@ -30,7 +30,7 @@ public class MotdPacketHandler extends PacketAdapter {
      * @return Whether the plugin should attempt to translate the MOTD
      */
     private boolean isMotdEnabled() {
-        return Triton.get().getConf().isMotd();
+        return Triton.get().getConfig().isMotd();
     }
 
     /**

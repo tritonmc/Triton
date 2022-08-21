@@ -41,7 +41,7 @@ public class TwinManager {
     public HttpResponse upload(List<String> allowedCollections, List<String> allowedLanguages) {
         try {
             val isProxy = Triton.isProxy();
-            if (!isProxy && main.getConf().isBungeecord())
+            if (!isProxy && main.getConfig().isBungeecord())
                 return null;
 
             val data = new JsonObject();
@@ -118,7 +118,7 @@ public class TwinManager {
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
+            conn.setRequestProperty("Authorization", "Triton " + main.getConfig().getTwinToken());
             val os = new DataOutputStream(conn.getOutputStream());
             os.write(encodedData.getBytes(StandardCharsets.UTF_8));
             os.flush();
@@ -153,14 +153,14 @@ public class TwinManager {
 
     public HttpResponse download(String id) {
         try {
-            if (Triton.isSpigot() && main.getConf().isBungeecord())
+            if (Triton.isSpigot() && main.getConfig().isBungeecord())
                 return null;
 
             URL u = new URL(BASE_URL + "/api/v1/get/" + id);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Triton " + main.getConf().getTwinToken());
+            conn.setRequestProperty("Authorization", "Triton " + main.getConfig().getTwinToken());
 
             int responseCode = conn.getResponseCode();
 

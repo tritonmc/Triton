@@ -28,30 +28,27 @@ public abstract class CommandHandler {
     }
 
     public void handleCommand(CommandEvent event) {
-        if (event.getLabel().equalsIgnoreCase("twin"))
+        if (event.getLabel().equalsIgnoreCase("twin")) {
             event = new CommandEvent(event.getSender(),
                     "twin",
                     event.getSubCommand() == null ?
                             new String[0] :
                             mergeSubcommandWithArgs(event.getSubCommand(), event.getArgs()),
-                    "twin",
-                    event.getEnvironment()
+                    "twin"
             );
+        }
 
         try {
             // No args given
             Command command = commands.get(event.getSubCommand() == null ? "openselector" : event.getSubCommand());
 
-            if (command == null)
+            if (command == null) {
                 command = commands.get("help");
-
-            if (!command.handleCommand(event)) {
-                if (Triton.isBungee())
-                    Triton.asBungee().getBridgeManager().forwardCommand(event);
-                if (Triton.isVelocity())
-                    Triton.asVelocity().getBridgeManager().forwardCommand(event);
             }
 
+            if (!command.handleCommand(event)) {
+                Triton.get().getBridgeManager().forwardCommand(event);
+            }
         } catch (NoPermissionException e) {
             event.getSender().sendMessageFormatted("error.no-permission", e.getPermission());
         }

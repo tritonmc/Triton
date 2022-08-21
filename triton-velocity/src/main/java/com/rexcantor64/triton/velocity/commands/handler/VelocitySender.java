@@ -1,6 +1,8 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.velocity.commands.handler;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.commands.handler.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.Sender;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;

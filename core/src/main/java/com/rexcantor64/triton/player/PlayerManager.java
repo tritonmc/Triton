@@ -1,51 +1,51 @@
 package com.rexcantor64.triton.player;
 
-import com.google.common.collect.Maps;
-import com.rexcantor64.triton.BungeeMLP;
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.VelocityMLP;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
-public class PlayerManager implements com.rexcantor64.triton.api.players.PlayerManager {
+public class PlayerManager<T extends LanguagePlayer> implements com.rexcantor64.triton.api.players.PlayerManager {
 
-    private Map<UUID, LanguagePlayer> players = Maps.newHashMap();
+    private final Map<UUID, T> players = new ConcurrentHashMap<>();
 
-    public LanguagePlayer get(UUID p) {
-        LanguagePlayer lp = players.get(p);
-        if (lp != null) return lp;
+    private final Function<UUID, T> languagePlayerSupplier;
 
-        Triton.get().getLogger().logTrace("[Player Manager] Tried to get an unregistered language player, so registering a new one for UUID %1", p);
-
-        if (Triton.get() instanceof BungeeMLP)
-            players.put(p, lp = new BungeeLanguagePlayer(p));
-        else if (Triton.get() instanceof SpigotMLP)
-            players.put(p, lp = new SpigotLanguagePlayer(p));
-        else if (Triton.get() instanceof VelocityMLP)
-            players.put(p, lp = VelocityLanguagePlayer.fromUUID(p));
-
-        return lp;
+    public PlayerManager(Function<UUID, T> languagePlayerSupplier) {
+        this.languagePlayerSupplier = languagePlayerSupplier;
     }
 
-    public boolean hasPlayer(UUID p) {
-        return players.containsKey(p);
+    public T get(UUID uuid) {
+        T languagePlayer = players.get(uuid);
+        if (languagePlayer != null) {
+            return languagePlayer;
+        }
+
+        Triton.get().getLogger().logTrace("[Player Manager] Tried to get an unregistered language player, so registering a new one for UUID %1", uuid);
+
+        players.put(uuid, languagePlayer = languagePlayerSupplier.apply(uuid));
+        return languagePlayer;
     }
 
-    public void unregisterPlayer(UUID p) {
-        Triton.get().getLogger().logTrace("[Player Manager] Unregistering language player with UUID %1", p);
-        players.remove(p);
+    public boolean hasPlayer(UUID uuid) {
+        return players.containsKey(uuid);
     }
 
-    public void registerPlayer(LanguagePlayer lp) {
-        Triton.get().getLogger().logTrace("[Player Manager] Registering language player %1", lp);
-        players.put(lp.getUUID(), lp);
+    public void unregisterPlayer(UUID uuid) {
+        Triton.get().getLogger().logTrace("[Player Manager] Unregistering language player with UUID %1", uuid);
+        players.remove(uuid);
     }
 
-    public List<LanguagePlayer> getAll() {
+    public void registerPlayer(T languagePlayer) {
+        Triton.get().getLogger().logTrace("[Player Manager] Registering language player %1", languagePlayer);
+        players.put(languagePlayer.getUUID(), languagePlayer);
+    }
+
+    public List<T> getAll() {
         return new ArrayList<>(players.values());
     }
 

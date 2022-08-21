@@ -159,7 +159,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
                                 matchPattern(defaultLines.length > i && defaultLines[i] != null ? defaultLines[i] :
                                         "", language),
                                 language,
-                                Triton.get().getConf().getSignsSyntax()
+                                Triton.get().getConfig().getSignsSyntax()
                         );
                 while (result[i].startsWith(ChatColor.RESET.toString()))
                     result[i] = result[i].substring(2);
@@ -201,8 +201,8 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     public void setup() {
         Triton.get().getLogger().logDebug("Setting up language manager...");
 
-        val languages = Triton.get().getConf().getLanguages();
-        val mainLang = Triton.get().getConf().getMainLanguage();
+        val languages = Triton.get().getConfig().getLanguages();
+        val mainLang = Triton.get().getConfig().getMainLanguage();
 
         for (val lang : languages)
             if (lang.getName().equals(mainLang))

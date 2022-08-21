@@ -22,14 +22,14 @@ public class PreLoginBungeeEncoder extends MessageToMessageEncoder<DefinedPacket
     protected void encode(ChannelHandlerContext ctx, DefinedPacket packet,
                           List<Object> out) {
         try {
-            if (Triton.get().getConf().isKick() && packet instanceof Kick) {
+            if (Triton.get().getConfig().isKick() && packet instanceof Kick) {
                 Kick kick = (Kick) packet;
 
                 if (this.lang == null)
                     this.lang = Triton.get().getStorage().getLanguageFromIp(ip).getName();
 
                 kick.setMessage(serializeComponent(Triton.get().getLanguageParser().parseComponent(this.lang,
-                        Triton.get().getConf().getKickSyntax(), ComponentSerializer.parse(kick.getMessage()))));
+                        Triton.get().getConfig().getKickSyntax(), ComponentSerializer.parse(kick.getMessage()))));
             }
         } catch (Exception | Error e) {
             e.printStackTrace();

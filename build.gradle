@@ -57,6 +57,7 @@ subprojects {
 
 dependencies {
     implementation project(path: ":core")
+    implementation project(path: ":triton-velocity")
 }
 
 bukkit {

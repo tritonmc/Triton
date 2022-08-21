@@ -27,7 +27,7 @@ public class TranslatablePrintStream extends PrintStream {
         if (Triton.get().getLanguageManager().getMainLanguage() != null) {
             String result = Triton.get().getLanguageParser()
                     .replaceLanguages(input, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                            .get().getConf().getChatSyntax());
+                            .get().getConfig().getChatSyntax());
             if (result != null) return result;
         }
         return input;
