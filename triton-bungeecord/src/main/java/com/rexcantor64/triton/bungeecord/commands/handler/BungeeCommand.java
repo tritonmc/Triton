@@ -1,7 +1,7 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.bungeecord.commands.handler;
 
+import com.rexcantor64.triton.commands.handler.Command;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.plugin.Command;
 
 public class BungeeCommand extends Command {
     private BungeeCommandHandler handler;

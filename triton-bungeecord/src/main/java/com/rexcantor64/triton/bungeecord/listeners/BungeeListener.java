@@ -1,9 +1,9 @@
-package com.rexcantor64.triton.listeners;
+package com.rexcantor64.triton.bungeecord.listeners;
 
 import com.rexcantor64.triton.BungeeMLP;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.packetinterceptor.PreLoginBungeeEncoder;
-import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.packetinterceptor.PreLoginBungeeEncoder;
+import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.utils.SocketUtils;
 import io.netty.channel.Channel;

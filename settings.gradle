@@ -4,4 +4,5 @@ include 'spigot-legacy'
 include 'v1_13'
 include 'core'
 include 'triton-velocity'
+include 'triton-bungeecord'
 

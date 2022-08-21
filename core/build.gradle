@@ -12,10 +12,6 @@ test {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-proxy:1.19-R0.1-SNAPSHOT'
-    compileOnly 'com.velocitypowered:velocity-api:3.1.0'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.1.0'
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
 
     // Adventure / MiniMessage
@@ -27,8 +23,9 @@ dependencies {
         exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
-    testImplementation 'net.kyori:adventure-api:4.11.0'
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
+
+    // Terminal replacement
+    compileOnly 'org.fusesource.jansi:jansi:2.4.0'
 
     compileOnly 'me.clip:placeholderapi:2.11.1'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
@@ -39,7 +36,6 @@ dependencies {
     }
     compileOnly 'com.google.code.gson:gson:2.9.0'
     implementation 'org.bstats:bstats-bukkit:2.2.1'
-    implementation 'org.bstats:bstats-bungeecord:2.2.1'
     implementation project(path: ":api")
     implementation project(path: ":spigot-legacy")
     implementation project(path: ":v1_13")
@@ -48,7 +44,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    testImplementation 'net.md-5:bungeecord-api:1.17-R0.1-SNAPSHOT'
+    testImplementation 'net.kyori:adventure-api:4.11.0'
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
 }
 
 blossom {

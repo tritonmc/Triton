@@ -1,9 +1,11 @@
-package com.rexcantor64.triton.bridge;
+package com.rexcantor64.triton.bungeecord.bridge;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bridge.BridgeManager;
+import com.rexcantor64.triton.bridge.BridgeSerializer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.NonNull;
 import lombok.val;

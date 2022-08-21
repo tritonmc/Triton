@@ -1,10 +1,11 @@
-package com.rexcantor64.triton.player;
+package com.rexcantor64.triton.bungeecord.player;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageBungeeEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.packetinterceptor.BungeeListener;
+import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;

@@ -1,6 +1,7 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.bungeecord.commands.handler;
 
-import com.rexcantor64.triton.plugin.Platform;
+import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.CommandHandler;
 import lombok.val;
 import net.md_5.bungee.api.CommandSender;
 

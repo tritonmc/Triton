@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly project(path: ":api")
+    compileOnly project(path: ":core")
+
+    compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-proxy:1.19-R0.1-SNAPSHOT'
+
+    implementation 'org.bstats:bstats-bungeecord:3.0.0'
+
+    testImplementation 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
+}

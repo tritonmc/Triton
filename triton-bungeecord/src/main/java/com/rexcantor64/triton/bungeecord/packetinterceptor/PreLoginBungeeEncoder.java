@@ -1,4 +1,4 @@
-package com.rexcantor64.triton.packetinterceptor;
+package com.rexcantor64.triton.bungeecord.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
 import io.netty.channel.ChannelHandlerContext;

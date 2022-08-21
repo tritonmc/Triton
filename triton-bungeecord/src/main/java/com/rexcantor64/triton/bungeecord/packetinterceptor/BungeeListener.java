@@ -1,8 +1,8 @@
-package com.rexcantor64.triton.packetinterceptor;
+package com.rexcantor64.triton.bungeecord.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.utils.NMSUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;

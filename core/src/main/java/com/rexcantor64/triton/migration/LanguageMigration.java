@@ -16,7 +16,6 @@ import java.util.Objects;
 
 public class LanguageMigration {
 
-    private static final JsonParser JSON_PARSER = new JsonParser();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void migrate() {
@@ -46,7 +45,7 @@ public class LanguageMigration {
             if (Triton.isSpigot()) {
                 val cacheFile = new File(Triton.get().getDataFolder(), "cache.json");
                 if (cacheFile.exists()) {
-                    val element = JSON_PARSER.parse(FileUtils.getReaderFromFile(cacheFile));
+                    val element = JsonParser.parseReader(FileUtils.getReaderFromFile(cacheFile));
                     if (element.isJsonObject()) {
                         val obj = element.getAsJsonObject();
                         if (!obj.has("languages")) {
@@ -80,7 +79,7 @@ public class LanguageMigration {
                 for (val file : Objects.requireNonNull(translationsFolder.listFiles())) {
                     if (!file.getName().endsWith(".json")) continue;
 
-                    val fileContent = JSON_PARSER.parse(FileUtils.getReaderFromFile(file));
+                    val fileContent = JsonParser.parseReader(FileUtils.getReaderFromFile(file));
                     boolean collectionUniversal = false;
                     JsonArray items;
                     if (fileContent.isJsonObject()) {
