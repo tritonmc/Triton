@@ -48,6 +48,7 @@ subprojects {
 dependencies {
     implementation project(path: ":core")
     implementation project(path: ":triton-bungeecord")
+    implementation project(path: ":triton-spigot")
     implementation project(path: ":triton-velocity")
 }
 

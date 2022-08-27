@@ -4,7 +4,6 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.Getter;
 import lombok.val;
-import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 

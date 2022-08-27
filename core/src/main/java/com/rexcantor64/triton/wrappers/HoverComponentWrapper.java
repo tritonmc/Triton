@@ -3,11 +3,9 @@ package com.rexcantor64.triton.wrappers;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.ItemTag;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Content;
 import net.md_5.bungee.api.chat.hover.content.Entity;
@@ -43,13 +41,13 @@ public class HoverComponentWrapper {
                 }
                 newContents.add(text);
             } else if (content instanceof Item) {
-                val item = (Item) content;
+                /* FIXME val item = (Item) content;
                 if (item.getTag() != null) {
                     val tag = item.getTag();
                     val newTag = ItemTag.ofNbt(ItemStackTranslationUtils.translateNbtString(tag.getNbt(), language));
                     item.setTag(newTag);
                 }
-                newContents.add(item);
+                newContents.add(item);*/
             } else if (content instanceof Entity) {
                 val entity = (Entity) content;
                 if (entity.getName() != null) {

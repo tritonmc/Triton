@@ -5,7 +5,7 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.plugin.Platform;
-import com.rexcantor64.triton.wrappers.items.ItemStackParser;
+import com.rexcantor64.triton.spigot.wrappers.items.ItemStackParser;
 import lombok.val;
 import org.bukkit.Bukkit;
 
