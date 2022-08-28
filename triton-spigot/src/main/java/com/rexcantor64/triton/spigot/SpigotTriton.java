@@ -200,7 +200,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
     @Override
     protected String getConfigFileName() {
-        return "config";
+        return "config_spigot";
     }
 
     @Override
