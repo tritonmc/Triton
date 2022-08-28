@@ -131,6 +131,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (main.getMcVersion() >= 19) {
             // New chat packets on 1.19
             packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, asAsync(this::handleSystemChat));
+            packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
         } else {
             // In 1.19+, this packet is signed, so we cannot edit it.
             // It's sent by the player anyway, so there's nothing to translate.
@@ -270,6 +271,53 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         stringModifier.writeSafely(0, ComponentSerializer.toString(result));
+    }
+
+    /**
+     * Handle a chat preview outbound packet, added in Minecraft 1.19.
+     * This changes the preview of the message to translate placeholders there
+     *
+     * @param packet         ProtocolLib's packet event
+     * @param languagePlayer The language player this packet is being sent to
+     * @since 3.8.2 (Minecraft 1.19)
+     */
+    private void handleChatPreview(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+
+        BaseComponent[] result = null;
+
+        // Hot fix for Paper builds
+        StructureModifier<?> adventureModifier =
+                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+
+        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
+            Object adventureComponent = adventureModifier.readSafely(0);
+            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
+            adventureModifier.writeSafely(0, null);
+        } else {
+            val msg = chatComponentsModifier.readSafely(0);
+            if (msg != null) {
+                result = ComponentSerializer.parse(msg.getJson());
+            }
+        }
+
+        // Packet is empty
+        if (result == null) return;
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                main.getConf().getChatSyntax(),
+                result
+        );
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        chatComponentsModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
