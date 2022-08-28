@@ -1,12 +1,12 @@
 package com.rexcantor64.triton;
 
 import com.rexcantor64.triton.bridge.BridgeManager;
+import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.MessagesConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
-import com.rexcantor64.triton.guiapi.GuiManager;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.logger.TritonLogger;
@@ -35,7 +35,6 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     // Main instances
     protected static Triton<?, ?> instance;
     protected PluginLoader loader;
-    GuiManager guiManager;
     // File-related variables
     private File translationsFolder;
     // Configs
@@ -78,10 +77,6 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
 
     public static Triton<?, ?> get() {
         return instance;
-    }
-
-    public static SpigotMLP asSpigot() {
-        return (SpigotMLP) instance;
     }
 
     protected void onEnable() {

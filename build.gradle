@@ -37,6 +37,8 @@ allprojects {
 
 subprojects {
     dependencies {
+        implementation 'org.jetbrains:annotations:23.0.0'
+
         compileOnly 'org.projectlombok:lombok:1.18.22'
         annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
@@ -46,8 +48,10 @@ subprojects {
 }
 
 dependencies {
+
     implementation project(path: ":core")
     implementation project(path: ":triton-bungeecord")
+    implementation project(path: ":triton-spigot")
     implementation project(path: ":triton-velocity")
 }
 

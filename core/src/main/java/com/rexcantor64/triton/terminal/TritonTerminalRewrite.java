@@ -2,7 +2,7 @@ package com.rexcantor64.triton.terminal;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.Language;
-import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -40,7 +40,7 @@ public final class TritonTerminalRewrite implements RewritePolicy {
             translated = chatColorTerminalReplacer.parseMessage(translated);
 
         try {
-            NMSUtils.setDeclaredField(event, "message", new SimpleMessage(translated));
+            ReflectionUtils.setDeclaredField(event, "message", new SimpleMessage(translated));
         } catch (Exception | Error ignored) {
         }
         return event;

@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+// TODO move to spigot-triton (or delete, because we're not gonna be using md5's chat library anymore)
 public class ComponentUtils {
 
     private static final Pattern url = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,})(/\\S*)?$");
@@ -78,7 +79,7 @@ public class ComponentUtils {
     public static ChatColor getColorFromBaseComponent(BaseComponent bc) {
         if (bc.getColorRaw() != null)
             return bc.getColorRaw();
-        Object parent = NMSUtils.getDeclaredField(bc, "parent");
+        Object parent = ReflectionUtils.getDeclaredField(bc, "parent");
         return !(parent instanceof BaseComponent) ? ChatColor.RESET :
                 getColorFromBaseComponent((BaseComponent) parent);
     }

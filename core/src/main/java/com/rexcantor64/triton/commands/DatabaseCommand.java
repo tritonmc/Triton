@@ -3,6 +3,7 @@ package com.rexcantor64.triton.commands;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
@@ -15,26 +16,26 @@ import java.util.stream.Stream;
 public class DatabaseCommand implements Command {
 
     @Override
-    public boolean handleCommand(CommandEvent event) {
+    public void handleCommand(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
 
         sender.assertPermission("triton.database");
 
         if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
             sender.sendMessageFormatted("error.not-available-on-spigot");
-            return true;
+            return;
         }
 
         val args = event.getArgs();
         if (args.length == 0) {
             sender.sendMessageFormatted("help.database", event.getLabel());
-            return true;
+            return;
         }
 
         val storage = Triton.get().getStorage();
         if (storage instanceof LocalStorage) {
             sender.sendMessageFormatted("error.database-not-supported");
-            return true;
+            return;
         }
 
         val mode = args[0];
@@ -72,7 +73,6 @@ public class DatabaseCommand implements Command {
                 sender.sendMessageFormatted("error.database-invalid-mode", mode);
                 break;
         }
-        return true;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.commands.handler;
 
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+
 import java.util.UUID;
 
 public interface Sender {
@@ -8,7 +10,7 @@ public interface Sender {
 
     void sendMessageFormatted(String code, Object... args);
 
-    void assertPermission(String... permissions);
+    void assertPermission(String... permissions) throws NoPermissionException;
 
     boolean hasPermission(String permission);
 

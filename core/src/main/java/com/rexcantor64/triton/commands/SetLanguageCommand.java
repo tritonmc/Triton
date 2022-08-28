@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.plugin.Platform;
 import com.velocitypowered.api.proxy.Player;
 import lombok.val;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 public class SetLanguageCommand implements Command {
 
     @Override
-    public boolean handleCommand(CommandEvent event) {
+    public void handleCommand(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
         val args = event.getArgs();
 
@@ -25,7 +26,7 @@ public class SetLanguageCommand implements Command {
 
         if (args.length == 0) {
             sender.sendMessageFormatted("help.setlanguage", event.getLabel());
-            return true;
+            return;
         }
 
         UUID target;
@@ -38,19 +39,19 @@ public class SetLanguageCommand implements Command {
 
             if (target == null) {
                 sender.sendMessageFormatted("error.player-not-found-use-uuid", args[1]);
-                return true;
+                return;
             }
         } else if (sender.getUUID() != null) {
             target = sender.getUUID();
         } else {
             sender.sendMessage("Only players");
-            return true;
+            return;
         }
 
         val lang = Triton.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
             sender.sendMessageFormatted("error.lang-not-found", langName);
-            return true;
+            return;
         }
 
         if (Triton.get().getPlayerManager().hasPlayer(target))
@@ -59,7 +60,7 @@ public class SetLanguageCommand implements Command {
             if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
                 sender.sendMessage("Changing the language of offline players must be done through the proxy " +
                         "console.");
-                return true;
+                return;
             }
             Triton.get().getStorage().setLanguage(target, null, lang);
         }
@@ -68,11 +69,11 @@ public class SetLanguageCommand implements Command {
             sender.sendMessageFormatted("success.setlanguage", lang.getDisplayName());
         else
             sender.sendMessageFormatted("success.setlanguage-others", args[1], lang.getDisplayName());
-        return true;
+        return;
     }
 
     @Override
-    public List<String> handleTabCompletion(CommandEvent event) {
+    public List<String> handleTabCompletion(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
         sender.assertPermission("triton.setlanguage", "multilanguageplugin.setlanguage");
 

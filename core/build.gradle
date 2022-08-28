@@ -1,15 +1,7 @@
 plugins {
     id 'java'
-    id 'net.minecrell.plugin-yml.bukkit' version '0.5.2'
 }
 
-String pluginDescription = project.property("pluginDescription")
-String pluginWebsite = project.property("pluginWebsite")
-String pluginAuthor = project.property("pluginAuthor")
-String pluginApiVersion = project.property("pluginApiVersion")
-String pluginName = project.property("pluginName")
-
-apply plugin: 'net.minecrell.plugin-yml.bukkit'
 group 'com.rexcantor64.triton'
 
 test {
@@ -17,8 +9,9 @@ test {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
+    implementation project(path: ":api")
+    // TODO remove when md_5's chat library is removed
+    implementation project(path: ":spigot-legacy")
 
     // Adventure / MiniMessage
     // TODO check which of these should be compileOnly or implementation
@@ -40,18 +33,15 @@ dependencies {
     // Terminal translation
     compileOnly 'org.fusesource.jansi:jansi:2.4.0'
 
-    compileOnly 'me.clip:placeholderapi:2.11.1'
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
+    compileOnly 'org.yaml:snakeyaml:1.30'
+
     implementation 'org.slf4j:slf4j-nop:1.7.36'
     implementation 'com.zaxxer:HikariCP:4.0.3'
     implementation('com.tananaev:json-patch:1.1') {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     compileOnly 'com.google.code.gson:gson:2.9.0'
-    implementation 'org.bstats:bstats-bukkit:3.0.0'
-    implementation project(path: ":api")
-    implementation project(path: ":spigot-legacy")
-    implementation project(path: ":v1_13")
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
@@ -59,63 +49,4 @@ dependencies {
 
     testImplementation 'net.kyori:adventure-api:4.11.0'
     testImplementation 'net.kyori:adventure-text-serializer-plain:4.11.0'
-}
-
-bukkit {
-    name = pluginName
-    version = project.version
-    description = pluginDescription
-    website = pluginWebsite
-    author = pluginAuthor
-    main = 'com.rexcantor64.triton.plugin.SpigotPlugin'
-    apiVersion = pluginApiVersion
-
-    depend = ['ProtocolLib']
-    softDepend = ['PlaceholderAPI']
-
-    commands {
-        twin {
-            description = 'Upload and download your config to/from the Triton Web INterface.'
-            usage = '/twin [code]'
-        }
-    }
-
-    permissions {
-        'triton.getflag' {
-            setDefault('OP')
-        }
-        'triton.setlanguage' {
-            setDefault('TRUE')
-        }
-        'triton.setlanguage.others' {
-            setDefault('OP')
-        }
-        'triton.openselector' {
-            setDefault('TRUE')
-        }
-        'triton.reload' {
-            setDefault('OP')
-        }
-        'triton.help' {
-            setDefault('TRUE')
-        }
-        'triton.sign' {
-            setDefault('OP')
-        }
-        'triton.database' {
-            setDefault('OP')
-        }
-        'triton.info' {
-            setDefault('TRUE')
-        }
-        'triton.loglevel' {
-            setDefault('OP')
-        }
-        'twin.upload' {
-            setDefault('OP')
-        }
-        'twin.download' {
-            setDefault('OP')
-        }
-    }
 }

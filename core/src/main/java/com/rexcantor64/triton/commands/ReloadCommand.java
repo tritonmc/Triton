@@ -3,6 +3,7 @@ package com.rexcantor64.triton.commands;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import lombok.val;
 
 import java.util.Collections;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 public class ReloadCommand implements Command {
 
     @Override
-    public boolean handleCommand(CommandEvent event) {
+    public void handleCommand(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
         val isProxy = event.getPlatform().isProxy();
 
@@ -26,7 +27,7 @@ public class ReloadCommand implements Command {
                 case "server":
                 case "s":
                     Triton.get().getBridgeManager().forwardCommand(event);
-                    return true;
+                    return;
                 case "all":
                 case "a":
                     Triton.get().getBridgeManager().forwardCommand(event);
@@ -36,13 +37,12 @@ public class ReloadCommand implements Command {
                     break;
                 default:
                     sender.sendMessageFormatted("error.bungee-reload-invalid-mode", action);
-                    return true;
+                    return;
             }
         }
 
         Triton.get().reload();
         sender.sendMessageFormatted(isProxy ? "success.bungee-reload" : "success.reload");
-        return true;
     }
 
     @Override

@@ -2,8 +2,11 @@ package com.rexcantor64.triton.commands.handler;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.*;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import lombok.val;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,19 +14,19 @@ import java.util.stream.Collectors;
 
 public abstract class CommandHandler {
 
-    public static HashMap<String, Command> commands = new HashMap<>();
+    protected final HashMap<String, Command> commands = new HashMap<>();
 
-    static {
-        commands.put("help", new HelpCommand());
-        commands.put("info", new InfoCommand());
-        commands.put("openselector", new OpenSelectorCommand());
-        commands.put("getflag", new GetFlagCommand());
-        commands.put("setlanguage", new SetLanguageCommand());
-        commands.put("reload", new ReloadCommand());
-        commands.put("sign", new SignCommand());
+    public CommandHandler() {
         commands.put("database", new DatabaseCommand());
-        commands.put("twin", new TwinCommand());
+        commands.put("getflag", new GetFlagCommand());
+        commands.put("help", new HelpCommand(this));
+        commands.put("info", new InfoCommand());
         commands.put("loglevel", new LogLevelCommand());
+        commands.put("openselector", new OpenSelectorCommand());
+        commands.put("reload", new ReloadCommand());
+        commands.put("setlanguage", new SetLanguageCommand());
+        commands.put("sign", new SignCommand());
+        commands.put("twin", new TwinCommand());
     }
 
     public void handleCommand(CommandEvent event) {
@@ -45,11 +48,13 @@ public abstract class CommandHandler {
                 command = commands.get("help");
             }
 
-            if (!command.handleCommand(event)) {
-                Triton.get().getBridgeManager().forwardCommand(event);
-            }
+            command.handleCommand(event);
         } catch (NoPermissionException e) {
             event.getSender().sendMessageFormatted("error.no-permission", e.getPermission());
+        } catch (UnsupportedPlatformException e) {
+            Triton.get().getBridgeManager().forwardCommand(event);
+        } catch (Exception e) {
+            Triton.get().getLogger().logError(e, "An unexpected exception happened while handling a command");
         }
     }
 
@@ -80,9 +85,12 @@ public abstract class CommandHandler {
         val newLength = args.length + 1;
         val newArray = new String[newLength];
         newArray[0] = subCommand;
-        for (int i = 0; i < args.length; ++i)
-            newArray[i + 1] = args[i];
+        System.arraycopy(args, 0, newArray, 1, args.length);
         return newArray;
+    }
+
+    public Collection<String> getAvailableCommands() {
+        return Collections.unmodifiableCollection(this.commands.keySet());
     }
 
 }

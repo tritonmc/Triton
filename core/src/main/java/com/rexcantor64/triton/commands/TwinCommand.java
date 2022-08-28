@@ -4,6 +4,7 @@ import com.google.gson.JsonParser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.web.TwinManager;
 import com.rexcantor64.triton.web.TwinParser;
 import lombok.val;
@@ -17,7 +18,7 @@ public class TwinCommand implements Command {
     private String lastDownload = "";
 
     @Override
-    public boolean handleCommand(CommandEvent event) {
+    public void handleCommand(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
         val args = event.getArgs();
         val downloading = args.length > 0 && !args[0].equalsIgnoreCase("upload");
@@ -30,7 +31,7 @@ public class TwinCommand implements Command {
         if (downloading && args[0].equals(lastDownload)) {
             sender.sendMessageFormatted("twin.repeated-download");
             lastDownload = "";
-            return true;
+            return;
         }
 
         sender.sendMessageFormatted("twin.connecting");
@@ -92,8 +93,6 @@ public class TwinCommand implements Command {
             handleDownload(event, response.getPage());
 
         });
-
-        return true;
     }
 
     private void handleDownload(CommandEvent event, String response) {
