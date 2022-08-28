@@ -15,13 +15,12 @@ public class VelocityCommandHandler extends CommandHandler implements SimpleComm
 
     @Override
     public List<String> suggest(Invocation invocation) {
-        val a = super.handleTabCompletion(buildCommandEvent(invocation, ""));
-        return a;
+        return super.handleTabCompletion(buildCommandEvent(invocation, ""));
     }
 
-    private CommandEvent buildCommandEvent(Invocation invocation, String defaltSubcommand) {
+    private CommandEvent buildCommandEvent(Invocation invocation, String defaultSubcommand) {
         val args = invocation.arguments();
-        val subCommand = args.length >= 1 ? args[0] : defaltSubcommand;
+        val subCommand = args.length >= 1 ? args[0] : defaultSubcommand;
         val subArgs = args.length >= 2 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
         return new CommandEvent(new VelocitySender(invocation.source()), subCommand, subArgs, invocation
                 .alias(), CommandEvent.Environment.VELOCITY);

@@ -3,7 +3,6 @@ package com.rexcantor64.triton.commands.handler;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.*;
 import lombok.val;
-import lombok.var;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,17 +57,21 @@ public abstract class CommandHandler {
     }
 
     protected List<String> handleTabCompletion(CommandEvent event) {
-        if (event.getLabel().equalsIgnoreCase("twin")) return Collections.emptyList();
+        if (event.getLabel().equalsIgnoreCase("twin")) {
+            return Collections.emptyList();
+        }
 
         val subCommand = event.getSubCommand();
         try {
-            if (subCommand == null || event.getArgs().length == 0)
+            if (subCommand == null || event.getArgs().length == 0) {
                 return commands.keySet().stream().filter(cmd -> subCommand != null && cmd.startsWith(subCommand))
                         .collect(Collectors.toList());
+            }
 
             val command = commands.get(subCommand);
-            if (command == null)
+            if (command == null) {
                 return Collections.emptyList();
+            }
 
             return command.handleTabCompletion(event);
         } catch (NoPermissionException e) {
