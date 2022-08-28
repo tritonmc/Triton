@@ -9,6 +9,10 @@ test {
 }
 
 dependencies {
+    implementation project(path: ":api")
+    // TODO remove when md_5's chat library is removed
+    implementation project(path: ":spigot-legacy")
+
     // Adventure / MiniMessage
     // TODO check which of these should be compileOnly or implementation
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.11.0'
@@ -38,10 +42,6 @@ dependencies {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
     compileOnly 'com.google.code.gson:gson:2.9.0'
-
-    implementation project(path: ":api")
-    implementation project(path: ":spigot-legacy")
-    implementation project(path: ":v1_13")
 
     // Test dependencies
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
