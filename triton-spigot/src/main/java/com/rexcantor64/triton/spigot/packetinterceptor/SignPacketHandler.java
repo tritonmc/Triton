@@ -19,6 +19,7 @@ import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.RegistryUtils;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -70,23 +71,23 @@ public class SignPacketHandler extends PacketHandler {
         val chunkZ = ints.readSafely(1);
 
         val chunkData = packet.getPacket().getSpecificModifier(LEVEL_CHUNK_PACKET_DATA_CLASS).readSafely(0);
-        val blockEntities = (List<?>) NMSUtils.getDeclaredField(chunkData, "d");
+        val blockEntities = (List<?>) ReflectionUtils.getDeclaredField(chunkData, "d");
 
         // Each block entity is in an array and its type needs to be checked.
         for (Object blockEntity : blockEntities) {
-            val nmsNbtTagCompound = NMSUtils.getDeclaredField(blockEntity, "d");
+            val nmsNbtTagCompound = ReflectionUtils.getDeclaredField(blockEntity, "d");
             if (nmsNbtTagCompound == null) continue;
 
             // Try to determine type
-            val tileEntityType = NMSUtils.getDeclaredField(blockEntity, "c");
+            val tileEntityType = ReflectionUtils.getDeclaredField(blockEntity, "c");
             if (!SIGN_TYPE_ID.equals(RegistryUtils.getTileEntityTypeKey(tileEntityType))) continue;
 
             // The NBT compound below does not include the position, so we have to calculate it
             // from the chunk position and block section position
-            val encodedPosition = (int) NMSUtils.getDeclaredField(blockEntity, "a");
+            val encodedPosition = (int) ReflectionUtils.getDeclaredField(blockEntity, "a");
             val sectionX = encodedPosition >> 4;
             val sectionZ = encodedPosition & 15;
-            val y = (int) NMSUtils.getDeclaredField(blockEntity, "b");
+            val y = (int) ReflectionUtils.getDeclaredField(blockEntity, "b");
 
             val nbt = NbtFactory.fromNMSCompound(nmsNbtTagCompound);
 

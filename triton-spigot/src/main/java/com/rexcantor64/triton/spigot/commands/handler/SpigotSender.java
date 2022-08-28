@@ -1,6 +1,8 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.spigot.commands.handler;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.Sender;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import net.md_5.bungee.api.ChatColor;

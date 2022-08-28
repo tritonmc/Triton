@@ -1,8 +1,12 @@
-package com.rexcantor64.triton.commands.handler;
+package com.rexcantor64.triton.spigot.commands.handler;
 
-import com.rexcantor64.triton.plugin.Platform;
+import com.rexcantor64.triton.commands.handler.Command;
+import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.commands.handler.CommandHandler;
+import com.rexcantor64.triton.spigot.commands.GetFlagCommand;
+import com.rexcantor64.triton.spigot.commands.OpenSelectorCommand;
+import com.rexcantor64.triton.spigot.commands.SignCommand;
 import lombok.val;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -12,6 +16,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SpigotCommandHandler extends CommandHandler implements CommandExecutor, TabCompleter {
+
+    public SpigotCommandHandler() {
+        super();
+        commands.put("getflag", new GetFlagCommand());
+        commands.put("openselector", new OpenSelectorCommand());
+        this.commands.put("sign", new SignCommand());
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {

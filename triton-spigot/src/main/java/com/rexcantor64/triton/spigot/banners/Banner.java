@@ -7,11 +7,9 @@ import java.util.List;
 
 public class Banner {
 
-    private List<Layer> layers = new ArrayList<>();
-    private String displayName;
+    private final List<Layer> layers = new ArrayList<>();
 
-    public Banner(String encoded, String displayName) {
-        this.displayName = displayName;
+    public Banner(String encoded) {
         List<String> strings = new ArrayList<>();
         int index = 0;
         while (index < encoded.length()) {
@@ -42,10 +40,6 @@ public class Banner {
 
     public List<Layer> getLayers() {
         return layers;
-    }
-
-    public String getDisplayName() {
-        return displayName;
     }
 
     public class Layer {

@@ -8,7 +8,8 @@ import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
-import com.rexcantor64.triton.commands.handler.SpigotSender;
+import com.rexcantor64.triton.spigot.SpigotTriton;
+import com.rexcantor64.triton.spigot.commands.handler.SpigotSender;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
@@ -157,13 +158,13 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
-                    Bukkit.getScheduler().runTaskLater(Triton.asSpigot().getLoader(), () -> Triton.get()
+                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 }
             } else if (action == 1) {
                 val uuid = new UUID(in.readLong(), in.readLong());
                 val lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
-                Bukkit.getScheduler().runTaskLater(Triton.asSpigot().getLoader(),
+                Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(),
                         () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false)
                         , 10L);
             } else if (action == 2) {
@@ -184,7 +185,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                     storage.setCollections(col);
 
                     Triton.get().getLanguageManager().setup();
-                    Bukkit.getScheduler().runTaskLater(Triton.asSpigot().getLoader(), () -> Triton.get()
+                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 });
             } else if (action == 4) {
@@ -205,7 +206,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                         args,
                         "triton"
                 );
-                Triton.asSpigot().getCommandHandler().handleCommand(commandEvent);
+                SpigotTriton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }
         } catch (Exception e) {
             Triton.get().getLogger().logError(e, "Failed to parse plugin message.");
@@ -219,7 +220,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
         out.writeUTF(lp.getUUID().toString());
         out.writeUTF(lp.getLang().getName());
         lp.toBukkit().ifPresent(player ->
-                player.sendPluginMessage(Triton.asSpigot().getLoader(), "triton:main", out.toByteArray())
+                player.sendPluginMessage(SpigotTriton.asSpigot().getLoader(), "triton:main", out.toByteArray())
         );
     }
 

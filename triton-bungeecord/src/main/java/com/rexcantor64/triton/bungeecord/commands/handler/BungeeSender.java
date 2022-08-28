@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.bungeecord.commands.handler;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.commands.handler.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.Sender;
 import lombok.AllArgsConstructor;
 import lombok.val;

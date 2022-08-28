@@ -22,11 +22,13 @@ import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.spigot.utils.ComponentUtils;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.wrappers.AdventureComponentWrapper;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -60,7 +62,7 @@ import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.as
 import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.asSync;
 
 @SuppressWarnings({"deprecation"})
-public class ProtocolLibListener implements PacketListener, PacketInterceptor {
+public class ProtocolLibListener implements PacketListener {
     private final Class<?> CONTAINER_PLAYER_CLASS;
     private final Class<?> MERCHANT_RECIPE_LIST_CLASS;
     private final MethodAccessor CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD;
@@ -77,12 +79,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final AdvancementsPacketHandler advancementsPacketHandler;
     private final EntitiesPacketHandler entitiesPacketHandler = new EntitiesPacketHandler();
 
-    private final SpigotMLP main;
+    private final SpigotTriton main;
     private final List<HandlerFunction.HandlerType> allowedTypes;
     private final Map<PacketType, HandlerFunction> packetHandlers = new HashMap<>();
     private final AtomicBoolean firstRun = new AtomicBoolean(true);
 
-    public ProtocolLibListener(SpigotMLP main, HandlerFunction.HandlerType... allowedTypes) {
+    public ProtocolLibListener(SpigotTriton main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
         this.allowedTypes = Arrays.asList(allowedTypes);
         if (main.getMcVersion() >= 17) {
@@ -105,7 +107,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 NMSUtils.getNMSClass("ContainerPlayer");
         BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? NMSUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
 
-        ADVENTURE_COMPONENT_CLASS = NMSUtils.getClassOrNull("net.kyori.adventure.text.Component");
+        ADVENTURE_COMPONENT_CLASS = ReflectionUtils.getClassOrNull("net.kyori.adventure.text.Component");
 
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
@@ -455,7 +457,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             }
             if (actionEnum != 0 && actionEnum != 3) return;
 
-            bossbar = WrappedChatComponent.fromHandle(NMSUtils.getDeclaredField(actionObj, "a"));
+            bossbar = WrappedChatComponent.fromHandle(ReflectionUtils.getDeclaredField(actionObj, "a"));
         } else {
             Action action = packet.getPacket().getEnumModifier(Action.class, 1).readSafely(0);
             if (action == Action.REMOVE) {
@@ -476,7 +478,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 result = new BaseComponent[]{new TranslatableComponent("")};
             bossbar.setJson(ComponentSerializer.toString(result));
             if (getMCVersion() >= 17) {
-                NMSUtils.setDeclaredField(actionObj, "a", bossbar.getHandle());
+                ReflectionUtils.setDeclaredField(actionObj, "a", bossbar.getHandle());
             } else {
                 packet.getPacket().getChatComponents().writeSafely(0, bossbar);
             }
@@ -497,9 +499,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     .getSpecificModifier(MERCHANT_RECIPE_LIST_CLASS).readSafely(0);
             ArrayList<Object> newRecipes = (ArrayList<Object>) MERCHANT_RECIPE_LIST_CLASS.newInstance();
             for (val recipeObject : recipes) {
-                val recipe = (MerchantRecipe) NMSUtils.getMethod(recipeObject, "asBukkit");
-                val originalSpecialPrice = NMSUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD);
-                val originalDemand = NMSUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_DEMAND_FIELD);
+                val recipe = (MerchantRecipe) ReflectionUtils.getMethod(recipeObject, "asBukkit");
+                val originalSpecialPrice = ReflectionUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD);
+                val originalDemand = ReflectionUtils.getDeclaredField(recipeObject, MERCHANT_RECIPE_DEMAND_FIELD);
 
                 val newRecipe = new MerchantRecipe(ItemStackTranslationUtils.translateItemStack(recipe.getResult()
                         .clone(), languagePlayer, false), recipe.getUses(), recipe.getMaxUses(), recipe
@@ -511,8 +513,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
                 Object newCraftRecipe = CRAFT_MERCHANT_RECIPE_FROM_BUKKIT_METHOD.invoke(null, newRecipe);
                 Object newNMSRecipe = CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD.invoke(newCraftRecipe);
-                NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD, originalSpecialPrice);
-                NMSUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_DEMAND_FIELD, originalDemand);
+                ReflectionUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_SPECIAL_PRICE_FIELD, originalSpecialPrice);
+                ReflectionUtils.setDeclaredField(newNMSRecipe, MERCHANT_RECIPE_DEMAND_FIELD, originalDemand);
                 newRecipes.add(newNMSRecipe);
             }
             packet.getPacket().getModifier().writeSafely(1, newRecipes);

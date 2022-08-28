@@ -1,36 +1,28 @@
-package com.rexcantor64.triton.commands;
+package com.rexcantor64.triton.spigot.commands;
 
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import com.rexcantor64.triton.plugin.Platform;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import lombok.val;
 
 import java.util.Collections;
 import java.util.List;
 
-public class OpenSelectorCommand implements Command {
+public class OpenSelectorCommand extends com.rexcantor64.triton.commands.OpenSelectorCommand {
 
     @Override
     public void handleCommand(CommandEvent event) throws NoPermissionException, UnsupportedPlatformException {
+        super.handleCommand(event);
         val sender = event.getSender();
         val uuid = sender.getUUID();
 
-        if (uuid == null) {
-            sender.sendMessage("Only players");
-            return;
-        }
+        sender.assertPermission("triton.openselector", "multilanguageplugin.openselector");
 
-        if (event.getPlatform() != Platform.SPIGOT) {
-            throw new UnsupportedPlatformException();
-        }
-
-        // Command handler is overridden on the triton-spigot module
+        SpigotTriton.asSpigot().openLanguagesSelectionGUI(Triton.get().getPlayerManager().get(uuid));
     }
 
-    @Override
-    public List<String> handleTabCompletion(CommandEvent event) {
-        return Collections.emptyList();
-    }
 }

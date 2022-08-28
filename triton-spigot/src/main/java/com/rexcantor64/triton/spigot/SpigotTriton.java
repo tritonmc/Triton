@@ -3,24 +3,24 @@ package com.rexcantor64.triton.spigot;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
+import com.rexcantor64.triton.player.PlayerManager;
+import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.spigot.banners.BannerBuilder;
 import com.rexcantor64.triton.spigot.bridge.SpigotBridgeManager;
-import com.rexcantor64.triton.commands.handler.SpigotCommandHandler;
+import com.rexcantor64.triton.spigot.commands.handler.SpigotCommandHandler;
 import com.rexcantor64.triton.spigot.guiapi.GuiButton;
 import com.rexcantor64.triton.spigot.guiapi.GuiManager;
 import com.rexcantor64.triton.spigot.guiapi.ScrollableGui;
 import com.rexcantor64.triton.spigot.listeners.BukkitListener;
-import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction;
 import com.rexcantor64.triton.spigot.packetinterceptor.MotdPacketHandler;
+import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
-import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
-import com.rexcantor64.triton.terminal.Log4jInjector;
-import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.wrappers.MaterialWrapperManager;
-import com.rexcantor64.triton.spigot.wrappers.items.ItemStackParser;
+import com.rexcantor64.triton.terminal.Log4jInjector;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -53,6 +53,9 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     @Getter
     private boolean papiEnabled = false;
     private int refreshTaskId = -1;
+    private GuiManager guiManager;
+    @Getter
+    private final BannerBuilder bannerBuilder = new BannerBuilder();
 
     public SpigotTriton(PluginLoader loader) {
         super(new PlayerManager<>(SpigotLanguagePlayer::new), new SpigotBridgeManager());
@@ -64,6 +67,10 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
     public SpigotPlugin getLoader() {
         return (SpigotPlugin) this.loader;
+    }
+
+    public static SpigotTriton asSpigot() {
+        return (SpigotTriton) instance;
     }
 
     @Override
@@ -111,8 +118,9 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
             papiEnabled = true;
         }
 
-        if (getConfig().isTerminal())
+        if (getConfig().isTerminal()) {
             Log4jInjector.injectAppender();
+        }
     }
 
     @SneakyThrows
@@ -124,10 +132,16 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         command.setAliases(getConfig().getCommandAliases());
         command.setDescription("The main command of Triton.");
 
-        val commandMap = (CommandMap) NMSUtils.getDeclaredField(Bukkit.getServer(), "commandMap");
+        val commandMap = (CommandMap) ReflectionUtils.getDeclaredField(Bukkit.getServer(), "commandMap");
         commandMap.register("triton", command);
 
         return command;
+    }
+
+    @Override
+    public void reload() {
+        super.reload();
+        this.bannerBuilder.flushCache();
     }
 
     @Override
@@ -150,11 +164,11 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         return bridgeManager;
     }
 
-    public void openLanguagesSelectionGUI(LanguagePlayer p) {
-        if (!(p instanceof SpigotLanguagePlayer)) return;
+    @Override
+    public void openLanguagesSelectionGUI(LanguagePlayer genericLanguagePlayer) {
+        SpigotLanguagePlayer languagePlayer = (SpigotLanguagePlayer) genericLanguagePlayer;
 
-        val slp = (SpigotLanguagePlayer) p;
-        slp.toBukkit().ifPresent(player -> {
+        languagePlayer.toBukkit().ifPresent(player -> {
             val commandOverride = getConfig().getOpenSelectorCommandOverride();
             if (commandOverride != null && !commandOverride.isEmpty()) {
                 player.performCommand(commandOverride);
@@ -162,19 +176,18 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
             }
 
             val language = Triton.get().getLanguageManager();
-            val pLang = p.getLang();
+            val pLang = languagePlayer.getLang();
             val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
-            for (val lang : language.getAllLanguages())
-                gui.addButton(new GuiButton(ItemStackParser
-                        .bannerToItemStack(
-                                ((com.rexcantor64.triton.language.Language) lang).getBanner(),
-                                pLang.equals(lang)
-                        )).setListener(event -> {
-                    p.setLang(lang);
+            for (val lang : language.getAllLanguages()) {
+                val isLanguageActive = pLang.equals(lang);
+                val languageItem = this.getBannerBuilder().fromLanguage(lang, isLanguageActive);
+                gui.addButton(new GuiButton(languageItem).setListener(event -> {
+                    languagePlayer.setLang(lang);
                     player.closeInventory();
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                             .getMessage("success.selector", lang.getDisplayName())));
                 }));
+            }
             gui.open(player);
         });
     }

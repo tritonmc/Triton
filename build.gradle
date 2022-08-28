@@ -46,6 +46,8 @@ subprojects {
 }
 
 dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
+
     implementation project(path: ":core")
     implementation project(path: ":triton-bungeecord")
     implementation project(path: ":triton-spigot")

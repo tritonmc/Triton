@@ -1,17 +1,15 @@
 package com.rexcantor64.triton.spigot.placeholderapi;
 
-import com.rexcantor64.triton.SpigotMLP;
+import com.rexcantor64.triton.spigot.SpigotTriton;
+import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.entity.Player;
 
+@RequiredArgsConstructor
 public class TritonPlaceholderHook extends PlaceholderExpansion implements Relational {
 
-    private final SpigotMLP triton;
-
-    public TritonPlaceholderHook(SpigotMLP triton) {
-        this.triton = triton;
-    }
+    private final SpigotTriton triton;
 
     @Override
     public String getIdentifier() {

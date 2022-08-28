@@ -2,6 +2,7 @@ package com.rexcantor64.triton.spigot.utils;
 
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.MinecraftKey;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -16,7 +17,7 @@ public class RegistryUtils {
     public static String getTileEntityTypeKey(Object tileEntityType) {
         calculateTileEntityTypeRegistry();
 
-        val key = NMSUtils.getMethod(tileEntityTypeRegistry, "b", new Class[]{Object.class}, new Object[]{tileEntityType});
+        val key = ReflectionUtils.getMethod(tileEntityTypeRegistry, "b", new Class[]{Object.class}, new Object[]{tileEntityType});
         if (key == null) {
             return null;
         }
@@ -27,7 +28,7 @@ public class RegistryUtils {
     public static Object getTileEntityTypeFromKey(MinecraftKey key) {
         calculateTileEntityTypeRegistry();
 
-        return NMSUtils.getMethod(tileEntityTypeRegistry, "a",
+        return ReflectionUtils.getMethod(tileEntityTypeRegistry, "a",
                 new Class[]{MinecraftReflection.getMinecraftKeyClass()}, new Object[]{MinecraftKey.getConverter().getGeneric(key)});
     }
 
