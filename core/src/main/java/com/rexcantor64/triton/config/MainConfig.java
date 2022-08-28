@@ -112,6 +112,7 @@ public class MainConfig implements TritonConfig {
     private long databaseMysqlPoolMaxLifetime;
     private long databaseMysqlPoolConnTimeout;
     private Map<String, String> databaseMysqlPoolProperties;
+    private boolean iKnowWhatIAmDoing;
 
     public MainConfig(Triton main) {
         this.main = main;
@@ -177,6 +178,8 @@ public class MainConfig implements TritonConfig {
         this.asyncProtocolLib = section.getBoolean("experimental-async-protocol-lib", false);
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
+
+        this.iKnowWhatIAmDoing = section.getBoolean("i-know-what-i-am-doing", false);
     }
 
     public void setup() {

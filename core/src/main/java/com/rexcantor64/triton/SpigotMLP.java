@@ -67,7 +67,14 @@ public class SpigotMLP extends Triton {
     @Override
     public void onEnable() {
         instance = this;
+
         super.onEnable();
+
+        if (!this.isProtocolLibAvailable()) {
+            getLogger().logError("Shutting down...");
+            Bukkit.getPluginManager().disablePlugin(getLoader());
+            return;
+        }
 
         Metrics metrics = new Metrics(getLoader(), 5606);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
@@ -83,19 +90,16 @@ public class SpigotMLP extends Triton {
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getLoader());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getLoader());
-        // Use ProtocolLib if available
-        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
-            if (getConfig().isAsyncProtocolLib()) {
-                val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
-                asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC)).start();
-                asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
-                ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibListener(this, HandlerFunction.HandlerType.SYNC));
-            } else {
-                ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC, HandlerFunction.HandlerType.SYNC));
-                ProtocolLibrary.getProtocolManager().addPacketListener(new MotdPacketHandler());
-            }
+
+        // Setup ProtocolLib
+        if (getConfig().isAsyncProtocolLib()) {
+            val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
+            asyncManager.registerAsyncHandler(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC)).start();
+            asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
+            ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibListener(this, HandlerFunction.HandlerType.SYNC));
         } else {
-            getLogger().logError("Could not setup packet interceptor because ProtocolLib is not available!");
+            ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC, HandlerFunction.HandlerType.SYNC));
+            ProtocolLibrary.getProtocolManager().addPacketListener(new MotdPacketHandler());
         }
 
         if (getConf().isBungeecord()) {
@@ -135,6 +139,35 @@ public class SpigotMLP extends Triton {
         if (getConf().getConfigAutoRefresh() <= 0) return;
         refreshTaskId = Bukkit.getScheduler()
                 .scheduleSyncDelayedTask(getLoader(), this::reload, getConf().getConfigAutoRefresh() * 20L);
+    }
+
+    /**
+     * Checks if ProtocolLib is enabled and if its version matches
+     * the expected version.
+     * Triton requires ProtocolLib 5.0.0 or later.
+     *
+     * @return Whether the plugin should continue loading
+     * @since 3.8.2
+     */
+    private boolean isProtocolLibAvailable() {
+        val protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
+        if (!Bukkit.getPluginManager().isPluginEnabled(protocolLib)) {
+            getLogger().logError("ProtocolLib IS REQUIRED! Without ProtocolLib, Triton will not translate any messages.");
+            getLogger().logError("For the plugin to work correctly, please download the latest version of ProtocolLib.");
+            return false;
+        }
+
+        val version = protocolLib.getDescription().getVersion();
+        val versionParts = version.split("\\.");
+        val majorVersion = Integer.parseInt(versionParts[0]);
+        if (!getConfig().isIKnowWhatIAmDoing() && majorVersion < 5) {
+            // Triton requires ProtocolLib 5.0.0 or later
+            getLogger().logError("ProtocolLib 5.0.0 or later is required! Older versions of ProtocolLib will only partially work, and are therefore not recommended.");
+            getLogger().logError("If you want to enable the plugin anyway, add `i-know-what-i-am-doing: true` to Triton's config.yml.");
+            return false;
+        }
+
+        return true;
     }
 
     public ProtocolLibListener getProtocolLibListener() {
