@@ -21,7 +21,7 @@ public class IpCache {
         return entry == null || entry.expiresAt < System.currentTimeMillis() ? null : entry.lang;
     }
 
-    private void clearExpiredEntries() {
+    private synchronized void clearExpiredEntries() {
         cache.keySet().removeIf(key -> cache.get(key).expiresAt < System.currentTimeMillis());
     }
 
