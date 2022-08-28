@@ -18,7 +18,7 @@ public class CommandEvent {
     /**
      * Join the sub command with the arguments,
      * in order to recreate the original sub command typed by the player.
-     *
+     * <p>
      * If the player typed "/triton setlanguage en_GB Player1",
      * this will return "setlanguage en_GB Player1"
      *
@@ -34,6 +34,15 @@ public class CommandEvent {
             Arrays.stream(this.args).forEach(joiner::add);
         }
         return joiner.toString();
+    }
+
+    /**
+     * Join the arguments by a space.
+     *
+     * @return The arguments joined by a space.
+     */
+    public String argumentsToString() {
+        return String.join(" ", this.args);
     }
 
     @RequiredArgsConstructor

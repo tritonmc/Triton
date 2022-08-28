@@ -76,7 +76,7 @@ public class TwinCommand implements Command {
                         .getMessagesConfig().getMessage("twin.incorrect-status", response.getStatusCode()));
                 if (response.getStatusCode() == 404) {
                     // Warn people that accidentally type "/twin reload" instead of "/triton reload" for example
-                    sender.sendMessageFormatted("twin.suggestion-wrong-command", "/triton " + event.getFullSubCommand());
+                    sender.sendMessageFormatted("twin.suggestion-wrong-command", "/triton " + event.argumentsToString());
 
                 }
                 return;
