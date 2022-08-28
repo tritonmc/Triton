@@ -1,12 +1,12 @@
 package com.rexcantor64.triton.spigot.commands.handler;
 
-import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.rexcantor64.triton.spigot.commands.GetFlagCommand;
 import com.rexcantor64.triton.spigot.commands.OpenSelectorCommand;
 import com.rexcantor64.triton.spigot.commands.SignCommand;
 import lombok.val;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;

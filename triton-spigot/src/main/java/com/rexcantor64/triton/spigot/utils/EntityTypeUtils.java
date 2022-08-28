@@ -3,6 +3,7 @@ package com.rexcantor64.triton.spigot.utils;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
@@ -26,7 +27,7 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
-            if (Triton.asSpigot().getMcVersion() >= 13) {
+            if (SpigotTriton.asSpigot().getMcVersion() >= 13) {
                 calculateEntityRegistrySet();
 
                 Object type = registryGetTypeByNumericIdMethod.invoke(entityTypeRegistry, id);

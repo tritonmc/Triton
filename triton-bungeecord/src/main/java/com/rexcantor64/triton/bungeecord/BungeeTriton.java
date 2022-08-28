@@ -13,7 +13,7 @@ import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.terminal.Log4jInjector;
-import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.val;
@@ -124,7 +124,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
     public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
         Triton.get().getLogger().logTrace("Injecting pipeline for player %1", lp);
         try {
-            Object ch = NMSUtils.getDeclaredField(p, "ch");
+            Object ch = ReflectionUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");
             Channel channel = (Channel) method.invoke(ch, new Object[0]);
             channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));

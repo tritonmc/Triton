@@ -18,16 +18,14 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.wrappers.AdventureComponentWrapper;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -88,7 +86,7 @@ public class ProtocolLibListener implements PacketListener {
         this.main = main;
         this.allowedTypes = Arrays.asList(allowedTypes);
         if (main.getMcVersion() >= 17) {
-            MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getClass("net.minecraft.world.item.trading.MerchantRecipeList");
+            MERCHANT_RECIPE_LIST_CLASS = ReflectionUtils.getClass("net.minecraft.world.item.trading.MerchantRecipeList");
         } else if (main.getMcVersion() >= 14) {
             MERCHANT_RECIPE_LIST_CLASS = NMSUtils.getNMSClass("MerchantRecipeList");
         } else {
@@ -103,9 +101,9 @@ public class ProtocolLibListener implements PacketListener {
             CRAFT_MERCHANT_RECIPE_TO_MINECRAFT_METHOD = null;
         }
         CONTAINER_PLAYER_CLASS = main.getMcVersion() >= 17 ?
-                NMSUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
+                ReflectionUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
                 NMSUtils.getNMSClass("ContainerPlayer");
-        BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? NMSUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
+        BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? ReflectionUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
 
         ADVENTURE_COMPONENT_CLASS = ReflectionUtils.getClassOrNull("net.kyori.adventure.text.Component");
 
@@ -657,7 +655,7 @@ public class ProtocolLibListener implements PacketListener {
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
             if (languagePlayer.isWaitingForClientLocale())
-                Bukkit.getScheduler().runTask(Triton.asSpigot().getLoader(), () -> languagePlayer
+                Bukkit.getScheduler().runTask(SpigotTriton.asSpigot().getLoader(), () -> languagePlayer
                         .setLang(Triton.get().getLanguageManager()
                                 .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
         }
@@ -690,17 +688,14 @@ public class ProtocolLibListener implements PacketListener {
 
     /* REFRESH */
 
-    @Override
     public void refreshSigns(SpigotLanguagePlayer player) {
         signPacketHandler.refreshSignsForPlayer(player);
     }
 
-    @Override
     public void refreshEntities(SpigotLanguagePlayer player) {
         entitiesPacketHandler.refreshEntities(player);
     }
 
-    @Override
     public void refreshTabHeaderFooter(SpigotLanguagePlayer player, String header, String footer) {
         player.toBukkit().ifPresent(bukkitPlayer -> {
             PacketContainer packet =
@@ -711,7 +706,6 @@ public class ProtocolLibListener implements PacketListener {
         });
     }
 
-    @Override
     @SneakyThrows
     public void refreshBossbar(SpigotLanguagePlayer player, UUID uuid, String json) {
         if (getMCVersion() <= 8) return;
@@ -734,7 +728,6 @@ public class ProtocolLibListener implements PacketListener {
         ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
     }
 
-    @Override
     public void refreshScoreboard(SpigotLanguagePlayer player) {
         val bukkitPlayerOpt = player.toBukkit();
         if (!bukkitPlayerOpt.isPresent()) return;
@@ -790,14 +783,12 @@ public class ProtocolLibListener implements PacketListener {
         });
     }
 
-    @Override
     public void refreshAdvancements(SpigotLanguagePlayer languagePlayer) {
         if (this.advancementsPacketHandler == null) return;
 
         this.advancementsPacketHandler.refreshAdvancements(languagePlayer);
     }
 
-    @Override
     public void resetSign(Player p, SignLocation location) {
         World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;

@@ -1,8 +1,8 @@
 package com.rexcantor64.triton.velocity.commands.handler;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.Sender;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
@@ -28,11 +28,16 @@ public class VelocitySender implements Sender {
     }
 
     @Override
-    public void assertPermission(String... permissions) {
-        if (permissions.length == 0) throw new NoPermissionException("");
+    public void assertPermission(String... permissions) throws NoPermissionException {
+        if (permissions.length == 0) {
+            throw new NoPermissionException("");
+        }
 
-        for (val permission : permissions)
-            if (hasPermission(permission)) return;
+        for (val permission : permissions) {
+            if (hasPermission(permission)) {
+                return;
+            }
+        }
         throw new NoPermissionException(permissions[0]);
     }
 

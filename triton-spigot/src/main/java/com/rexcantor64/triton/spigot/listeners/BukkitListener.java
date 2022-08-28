@@ -2,6 +2,7 @@ package com.rexcantor64.triton.spigot.listeners;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import lombok.val;
 import org.bukkit.ChatColor;
@@ -23,7 +24,7 @@ public class BukkitListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onLogin(AsyncPlayerPreLoginEvent e) {
         val lp = new SpigotLanguagePlayer(e.getUniqueId());
-        Triton.asSpigot().getPlayerManager().registerPlayer(lp);
+        SpigotTriton.asSpigot().getPlayerManager().registerPlayer(lp);
         if (e.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED)
             e.setKickMessage(Triton.get().getLanguageParser()
                     .replaceLanguages(e.getKickMessage(), lp, Triton.get().getConfig().getKickSyntax()));

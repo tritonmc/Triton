@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.spigot.guiapi;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -94,7 +95,7 @@ public class ScrollableGui extends Gui {
             addNavigationButtons(inv, page);
         }
         p.openInventory(inv);
-        Triton.get().getGuiManager().add(inv, new OpenGuiInfo(this, page));
+        SpigotTriton.asSpigot().getGuiManager().add(inv, new OpenGuiInfo(this, page));
         this.inv = inv;
     }
 

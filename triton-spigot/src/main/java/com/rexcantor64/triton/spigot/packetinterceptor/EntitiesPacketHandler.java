@@ -12,6 +12,7 @@ import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.EntityTypeUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
@@ -179,7 +180,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
         // TODO For now, it is only possible to translate NPCs that are saved server side
         // Fetch entity object using main thread, otherwise we'll get concurrency issues
-        Triton.asSpigot()
+        SpigotTriton.asSpigot()
                 .callSync(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                 .ifPresent(entity -> addEntity(
                                 languagePlayer.getPlayersMap(),

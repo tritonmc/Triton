@@ -8,10 +8,9 @@ import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
-import com.rexcantor64.triton.SpigotMLP;
-import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.config.MainConfig;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -238,8 +237,8 @@ public class ItemStackTranslationUtils {
         );
     }
 
-    private static SpigotMLP main() {
-        return Triton.asSpigot();
+    private static SpigotTriton main() {
+        return SpigotTriton.asSpigot();
     }
 
 }

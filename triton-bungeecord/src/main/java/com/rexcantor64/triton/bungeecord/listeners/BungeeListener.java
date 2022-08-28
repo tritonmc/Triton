@@ -4,7 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.PreLoginBungeeEncoder;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
-import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import com.rexcantor64.triton.utils.SocketUtils;
 import io.netty.channel.Channel;
 import lombok.val;
@@ -64,7 +64,7 @@ public class BungeeListener implements Listener {
     public void onPreLogin(PlayerHandshakeEvent event) {
         val ip = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
         try {
-            Object ch = NMSUtils.getDeclaredField(event.getConnection(), "ch");
+            Object ch = ReflectionUtils.getDeclaredField(event.getConnection(), "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");
             Channel channel = (Channel) method.invoke(ch, new Object[0]);
             channel.pipeline()

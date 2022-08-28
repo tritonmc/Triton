@@ -7,6 +7,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 public class MotdPacketHandler extends PacketAdapter {
 
     public MotdPacketHandler() {
-        super(Triton.asSpigot().getLoader(), ListenerPriority.HIGHEST,
+        super(SpigotTriton.asSpigot().getLoader(), ListenerPriority.HIGHEST,
                 Collections.singleton(PacketType.Status.Server.SERVER_INFO), ListenerOptions.ASYNC);
     }
 

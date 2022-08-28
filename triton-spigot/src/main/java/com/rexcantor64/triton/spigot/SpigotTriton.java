@@ -53,6 +53,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     @Getter
     private boolean papiEnabled = false;
     private int refreshTaskId = -1;
+    @Getter
     private GuiManager guiManager;
     @Getter
     private final BannerBuilder bannerBuilder = new BannerBuilder();

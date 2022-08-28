@@ -2,6 +2,7 @@ package com.rexcantor64.triton.spigot.guiapi;
 
 import com.google.common.collect.Maps;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -83,7 +84,7 @@ public class Gui implements InventoryHolder {
         for (Entry<Integer, GuiButton> entry : items.entrySet())
             inv.setItem(entry.getKey(), entry.getValue().getItemStack());
         p.openInventory(inv);
-        Triton.get().getGuiManager().add(inv, new OpenGuiInfo(this));
+        SpigotTriton.asSpigot().getGuiManager().add(inv, new OpenGuiInfo(this));
         this.inv = inv;
     }
 

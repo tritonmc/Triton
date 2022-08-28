@@ -15,6 +15,7 @@ import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
@@ -42,9 +43,9 @@ public class SignPacketHandler extends PacketHandler {
 
     public SignPacketHandler() {
         LEVEL_CHUNK_PACKET_DATA_CLASS = getMcVersion() >= 18 ?
-                NMSUtils.getClass("net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData") : null;
+                ReflectionUtils.getClass("net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData") : null;
         TILE_ENTITY_TYPES_CLASS = getMcVersion() >= 18 ?
-                NMSUtils.getClass("net.minecraft.world.level.block.entity.TileEntityTypes") : null;
+                ReflectionUtils.getClass("net.minecraft.world.level.block.entity.TileEntityTypes") : null;
         SIGN_TYPE_ID = getMcVersion() >= 11 ? "minecraft:sign" : "Sign";
     }
 
@@ -383,7 +384,7 @@ public class SignPacketHandler extends PacketHandler {
      * @return An array with length 4, representing each line of the sign
      */
     private Optional<String[]> getSignLinesFromLocation(SignLocation location) {
-        return Triton.asSpigot().callSync(() -> {
+        return SpigotTriton.asSpigot().callSync(() -> {
             val world = Bukkit.getWorld(location.getWorld());
             if (world == null) return new String[4];
 

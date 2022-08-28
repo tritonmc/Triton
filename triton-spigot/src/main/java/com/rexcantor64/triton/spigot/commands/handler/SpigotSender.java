@@ -1,8 +1,8 @@
 package com.rexcantor64.triton.spigot.commands.handler;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.Sender;
+import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import net.md_5.bungee.api.ChatColor;
@@ -26,11 +26,16 @@ public class SpigotSender implements Sender {
     }
 
     @Override
-    public void assertPermission(String... permissions) {
-        if (permissions.length == 0) throw new NoPermissionException("");
+    public void assertPermission(String... permissions) throws NoPermissionException {
+        if (permissions.length == 0) {
+            throw new NoPermissionException("");
+        }
 
-        for (val permission : permissions)
-            if (hasPermission(permission)) return;
+        for (val permission : permissions) {
+            if (hasPermission(permission)) {
+                return;
+            }
+        }
         throw new NoPermissionException(permissions[0]);
     }
 

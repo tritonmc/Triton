@@ -27,11 +27,16 @@ public class BungeeSender implements Sender {
     }
 
     @Override
-    public void assertPermission(String... permissions) {
-        if (permissions.length == 0) throw new NoPermissionException("");
+    public void assertPermission(String... permissions) throws NoPermissionException {
+        if (permissions.length == 0) {
+            throw new NoPermissionException("");
+        }
 
-        for (val permission : permissions)
-            if (hasPermission(permission)) return;
+        for (val permission : permissions) {
+            if (hasPermission(permission)) {
+                return;
+            }
+        }
         throw new NoPermissionException(permissions[0]);
     }
 

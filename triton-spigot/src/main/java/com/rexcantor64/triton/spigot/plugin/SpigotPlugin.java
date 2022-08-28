@@ -1,11 +1,11 @@
 package com.rexcantor64.triton.spigot.plugin;
 
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.logger.JavaLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,7 +17,7 @@ public class SpigotPlugin extends JavaPlugin implements PluginLoader {
     @Override
     public void onEnable() {
         this.logger = new JavaLogger(this.getLogger());
-        new SpigotMLP(this).onEnable();
+        new SpigotTriton(this).onEnable();
     }
 
     @Override

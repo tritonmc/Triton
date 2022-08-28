@@ -235,7 +235,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
         out.writeBoolean(key != null); // Set (true) or Remove (false)
         if (key != null) // Set only
             out.writeUTF(key);
-        p.sendPluginMessage(Triton.asSpigot().getLoader(), "triton:main", out.toByteArray());
+        p.sendPluginMessage(SpigotTriton.asSpigot().getLoader(), "triton:main", out.toByteArray());
     }
 
     @Override

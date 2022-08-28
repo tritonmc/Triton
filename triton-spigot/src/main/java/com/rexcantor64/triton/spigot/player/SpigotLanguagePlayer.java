@@ -4,8 +4,9 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
-import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.spigot.SpigotTriton;
+import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
 import lombok.Getter;
@@ -34,21 +35,21 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private String lastTabHeader;
     private String lastTabFooter;
-    private Map<UUID, String> bossBars = new ConcurrentHashMap<>();
+    private final Map<UUID, String> bossBars = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
 
     @Getter
-    private Map<World, Map<Integer, Optional<String>>> entitiesMap = new ConcurrentHashMap<>();
+    private final Map<World, Map<Integer, Optional<String>>> entitiesMap = new ConcurrentHashMap<>();
     @Getter
-    private Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
+    private final Map<World, Map<Integer, Entity>> playersMap = new ConcurrentHashMap<>();
     @Getter
-    private Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
+    private final Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
     @Getter
-    private Set<UUID> shownPlayers = new HashSet<>();
+    private final Set<UUID> shownPlayers = new HashSet<>();
     @Getter
-    private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
+    private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     @Getter
-    private Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
+    private final Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -109,10 +110,10 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.lang = event.getNewLanguage();
         this.waitingForClientLocale = false;
         refreshAll();
-        if (Triton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
+        if (SpigotTriton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
             save();
-        if (sendToBungee && Triton.asSpigot().getBridgeManager() != null)
-            Triton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
+        if (sendToBungee && SpigotTriton.asSpigot().getBridgeManager() != null)
+            SpigotTriton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
         executeCommands();
     }
 
@@ -125,8 +126,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.waitingForClientLocale = true;
     }
 
-    private Optional<PacketInterceptor> getInterceptor() {
-        return Optional.ofNullable(Triton.asSpigot().getProtocolLibListener());
+    private Optional<ProtocolLibListener> getInterceptor() {
+        return Optional.ofNullable(SpigotTriton.asSpigot().getProtocolLibListener());
     }
 
     /**

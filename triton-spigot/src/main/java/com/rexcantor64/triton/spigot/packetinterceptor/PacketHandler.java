@@ -3,12 +3,11 @@ package com.rexcantor64.triton.spigot.packetinterceptor;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
-import com.rexcantor64.triton.SpigotMLP;
-import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.logger.TritonLogger;
+import com.rexcantor64.triton.spigot.SpigotTriton;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -17,8 +16,8 @@ public abstract class PacketHandler {
 
     public abstract void registerPacketTypes(Map<PacketType, HandlerFunction> registry);
 
-    protected SpigotMLP getMain() {
-        return Triton.asSpigot();
+    protected SpigotTriton getMain() {
+        return SpigotTriton.asSpigot();
     }
 
     protected MainConfig getConfig() {
@@ -38,7 +37,7 @@ public abstract class PacketHandler {
     }
 
     protected int getMcVersion() {
-        return Triton.asSpigot().getMcVersion();
+        return getMain().getMcVersion();
     }
 
 

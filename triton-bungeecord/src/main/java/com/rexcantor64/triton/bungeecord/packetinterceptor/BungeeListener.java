@@ -3,7 +3,7 @@ package com.rexcantor64.triton.bungeecord.packetinterceptor;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.ReflectionUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -194,7 +194,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     }
 
     private void send(DefinedPacket packet) {
-        ((ChannelWrapper) NMSUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
+        ((ChannelWrapper) ReflectionUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
     }
 
     public void refreshTab() {
