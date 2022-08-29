@@ -10,8 +10,6 @@ test {
 
 dependencies {
     implementation project(path: ":api")
-    // TODO remove when md_5's chat library is removed
-    implementation project(path: ":spigot-legacy")
 
     // Adventure / MiniMessage
     // TODO check which of these should be compileOnly or implementation
@@ -25,13 +23,8 @@ dependencies {
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
     }
 
-    // md_5's chat library
-    // TODO remove this for 4.0.0, rely on Adventure instead
-    compileOnly 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
-    testImplementation 'net.md-5:bungeecord-chat:1.19-R0.1-SNAPSHOT'
-
-    // Terminal translation
-    compileOnly 'org.fusesource.jansi:jansi:2.4.0'
+    // Dependencies we can depend on, since they are on all platforms
+    compileOnly 'com.google.guava:guava:31.1-jre'
 
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
     compileOnly 'org.yaml:snakeyaml:1.30'

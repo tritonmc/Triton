@@ -25,6 +25,9 @@ dependencies {
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.0.0-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.1'
 
+    // Libraries available on Spigot
+    compileOnly 'org.fusesource.jansi:jansi:2.4.0' // Used for terminal translation
+
     implementation 'org.bstats:bstats-bukkit:3.0.0'
 }
 

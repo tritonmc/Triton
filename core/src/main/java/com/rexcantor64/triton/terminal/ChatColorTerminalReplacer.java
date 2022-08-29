@@ -1,14 +1,8 @@
 package com.rexcantor64.triton.terminal;
 
-import lombok.val;
-import net.md_5.bungee.api.ChatColor;
-import org.fusesource.jansi.Ansi;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class ChatColorTerminalReplacer {
 
+    /* FIXME
     private final Map<ChatColor, String> replacements = new HashMap<>();
 
     ChatColorTerminalReplacer() {
@@ -61,5 +55,6 @@ public class ChatColorTerminalReplacer {
 
         return result + Ansi.ansi().reset().toString();
     }
+    */
 
 }

@@ -10,7 +10,6 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.NonNull;
 import lombok.val;
-import lombok.var;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.List;
  * 3 -> tell server to re-fetch translations from database
  * 4 -> forward Triton command as player
  */
+@SuppressWarnings("UnstableApiUsage") // Guava's ByteStreams is marked with @Beta
 public class BridgeSerializer {
 
     public static byte[] getLanguageDataOutput() {
@@ -46,7 +46,7 @@ public class BridgeSerializer {
         return languageOut.toByteArray();
     }
 
-    public static List<byte[]> buildTranslationData(String serverName, @NonNull byte[] languageOut) {
+    public static List<byte[]> buildTranslationData(String serverName, byte @NonNull [] languageOut) {
         List<byte[]> outList = new ArrayList<>();
         try {
 

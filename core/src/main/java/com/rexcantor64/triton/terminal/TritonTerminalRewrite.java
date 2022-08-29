@@ -12,14 +12,16 @@ import org.apache.logging.log4j.message.SimpleMessage;
 @Plugin(name = "TritonTerminal", category = "Core", elementType = "rewritePolicy", printObject = false)
 public final class TritonTerminalRewrite implements RewritePolicy {
 
-    ChatColorTerminalReplacer chatColorTerminalReplacer;
+    // ChatColorTerminalReplacer chatColorTerminalReplacer;
 
     public TritonTerminalRewrite() {
+        /* FIXME
         try {
             this.chatColorTerminalReplacer = new ChatColorTerminalReplacer();
         } catch (Exception | Error e) {
             Triton.get().getLogger().logError(e, "Failed to setup chat color terminal replacer.");
         }
+        */
     }
 
     @PluginFactory
@@ -36,8 +38,10 @@ public final class TritonTerminalRewrite implements RewritePolicy {
                         .getChatSyntax());
         if (translated == null)
             return event;
+        /* FIXME
         if (chatColorTerminalReplacer != null && Triton.get().getConfig().isTerminalAnsi())
             translated = chatColorTerminalReplacer.parseMessage(translated);
+        */
 
         try {
             ReflectionUtils.setDeclaredField(event, "message", new SimpleMessage(translated));
