@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.bungeecord.commands.handler;
 
+import com.rexcantor64.triton.bungeecord.commands.SetLanguageCommand;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.CommandHandler;
 import lombok.val;
@@ -8,6 +9,11 @@ import net.md_5.bungee.api.CommandSender;
 import java.util.Arrays;
 
 public class BungeeCommandHandler extends CommandHandler {
+
+    public BungeeCommandHandler() {
+        super();
+        this.commands.put("setlanguage", new SetLanguageCommand());
+    }
 
     void onCommand(String label, CommandSender sender, String[] args) {
         val commandEvent = this.buildCommandEvent(label, sender, args);

@@ -4,6 +4,7 @@ import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.rexcantor64.triton.spigot.commands.GetFlagCommand;
 import com.rexcantor64.triton.spigot.commands.OpenSelectorCommand;
+import com.rexcantor64.triton.spigot.commands.SetLanguageCommand;
 import com.rexcantor64.triton.spigot.commands.SignCommand;
 import lombok.val;
 import org.bukkit.command.Command;
@@ -19,8 +20,9 @@ public class SpigotCommandHandler extends CommandHandler implements CommandExecu
 
     public SpigotCommandHandler() {
         super();
-        commands.put("getflag", new GetFlagCommand());
-        commands.put("openselector", new OpenSelectorCommand());
+        this.commands.put("getflag", new GetFlagCommand());
+        this.commands.put("openselector", new OpenSelectorCommand());
+        this.commands.put("setlanguage", new SetLanguageCommand());
         this.commands.put("sign", new SignCommand());
     }
 

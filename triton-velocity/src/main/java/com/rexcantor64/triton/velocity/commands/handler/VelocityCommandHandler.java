@@ -2,7 +2,7 @@ package com.rexcantor64.triton.velocity.commands.handler;
 
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.CommandHandler;
-import com.rexcantor64.triton.plugin.Platform;
+import com.rexcantor64.triton.velocity.commands.SetLanguageCommand;
 import com.velocitypowered.api.command.SimpleCommand;
 import lombok.val;
 
@@ -10,6 +10,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class VelocityCommandHandler extends CommandHandler implements SimpleCommand {
+
+    public VelocityCommandHandler() {
+        super();
+        this.commands.put("setlanguage", new SetLanguageCommand());
+    }
 
     @Override
     public void execute(Invocation invocation) {
