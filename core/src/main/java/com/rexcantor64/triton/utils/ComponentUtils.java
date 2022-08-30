@@ -1,10 +1,12 @@
 package com.rexcantor64.triton.utils;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -43,7 +45,11 @@ public class ComponentUtils {
      */
     public static List<Component> splitByNewLine(Component component) {
         val parser = Triton.get().getMessageParser();
+        return splitByNewLine(component, parser);
+    }
 
+    @VisibleForTesting
+    static List<Component> splitByNewLine(Component component, AdventureParser parser) {
         String plainText = parser.componentToString(component);
         Queue<Integer> indexesToSplitAt = IntStream.range(0, plainText.length())
                 .filter(i -> plainText.charAt(i) == '\n')
