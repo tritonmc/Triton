@@ -87,7 +87,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text [lang]without."),
                         Component.text()
                                 .content("formatting[/lang][lang]with.colors[/lang] more text"),
@@ -102,7 +102,7 @@ public class AdventureParserTest {
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text This is text without formatting"),
                         Component.text()
                                 .content("This text is green")
@@ -129,7 +129,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text [lang]without."),
                         Component.text("formatting.with.args[arg]test[/arg][/lang] more text")
                 )
@@ -140,19 +140,13 @@ public class AdventureParserTest {
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .content("Text ")
-                                .color(TextColor.color(0xff000)),
-                        Component.text()
+                                .content("Text This is text without formatting but with arguments (")
+                                .color(TextColor.color(0xff0000))
                                 .append(
-                                        Component.text()
-                                                .content("This is text without formatting but with arguments (")
-                                                .color(TextColor.color(0xff000)),
                                         Component.text()
                                                 .content("test")
                                                 .color(TextColor.color(0x0000ff)),
-                                        Component.text()
-                                                .content(")")
-                                                .color(TextColor.color(0xff000))
+                                        Component.text(")")
                                 ),
                         Component.text()
                                 .color(TextColor.color(0x0000ff))
@@ -171,7 +165,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -194,9 +188,10 @@ public class AdventureParserTest {
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -228,7 +223,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -251,9 +246,10 @@ public class AdventureParserTest {
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -291,7 +287,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -310,9 +306,10 @@ public class AdventureParserTest {
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -1079,7 +1076,7 @@ public class AdventureParserTest {
         );
 
         assertEquals(expected.size(), result.size());
-        for (int i = 0; i < expected.size(); i++){
+        for (int i = 0; i < expected.size(); i++) {
             assertArrayEquals(expected.get(i), result.get(i));
         }
     }
