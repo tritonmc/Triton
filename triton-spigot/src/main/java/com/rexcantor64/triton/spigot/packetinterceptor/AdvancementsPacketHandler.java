@@ -8,12 +8,11 @@ import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.MinecraftKey;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.WrappedAdvancementDisplay;
 import lombok.val;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 
 import java.util.Arrays;
@@ -76,18 +75,28 @@ public class AdvancementsPacketHandler extends PacketHandler {
 
         for (Object serializedAdvancement : serializedAdvancementMap.values()) {
             val advancementDisplayHandle = ADVANCEMENT_DISPLAY_FIELD.get(serializedAdvancement);
-            if (advancementDisplayHandle == null) continue;
+            if (advancementDisplayHandle == null) {
+                continue;
+            }
 
             val advancementDisplay = WrappedAdvancementDisplay.fromHandle(advancementDisplayHandle).shallowClone();
 
-            val originalTitle = ComponentSerializer.parse(advancementDisplay.getTitle().getJson());
-            val originalDescription = ComponentSerializer.parse(advancementDisplay.getDescription().getJson());
-
-            val translatedTitle = getLanguageParser().parseComponent(languagePlayer, getMain().getConfig().getAdvancementsSyntax(), originalTitle);
-            val translatedDescription = getLanguageParser().parseComponent(languagePlayer, getMain().getConfig().getAdvancementsSyntax(), originalDescription);
-
-            advancementDisplay.setTitle(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedTitle)));
-            advancementDisplay.setDescription(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedDescription)));
+            parser()
+                    .translateComponent(
+                            WrappedComponentUtils.deserialize(advancementDisplay.getTitle()),
+                            languagePlayer,
+                            getConfig().getAdvancementsSyntax()
+                    )
+                    .map(WrappedComponentUtils::serialize)
+                    .ifChanged(advancementDisplay::setTitle);
+            parser()
+                    .translateComponent(
+                            WrappedComponentUtils.deserialize(advancementDisplay.getDescription()),
+                            languagePlayer,
+                            getConfig().getAdvancementsSyntax()
+                    )
+                    .map(WrappedComponentUtils::serialize)
+                    .ifChanged(advancementDisplay::setDescription);
 
             ADVANCEMENT_DISPLAY_FIELD.set(serializedAdvancement, advancementDisplay.getHandle());
         }

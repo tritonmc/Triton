@@ -1,6 +1,8 @@
 package com.rexcantor64.triton.terminal;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Language;
+import lombok.val;
 
 import java.io.PrintStream;
 
@@ -24,11 +26,16 @@ public class TranslatablePrintStream extends PrintStream {
     }
 
     private String translate(String input) {
-        if (Triton.get().getLanguageManager().getMainLanguage() != null) {
-            String result = Triton.get().getLanguageParser()
-                    .replaceLanguages(input, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                            .get().getConfig().getChatSyntax());
-            if (result != null) return result;
+        Language mainLanguage = Triton.get().getLanguageManager().getMainLanguage();
+        if (mainLanguage != null) {
+            return Triton.get().getMessageParser()
+                    .translateString(
+                            input,
+                            mainLanguage,
+                            Triton.get().getConfig().getChatSyntax()
+                    )
+                    .getResult()
+                    .orElse(input);
         }
         return input;
     }

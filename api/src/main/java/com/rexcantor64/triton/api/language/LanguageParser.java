@@ -1,6 +1,5 @@
 package com.rexcantor64.triton.api.language;
 
-import com.rexcantor64.triton.api.Triton;
 import com.rexcantor64.triton.api.TritonAPI;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import lombok.val;
@@ -45,14 +44,11 @@ public interface LanguageParser {
                         syntax
                 );
 
-        return result.getChanged()
-                .map(component -> BungeeComponentSerializer.get().serialize(component))
-                .orElseGet(() -> {
-                    if (result.getState() == TranslationResult.ResultState.UNCHANGED) {
-                        return input;
-                    }
-                    return null;
-                });
+        return result.mapToObj(
+                component -> BungeeComponentSerializer.get().serialize(component),
+                () -> input,
+                () -> null
+        );
     }
 
 }

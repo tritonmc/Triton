@@ -17,6 +17,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,7 +244,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
 
     public Component[] formatLines(@NonNull Language language,
                                    @NonNull String[] lines,
-                                   @NonNull Supplier<Component[]> defaultLinesSupplier) {
+                                   @NonNull Supplier<@Nullable Component @NotNull []> defaultLinesSupplier) {
         val result = new Component[4];
         Component[] defaultLines = null;
 
@@ -269,7 +270,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
 
             val currentIndex = i; // necessary for lambda function
             val currentDefaultLines = defaultLines; // necessary for lambda function
-            this.triton.getAdventureParser()
+            this.triton.getMessageParser()
                     .translateComponent(defaultLines[i], language, this.triton.getConfig().getSignsSyntax())
                     .ifChanged(component -> result[currentIndex] = component)
                     .ifUnchanged(() -> result[currentIndex] = currentDefaultLines[currentIndex])
@@ -309,7 +310,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
      * @see com.rexcantor64.triton.language.parser.AdventureParser#replaceArguments(Component, List)
      */
     private Component replaceArguments(Component component, Component... args) {
-        return triton.getAdventureParser().replaceArguments(component, Arrays.asList(args));
+        return triton.getMessageParser().replaceArguments(component, Arrays.asList(args));
     }
 
     private Component getTranslationNotFoundComponent(String key, Component... arguments) {

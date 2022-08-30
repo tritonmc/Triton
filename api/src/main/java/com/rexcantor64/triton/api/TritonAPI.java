@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.api;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * The entry point of the API
  *
@@ -13,7 +15,8 @@ public class TritonAPI {
      * @return The instance of the {@link Triton plugin}.
      * @since 1.0.0
      */
-    public static Triton getInstance() {
+    public static @NotNull Triton getInstance() {
+        //noinspection ConstantConditions
         return null;
     }
 

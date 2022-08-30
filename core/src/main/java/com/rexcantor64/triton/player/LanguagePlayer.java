@@ -10,10 +10,6 @@ public interface LanguagePlayer extends com.rexcantor64.triton.api.players.Langu
 
     void removeBossbar(UUID uuid);
 
-    void setLastTabHeader(String lastTabHeader);
-
-    void setLastTabFooter(String lastTabFooter);
-
     boolean isWaitingForClientLocale();
 
     void waitForClientLocale();

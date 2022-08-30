@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.spigot.terminal;
 
 import com.rexcantor64.triton.Triton;
+import lombok.val;
 
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
@@ -18,11 +19,12 @@ public class SpigotTerminalFormatter extends SimpleFormatter {
     }
 
     private String handleString(String superResult) {
-        if (Triton.get().getLanguageManager().getMainLanguage() != null) {
-            String result = Triton.get().getLanguageParser()
-                    .replaceLanguages(superResult, Triton.get().getLanguageManager().getMainLanguage().getName(), Triton
-                            .get().getConfig().getChatSyntax());
-            if (result != null) return result;
+        val mainLanguage = Triton.get().getLanguageManager().getMainLanguage();
+        if (mainLanguage != null) {
+            return Triton.get().getMessageParser()
+                    .translateString(superResult, mainLanguage, Triton.get().getConfig().getChatSyntax())
+                    .getResult()
+                    .orElse(superResult);
         }
         return superResult;
     }

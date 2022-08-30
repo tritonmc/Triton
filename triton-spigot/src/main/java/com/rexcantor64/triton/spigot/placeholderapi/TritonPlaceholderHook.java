@@ -35,6 +35,7 @@ public class TritonPlaceholderHook extends PlaceholderExpansion implements Relat
     public String onPlaceholderRequest(Player p, String params) {
         if (params == null) return null;
         if (p == null) return triton.getLanguageManager().getTextFromMain(params);
+        // TODO support PAPI placeholders and Adventure Components
         return triton.getLanguageManager().getText(triton.getPlayerManager().get(p.getUniqueId()), params);
     }
 

@@ -19,19 +19,22 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
+import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
-import com.rexcantor64.triton.spigot.wrappers.AdventureComponentWrapper;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.SneakyThrows;
 import lombok.val;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -68,7 +71,7 @@ public class ProtocolLibListener implements PacketListener {
     private final Class<?> BOSSBAR_UPDATE_TITLE_ACTION_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
-    private final Class<?> ADVENTURE_COMPONENT_CLASS;
+    private final Class<Component> ADVENTURE_COMPONENT_CLASS = Component.class;
     private final Field PLAYER_ACTIVE_CONTAINER_FIELD;
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
@@ -105,8 +108,6 @@ public class ProtocolLibListener implements PacketListener {
                 NMSUtils.getNMSClass("ContainerPlayer");
         BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? ReflectionUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
 
-        ADVENTURE_COMPONENT_CLASS = ReflectionUtils.getClassOrNull("net.kyori.adventure.text.Component");
-
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
 
@@ -122,6 +123,10 @@ public class ProtocolLibListener implements PacketListener {
     @Override
     public Plugin getPlugin() {
         return main.getLoader();
+    }
+
+    private MessageParser parser() {
+        return main.getMessageParser();
     }
 
     private void setupPacketHandlers() {
@@ -183,40 +188,49 @@ public class ProtocolLibListener implements PacketListener {
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
-        BaseComponent[] result = null;
+        val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        // Hot fix for 1.16 Paper builds 472+ (and 1.17+)
-        StructureModifier<?> adventureModifier =
-                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        Component message = null;
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
-            Object adventureComponent = adventureModifier.readSafely(0);
-            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
-            adventureModifier.writeSafely(0, null);
+        if (adventureModifier.readSafely(0) != null) {
+            message = adventureModifier.readSafely(0);
         } else if (baseComponentModifier.readSafely(0) != null) {
-            result = baseComponentModifier.readSafely(0);
+            message = BaseComponentUtils.deserialize(baseComponentModifier.readSafely(0));
         } else {
             val msg = packet.getPacket().getChatComponents().readSafely(0);
-            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
+            if (msg != null) {
+                message = WrappedComponentUtils.deserialize(msg);
+            }
         }
 
         // Something went wrong while getting data from the packet, or the packet is empty...?
-        if (result == null) return;
-
-        // Translate the message
-        result = main.getLanguageParser().parseComponent(
-                languagePlayer,
-                ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax(),
-                result);
-
-        // Handle disabled line
-        if (result == null) {
-            packet.setCancelled(true);
+        if (message == null) {
             return;
         }
 
-        // Flatten action bar's json
-        baseComponentModifier.writeSafely(0, ab && getMCVersion() < 16 ? ComponentUtils.mergeComponents(result) : result);
+        // Translate the message
+        parser()
+                .translateComponent(
+                        message,
+                        languagePlayer,
+                        ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax()
+                )
+                .ifChanged(result -> {
+                    if (adventureModifier.size() > 0) {
+                        // On a Paper or fork, so we can directly set the Adventure Component
+                        adventureModifier.writeSafely(0, result);
+                    } else {
+                        BaseComponent[] resultComponent;
+                        if (ab && getMCVersion() < 16) {
+                            // Flatten action bar's json on 1.15 and below
+                            resultComponent = new BaseComponent[]{new TextComponent(LegacyComponentSerializer.legacySection().serialize(result))};
+                        } else {
+                            resultComponent = BaseComponentUtils.serialize(result);
+                        }
+                        baseComponentModifier.writeSafely(0, resultComponent);
+                    }
+                })
+                .ifToRemove(() -> packet.setCancelled(true));
     }
 
     /**
@@ -235,39 +249,40 @@ public class ProtocolLibListener implements PacketListener {
 
         val stringModifier = packet.getPacket().getStrings();
 
-        BaseComponent[] result = null;
+        Component message = null;
 
-        // Hot fix for Paper builds
-        StructureModifier<?> adventureModifier =
-                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
-            Object adventureComponent = adventureModifier.readSafely(0);
-            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
-            adventureModifier.writeSafely(0, null);
+        if (adventureModifier.readSafely(0) != null) {
+            message = adventureModifier.readSafely(0);
         } else {
             val msgJson = stringModifier.readSafely(0);
             if (msgJson != null) {
-                result = ComponentSerializer.parse(msgJson);
+                message = ComponentUtils.deserializeFromJson(msgJson);
             }
         }
 
         // Packet is empty
-        if (result == null) return;
-
-        // Translate the message
-        result = main.getLanguageParser().parseComponent(
-                languagePlayer,
-                ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax(),
-                result);
-
-        // Handle disabled line
-        if (result == null) {
-            packet.setCancelled(true);
+        if (message == null) {
             return;
         }
 
-        stringModifier.writeSafely(0, ComponentSerializer.toString(result));
+        // Translate the message
+        parser()
+                .translateComponent(
+                        message,
+                        languagePlayer,
+                        ab ? main.getConfig().getActionbarSyntax() : main.getConfig().getChatSyntax()
+                )
+                .ifChanged(result -> {
+                    if (adventureModifier.size() > 0) {
+                        // On a Paper or fork, so we can directly set the Adventure Component
+                        adventureModifier.writeSafely(0, result);
+                    } else {
+                        stringModifier.writeSafely(0, ComponentUtils.serializeToJson(result));
+                    }
+                })
+                .ifToRemove(() -> packet.setCancelled(true));
     }
 
     /**
@@ -279,179 +294,212 @@ public class ProtocolLibListener implements PacketListener {
      * @since 3.8.2 (Minecraft 1.19)
      */
     private void handleChatPreview(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (!main.getConfig().isChat()) return;
+
         val chatComponentsModifier = packet.getPacket().getChatComponents();
 
-        BaseComponent[] result = null;
+        Component message = null;
 
-        // Hot fix for Paper builds
-        StructureModifier<?> adventureModifier =
-                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
-            Object adventureComponent = adventureModifier.readSafely(0);
-            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
-            adventureModifier.writeSafely(0, null);
+        if (adventureModifier.readSafely(0) != null) {
+            message = adventureModifier.readSafely(0);
         } else {
             val msg = chatComponentsModifier.readSafely(0);
             if (msg != null) {
-                result = ComponentSerializer.parse(msg.getJson());
+                message = WrappedComponentUtils.deserialize(msg);
             }
         }
 
         // Packet is empty
-        if (result == null) return;
-
-        // Translate the message
-        result = main.getLanguageParser().parseComponent(
-                languagePlayer,
-                main.getConf().getChatSyntax(),
-                result
-        );
-
-        // Handle disabled line
-        if (result == null) {
-            packet.setCancelled(true);
+        if (message == null) {
             return;
         }
 
-        chatComponentsModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        // Translate the message
+        parser()
+                .translateComponent(
+                        message,
+                        languagePlayer,
+                        main.getConfig().getChatSyntax()
+                )
+                .ifChanged(result -> {
+                    if (adventureModifier.size() > 0) {
+                        // On a Paper or fork, so we can directly set the Adventure Component
+                        adventureModifier.write(0, result);
+                    } else {
+                        chatComponentsModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
+                    }
+                })
+                .ifToRemove(() -> {
+                    adventureModifier.writeSafely(0, null);
+                    chatComponentsModifier.writeSafely(0, null);
+
+                });
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isActionbars()) return;
 
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
-        BaseComponent[] result = null;
+        val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        // Hot fix for Paper builds 472+
-        StructureModifier<?> adventureModifier =
-                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        Component message = null;
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
-            Object adventureComponent = adventureModifier.readSafely(0);
-            result = AdventureComponentWrapper.toMd5Component(adventureComponent);
-            adventureModifier.writeSafely(0, null);
+        if (adventureModifier.readSafely(0) != null) {
+            message = adventureModifier.readSafely(0);
         } else if (baseComponentModifier.readSafely(0) != null) {
-            result = baseComponentModifier.readSafely(0);
-            baseComponentModifier.writeSafely(0, null);
+            message = BaseComponentUtils.deserialize(baseComponentModifier.readSafely(0));
         } else {
             val msg = packet.getPacket().getChatComponents().readSafely(0);
-            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
+            if (msg != null) {
+                message = WrappedComponentUtils.deserialize(msg);
+            }
         }
 
         // Something went wrong while getting data from the packet, or the packet is empty...?
-        if (result == null) return;
-
-        // Translate the message
-        result = main.getLanguageParser().parseComponent(
-                languagePlayer,
-                main.getConfig().getActionbarSyntax(),
-                result);
-
-        // Handle disabled line
-        if (result == null) {
-            packet.setCancelled(true);
+        if (message == null) {
             return;
         }
 
-        // Flatten action bar's json
-        packet.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        // Translate the message
+        parser()
+                .translateComponent(
+                        message,
+                        languagePlayer,
+                        main.getConfig().getActionbarSyntax()
+                )
+                .ifChanged(result -> {
+                    if (adventureModifier.size() > 0) {
+                        // We're on a Paper or fork, so we can directly set the Adventure Component
+                        adventureModifier.writeSafely(0, result);
+                    } else {
+                        baseComponentModifier.writeSafely(0, BaseComponentUtils.serialize(result));
+                    }
+                })
+                .ifToRemove(() -> packet.setCancelled(true));
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isTitles()) return;
 
-        WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        if (msg == null) return;
-        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConfig().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()));
-        if (result == null) {
-            packet.setCancelled(true);
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+        WrappedChatComponent msg = chatComponentsModifier.readSafely(0);
+        if (msg == null) {
             return;
         }
-        msg.setJson(ComponentSerializer.toString(result));
-        packet.getPacket().getChatComponents().writeSafely(0, msg);
+
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(msg),
+                        languagePlayer,
+                        main.getConfig().getTitleSyntax()
+                )
+                .map(WrappedComponentUtils::serialize)
+                .ifChanged(newTitle -> chatComponentsModifier.writeSafely(0, newTitle))
+                .ifToRemove(() -> packet.setCancelled(true));
     }
 
     private void handlePlayerListHeaderFooter(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isTab()) return;
-        StructureModifier<?> adventureModifier =
-                ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        WrappedChatComponent header = packet.getPacket().getChatComponents().readSafely(0);
-        String headerJson = null;
-        WrappedChatComponent footer = packet.getPacket().getChatComponents().readSafely(1);
-        String footerJson = null;
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+        val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null
-                && adventureModifier.readSafely(1) != null) {
-            // Paper 1.18 builds now have Adventure Component fields for header and footer, handle conversion
-            // In future versions we might implement an Adventure parser
-            Object adventureHeader = adventureModifier.readSafely(0);
-            Object adventureFooter = adventureModifier.readSafely(1);
+        Component header = adventureModifier.optionRead(0)
+                .orElseGet(() ->
+                        chatComponentsModifier.optionRead(0)
+                                .map(WrappedComponentUtils::deserialize)
+                                .orElse(null)
+                );
+        Component footer = adventureModifier.optionRead(1)
+                .orElseGet(() ->
+                        chatComponentsModifier.optionRead(1)
+                                .map(WrappedComponentUtils::deserialize)
+                                .orElse(null)
+                );
 
-            headerJson = AdventureComponentWrapper.toJson(adventureHeader);
-            footerJson = AdventureComponentWrapper.toJson(adventureFooter);
-
-            adventureModifier.writeSafely(0, null);
-            adventureModifier.writeSafely(1, null);
-        }
-        if (headerJson == null) {
-            if (header == null || footer == null) {
-                Triton.get().getLogger().logWarning("Could not translate player list header footer because content is null.");
-                return;
-            }
-            headerJson = header.getJson();
-            footerJson = footer.getJson();
+        if (header == null || footer == null) {
+            Triton.get().getLogger().logWarning("Could not translate player list header footer because content is null.");
+            return;
         }
 
-        BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConfig().getTabSyntax(), ComponentSerializer.parse(headerJson));
-        if (resultHeader == null)
-            resultHeader = new BaseComponent[]{new TextComponent("")};
-        else if (resultHeader.length == 1 && resultHeader[0] instanceof TextComponent) {
-            // This is needed because the Notchian client does not render the header/footer
-            // if the content of the header top level component is an empty string.
-            val textComp = (TextComponent) resultHeader[0];
-            if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
-                textComp.setText("§0§1§2§r");
-        }
-        header = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultHeader));
-        packet.getPacket().getChatComponents().writeSafely(0, header);
+        parser()
+                .translateComponent(header, languagePlayer, main.getConfig().getTabSyntax())
+                .getResultOrToRemove(Component::empty)
+                .ifPresent(result -> {
+                    /* FIXME
+                    if (resultHeader.length == 1 && resultHeader[0] instanceof TextComponent) {
+                        // This is needed because the Notchian client does not render the header/footer
+                        // if the content of the header top level component is an empty string.
+                        val textComp = (TextComponent) resultHeader[0];
+                        if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
+                            textComp.setText("§0§1§2§r");
+                    }
+                    */
+                    if (adventureModifier.size() > 0) {
+                        // We're on Paper or a fork, so use the Adventure field
+                        adventureModifier.writeSafely(0, result);
+                    } else {
+                        chatComponentsModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
+                    }
+                });
+        parser()
+                .translateComponent(header, languagePlayer, main.getConfig().getTabSyntax())
+                .getResultOrToRemove(Component::empty)
+                .ifPresent(result -> {
+                    if (adventureModifier.size() > 1) {
+                        // We're on Paper or a fork, so use the Adventure field
+                        adventureModifier.writeSafely(1, result);
+                    } else {
+                        chatComponentsModifier.writeSafely(1, WrappedComponentUtils.serialize(result));
+                    }
+                });
 
-        BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConfig().getTabSyntax(), ComponentSerializer.parse(footerJson));
-        if (resultFooter == null)
-            resultFooter = new BaseComponent[]{new TextComponent("")};
-        footer = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultFooter));
-        packet.getPacket().getChatComponents().writeSafely(1, footer);
-        languagePlayer.setLastTabHeader(headerJson);
-        languagePlayer.setLastTabFooter(footerJson);
+        languagePlayer.setLastTabHeader(header);
+        languagePlayer.setLastTabFooter(footer);
     }
 
     private void handleOpenWindow(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isGuis()) return;
 
-        WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConfig().getGuiSyntax(), ComponentSerializer
-                        .parse(msg.getJson()));
-        if (result == null)
-            result = new BaseComponent[]{new TextComponent("")};
-        msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
-        packet.getPacket().getChatComponents().writeSafely(0, msg);
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+
+        val chatComponent = chatComponentsModifier.readSafely(0);
+        if (chatComponent == null) {
+            return;
+        }
+
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(chatComponent),
+                        languagePlayer,
+                        main.getConfig().getGuiSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(WrappedComponentUtils::serialize)
+                .ifPresent(result -> chatComponentsModifier.writeSafely(0, result));
     }
 
     private void handleKickDisconnect(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isKick()) return;
 
-        WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
-        BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConfig().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
-        if (result == null)
-            result = new BaseComponent[]{new TextComponent("")};
-        msg.setJson(ComponentSerializer.toString(result));
-        packet.getPacket().getChatComponents().writeSafely(0, msg);
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+
+        val chatComponent = chatComponentsModifier.readSafely(0);
+        if (chatComponent == null) {
+            return;
+        }
+
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(chatComponent),
+                        languagePlayer,
+                        main.getConfig().getKickSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(WrappedComponentUtils::serialize)
+                .ifPresent(result -> chatComponentsModifier.writeSafely(0, result));
     }
 
     private void handleWindowItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -516,24 +564,24 @@ public class ProtocolLibListener implements PacketListener {
         }
 
 
-        try {
-            languagePlayer.setBossbar(uuid, bossbar.getJson());
-            BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                    main.getConfig().getBossbarSyntax(), ComponentSerializer.parse(bossbar.getJson()));
-            if (result == null)
-                result = new BaseComponent[]{new TranslatableComponent("")};
-            bossbar.setJson(ComponentSerializer.toString(result));
-            if (getMCVersion() >= 17) {
-                ReflectionUtils.setDeclaredField(actionObj, "a", bossbar.getHandle());
-            } else {
-                packet.getPacket().getChatComponents().writeSafely(0, bossbar);
-            }
-        } catch (RuntimeException e) {
-            // Catch 1.16 Hover 'contents' not being parsed correctly
-            // Has been fixed in newer versions of Spigot 1.16
-            Triton.get().getLogger()
-                    .logError(e, "Could not parse a bossbar, so it was ignored. Bossbar: %1", bossbar.getJson());
-        }
+        languagePlayer.setBossbar(uuid, bossbar.getJson());
+
+        final Object finalActionObj = actionObj; // required for lambda
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(bossbar),
+                        languagePlayer,
+                        main.getConfig().getBossbarSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(WrappedComponentUtils::serialize)
+                .ifPresent(result -> {
+                    if (getMCVersion() >= 17) {
+                        ReflectionUtils.setDeclaredField(finalActionObj, "a", bossbar.getHandle());
+                    } else {
+                        packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+                    }
+                });
     }
 
     @SuppressWarnings({"unchecked"})
@@ -617,12 +665,16 @@ public class ProtocolLibListener implements PacketListener {
 
         int i = 0;
         for (WrappedChatComponent component : Arrays.asList(displayName, prefix, suffix)) {
-            BaseComponent[] result = main.getLanguageParser()
-                    .parseComponent(languagePlayer, main.getConfig().getScoreboardSyntax(), ComponentSerializer
-                            .parse(component.getJson()));
-            if (result == null) result = new BaseComponent[]{new TextComponent("")};
-            component.setJson(ComponentSerializer.toString(result));
-            chatComponents.writeSafely(i++, component);
+            final int currentIndex = i++;
+            parser()
+                    .translateComponent(
+                            WrappedComponentUtils.deserialize(component),
+                            languagePlayer,
+                            main.getConfig().getScoreboardSyntax()
+                    )
+                    .getResultOrToRemove(Component::empty)
+                    .map(WrappedComponentUtils::serialize)
+                    .ifPresent(result -> chatComponents.writeSafely(currentIndex, result));
         }
     }
 
@@ -638,17 +690,22 @@ public class ProtocolLibListener implements PacketListener {
         }
         // There are only 3 modes, so no need to check for more modes
 
+        val chatComponentsModifier = packet.getPacket().getChatComponents();
+
         val healthDisplay = packet.getPacket().getModifier().readSafely(2);
-        val displayName = packet.getPacket().getChatComponents().readSafely(0);
+        val displayName = chatComponentsModifier.readSafely(0);
 
         languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
 
-        BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConfig().getScoreboardSyntax(), ComponentSerializer
-                        .parse(displayName.getJson()));
-        if (result == null) result = new BaseComponent[]{new TextComponent("")};
-        displayName.setJson(ComponentSerializer.toString(result));
-        packet.getPacket().getChatComponents().writeSafely(0, displayName);
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(displayName),
+                        languagePlayer,
+                        main.getConfig().getScoreboardSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(WrappedComponentUtils::serialize)
+                .ifPresent(result -> chatComponentsModifier.writeSafely(0, result));
     }
 
     /* PROTOCOL LIB */
@@ -744,12 +801,21 @@ public class ProtocolLibListener implements PacketListener {
         entitiesPacketHandler.refreshEntities(player);
     }
 
-    public void refreshTabHeaderFooter(SpigotLanguagePlayer player, String header, String footer) {
+    public void refreshTabHeaderFooter(SpigotLanguagePlayer player, Component header, Component footer) {
         player.toBukkit().ifPresent(bukkitPlayer -> {
             PacketContainer packet =
                     ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
-            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(header));
-            packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(footer));
+
+            val adventureModifier = packet.getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+            if (adventureModifier.size() > 0) {
+                adventureModifier.writeSafely(0, header);
+                adventureModifier.writeSafely(1, footer);
+            } else {
+                val chatComponentModifier = packet.getChatComponents();
+                chatComponentModifier.writeSafely(0, WrappedComponentUtils.serialize(header));
+                chatComponentModifier.writeSafely(1, WrappedComponentUtils.serialize(footer));
+            }
+
             ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
     }

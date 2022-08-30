@@ -1,7 +1,8 @@
 package com.rexcantor64.triton.terminal;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.api.language.TranslationResult;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.rewrite.RewritePolicy;
@@ -32,19 +33,25 @@ public final class TritonTerminalRewrite implements RewritePolicy {
     @Override
     public LogEvent rewrite(final LogEvent event) {
         Language lang = Triton.get().getLanguageManager().getMainLanguage();
-        if (lang == null) return event;
-        String translated = Triton.get().getLanguageParser()
-                .replaceLanguages(event.getMessage().getFormattedMessage(), lang.getName(), Triton.get().getConfig()
-                        .getChatSyntax());
-        if (translated == null)
+        if (lang == null) {
             return event;
+        }
+
+        TranslationResult<String> translationResult = Triton.get().getMessageParser()
+                .translateString(
+                        event.getMessage().getFormattedMessage(),
+                        lang,
+                        Triton.get().getConfig().getChatSyntax()
+                );
         /* FIXME
         if (chatColorTerminalReplacer != null && Triton.get().getConfig().isTerminalAnsi())
-            translated = chatColorTerminalReplacer.parseMessage(translated);
+            translationResult = chatColorTerminalReplacer.parseMessage(translationResult);
         */
 
         try {
-            ReflectionUtils.setDeclaredField(event, "message", new SimpleMessage(translated));
+            translationResult.getResult().ifPresent(translatedText ->
+                    ReflectionUtils.setDeclaredField(event, "message", new SimpleMessage(translatedText))
+            );
         } catch (Exception | Error ignored) {
         }
         return event;

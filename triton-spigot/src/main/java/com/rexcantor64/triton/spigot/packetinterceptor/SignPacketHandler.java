@@ -13,21 +13,25 @@ import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.language.parser.AdvancedComponent;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.RegistryUtils;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.val;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -176,33 +180,36 @@ public class SignPacketHandler extends PacketHandler {
      */
     @Deprecated
     private void handleUpdateSign(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        if (areSignsDisabled()) return;
+        if (areSignsDisabled()) {
+            return;
+        }
 
         val newPacket = packet.getPacket().shallowClone();
         val pos = newPacket.getBlockPositionModifier().readSafely(0);
         val linesModifier = newPacket.getChatComponentArrays();
 
-        val l = new SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(), pos.getZ());
-        String[] lines = getLanguageManager().getSign(languagePlayer, l, () -> {
+        val location = new SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(), pos.getZ());
+        val lines = getTranslationManager().getSignComponents(languagePlayer, location, () -> {
             val defaultLinesWrapped = linesModifier.readSafely(0);
-            val defaultLines = new String[4];
+            val defaultLines = new Component[4];
             for (int i = 0; i < 4; i++) {
                 try {
-                    defaultLines[i] = AdvancedComponent
-                            .fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
-                            .getTextClean();
+                    defaultLines[i] = WrappedComponentUtils.deserialize(defaultLinesWrapped[i]);
                 } catch (Exception e) {
-                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, l);
+                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, location);
                 }
             }
             return defaultLines;
         });
-        if (lines == null) return;
-        val comps = new WrappedChatComponent[4];
-        for (int i = 0; i < 4; i++)
-            comps[i] =
-                    WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-        linesModifier.writeSafely(0, comps);
+
+        if (!lines.isPresent()) {
+            return;
+        }
+
+        val components = Arrays.stream(lines.get())
+                .map(WrappedComponentUtils::serialize)
+                .toArray(WrappedChatComponent[]::new);
+        linesModifier.writeSafely(0, components);
         packet.setPacket(newPacket);
     }
 
@@ -223,21 +230,30 @@ public class SignPacketHandler extends PacketHandler {
 
         storage.getCollections().values().forEach(collection ->
                 collection.getItems().forEach(item -> {
-                    if (!(item instanceof LanguageSign)) return;
+                    if (!(item instanceof LanguageSign)) {
+                        return;
+                    }
                     val sign = (LanguageSign) item;
 
-                    if (sign.getLocations() == null) return;
+                    if (sign.getLocations() == null) {
+                        return;
+                    }
 
                     val lines = Optional.ofNullable(sign.getLines(player.getLang().getName()))
                             .orElse(sign.getLines(getLanguageManager().getMainLanguage().getName()));
-                    if (lines == null) return;
+                    if (lines == null) {
+                        return;
+                    }
 
                     sign.getLocations().stream()
                             .filter((loc) -> !filterItems || loc.getServer() == null || serverName.equals(loc.getServer()))
                             .forEach(location -> {
-                                val resultLines = getLanguageManager()
-                                        .formatLines(player.getLang()
-                                                .getName(), lines, () -> getSignLinesFromLocation(location).orElse(new String[]{"", "", "", ""}));
+                                val resultLines = getTranslationManager()
+                                        .formatLines(
+                                                player.getLanguage(),
+                                                lines,
+                                                () -> getSignLinesFromLocation(location).orElse(new Component[0])
+                                        );
 
                                 PacketContainer packet;
                                 if (getMcVersion() >= 18) {
@@ -262,7 +278,7 @@ public class SignPacketHandler extends PacketHandler {
      * @return The packet that was built
      */
     @SuppressWarnings({"unchecked"})
-    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, String[] lines) {
+    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, Component[] lines) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.TILE_ENTITY_DATA);
 
@@ -275,8 +291,7 @@ public class SignPacketHandler extends PacketHandler {
 
         val compound = NbtFactory.ofCompound(null);
         for (int i = 0; i < 4; ++i) {
-            compound.put("Text" + (i + 1),
-                    ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+            compound.put("Text" + (i + 1), ComponentUtils.serializeToJson(lines[i]));
         }
         packet.getNbtModifier().writeSafely(0, compound);
 
@@ -292,7 +307,7 @@ public class SignPacketHandler extends PacketHandler {
      * @deprecated Changed in Minecraft 1.18.
      */
     @Deprecated
-    private PacketContainer buildTileEntityDataPacketPre1_18(SignLocation location, String[] lines) {
+    private PacketContainer buildTileEntityDataPacketPre1_18(SignLocation location, Component[] lines) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.TILE_ENTITY_DATA);
 
@@ -308,8 +323,7 @@ public class SignPacketHandler extends PacketHandler {
         compound.put("z", location.getZ());
         compound.put("id", SIGN_TYPE_ID);
         for (int i = 0; i < 4; ++i) {
-            compound.put("Text" + (i + 1),
-                    ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+            compound.put("Text" + (i + 1), ComponentUtils.serializeToJson(lines[i]));
         }
         packet.getNbtModifier().writeSafely(0, compound);
 
@@ -325,7 +339,7 @@ public class SignPacketHandler extends PacketHandler {
      * @deprecated Removed in Minecraft 1.9_R2.
      */
     @Deprecated
-    private PacketContainer buildUpdateSignPacket(SignLocation location, String[] lines) {
+    private PacketContainer buildUpdateSignPacket(SignLocation location, Component[] lines) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.UPDATE_SIGN);
 
@@ -333,10 +347,9 @@ public class SignPacketHandler extends PacketHandler {
                 new BlockPosition(location.getX(), location.getY(), location.getZ()));
 
         val comps = new WrappedChatComponent[4];
-        for (int i = 0; i < 4; ++i)
-            comps[i] =
-                    WrappedChatComponent.fromJson(ComponentSerializer
-                            .toString(TextComponent.fromLegacyText(lines[i])));
+        for (int i = 0; i < 4; ++i) {
+            comps[i] = WrappedComponentUtils.serialize(lines[i]);
+        }
         packet.getChatComponentArrays().writeSafely(0, comps);
 
         return packet;
@@ -351,15 +364,14 @@ public class SignPacketHandler extends PacketHandler {
      * @return True if the sign was translated or false if left untouched
      */
     private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, LanguagePlayer player) {
-        String[] sign = getLanguageManager().getSign(player, location, () -> {
-            val defaultLines = new String[4];
+        val sign = getTranslationManager().getSignComponents(player, location, () -> {
+            val defaultLines = new Component[4];
             for (int i = 0; i < 4; i++) {
                 try {
                     val nbtLine = compound.getStringOrDefault("Text" + (i + 1));
-                    if (nbtLine != null)
-                        defaultLines[i] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.parse(nbtLine))
-                                .getTextClean();
+                    if (nbtLine != null) {
+                        defaultLines[i] = ComponentUtils.deserializeFromJson(nbtLine);
+                    }
                 } catch (Exception e) {
                     Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, location);
                 }
@@ -367,9 +379,10 @@ public class SignPacketHandler extends PacketHandler {
             return defaultLines;
         });
 
-        if (sign != null) {
+        if (sign.isPresent()) {
+            val lines = sign.get();
             for (int i = 0; i < 4; i++) {
-                compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+                compound.put("Text" + (i + 1), ComponentUtils.serializeToJson(lines[i]));
             }
             return true;
         }
@@ -378,24 +391,28 @@ public class SignPacketHandler extends PacketHandler {
 
     /**
      * Gets lines from a sign given its location.
-     * If the sign cannot be found, an empty string array is located.
+     * If the sign cannot be found, an empty {@link Component} array is located.
      *
      * @param location The location of the sign
      * @return An array with length 4, representing each line of the sign
      */
-    private Optional<String[]> getSignLinesFromLocation(SignLocation location) {
+    private Optional<Component[]> getSignLinesFromLocation(SignLocation location) {
         return SpigotTriton.asSpigot().callSync(() -> {
             val world = Bukkit.getWorld(location.getWorld());
-            if (world == null) return new String[4];
+            if (world == null) {
+                return new Component[0];
+            }
 
             val bukkitLocation = new Location(world, location.getX(), location.getY(), location.getZ());
 
             val state = bukkitLocation.getBlock().getState();
             if (!(state instanceof Sign)) {
-                return new String[4];
+                return new Component[0];
             }
 
-            return ((Sign) state).getLines();
+            return Arrays.stream(((Sign) state).getLines())
+                    .map(line -> LegacyComponentSerializer.legacySection().deserialize(line))
+                    .toArray(Component[]::new);
         });
     }
 

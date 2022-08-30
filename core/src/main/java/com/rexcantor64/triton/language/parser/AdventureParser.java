@@ -16,7 +16,9 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.*;
@@ -39,6 +41,18 @@ public class AdventureParser implements MessageParser {
             .build();
 
     /**
+     * @see MessageParser#translateString(String, Localized, FeatureSyntax)
+     */
+    @Override
+    public @NotNull TranslationResult<String> translateString(String text, Localized language, FeatureSyntax syntax) {
+        return translateComponent(
+                LegacyComponentSerializer.legacySection().deserialize(text),
+                language,
+                syntax
+        ).map(component -> LegacyComponentSerializer.legacySection().serialize(component));
+    }
+
+    /**
      * Find and replace Triton placeholders in a Component.
      * <p>
      * A translation can yield three states:
@@ -55,7 +69,8 @@ public class AdventureParser implements MessageParser {
      * @return The result of the translation
      * @since 4.0.0
      */
-    public TranslationResult translateComponent(Component component, Localized language, FeatureSyntax syntax) {
+    @Override
+    public @NotNull TranslationResult<Component> translateComponent(Component component, Localized language, FeatureSyntax syntax) {
         TranslationConfiguration configuration = new TranslationConfiguration(
                 syntax,
                 Triton.get().getConfig().getDisabledLine(),
@@ -73,7 +88,7 @@ public class AdventureParser implements MessageParser {
      * @since 4.0.0
      */
     @VisibleForTesting
-    TranslationResult translateComponent(Component component, TranslationConfiguration configuration) {
+    TranslationResult<Component> translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
         val indexes = this.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
@@ -112,7 +127,7 @@ public class AdventureParser implements MessageParser {
         Component resultComponent = Component.join(JoinConfiguration.noSeparators(), acc);
 
         resultComponent = handleNonContentText(resultComponent, configuration)
-                .getChanged()
+                .getResult()
                 .orElse(resultComponent);
 
         return TranslationResult.changed(resultComponent);
@@ -168,12 +183,12 @@ public class AdventureParser implements MessageParser {
         Style defaultStyle = getStyleOfFirstCharacter(placeholder);
         Component result = configuration.translationSupplier.apply(key, arguments.toArray(new Component[0])).applyFallbackStyle(defaultStyle);
 
-        TranslationResult translationResult = translateComponent(result, configuration);
-        if (translationResult.getState() == TranslationResult.ResultState.REMOVE) {
+        TranslationResult<Component> translationResult = translateComponent(result, configuration);
+        if (translationResult.getState() == TranslationResult.ResultState.TO_REMOVE) {
             return Optional.empty();
         }
 
-        return Optional.of(translationResult.getChanged().orElse(result));
+        return Optional.of(translationResult.getResult().orElse(result));
     }
 
     /**
@@ -189,34 +204,34 @@ public class AdventureParser implements MessageParser {
      * @since 4.0.0
      */
     @SuppressWarnings("unchecked")
-    private TranslationResult handleNonContentText(Component component, TranslationConfiguration configuration) {
+    private TranslationResult<Component> handleNonContentText(Component component, TranslationConfiguration configuration) {
         boolean changed = false;
         HoverEvent<?> hoverEvent = component.hoverEvent();
         if (hoverEvent != null) {
             if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
                 HoverEvent<Component> textHoverEvent = (HoverEvent<Component>) hoverEvent;
                 Component value = textHoverEvent.value();
-                TranslationResult result = translateComponent(value, configuration);
-                if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                TranslationResult<Component> result = translateComponent(value, configuration);
+                if (result.isToRemove()) {
                     changed = true;
                     component = component.hoverEvent(null);
                 }
-                if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                if (result.getResult().isPresent()) {
                     changed = true;
-                    component = component.hoverEvent(textHoverEvent.value(result.getResult()));
+                    component = component.hoverEvent(textHoverEvent.value(result.getResult().get()));
                 }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ENTITY) {
                 HoverEvent<HoverEvent.ShowEntity> entityHoverEvent = (HoverEvent<HoverEvent.ShowEntity>) hoverEvent;
                 HoverEvent.ShowEntity value = entityHoverEvent.value();
                 if (value.name() != null) {
-                    TranslationResult result = translateComponent(value.name(), configuration);
-                    if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                    TranslationResult<Component> result = translateComponent(value.name(), configuration);
+                    if (result.isToRemove()) {
                         changed = true;
                         component = component.hoverEvent(null);
                     }
-                    if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                    if (result.getResult().isPresent()) {
                         changed = true;
-                        component = component.hoverEvent(entityHoverEvent.value(value.name(result.getResult())));
+                        component = component.hoverEvent(entityHoverEvent.value(value.name(result.getResult().get())));
                     }
                 }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ITEM) {
@@ -301,7 +316,7 @@ public class AdventureParser implements MessageParser {
      * @return The serialization result.
      * @since 4.0.0
      */
-    private String componentToString(Component component) {
+    public String componentToString(Component component) {
         return PLAIN_TEXT_SERIALIZER.serialize(component);
     }
 

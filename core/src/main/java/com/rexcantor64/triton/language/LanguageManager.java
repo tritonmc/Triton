@@ -53,22 +53,27 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return LegacyComponentSerializer.legacySection().serialize(resultComponent);
     }
 
+    @Deprecated
     public String getTextFromMain(@NonNull String code, @NonNull Object... args) {
         return getText(this.getMainLanguage().getName(), code, args);
     }
 
+    @Deprecated
     public String[] getSign(LanguagePlayer player, SignLocation location) {
         return getSign(player, location, () -> new String[4]);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, String[] defaultLines) {
         return getSign(player.getLang().getName(), location, () -> defaultLines);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines) {
         return getSign(player.getLang().getName(), location, defaultLines);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull String language, @NonNull SignLocation location,
                             @NonNull Supplier<String[]> defaultLines) {
         val signComponents = triton.getTranslationManager()

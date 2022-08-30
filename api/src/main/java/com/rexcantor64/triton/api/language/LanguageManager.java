@@ -75,6 +75,7 @@ public interface LanguageManager {
      * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 1.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation)} instead.
      */
     String[] getSign(LanguagePlayer player, SignLocation location);
 
@@ -88,6 +89,7 @@ public interface LanguageManager {
      * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 2.3.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Component[])} instead.
      */
     String[] getSign(LanguagePlayer player, SignLocation location, String[] defaultLines);
 
@@ -103,6 +105,7 @@ public interface LanguageManager {
      * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 3.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Supplier)} instead.
      */
     String[] getSign(LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines);
 
@@ -110,7 +113,7 @@ public interface LanguageManager {
      * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
      * This also allows for the defaultLines to only be fetched if needed, improving performance.
      *
-     * @param language     The {@link Language#getName() name of the language} to use. If invalid, this will fallback
+     * @param language     The {@link Language#getName() name of the language} to use. If invalid, this will fall back
      *                     to the main language without warning.
      * @param location     The location of the sign.
      * @param defaultLines A {@link java.util.function.Supplier Supplier} that resolves to the lines of the sign
@@ -118,6 +121,7 @@ public interface LanguageManager {
      * @return The lines in the player's language. If no translatable sign is found on that location, null is
      * returned.
      * @since 3.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Supplier)} instead.
      */
     String[] getSign(String language, SignLocation location, Supplier<String[]> defaultLines);
 

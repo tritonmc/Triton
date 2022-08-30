@@ -43,7 +43,7 @@ public class SignCommand implements Command {
                     .collect(Collectors.toList());
 
         if (args.length == 2 && args[0].equalsIgnoreCase("set"))
-            return Triton.get().getLanguageManager().getSignKeys().stream()
+            return Triton.get().getTranslationManager().getSignKeys().stream()
                     .filter(key -> key.toLowerCase().startsWith(args[1].toLowerCase()))
                     .collect(Collectors.toList());
 

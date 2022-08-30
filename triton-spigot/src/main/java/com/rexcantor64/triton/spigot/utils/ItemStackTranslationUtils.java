@@ -13,6 +13,7 @@ import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
@@ -92,26 +93,27 @@ public class ItemStackTranslationUtils {
                     List<String> newPagesCollection = new ArrayList<>();
                     for (NbtBase<String> page : pagesCollection) {
                         if (page.getValue().startsWith("\"")) {
-                            String result = translate(
-                                    page.getValue().substring(1, page.getValue().length() - 1),
-                                    languagePlayer,
-                                    main().getConfig().getItemsSyntax()
-                            );
-                            if (result != null) {
-                                newPagesCollection.add(
-                                        ComponentSerializer.toString(
-                                                TextComponent.fromLegacyText(result)));
-                            }
-                        } else {
-                            BaseComponent[] result = main().getLanguageParser()
-                                    .parseComponent(
+                            val pageString = page.getValue().substring(1, page.getValue().length() - 1);
+                            val pageComponent = LegacyComponentSerializer.legacySection().deserialize(pageString);
+                            main().getMessageParser()
+                                    .translateComponent(
+                                            pageComponent,
                                             languagePlayer,
-                                            main().getConfig().getItemsSyntax(),
-                                            ComponentSerializer.parse(page.getValue())
-                                    );
-                            if (result != null) {
-                                newPagesCollection.add(ComponentSerializer.toString(result));
-                            }
+                                            main().getConfig().getItemsSyntax()
+                                    )
+                                    .map(ComponentUtils::serializeToJson)
+                                    .ifChanged(newPagesCollection::add)
+                                    .ifUnchanged(() -> newPagesCollection.add(ComponentUtils.serializeToJson(pageComponent)));
+                        } else {
+                            main().getMessageParser()
+                                    .translateComponent(
+                                            ComponentUtils.deserializeFromJson(page.getValue()),
+                                            languagePlayer,
+                                            main().getConfig().getItemsSyntax()
+                                    )
+                                    .map(ComponentUtils::serializeToJson)
+                                    .ifChanged(newPagesCollection::add)
+                                    .ifUnchanged(() -> newPagesCollection.add(page.getValue()));
                         }
                     }
                     compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
@@ -122,16 +124,22 @@ public class ItemStackTranslationUtils {
         if (compound == null && item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName()) {
-                meta.setDisplayName(translate(meta.getDisplayName(),
-                        languagePlayer, main().getConfig().getItemsSyntax()));
+                main().getMessageParser()
+                        .translateString(
+                                meta.getDisplayName(),
+                                languagePlayer,
+                                main().getConfig().getItemsSyntax()
+                        )
+                        .ifChanged(meta::setDisplayName)
+                        .ifToRemove(() -> meta.setDisplayName(null));
             }
             if (meta.hasLore()) {
                 List<String> newLore = new ArrayList<>();
                 for (String lore : meta.getLore()) {
-                    String result = translate(lore, languagePlayer,
-                            main().getConfig().getItemsSyntax());
-                    if (result != null)
-                        newLore.addAll(Arrays.asList(result.split("\n")));
+                    main().getMessageParser()
+                            .translateString(lore, languagePlayer, main().getConfig().getItemsSyntax())
+                            .ifChanged(result -> newLore.addAll(Arrays.asList(result.split("\n"))))
+                            .ifUnchanged(() -> newLore.add(lore));
                 }
                 meta.setLore(newLore);
             }
@@ -156,24 +164,25 @@ public class ItemStackTranslationUtils {
         if (display.containsKey("Name")) {
             String name = display.getStringOrDefault("Name");
             if (main().getMcVersion() >= 13) {
-                BaseComponent[] result = main().getLanguageParser()
-                        .parseComponent(
+                main().getMessageParser()
+                        .translateComponent(
+                                ComponentUtils.deserializeFromJson(name),
                                 languagePlayer,
-                                main().getConfig().getItemsSyntax(),
-                                ComponentSerializer.parse(name)
-                        );
-                if (result == null) {
-                    display.remove("Name");
-                } else {
-                    display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
-                }
+                                main().getConfig().getItemsSyntax()
+                        )
+                        .map(ComponentUtils::ensureNotItalic)
+                        .map(ComponentUtils::serializeToJson)
+                        .ifChanged(result -> display.put("Name", result))
+                        .ifToRemove(() -> display.remove("Name"));
             } else {
-                String result = translate(name, languagePlayer, main().getConfig().getItemsSyntax());
-                if (result == null) {
-                    display.remove("Name");
-                } else {
-                    display.put("Name", result);
-                }
+                main().getMessageParser()
+                        .translateString(
+                                name,
+                                languagePlayer,
+                                main().getConfig().getItemsSyntax()
+                        )
+                        .ifChanged(result -> display.put("Name", result))
+                        .ifToRemove(() -> display.remove("Name"));
             }
         }
 
@@ -183,28 +192,31 @@ public class ItemStackTranslationUtils {
             List<String> newLore = new ArrayList<>();
             for (String lore : loreNbt) {
                 if (main().getMcVersion() >= 13) {
-                    BaseComponent[] result = main().getLanguageParser()
-                            .parseComponent(
+                    main().getMessageParser()
+                            .translateComponent(
+                                    ComponentUtils.deserializeFromJson(lore),
                                     languagePlayer,
-                                    main().getConfig().getItemsSyntax(),
-                                    ComponentSerializer.parse(lore)
-                            );
-                    if (result != null) {
-                        List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
-                        newLore.addAll(splitLoreLines.stream()
-                                .map(comps -> ComponentUtils.ensureNotItalic(comps.stream()))
-                                .map(ComponentSerializer::toString)
-                                .collect(Collectors.toList()));
-                    }
+                                    main().getConfig().getItemsSyntax()
+                            )
+                            .map(ComponentUtils::splitByNewLine)
+                            .ifChanged(result -> newLore.addAll(
+                                    result.stream()
+                                            .map(ComponentUtils::ensureNotItalic)
+                                            .map(ComponentUtils::serializeToJson)
+                                            .collect(Collectors.toList())
+                            ))
+                            .ifUnchanged(() -> newLore.add(lore));
                 } else {
-                    String result = translate(
-                            lore,
-                            languagePlayer,
-                            main().getConfig().getItemsSyntax()
-                    );
-                    if (result != null) {
-                        newLore.addAll(Arrays.asList(result.split("\n")));
-                    }
+                    main().getMessageParser()
+                            .translateString(
+                                    lore,
+                                    languagePlayer,
+                                    main().getConfig().getItemsSyntax()
+                            )
+                            .ifChanged(result -> newLore.addAll(
+                                    Arrays.asList(result.split("\n"))
+                            ))
+                            .ifUnchanged(() -> newLore.add(lore));
                 }
             }
             display.put(NbtFactory.ofList("Lore", newLore));
@@ -224,17 +236,6 @@ public class ItemStackTranslationUtils {
 
     private static String serializeItemTagNbt(NbtCompound nbt) {
         return nbt.getHandle().toString();
-    }
-
-    private static String translate(String string, Localized localized, MainConfig.FeatureSyntax featureSyntax) {
-        if (string == null) {
-            return null;
-        }
-        return main().getLanguageParser().replaceLanguages(
-                main().getLanguageManager().matchPattern(string, localized),
-                localized,
-                featureSyntax
-        );
     }
 
     private static SpigotTriton main() {

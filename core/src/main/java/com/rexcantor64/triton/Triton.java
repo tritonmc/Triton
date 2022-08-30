@@ -49,7 +49,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     @Deprecated
     private LanguageParser languageParser;
     private TranslationManager translationManager;
-    private AdventureParser adventureParser = new AdventureParser();
+    private final AdventureParser messageParser = new AdventureParser();
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;
@@ -144,11 +144,6 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
      * @since 4.0.0
      */
     protected abstract String getConfigFileName();
-
-    @Override
-    public MessageParser getMessageParser() {
-        return this.adventureParser;
-    }
 
     private void setupStorage() {
         if (config.getStorageType().equalsIgnoreCase("mysql")) {
