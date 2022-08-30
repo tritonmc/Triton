@@ -3,7 +3,7 @@ package com.rexcantor64.triton.language.parser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  *
  * @since 4.0.0
  */
-public class AdventureParser {
+public class AdventureParser implements MessageParser {
 
     private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
             .mapper(TextComponent.class, TextComponent::content)
@@ -60,7 +60,7 @@ public class AdventureParser {
                 syntax,
                 Triton.get().getConfig().getDisabledLine(),
                 // TODO properly integrate this
-                (key) -> Component.text(Triton.get().getLanguageManager().getText(language, key))
+                (key, arguments) -> Triton.get().getTranslationManager().getTextComponentOr404(language, key, arguments)
         );
         return translateComponent(component, configuration);
     }
@@ -75,7 +75,7 @@ public class AdventureParser {
     @VisibleForTesting
     TranslationResult translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
-        val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
+        val indexes = this.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
             return handleNonContentText(component, configuration);
@@ -132,7 +132,7 @@ public class AdventureParser {
      */
     private Optional<Component> handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
         String placeholderStr = componentToString(placeholder);
-        val indexes = LanguageParser.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
+        val indexes = this.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
         Queue<Integer> indexesToSplitAt = indexes.stream()
                 .flatMap(Arrays::stream)
                 .sorted()
@@ -166,8 +166,7 @@ public class AdventureParser {
         }
 
         Style defaultStyle = getStyleOfFirstCharacter(placeholder);
-        Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
-        result = replaceArguments(result, arguments);
+        Component result = configuration.translationSupplier.apply(key, arguments.toArray(new Component[0])).applyFallbackStyle(defaultStyle);
 
         TranslationResult translationResult = translateComponent(result, configuration);
         if (translationResult.getState() == TranslationResult.ResultState.REMOVE) {
@@ -314,7 +313,7 @@ public class AdventureParser {
      * @return The component with % placeholders replaced with arguments.
      * @since 4.0.0
      */
-    private Component replaceArguments(Component component, List<Component> arguments) {
+    public Component replaceArguments(Component component, List<Component> arguments) {
         PriorityQueue<PriorityPair<Component>> replacementMap = new PriorityQueue<>(Comparator.comparing(PriorityPair::getPriority));
         Queue<Integer> indexesToSplitAt = new LinkedList<>();
         String plainText = componentToString(component);
@@ -483,6 +482,51 @@ public class AdventureParser {
             }
         }
         return accumulator;
+    }
+
+    /**
+     * Find the indexes of all root "[pattern][/pattern]" tags in the given string.
+     * <p>
+     * Only the root tags are included, that is, nested tags are ignored.
+     * For example, <code>[pattern][pattern][/pattern][/pattern]</code> would only
+     * return the indexes for the outer tags.
+     * <p>
+     * Each array in the returned list corresponds to a different set of opening and closing tags,
+     * and has size 4.
+     * Indexes have the following meaning:
+     * <ul>
+     *     <li>0: the first character of the opening tag</li>
+     *     <li>1: the character after the last character of the closing tag</li>
+     *     <li>2: the character after the last character of the opening tag</li>
+     *     <li>3: the first character of the closing tag</li>
+     * </ul>
+     *
+     * @param input   The string to search for opening and closing tags.
+     * @param pattern The tags to search for (i.e. "lang" will search for "[lang]" and "[/lang]").
+     * @return A list of indexes of all the found tags, as specified by the method description.
+     */
+    public List<Integer[]> getPatternIndexArray(String input, String pattern) {
+        List<Integer[]> result = new ArrayList<>();
+        int start = -1;
+        int openedAmount = 0;
+
+        for (int i = 0; i < input.length(); i++) {
+            char currentChar = input.charAt(i);
+            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1,
+                    i + 2 + pattern.length()).equals(pattern + "]")) {
+                if (start == -1) start = i;
+                openedAmount++;
+                i += 1 + pattern.length();
+            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1,
+                    i + 3 + pattern.length()).equals("/" + pattern + "]")) {
+                openedAmount--;
+                if (openedAmount == 0) {
+                    result.add(new Integer[]{start, i + 3 + pattern.length(), start + pattern.length() + 2, i});
+                    start = -1;
+                }
+            }
+        }
+        return result;
     }
 
     /**

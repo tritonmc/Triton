@@ -2,6 +2,7 @@ package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.utils.DefaultFeatureSyntax;
+import lombok.val;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -61,6 +62,12 @@ public class AdventureParserTest {
         TranslationResult result = parser.translateComponent(comp, configuration);
 
         assertEquals(TranslationResult.ResultState.UNCHANGED, result.getState());
+    }
+
+    @Test
+    public void test(){
+        val a = parser.getPatternIndexArray("[lang]chat[/lang]", "lang");
+        System.out.println(a);
     }
 
     @Test

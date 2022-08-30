@@ -88,7 +88,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
         Metrics metrics = new Metrics(getLoader(), 5606);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> Triton.get().getLanguageManager().getItemCount()));
+                () -> this.getTranslationManager().getTranslationCount()));
 
         // Setup custom managers
         wrapperManager = new MaterialWrapperManager();

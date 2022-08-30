@@ -1,14 +1,17 @@
 package com.rexcantor64.triton;
 
+import com.rexcantor64.triton.api.language.LanguageParser;
+import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.api.legacy.LegacyLanguageParser;
 import com.rexcantor64.triton.bridge.BridgeManager;
-import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.config.MessagesConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.language.LanguageManager;
-import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.language.TranslationManager;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.player.LanguagePlayer;
@@ -43,7 +46,10 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     private MessagesConfig messagesConfig;
     // Managers
     private LanguageManager languageManager;
+    @Deprecated
     private LanguageParser languageParser;
+    private TranslationManager translationManager;
+    private AdventureParser adventureParser = new AdventureParser();
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;
@@ -85,14 +91,15 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         logger = loader.getTritonLogger();
 
         config = new MainConfig(this);
-        languageManager = new LanguageManager();
+        languageManager = new LanguageManager(this);
         messagesConfig = new MessagesConfig();
+        translationManager = new TranslationManager(this);
 
         LanguageMigration.migrate();
 
         reload();
 
-        languageParser = new LanguageParser();
+        languageParser = new LegacyLanguageParser(); // legacy
         twinManager = new TwinManager(this);
     }
 
@@ -103,6 +110,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         messagesConfig.setup();
         setupStorage();
         languageManager.setup();
+        translationManager.setup();
         startConfigRefreshTask();
     }
 
@@ -136,6 +144,11 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
      * @since 4.0.0
      */
     protected abstract String getConfigFileName();
+
+    @Override
+    public MessageParser getMessageParser() {
+        return this.adventureParser;
+    }
 
     private void setupStorage() {
         if (config.getStorageType().equalsIgnoreCase("mysql")) {

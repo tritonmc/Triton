@@ -56,7 +56,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
 
         Metrics metrics = new Metrics(getLoader(), 5607);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> Triton.get().getLanguageManager().getItemCount()));
+                () -> this.getTranslationManager().getTranslationCount()));
 
         bridgeManager = new BungeeBridgeManager();
         getBungeeCord().getPluginManager().registerListener(getLoader(), bridgeManager);

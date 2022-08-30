@@ -1,8 +1,11 @@
 package com.rexcantor64.triton.api.language;
 
 import com.rexcantor64.triton.api.players.LanguagePlayer;
+import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -20,6 +23,7 @@ public interface LanguageManager {
      *              {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
      * @return A translated message. If no patterns are found, it returns the input.
      * @since 2.0.0
+     * @deprecated Since 4.0.0, this will return the input unmodified. There is still no alternative.
      */
     String matchPattern(String input, LanguagePlayer p);
 
@@ -33,6 +37,7 @@ public interface LanguageManager {
      * @return The message in the player's language. If no message is found with the provided code, a standard 404
      * message will be returned.
      * @since 1.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead.
      */
     String getText(LanguagePlayer player, String code, Object... args);
 
@@ -45,6 +50,7 @@ public interface LanguageManager {
      * @return The message in the player's language. If no message is found with the provided code, a standard 404
      * message will be returned.
      * @since 3.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead.
      */
     String getText(String language, String code, Object... args);
 
@@ -56,6 +62,7 @@ public interface LanguageManager {
      * @return The message in the main language. If no message is found with the provided code, a standard 404
      * message will be returned.
      * @since 1.0.0
+     * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead, giving the main language as argument.
      */
     String getTextFromMain(String code, Object... args);
 
@@ -114,6 +121,14 @@ public interface LanguageManager {
      */
     String[] getSign(String language, SignLocation location, Supplier<String[]> defaultLines);
 
+    @NotNull Optional<Language> getLanguageByName(@NotNull String name);
+
+    @NotNull Language getLanguageByNameOrDefault(@NotNull String name);
+
+    @NotNull Optional<Language> getLanguageByLocale(@NotNull String locale);
+
+    @NotNull Language getLanguageByLocaleOrDefault(@NotNull String locale);
+
     /**
      * Get a {@link Language language} by its name.
      *
@@ -122,6 +137,7 @@ public interface LanguageManager {
      * @return The language with the provided name. If no language is found, the main language will be returned if
      * fallback is true. Otherwise, null is returned.
      * @since 1.0.0
+     * @deprecated Since 4.0.0. Use {@link LanguageManager#getLanguageByName(String)} or {@link LanguageManager#getLanguageByNameOrDefault(String)} instead.
      */
     Language getLanguageByName(String name, boolean fallback);
 
@@ -133,6 +149,7 @@ public interface LanguageManager {
      * @return The language with the provided name. If no language is found, the main language will be returned if
      * fallback is true. Otherwise, null is returned.
      * @since 1.3.0
+     * @deprecated Since 4.0.0. Use {@link LanguageManager#getLanguageByLocale(String)} or {@link LanguageManager#getLanguageByLocaleOrDefault(String)} instead.
      */
     Language getLanguageByLocale(String locale, boolean fallback);
 

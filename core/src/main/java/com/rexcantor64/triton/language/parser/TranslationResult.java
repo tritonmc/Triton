@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class TranslationResult {
+public class TranslationResult implements com.rexcantor64.triton.api.language.TranslationResult {
     private final ResultState state;
     private final Component result;
 
@@ -94,7 +94,4 @@ public class TranslationResult {
         return new TranslationResult(ResultState.REMOVE, null);
     }
 
-    public enum ResultState {
-        UNCHANGED, CHANGED, REMOVE
-    }
 }

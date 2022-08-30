@@ -7,7 +7,6 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
-import lombok.var;
 
 import java.io.File;
 import java.io.IOException;

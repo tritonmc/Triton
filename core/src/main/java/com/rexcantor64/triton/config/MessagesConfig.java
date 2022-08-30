@@ -5,7 +5,9 @@ import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.val;
-import lombok.var;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +50,11 @@ public class MessagesConfig {
             if (args[i] != null)
                 s = s.replace("%" + (i + 1), args[i].toString());
         return s;
+    }
+
+    public Component getMessageComponent(String code, Object... args) {
+        String msg = getMessage(code, args);
+        return MiniMessage.miniMessage().deserialize(msg);
     }
 
     public List<String> getMessageList(String code) {
