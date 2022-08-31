@@ -9,22 +9,23 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
-import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.EntityTypeUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +40,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.asSync;
@@ -331,16 +333,18 @@ public class EntitiesPacketHandler extends PacketHandler {
             newGP.getProperties().putAll(oldGP.getProperties());
             WrappedChatComponent msg = data.getDisplayName();
             if (msg != null) {
-                BaseComponent[] result = getLanguageParser().parseComponent(
-                        languagePlayer,
-                        getConfig().getHologramSyntax(),
-                        ComponentSerializer.parse(msg.getJson())
-                );
-                if (result == null) {
-                    msg = null;
-                } else {
-                    msg.setJson(ComponentSerializer.toString(result));
-                }
+                WrappedChatComponent finalMsg = msg; // required for lambda
+                msg = parser()
+                        .translateComponent(
+                                WrappedComponentUtils.deserialize(msg),
+                                languagePlayer,
+                                getConfig().getHologramSyntax()
+                        )
+                        .mapToObj(
+                                WrappedComponentUtils::serialize,
+                                () -> finalMsg,
+                                () -> null
+                        );
             }
             dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
         }
@@ -390,21 +394,30 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             if (getMcVersion() >= 13) {
                 // On MC 1.13+, display names are sent as text components instead of legacy text
-                val result = getLanguageParser().parseComponent(
-                        languagePlayer,
-                        getConfig().getHologramSyntax(),
-                        ComponentSerializer.parse(displayName)
-                );
+                val displayNameComponent = ComponentUtils.deserializeFromJson(displayName);
+                val result = parser()
+                        .translateComponent(
+                                displayNameComponent,
+                                languagePlayer,
+                                getConfig().getHologramSyntax()
+                        )
+                        .mapToObj(
+                                Function.identity(),
+                                () -> displayNameComponent,
+                                () -> null
+                        );
 
                 this.dataWatcherHandler.getPlayerDisplayNameWatchableObject(result).ifPresent(watchableObjects::add);
                 this.dataWatcherHandler.getCustomNameVisibilityWatchableObject(result != null).ifPresent(watchableObjects::add);
             } else {
                 // On MC 1.8 to 1.12, display names are sent as legacy text
-                val result = getLanguageParser().replaceLanguages(
-                        getLanguageManager().matchPattern(displayName, languagePlayer),
-                        languagePlayer,
-                        getConfig().getHologramSyntax()
-                );
+                val result = parser()
+                        .translateString(displayName, languagePlayer, getConfig().getHologramSyntax())
+                        .mapToObj(
+                                Function.identity(),
+                                () -> displayName,
+                                () -> null
+                        );
 
                 this.dataWatcherHandler.getPlayerDisplayNameWatchableObject(result).ifPresent(watchableObjects::add);
                 this.dataWatcherHandler.getCustomNameVisibilityWatchableObject(result != null).ifPresent(watchableObjects::add);
@@ -595,17 +608,18 @@ public class EntitiesPacketHandler extends PacketHandler {
      * @param string         The legacy text to translate.
      * @return The translated legacy text, truncated to 16 characters.
      */
-    private String translateAndTruncate(LanguagePlayer languagePlayer, String string) {
+    @Contract("_, null -> null")
+    private @Nullable String translateAndTruncate(LanguagePlayer languagePlayer, @Nullable String string) {
         if (string == null) {
             return null;
         }
-        val result = getLanguageParser().replaceLanguages(
-                getLanguageManager().matchPattern(string, languagePlayer),
-                languagePlayer,
-                getConfig().getHologramSyntax()
-        );
-        if (result != null && result.length() > 16) return result.substring(0, 16);
-        return result;
+        return parser()
+                .translateString(string, languagePlayer, getConfig().getHologramSyntax())
+                .mapToObj(
+                        result -> result.length() > 16 ? result.substring(0, 16) : result,
+                        () -> string.length() > 16 ? string.substring(0, 16) : string,
+                        () -> null
+                );
     }
 
     @SuppressWarnings({"deprecation"})
@@ -629,11 +643,11 @@ public class EntitiesPacketHandler extends PacketHandler {
          * Get a {@link WrappedWatchableObject wrapped watchable object} for an entity's
          * display name from a text component.
          *
-         * @param components The display name of the entity as a text component. Can be null.
+         * @param component The display name of the entity as a text component. Can be null.
          * @return The wrapped watchable object.
          * @since 3.8.0
          */
-        abstract Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(@Nullable BaseComponent[] components);
+        abstract Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(@Nullable Component component);
 
         /**
          * Get a {@link WrappedWatchableObject wrapped watchable object} for an entity's
@@ -698,7 +712,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
     private class DataWatcherHandler1_8 extends DataWatcherHandler {
         @Override
-        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(BaseComponent[] components) {
+        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(Component component) {
             // This watchable object uses legacy text in this version
             return Optional.empty();
         }
@@ -741,16 +755,18 @@ public class EntitiesPacketHandler extends PacketHandler {
             // Save to cache before translating
             saveToCache.accept(displayName);
 
-            val result = getLanguageParser().replaceLanguages(
-                    getLanguageManager().matchPattern(displayName, languagePlayer),
-                    languagePlayer,
-                    getConfig().getHologramSyntax()
-            );
+            val result = parser()
+                    .translateString(displayName, languagePlayer, getConfig().getHologramSyntax());
+
+            if (result.isUnchanged()) {
+                // if unchanged, return original watchable object
+                return Optional.of(watchableObject);
+            }
 
             if (hasCustomNameConsumer != null) {
-                hasCustomNameConsumer.accept(result != null);
+                hasCustomNameConsumer.accept(result.isChanged());
             }
-            return this.getPlayerDisplayNameWatchableObject(result);
+            return this.getPlayerDisplayNameWatchableObject(result.getResult().orElse(null));
         }
 
         @Override
@@ -764,7 +780,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
     private class DataWatcherHandler1_9 extends DataWatcherHandler {
         @Override
-        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(BaseComponent[] components) {
+        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(Component component) {
             // This watchable object uses legacy text in this version
             return Optional.empty();
         }
@@ -818,16 +834,18 @@ public class EntitiesPacketHandler extends PacketHandler {
             // Save to cache before translating
             saveToCache.accept(displayName);
 
-            val result = getLanguageParser().replaceLanguages(
-                    getLanguageManager().matchPattern(displayName, languagePlayer),
-                    languagePlayer,
-                    getConfig().getHologramSyntax()
-            );
+            val result = parser()
+                    .translateString(displayName, languagePlayer, getConfig().getHologramSyntax());
+
+            if (result.isUnchanged()) {
+                // if unchanged, return original watchable object
+                return Optional.of(watchableObject);
+            }
 
             if (hasCustomNameConsumer != null) {
-                hasCustomNameConsumer.accept(result != null);
+                hasCustomNameConsumer.accept(result.isChanged());
             }
-            return this.getPlayerDisplayNameWatchableObject(result);
+            return this.getPlayerDisplayNameWatchableObject(result.getResult().orElse(null));
         }
 
         @Override
@@ -841,10 +859,10 @@ public class EntitiesPacketHandler extends PacketHandler {
 
     private class DataWatcherHandler1_13 extends DataWatcherHandler {
         @Override
-        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(BaseComponent[] components) {
+        Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(Component component) {
             Optional<Object> payload;
-            if (components != null) {
-                val wrappedChatComponent = WrappedChatComponent.fromJson(ComponentSerializer.toString(components));
+            if (component != null) {
+                val wrappedChatComponent = WrappedComponentUtils.serialize(component);
                 payload = Optional.of(wrappedChatComponent.getHandle());
             } else {
                 payload = Optional.empty();
@@ -915,16 +933,20 @@ public class EntitiesPacketHandler extends PacketHandler {
             // Save to cache before translating
             saveToCache.accept(displayNameJson);
 
-            val result = getLanguageParser().parseComponent(
-                    languagePlayer,
-                    getConfig().getHologramSyntax(),
-                    ComponentSerializer.parse(displayNameJson)
-            );
+            val displayNameComponent = WrappedComponentUtils.deserialize(displayName.get());
+
+            val result = parser()
+                    .translateComponent(displayNameComponent, languagePlayer, getConfig().getHologramSyntax());
+
+            if (result.isUnchanged()) {
+                // if unchanged, return original watchable object
+                return Optional.of(watchableObject);
+            }
 
             if (hasCustomNameConsumer != null) {
-                hasCustomNameConsumer.accept(result != null);
+                hasCustomNameConsumer.accept(result.isChanged());
             }
-            return this.getPlayerDisplayNameWatchableObject(result);
+            return this.getPlayerDisplayNameWatchableObject(result.getResult().orElse(null));
         }
 
         @Override

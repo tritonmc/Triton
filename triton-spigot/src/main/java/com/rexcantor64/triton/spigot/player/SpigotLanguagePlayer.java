@@ -10,7 +10,9 @@ import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -33,8 +35,10 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private Language lang;
 
-    private String lastTabHeader;
-    private String lastTabFooter;
+    @Setter
+    private Component lastTabHeader;
+    @Setter
+    private Component lastTabFooter;
     private final Map<UUID, String> bossBars = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
 
@@ -162,14 +166,6 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (Triton.get().getConfig().getHolograms().size() == 0 && !Triton.get().getConfig().isHologramsAll())
             return;
         getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
-    }
-
-    public void setLastTabHeader(String lastTabHeader) {
-        this.lastTabHeader = lastTabHeader;
-    }
-
-    public void setLastTabFooter(String lastTabFooter) {
-        this.lastTabFooter = lastTabFooter;
     }
 
     public void setBossbar(UUID uuid, String lastBossBar) {

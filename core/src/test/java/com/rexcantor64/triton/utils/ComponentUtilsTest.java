@@ -1,73 +1,126 @@
 package com.rexcantor64.triton.utils;
 
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ComponentUtilsTest {
 
+    private final AdventureParser parser = new AdventureParser();
+
     @Test
     public void testSplitByNewLineWithoutExtras() {
-        BaseComponent component = new TextComponent("First line\nSecond line");
-        component.setColor(ChatColor.BLUE);
+        Component component = Component.text("First line\nSecond line").color(NamedTextColor.BLUE);
 
-        val result = ComponentUtils.splitByNewLine(Collections.singletonList(component));
+        val result = ComponentUtils.splitByNewLine(component, parser);
 
-        assertEquals(2, result.size());
+        Component[] expected = new Component[]{
+                Component.text("First line").color(NamedTextColor.BLUE),
+                Component.text("Second line").color(NamedTextColor.BLUE)
+        };
 
-        val jsonResult = result.stream().map(ComponentSerializer::toString).collect(Collectors.toList());
-
-        assertEquals("[{\"color\":\"blue\",\"text\":\"First line\"}]", jsonResult.get(0));
-        assertEquals("[{\"color\":\"blue\",\"text\":\"Second line\"}]", jsonResult.get(1));
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].compact(), result.get(i).compact());
+        }
     }
 
     @Test
     public void testSplitByNewLineWithExtras() {
-        BaseComponent root = new TextComponent();
-        root.setItalic(true);
-        BaseComponent child1 = new TextComponent("First line\nSecond ");
-        child1.setColor(ChatColor.BLACK);
-        root.addExtra(child1);
-        BaseComponent child2 = new TextComponent("li");
-        child2.setColor(ChatColor.RED);
-        BaseComponent childChild = new TextComponent("ne\nThird line");
-        childChild.setUnderlined(true);
-        child2.addExtra(childChild);
-        child2.setBold(true);
-        root.addExtra(child2);
+        Component component = Component.text()
+                .decorate(TextDecoration.ITALIC)
+                .append(
+                        Component.text()
+                                .content("First line \nSecond ")
+                                .color(NamedTextColor.BLACK),
+                        Component.text()
+                                .content("li")
+                                .color(NamedTextColor.RED)
+                                .decorate(TextDecoration.BOLD)
+                                .append(
+                                        Component.text("ne\nThird line")
+                                                .decorate(TextDecoration.UNDERLINED)
+                                )
+                )
+                .asComponent();
 
-        val result = ComponentUtils.splitByNewLine(Collections.singletonList(root));
+        val result = ComponentUtils.splitByNewLine(component, parser);
 
-        assertEquals(3, result.size());
+        ComponentLike[] expected = new ComponentLike[]{
+                Component.text()
+                        .decorate(TextDecoration.ITALIC)
+                        .append(
+                        Component.text()
+                                .content("First line ")
+                                .color(NamedTextColor.BLACK)
+                ),
+                Component.text()
+                        .decorate(TextDecoration.ITALIC)
+                        .append(
+                        Component.text()
+                                .content("Second ")
+                                .color(NamedTextColor.BLACK),
+                        Component.text()
+                                .content("li")
+                                .color(NamedTextColor.RED)
+                                .decorate(TextDecoration.BOLD)
+                                .append(
+                                        Component.text("ne")
+                                                .decorate(TextDecoration.UNDERLINED)
+                                )
+                ),
+                Component.text()
+                        .decorate(TextDecoration.ITALIC)
+                        .append(
+                        Component.text()
+                                .color(NamedTextColor.RED)
+                                .decorate(TextDecoration.BOLD)
+                                .append(
+                                        Component.text("Third line")
+                                                .decorate(TextDecoration.UNDERLINED)
+                                )
+                )
+        };
 
-        val jsonResult = result.stream().map(ComponentSerializer::toString).collect(Collectors.toList());
-
-        assertEquals("[{\"italic\":true,\"extra\":[{\"color\":\"black\",\"text\":\"First line\"}],\"text\":\"\"}]", jsonResult.get(0));
-        assertEquals("[{\"italic\":true,\"extra\":[{\"color\":\"black\",\"text\":\"Second \"},{\"bold\":true,\"color\":\"red\",\"extra\":[{\"underlined\":true,\"text\":\"ne\"}],\"text\":\"li\"}],\"text\":\"\"}]", jsonResult.get(1));
-        assertEquals("[{\"italic\":true,\"extra\":[{\"bold\":true,\"color\":\"red\",\"extra\":[{\"underlined\":true,\"text\":\"Third line\"}],\"text\":\"\"}],\"text\":\"\"}]", jsonResult.get(2));
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].asComponent().compact(), result.get(i).compact());
+        }
     }
 
     @Test
     public void testSplitByNewLineWithSlashNAtTheEnd() {
-        BaseComponent[] root = ComponentSerializer.parse("{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"First line!\\n\"},{\"color\":\"gray\",\"text\":\"Second Line\"}],\"text\":\"\"}");
+        Component component = Component.text()
+                .append(
+                        Component.text("First line!\n").color(NamedTextColor.DARK_PURPLE),
+                        Component.text("Second Line").color(NamedTextColor.GRAY)
+                )
+                .asComponent();
 
-        val result = ComponentUtils.splitByNewLine(Arrays.asList(root));
+        val result = ComponentUtils.splitByNewLine(component, parser);
 
-        assertEquals(2, result.size());
+        ComponentLike[] expected = new ComponentLike[]{
+                Component.text()
+                        .append(
+                        Component.text("First line!").color(NamedTextColor.DARK_PURPLE)
+                ),
+                Component.text()
+                        .append(
+                        Component.text("").color(NamedTextColor.DARK_PURPLE),
+                        Component.text("Second Line").color(NamedTextColor.GRAY)
+                )
+        };
 
-        val jsonResult = result.stream().map(ComponentSerializer::toString).collect(Collectors.toList());
-
-        assertEquals("[{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"First line!\"}],\"text\":\"\"}]", jsonResult.get(0));
-        assertEquals("[{\"extra\":[{\"color\":\"dark_purple\",\"text\":\"\"},{\"color\":\"gray\",\"text\":\"Second Line\"}],\"text\":\"\"}]", jsonResult.get(1));
+        assertEquals(expected.length, result.size());
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].asComponent().compact(), result.get(i).compact());
+        }
     }
 
 }

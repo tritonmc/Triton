@@ -3,6 +3,7 @@ package com.rexcantor64.triton.api;
 import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.api.language.LanguageManager;
 import com.rexcantor64.triton.api.language.LanguageParser;
+import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.api.players.PlayerManager;
 
@@ -21,6 +22,7 @@ public interface Triton {
      * @since 1.0.0
      * @deprecated Use {@link Triton#getConfig()} instead.
      */
+    @Deprecated
     default TritonConfig getConf() {
         return getConfig();
     }
@@ -46,8 +48,18 @@ public interface Triton {
      *
      * @return The {@link LanguageParser language parser}.
      * @since 3.0.0
+     * @deprecated Since 4.0.0. Use {@link Triton#getMessageParser()} instead.
      */
+    @Deprecated
     LanguageParser getLanguageParser();
+
+    /**
+     * Get the {@link MessageParser message parser}.
+     *
+     * @return The {@link MessageParser message parser}.
+     * @since 4.0.0
+     */
+    MessageParser getMessageParser();
 
     /**
      * Get the {@link PlayerManager player manager}.

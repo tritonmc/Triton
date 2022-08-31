@@ -49,7 +49,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
         // bStats
         Metrics metrics = getLoader().getMetricsFactory().make(getLoader(), 16222);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> this.getLanguageManager().getItemCount()));
+                () -> this.getTranslationManager().getTranslationCount()));
 
         val eventManager = getLoader().getServer().getEventManager();
         eventManager.register(getLoader(), new VelocityListener());

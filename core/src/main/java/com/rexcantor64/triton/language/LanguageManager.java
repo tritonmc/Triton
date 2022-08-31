@@ -1,176 +1,128 @@
 package com.rexcantor64.triton.language;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.language.Localized;
+import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
-import com.rexcantor64.triton.language.item.LanguageSign;
-import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.localized.StringLocale;
-import com.rexcantor64.triton.storage.LocalStorage;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+@RequiredArgsConstructor
 public class LanguageManager implements com.rexcantor64.triton.api.language.LanguageManager {
+
+    private final Triton<?, ?> triton;
 
     private List<Language> languages = new ArrayList<>();
     private Language mainLanguage;
-    private HashMap<String, HashMap<String, String>> textItems = new HashMap<>();
-    private HashMap<String, HashMap<SignLocation, String[]>> signItems = new HashMap<>();
-    @Getter
-    private List<String> signKeys = new ArrayList<>();
-    private Map<Pattern, LanguageText> matches = new HashMap<>();
-    @Getter
-    private int itemCount = 0;
 
+    @Deprecated
     public String matchPattern(String input, LanguagePlayer p) {
-        return matchPattern(input, p.getLang().getName());
+        return triton.getTranslationManager().matchPattern(input, p);
     }
 
-    public String matchPattern(String input, Localized localized) {
-        return matchPattern(input, localized.getLanguageId());
-    }
-
-    public String matchPattern(String input, String language) {
-        for (Map.Entry<Pattern, LanguageText> entry : matches.entrySet()) {
-            String replacement = entry.getValue().getMessageRegex(language);
-            if (replacement == null) replacement = entry.getValue().getMessageRegex(mainLanguage.getName());
-            if (replacement == null) continue;
-            try {
-                Matcher matcher = entry.getKey().matcher(input);
-                input = matcher.replaceAll(ChatColor.translateAlternateColorCodes('&', replacement));
-            } catch (IndexOutOfBoundsException e) {
-                Triton.get().getLogger().logError(
-                        "Failed to translate using patterns: translation has more placeholders than regex groups. Translation key: %1",
-                        entry.getValue().getKey());
-            }
-        }
-        return input;
-    }
-
+    @Deprecated
     public String getText(@NonNull LanguagePlayer p, String code, Object... args) {
-        return getText(p.getLang(), code, args);
+        Component[] argsComponents = Arrays.stream(args)
+                .map(Objects::toString)
+                .map(arg -> LegacyComponentSerializer.legacyAmpersand().deserialize(arg))
+                .toArray(Component[]::new);
+        val resultComponent = triton.getTranslationManager().getTextComponentOr404(p, code, argsComponents);
+        return LegacyComponentSerializer.legacySection().serialize(resultComponent);
     }
 
+    @Deprecated
     public String getText(@NonNull String languageName, @NonNull String code, @NonNull Object... args) {
-        return getText(new StringLocale(languageName), code, args);
+        Component[] argsComponents = Arrays.stream(args)
+                .map(Objects::toString)
+                .map(arg -> LegacyComponentSerializer.legacyAmpersand().deserialize(arg))
+                .toArray(Component[]::new);
+        val resultComponent = triton.getTranslationManager().getTextComponentOr404(new StringLocale(languageName), code, argsComponents);
+        return LegacyComponentSerializer.legacySection().serialize(resultComponent);
     }
 
-    public String getText(@NonNull Localized localized, @NonNull String code, @NonNull Object... args) {
-        val text = getTextForLanguage(localized.getLanguageId(), code, args);
-        if (text.isPresent()) return text.get();
-
-        for (String fallbackLanguage : localized.getLanguage().getFallbackLanguages()) {
-            val textFallback = getTextForLanguage(fallbackLanguage, code, args);
-            if (textFallback.isPresent()) return textFallback.get();
-        }
-
-        val textMain = getTextForLanguage(this.getMainLanguage().getName(), code, args);
-        return textMain.orElseGet(() -> ChatColor.translateAlternateColorCodes('&',
-                Triton.get().getMessagesConfig().getMessage("error.message-not-found", code, Arrays.toString(args))));
-    }
-
+    @Deprecated
     public String getTextFromMain(@NonNull String code, @NonNull Object... args) {
-        return getText(this.getMainLanguage(), code, args);
+        return getText(this.getMainLanguage().getName(), code, args);
     }
 
-    private Optional<String> getTextForLanguage(@NonNull String language, @NonNull String code, @NonNull Object... args) {
-        Triton.get().getLogger().logTrace("Trying to get translation with key '%1' in language '%2'", code, language);
-        val langItems = this.textItems.get(language);
-        if (langItems == null) return Optional.empty();
-
-        val msg = langItems.get(code);
-        if (msg == null) return Optional.empty();
-
-        Triton.get().getLogger().logTrace("Found translation with key '%1' in language '%2'", code, language);
-        return Optional.of(formatMessage(msg, args));
-    }
-
-    private @NonNull String formatMessage(@NonNull String msg, @NonNull Object... args) {
-        // Loop backwards in order to replace %10 before %1 (for example)
-        for (int i = args.length - 1; i >= 0; --i)
-            msg = msg.replace("%" + (i + 1), String.valueOf(args[i]));
-        return ChatColor.translateAlternateColorCodes('&', msg);
-    }
-
+    @Deprecated
     public String[] getSign(LanguagePlayer player, SignLocation location) {
         return getSign(player, location, () -> new String[4]);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, String[] defaultLines) {
         return getSign(player.getLang().getName(), location, () -> defaultLines);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines) {
         return getSign(player.getLang().getName(), location, defaultLines);
     }
 
+    @Deprecated
     public String[] getSign(@NonNull String language, @NonNull SignLocation location,
                             @NonNull Supplier<String[]> defaultLines) {
-        val langItems = this.signItems.get(language);
-        if (langItems == null) return getSignFromMain(location, defaultLines);
+        val signComponents = triton.getTranslationManager()
+                .getSignComponents(
+                        new StringLocale(language),
+                        location,
+                        () -> Arrays.stream(defaultLines.get())
+                                .map(line -> LegacyComponentSerializer.legacySection().deserialize(line))
+                                .toArray(Component[]::new)
+                );
 
-        String[] lines = langItems.get(location);
-        if (lines == null) return getSignFromMain(location, defaultLines);
+        return signComponents.map(components ->
+                        Arrays.stream(components)
+                                .map(line -> LegacyComponentSerializer.legacySection().serialize(line))
+                                .toArray(String[]::new)
+                )
+                .orElse(null);
 
-        return formatLines(language, lines, defaultLines);
     }
 
-    private String[] getSignFromMain(@NonNull SignLocation location, @NonNull Supplier<String[]> defaultLines) {
-        val langItems = this.signItems.get(this.mainLanguage.getName());
-        if (langItems == null) return null;
-
-        String[] lines = langItems.get(location);
-        if (lines == null) return null;
-
-        return formatLines(this.mainLanguage.getName(), lines, defaultLines);
+    @Override
+    public @NotNull Optional<Language> getLanguageByName(@NotNull String name) {
+        return this.languages.stream()
+                .filter(language -> Objects.equals(language.getName(), name))
+                .findFirst();
     }
 
-    public String[] formatLines(@NonNull String language, @NonNull String[] lines,
-                                @NonNull Supplier<String[]> defaultLinesSupplier) {
-        val result = new String[4];
-        String[] defaultLines = null;
-
-        for (int i = 0; i < 4; ++i) {
-            if (lines.length - 1 < i) {
-                result[i] = "";
-                continue;
-            }
-            result[i] = lines[i];
-
-            if (result[i].equals("%use_line_default%")) {
-                if (defaultLines == null) {
-                    defaultLines = defaultLinesSupplier.get();
-                }
-                result[i] = Triton.get().getLanguageParser()
-                        .replaceLanguages(
-                                matchPattern(defaultLines.length > i && defaultLines[i] != null ? defaultLines[i] :
-                                        "", language),
-                                language,
-                                Triton.get().getConfig().getSignsSyntax()
-                        );
-                while (result[i].startsWith(ChatColor.RESET.toString()))
-                    result[i] = result[i].substring(2);
-            }
-
-            result[i] = ChatColor.translateAlternateColorCodes('&', result[i]);
-        }
-
-        return result;
+    @Override
+    public @NotNull Language getLanguageByNameOrDefault(@NotNull String name) {
+        return this.getLanguageByName(name).orElse(this.mainLanguage);
     }
 
+    @Override
+    public @NotNull Optional<Language> getLanguageByLocale(@NotNull String locale) {
+        return this.languages.stream()
+                .filter(language ->
+                        language.getMinecraftCodes()
+                                .stream()
+                                .anyMatch(languageLocale -> languageLocale.equalsIgnoreCase(locale))
+                )
+                .findFirst();
+    }
+
+    @Override
+    public com.rexcantor64.triton.api.language.@NotNull Language getLanguageByLocaleOrDefault(@NotNull String locale) {
+        return this.getLanguageByLocale(locale).orElse(this.mainLanguage);
+    }
+
+    @Deprecated
     public Language getLanguageByName(String name, boolean fallback) {
         if (name != null)
             for (Language lang : languages)
@@ -180,6 +132,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return null;
     }
 
+    @Deprecated
     public Language getLanguageByLocale(String name, boolean fallback) {
         if (name != null)
             for (Language lang : languages)
@@ -190,87 +143,38 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
         return null;
     }
 
-    public List<com.rexcantor64.triton.api.language.Language> getAllLanguages() {
-        return new ArrayList<>(languages);
+    public List<Language> getAllLanguages() {
+        return this.languages;
     }
 
     public Language getMainLanguage() {
-        return mainLanguage;
+        return this.mainLanguage;
     }
 
     public void setup() {
-        Triton.get().getLogger().logDebug("Setting up language manager...");
+        this.triton.getLogger().logDebug("Setting up language manager...");
 
-        val languages = Triton.get().getConfig().getLanguages();
-        val mainLang = Triton.get().getConfig().getMainLanguage();
+        val languages = this.triton.getConfig().getLanguages();
+        val mainLang = this.triton.getConfig().getMainLanguage();
 
-        for (val lang : languages)
-            if (lang.getName().equals(mainLang))
+        for (val lang : languages) {
+            if (lang.getName().equals(mainLang)) {
                 this.mainLanguage = lang;
-        if (this.mainLanguage == null) this.mainLanguage = languages.get(0);
-
-        this.languages = languages;
-
-        // Map<Language Name, Map<Translation Key, Text>>
-        val textItems = new HashMap<String, HashMap<String, String>>();
-        // Map<Language Name, Map<Sign Location, Lines>>
-        val signItems = new HashMap<String, HashMap<SignLocation, String[]>>();
-        val signKeys = new ArrayList<String>();
-
-        Map<Pattern, LanguageText> matches = new HashMap<>();
-
-        val filterItems = Triton.isSpigot() && Triton.get().getConfig().isBungeecord() && !(Triton.get()
-                .getStorage() instanceof LocalStorage);
-        val serverName = Triton.get().getConfig().getServerName();
-
-        int itemCount = 0;
-        for (val collection : Triton.get().getStorage().getCollections().values()) {
-
-            for (val item : collection.getItems()) {
-                if (item.getTwinData() != null && item.getTwinData().isArchived()) continue;
-
-                if (item instanceof LanguageText) {
-                    val itemText = (LanguageText) item;
-                    if (filterItems && !itemText.belongsToServer(collection.getMetadata(), serverName)) continue;
-
-                    if (itemText.getPatterns() != null) {
-                        itemText.getPatterns().forEach((pattern) -> matches.put(Pattern.compile(pattern), itemText));
-                        itemText.generateRegexStrings();
-                    }
-
-                    if (itemText.getLanguages() != null)
-                        itemText.getLanguages().forEach((key, value) -> {
-                            if (!textItems.containsKey(key)) textItems.put(key, new HashMap<>());
-                            textItems.get(key).put(itemText.getKey(), value);
-                        });
-                }
-                if (item instanceof LanguageSign) {
-                    val itemSign = (LanguageSign) item;
-                    signKeys.add(itemSign.getKey());
-                    if (itemSign.getLines() != null && itemSign.getLocations() != null)
-                        itemSign.getLines().forEach((key, value) -> {
-                            if (!signItems.containsKey(key)) signItems.put(key, new HashMap<>());
-
-                            val signLang = signItems.get(key);
-                            itemSign.getLocations().stream()
-                                    .filter((loc) -> !filterItems || loc.getServer() == null || serverName
-                                            .equals(loc.getServer()))
-                                    .forEach((loc) -> signLang.put(loc, value));
-                        });
-                }
-                itemCount++;
             }
         }
+        if (this.mainLanguage == null) {
+            this.mainLanguage = languages.get(0);
+            this.triton.getLogger().logWarning(
+                    "The main language on config did not match any known language. Using %1 as the main language instead",
+                    this.mainLanguage.getName()
+            );
+        }
 
-        this.textItems = textItems;
-        this.signItems = signItems;
-        this.signKeys = signKeys;
-        this.matches = matches;
-        this.itemCount = itemCount;
+        this.languages = Collections.unmodifiableList(languages);
 
-        Triton.get().getLogger()
-                .logInfo("Successfully setup the language manager! %1 languages and %2 language items loaded!",
-                        this.languages.size(), itemCount);
+        this.triton.getLogger()
+                .logInfo("Successfully setup the Language Manager! %1 languages loaded!",
+                        this.languages.size());
     }
 
 }

@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.api.players;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.UUID;
 
 /**
@@ -16,6 +18,6 @@ public interface PlayerManager {
      * @return The instance of {@link LanguagePlayer LanguagePlayer} for the provided UUID.
      * @since 1.0.0
      */
-    LanguagePlayer get(UUID uuid);
+    @NotNull LanguagePlayer get(@NotNull UUID uuid);
 
 }

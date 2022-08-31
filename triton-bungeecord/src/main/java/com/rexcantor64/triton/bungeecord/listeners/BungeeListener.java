@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.bungeecord.listeners;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.PreLoginBungeeEncoder;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
@@ -9,8 +10,6 @@ import com.rexcantor64.triton.utils.SocketUtils;
 import io.netty.channel.Channel;
 import lombok.val;
 import net.md_5.bungee.api.ServerPing;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PlayerHandshakeEvent;
@@ -24,7 +23,6 @@ import net.md_5.bungee.netty.PipelineUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 public class BungeeListener implements Listener {
@@ -85,8 +83,10 @@ public class BungeeListener implements Listener {
         event.registerIntent(plugin);
 
         BungeeTriton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
+            val parser = Triton.get().getMessageParser();
+
             val ipAddress = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
-            val lang = Triton.get().getStorage().getLanguageFromIp(ipAddress).getName();
+            val lang = Triton.get().getStorage().getLanguageFromIp(ipAddress);
             Triton.get().getLogger().logTrace("Translating MOTD in language '%1' for IP address '%2'", lang, ipAddress);
             val syntax = Triton.get().getConfig().getMotdSyntax();
 
@@ -94,42 +94,44 @@ public class BungeeListener implements Listener {
             if (players.getSample() != null) {
                 val newSample = new ArrayList<ServerPing.PlayerInfo>();
                 for (val playerInfo : players.getSample()) {
-                    val translatedName = Triton.get().getLanguageParser()
-                            .replaceLanguages(playerInfo.getName(), lang, syntax);
-                    if (playerInfo.getName() == null || playerInfo.getName().equals(translatedName)) {
+                    if (playerInfo.getName() == null) {
                         newSample.add(playerInfo);
                         continue;
                     }
-                    if (translatedName == null) continue; // Disabled line
-                    val translatedNameSplit = translatedName.split("\n", -1);
-                    if (translatedNameSplit.length > 1) {
-                        for (val split : translatedNameSplit) {
-                            newSample.add(new ServerPing.PlayerInfo(split, UUID.randomUUID()));
-                        }
-                    } else {
-                        newSample.add(new ServerPing.PlayerInfo(translatedName, playerInfo.getUniqueId()));
-                    }
+                    parser.translateString(playerInfo.getName(), lang, syntax)
+                            .ifUnchanged(() -> newSample.add(playerInfo))
+                            .ifChanged(translatedName -> {
+                                val translatedNameSplit = translatedName.split("\n", -1);
+                                if (translatedNameSplit.length > 1) {
+                                    for (val split : translatedNameSplit) {
+                                        newSample.add(new ServerPing.PlayerInfo(split, UUID.randomUUID()));
+                                    }
+                                } else {
+                                    newSample.add(new ServerPing.PlayerInfo(translatedName, playerInfo.getUniqueId()));
+                                }
+                            });
                 }
                 players.setSample(newSample.toArray(new ServerPing.PlayerInfo[0]));
             }
 
-            val version = event.getResponse().getVersion();
-            val translatedVersion = new ServerPing.Protocol(Triton.get().getLanguageParser()
-                    .parseString(lang, syntax, version.getName()), version.getProtocol());
-            event.getResponse().setVersion(translatedVersion);
+            val response = event.getResponse();
+            val version = response.getVersion();
+            parser.translateString(version.getName(), lang, syntax)
+                    .map(translationVersion -> new ServerPing.Protocol(translationVersion, version.getProtocol()))
+                    .ifChanged(response::setVersion);
 
-            event.getResponse().setDescriptionComponent(componentArrayToSingle(Triton.get().getLanguageParser()
-                    .parseComponent(lang, syntax, event.getResponse()
-                            .getDescriptionComponent())));
+            parser.translateComponent(
+                            BaseComponentUtils.deserialize(event.getResponse().getDescriptionComponent()),
+                            lang,
+                            syntax
+                    )
+                    .map(BaseComponentUtils::serialize)
+                    .map(BaseComponentUtils::convertArrayToSingle)
+                    .ifChanged(response::setDescriptionComponent);
+
             event.completeIntent(plugin);
         });
     }
 
-    private BaseComponent componentArrayToSingle(BaseComponent... c) {
-        if (c.length == 1) return c[0];
-        BaseComponent result = new TextComponent("");
-        result.setExtra(Arrays.asList(c));
-        return result;
-    }
 
 }

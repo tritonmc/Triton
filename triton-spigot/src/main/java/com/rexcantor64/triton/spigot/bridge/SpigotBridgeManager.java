@@ -18,6 +18,7 @@ import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -37,7 +38,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
     private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
-    public void onPluginMessageReceived(String channel, Player player, byte[] bytes) {
+    public void onPluginMessageReceived(String channel, @NotNull Player player, byte[] bytes) {
         if (!channel.equals("triton:main")) return;
 
         val start = System.currentTimeMillis();

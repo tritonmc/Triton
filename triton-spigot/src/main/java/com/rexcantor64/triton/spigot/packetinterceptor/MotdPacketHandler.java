@@ -7,11 +7,11 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
-import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import lombok.val;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
+import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,6 +28,15 @@ public class MotdPacketHandler extends PacketAdapter {
     }
 
     /**
+     * Alias of <code>Triton.get().getMessageParser()</code>.
+     *
+     * @see Triton#getMessageParser()
+     */
+    private MessageParser parser() {
+        return Triton.get().getMessageParser();
+    }
+
+    /**
      * @return Whether the plugin should attempt to translate the MOTD
      */
     private boolean isMotdEnabled() {
@@ -37,42 +46,62 @@ public class MotdPacketHandler extends PacketAdapter {
     /**
      * Handle a Server Info (MOTD) packet.
      * Placeholders are searched in the text itself, as well as in the ping message.
-     * The resulting components are flattened as legacy text using {@link ComponentUtils#mergeComponents(BaseComponent...)}.
      *
      * @param event ProtocolLib's packet event
      */
     private void handleServerInfo(PacketEvent event) {
-        val lang = Triton.get().getStorage().getLanguageFromIp(Objects
-                .requireNonNull(event.getPlayer().getAddress()).getAddress().getHostAddress()).getName();
+        val lang = Triton.get().getStorage().getLanguageFromIp(
+                Objects.requireNonNull(event.getPlayer().getAddress()).getAddress().getHostAddress()
+        );
         val syntax = Triton.get().getConfig().getMotdSyntax();
 
         val serverPing = event.getPacket().getServerPings().readSafely(0);
         serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
-            if (gp.getName() == null) return Stream.of(gp);
-            val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
-            if (gp.getName().equals(translatedName)) return Stream.of(gp);
-            if (translatedName == null) return null;
-            val translatedNameSplit = translatedName.split("\n", -1);
-            if (translatedNameSplit.length > 1) {
-                return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
-            } else {
-                return Stream.of(gp.withName(translatedName));
+            if (gp.getName() == null) {
+                return Stream.of(gp);
             }
+
+            return parser()
+                    .translateString(
+                            gp.getName(),
+                            lang,
+                            syntax
+                    )
+                    .mapToObj(
+                            (translatedName) -> {
+                                val translatedNameSplit = translatedName.split("\n", -1);
+                                if (translatedNameSplit.length > 1) {
+                                    return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
+                                } else {
+                                    return Stream.of(gp.withName(translatedName));
+                                }
+                            },
+                            () -> Stream.of(gp),
+                            Stream::empty
+                    );
+
         }).collect(Collectors.toList()));
 
-        serverPing.setVersionName(Triton.get().getLanguageParser().replaceLanguages(serverPing.getVersionName(), lang, syntax));
+        parser().translateString(serverPing.getVersionName(), lang, syntax)
+                .ifChanged(serverPing::setVersionName);
 
-        val motd = serverPing.getMotD();
-        val result = Triton.get().getLanguageParser()
-                .parseComponent(lang, syntax, ComponentSerializer.parse(motd.getJson()));
-        if (result != null)
-            motd.setJson(ComponentSerializer.toString(result));
-        serverPing.setMotD(motd);
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(serverPing.getMotD()),
+                        lang,
+                        syntax
+                )
+                .map(WrappedComponentUtils::serialize)
+                .ifChanged(serverPing::setMotD)
+                .ifToRemove(() -> serverPing.setMotD(WrappedComponentUtils.serialize(Component.empty())));
     }
 
     @Override
     public void onPacketSending(PacketEvent packet) {
-        if (!packet.isServerPacket()) return;
+        if (!packet.isServerPacket()) {
+            return;
+        }
+
         if (packet.getPacketType() == PacketType.Status.Server.SERVER_INFO && isMotdEnabled()) {
             handleServerInfo(packet);
         }

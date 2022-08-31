@@ -16,49 +16,54 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AdventureParserTest {
 
     private final AdventureParser parser = new AdventureParser();
     private final FeatureSyntax defaultSyntax = new DefaultFeatureSyntax();
 
+    private final Function<String, Component> messageResolver = (key) -> {
+        if (key.equals("without.formatting")) {
+            return Component.text("This is text without formatting");
+        }
+        if (key.equals("without.formatting.with.args")) {
+            return Component.text("This is text without formatting but with arguments (%1)");
+        }
+        if (key.equals("with.colors")) {
+            return Component.text("This text is green").color(NamedTextColor.GREEN);
+        }
+        if (key.equals("with.colors.two.args")) {
+            return Component.text("This text is pink and has two arguments (%1 and %2)").color(NamedTextColor.LIGHT_PURPLE);
+        }
+        if (key.equals("with.colors.repeated.args")) {
+            return Component.text("This text is pink and has three arguments (%1 and %2 and %1)").color(NamedTextColor.LIGHT_PURPLE);
+        }
+        if (key.equals("nested")) {
+            return Component.text()
+                    .content("some text")
+                    .append(Component.text("[lang]without.formatting[/lang]"))
+                    .asComponent();
+        }
+        return Component.text("unknown placeholder");
+    };
+
     private final TranslationConfiguration configuration = new TranslationConfiguration(
             defaultSyntax,
             "disabled.line",
-            (key) -> {
-                if (key.equals("without.formatting")) {
-                    return Component.text("This is text without formatting");
-                }
-                if (key.equals("without.formatting.with.args")) {
-                    return Component.text("This is text without formatting but with arguments (%1)");
-                }
-                if (key.equals("with.colors")) {
-                    return Component.text("This text is green").color(NamedTextColor.GREEN);
-                }
-                if (key.equals("with.colors.two.args")) {
-                    return Component.text("This text is pink and has two arguments (%1 and %2)").color(NamedTextColor.LIGHT_PURPLE);
-                }
-                if (key.equals("with.colors.repeated.args")) {
-                    return Component.text("This text is pink and has three arguments (%1 and %2 and %1)").color(NamedTextColor.LIGHT_PURPLE);
-                }
-                if (key.equals("nested")) {
-                    return Component.text()
-                            .content("some text")
-                            .append(Component.text("[lang]without.formatting[/lang]"))
-                            .asComponent();
-                }
-                return Component.text("unknown placeholder");
-            }
+            (key, args) -> parser.replaceArguments(messageResolver.apply(key), Arrays.asList(args))
     );
 
     @Test
     public void testParseComponentWithoutPlaceholders() {
         Component comp = Component.text("Text without any placeholders whatsoever");
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         assertEquals(TranslationResult.ResultState.UNCHANGED, result.getState());
     }
@@ -67,12 +72,13 @@ public class AdventureParserTest {
     public void testParseComponentWithoutFormatting() {
         Component comp = Component.text("Text [lang]without.formatting[/lang] more text");
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text("Text This is text without formatting more text");
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -81,7 +87,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text [lang]without."),
                         Component.text()
                                 .content("formatting[/lang][lang]with.colors[/lang] more text"),
@@ -91,12 +97,12 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text This is text without formatting"),
                         Component.text()
                                 .content("This text is green")
@@ -113,7 +119,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -122,30 +129,24 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text [lang]without."),
                         Component.text("formatting.with.args[arg]test[/arg][/lang] more text")
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .content("Text ")
-                                .color(TextColor.color(0xff000)),
-                        Component.text()
+                                .content("Text This is text without formatting but with arguments (")
+                                .color(TextColor.color(0xff0000))
                                 .append(
-                                        Component.text()
-                                                .content("This is text without formatting but with arguments (")
-                                                .color(TextColor.color(0xff000)),
                                         Component.text()
                                                 .content("test")
                                                 .color(TextColor.color(0x0000ff)),
-                                        Component.text()
-                                                .content(")")
-                                                .color(TextColor.color(0xff000))
+                                        Component.text(")")
                                 ),
                         Component.text()
                                 .color(TextColor.color(0x0000ff))
@@ -154,7 +155,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -163,7 +165,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -181,14 +183,15 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -210,7 +213,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -219,7 +223,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -237,14 +241,15 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -272,7 +277,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -281,7 +287,7 @@ public class AdventureParserTest {
                 .color(TextColor.color(0x0000ff))
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
                                 .color(TextColor.color(0x00ff00))
@@ -295,14 +301,15 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
                         Component.text()
-                                .color(TextColor.color(0xff000))
+                                .color(TextColor.color(0xff0000))
                                 .content("Text "),
                         Component.text()
+                                .color(TextColor.color(0x00ff00))
                                 .append(
                                         Component.text()
                                                 .color(NamedTextColor.LIGHT_PURPLE)
@@ -318,14 +325,15 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
     public void testParseComponentBackwardsCompatibilityWithArgsTag() {
         Component comp = Component.text("Text [lang]with.colors.two.args[args][arg]test[/arg][/args][/lang] more text");
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -346,7 +354,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -359,7 +368,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -373,7 +382,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -383,7 +393,7 @@ public class AdventureParserTest {
                 Component.text("[lang]without.formatting[/lang]")
         );
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.translatable(
                 "translatable.key",
@@ -392,7 +402,8 @@ public class AdventureParserTest {
         );
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -408,7 +419,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .append(
@@ -426,7 +437,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -436,7 +448,7 @@ public class AdventureParserTest {
                 .hoverEvent(HoverEvent.showText(Component.text("[lang]without.formatting[/lang]")))
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .content("some text")
@@ -449,7 +461,8 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
@@ -465,7 +478,7 @@ public class AdventureParserTest {
                 )
                 .asComponent();
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .content("some text")
@@ -481,14 +494,15 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
     public void testParseComponentWithNestedPlaceholders() {
         Component comp = Component.text("[lang]nested[/lang]");
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         Component expected = Component.text()
                 .content("some text")
@@ -497,16 +511,17 @@ public class AdventureParserTest {
                 .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertEquals(expected.compact(), result.getResult().compact());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
     public void testParseComponentWithDisabledLine() {
         Component comp = Component.text("[lang]disabled.line[/lang]");
 
-        TranslationResult result = parser.translateComponent(comp, configuration);
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
-        assertEquals(TranslationResult.ResultState.REMOVE, result.getState());
+        assertEquals(TranslationResult.ResultState.TO_REMOVE, result.getState());
     }
 
     @Test
@@ -1045,6 +1060,24 @@ public class AdventureParserTest {
         assertEquals(expected.length, result.size());
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].compact(), result.get(i).compact());
+        }
+    }
+
+    @Test
+    public void testGetPatternIndexArray() {
+        String input = "Lorem ipsum [tag]dolor [tag]sit[/tag] amet[/tag], [tag2]consectetur[/tag2] [tag]adipiscing elit[/tag]. Nullam posuere.";
+
+        List<Integer[]> result = parser.getPatternIndexArray(input, "tag");
+        System.out.println("result = " + result);
+
+        List<Integer[]> expected = Arrays.asList(
+                new Integer[]{12, 48, 17, 42},
+                new Integer[]{75, 101, 80, 95}
+        );
+
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertArrayEquals(expected.get(i), result.get(i));
         }
     }
 

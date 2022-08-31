@@ -40,7 +40,7 @@ public class VelocityListener {
     public void onPlayerSettingsUpdate(PlayerSettingsChangedEvent event) {
         val lp = Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
         if (lp.isWaitingForClientLocale()) {
-            lp.setLang(Triton.get().getLanguageManager().getLanguageByLocale(event.getPlayerSettings().getLocale().toString(), true));
+            lp.setLang(Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(event.getPlayerSettings().getLocale().toString()));
         }
     }
 

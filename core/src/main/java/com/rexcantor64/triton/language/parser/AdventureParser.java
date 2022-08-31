@@ -3,7 +3,7 @@ package com.rexcantor64.triton.language.parser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.language.LanguageParser;
+import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,7 +16,9 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.*;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
  *
  * @since 4.0.0
  */
-public class AdventureParser {
+public class AdventureParser implements MessageParser {
 
     private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
             .mapper(TextComponent.class, TextComponent::content)
@@ -37,6 +39,18 @@ public class AdventureParser {
     private final static PlainTextComponentSerializer PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder()
             .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
             .build();
+
+    /**
+     * @see MessageParser#translateString(String, Localized, FeatureSyntax)
+     */
+    @Override
+    public @NotNull TranslationResult<String> translateString(String text, Localized language, FeatureSyntax syntax) {
+        return translateComponent(
+                LegacyComponentSerializer.legacySection().deserialize(text),
+                language,
+                syntax
+        ).map(component -> LegacyComponentSerializer.legacySection().serialize(component));
+    }
 
     /**
      * Find and replace Triton placeholders in a Component.
@@ -55,12 +69,13 @@ public class AdventureParser {
      * @return The result of the translation
      * @since 4.0.0
      */
-    public TranslationResult translateComponent(Component component, Localized language, FeatureSyntax syntax) {
+    @Override
+    public @NotNull TranslationResult<Component> translateComponent(Component component, Localized language, FeatureSyntax syntax) {
         TranslationConfiguration configuration = new TranslationConfiguration(
                 syntax,
                 Triton.get().getConfig().getDisabledLine(),
                 // TODO properly integrate this
-                (key) -> Component.text(Triton.get().getLanguageManager().getText(language, key))
+                (key, arguments) -> Triton.get().getTranslationManager().getTextComponentOr404(language, key, arguments)
         );
         return translateComponent(component, configuration);
     }
@@ -73,9 +88,9 @@ public class AdventureParser {
      * @since 4.0.0
      */
     @VisibleForTesting
-    TranslationResult translateComponent(Component component, TranslationConfiguration configuration) {
+    TranslationResult<Component> translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
-        val indexes = LanguageParser.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
+        val indexes = this.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
             return handleNonContentText(component, configuration);
@@ -112,7 +127,7 @@ public class AdventureParser {
         Component resultComponent = Component.join(JoinConfiguration.noSeparators(), acc);
 
         resultComponent = handleNonContentText(resultComponent, configuration)
-                .getChanged()
+                .getResult()
                 .orElse(resultComponent);
 
         return TranslationResult.changed(resultComponent);
@@ -132,7 +147,7 @@ public class AdventureParser {
      */
     private Optional<Component> handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
         String placeholderStr = componentToString(placeholder);
-        val indexes = LanguageParser.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
+        val indexes = this.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
         Queue<Integer> indexesToSplitAt = indexes.stream()
                 .flatMap(Arrays::stream)
                 .sorted()
@@ -166,15 +181,14 @@ public class AdventureParser {
         }
 
         Style defaultStyle = getStyleOfFirstCharacter(placeholder);
-        Component result = configuration.translationSupplier.apply(key).applyFallbackStyle(defaultStyle);
-        result = replaceArguments(result, arguments);
+        Component result = configuration.translationSupplier.apply(key, arguments.toArray(new Component[0])).applyFallbackStyle(defaultStyle);
 
-        TranslationResult translationResult = translateComponent(result, configuration);
-        if (translationResult.getState() == TranslationResult.ResultState.REMOVE) {
+        TranslationResult<Component> translationResult = translateComponent(result, configuration);
+        if (translationResult.getState() == TranslationResult.ResultState.TO_REMOVE) {
             return Optional.empty();
         }
 
-        return Optional.of(translationResult.getChanged().orElse(result));
+        return Optional.of(translationResult.getResult().orElse(result));
     }
 
     /**
@@ -190,34 +204,34 @@ public class AdventureParser {
      * @since 4.0.0
      */
     @SuppressWarnings("unchecked")
-    private TranslationResult handleNonContentText(Component component, TranslationConfiguration configuration) {
+    private TranslationResult<Component> handleNonContentText(Component component, TranslationConfiguration configuration) {
         boolean changed = false;
         HoverEvent<?> hoverEvent = component.hoverEvent();
         if (hoverEvent != null) {
             if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
                 HoverEvent<Component> textHoverEvent = (HoverEvent<Component>) hoverEvent;
                 Component value = textHoverEvent.value();
-                TranslationResult result = translateComponent(value, configuration);
-                if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                TranslationResult<Component> result = translateComponent(value, configuration);
+                if (result.isToRemove()) {
                     changed = true;
                     component = component.hoverEvent(null);
                 }
-                if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                if (result.getResult().isPresent()) {
                     changed = true;
-                    component = component.hoverEvent(textHoverEvent.value(result.getResult()));
+                    component = component.hoverEvent(textHoverEvent.value(result.getResult().get()));
                 }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ENTITY) {
                 HoverEvent<HoverEvent.ShowEntity> entityHoverEvent = (HoverEvent<HoverEvent.ShowEntity>) hoverEvent;
                 HoverEvent.ShowEntity value = entityHoverEvent.value();
                 if (value.name() != null) {
-                    TranslationResult result = translateComponent(value.name(), configuration);
-                    if (result.getState() == TranslationResult.ResultState.REMOVE) {
+                    TranslationResult<Component> result = translateComponent(value.name(), configuration);
+                    if (result.isToRemove()) {
                         changed = true;
                         component = component.hoverEvent(null);
                     }
-                    if (result.getState() == TranslationResult.ResultState.CHANGED) {
+                    if (result.getResult().isPresent()) {
                         changed = true;
-                        component = component.hoverEvent(entityHoverEvent.value(value.name(result.getResult())));
+                        component = component.hoverEvent(entityHoverEvent.value(value.name(result.getResult().get())));
                     }
                 }
             } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ITEM) {
@@ -302,7 +316,7 @@ public class AdventureParser {
      * @return The serialization result.
      * @since 4.0.0
      */
-    private String componentToString(Component component) {
+    public String componentToString(Component component) {
         return PLAIN_TEXT_SERIALIZER.serialize(component);
     }
 
@@ -314,7 +328,7 @@ public class AdventureParser {
      * @return The component with % placeholders replaced with arguments.
      * @since 4.0.0
      */
-    private Component replaceArguments(Component component, List<Component> arguments) {
+    public Component replaceArguments(Component component, List<Component> arguments) {
         PriorityQueue<PriorityPair<Component>> replacementMap = new PriorityQueue<>(Comparator.comparing(PriorityPair::getPriority));
         Queue<Integer> indexesToSplitAt = new LinkedList<>();
         String plainText = componentToString(component);
@@ -483,6 +497,51 @@ public class AdventureParser {
             }
         }
         return accumulator;
+    }
+
+    /**
+     * Find the indexes of all root "[pattern][/pattern]" tags in the given string.
+     * <p>
+     * Only the root tags are included, that is, nested tags are ignored.
+     * For example, <code>[pattern][pattern][/pattern][/pattern]</code> would only
+     * return the indexes for the outer tags.
+     * <p>
+     * Each array in the returned list corresponds to a different set of opening and closing tags,
+     * and has size 4.
+     * Indexes have the following meaning:
+     * <ul>
+     *     <li>0: the first character of the opening tag</li>
+     *     <li>1: the character after the last character of the closing tag</li>
+     *     <li>2: the character after the last character of the opening tag</li>
+     *     <li>3: the first character of the closing tag</li>
+     * </ul>
+     *
+     * @param input   The string to search for opening and closing tags.
+     * @param pattern The tags to search for (i.e. "lang" will search for "[lang]" and "[/lang]").
+     * @return A list of indexes of all the found tags, as specified by the method description.
+     */
+    public List<Integer[]> getPatternIndexArray(String input, String pattern) {
+        List<Integer[]> result = new ArrayList<>();
+        int start = -1;
+        int openedAmount = 0;
+
+        for (int i = 0; i < input.length(); i++) {
+            char currentChar = input.charAt(i);
+            if (currentChar == '[' && input.length() > i + pattern.length() + 1 && input.substring(i + 1,
+                    i + 2 + pattern.length()).equals(pattern + "]")) {
+                if (start == -1) start = i;
+                openedAmount++;
+                i += 1 + pattern.length();
+            } else if (currentChar == '[' && input.length() > i + pattern.length() + 2 && input.substring(i + 1,
+                    i + 3 + pattern.length()).equals("/" + pattern + "]")) {
+                openedAmount--;
+                if (openedAmount == 0) {
+                    result.add(new Integer[]{start, i + 3 + pattern.length(), start + pattern.length() + 2, i});
+                    start = -1;
+                }
+            }
+        }
+        return result;
     }
 
     /**

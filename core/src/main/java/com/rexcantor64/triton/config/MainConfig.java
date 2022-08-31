@@ -11,7 +11,6 @@ import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.utils.YAMLUtils;
-import lombok.AccessLevel;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class MainConfig implements TritonConfig {
     }.getType();
 
     @ToString.Exclude
-    private transient final Triton main;
+    private transient final Triton<?, ?> main;
     @Setter
     private List<Language> languages;
     @Setter
@@ -115,7 +114,7 @@ public class MainConfig implements TritonConfig {
     private Map<String, String> databaseMysqlPoolProperties;
     private boolean iKnowWhatIAmDoing;
 
-    public MainConfig(Triton main) {
+    public MainConfig(Triton<?, ?> main) {
         this.main = main;
     }
 

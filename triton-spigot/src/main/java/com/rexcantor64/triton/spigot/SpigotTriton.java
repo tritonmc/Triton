@@ -24,6 +24,7 @@ import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SingleLineChart;
@@ -88,7 +89,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
         Metrics metrics = new Metrics(getLoader(), 5606);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> Triton.get().getLanguageManager().getItemCount()));
+                () -> this.getTranslationManager().getTranslationCount()));
 
         // Setup custom managers
         wrapperManager = new MaterialWrapperManager();
