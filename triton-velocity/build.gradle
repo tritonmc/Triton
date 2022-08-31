@@ -6,12 +6,24 @@ plugins {
 apply plugin: 'net.kyori.blossom'
 group 'com.rexcantor64.triton'
 
+repositories {
+    // Unofficial repository that has the velocity-proxy module
+    maven {
+        name 'exceptionflug'
+        url 'https://mvn.exceptionflug.de/repository/exceptionflug-public/'
+    }
+}
+
 dependencies {
     compileOnly project(path: ":api")
     compileOnly project(path: ":core")
 
     compileOnly 'com.velocitypowered:velocity-api:3.1.0'
     annotationProcessor 'com.velocitypowered:velocity-api:3.1.0'
+
+    // This is severely outdated, we might need to host our own artifact
+    compileOnly 'com.velocitypowered:velocity-proxy:3.0.1'
+    compileOnly 'io.netty:netty-codec:4.1.80.Final'
 
     implementation 'org.bstats:bstats-velocity:3.0.0'
 }

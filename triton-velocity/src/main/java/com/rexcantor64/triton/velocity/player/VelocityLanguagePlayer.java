@@ -6,10 +6,14 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import com.rexcantor64.triton.velocity.VelocityTriton;
+import com.rexcantor64.triton.velocity.packetinterceptor.VelocityNettyEncoder;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
+import com.velocitypowered.proxy.network.Connections;
 import lombok.val;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -24,7 +28,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     private HashMap<UUID, String> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
 
-    public VelocityLanguagePlayer(Player parent) {
+    public VelocityLanguagePlayer(@NotNull Player parent) {
         this.parent = parent;
         Triton.get().runAsync(this::load);
     }
@@ -89,6 +93,12 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
 
     public void refreshAll() {
         // TODO
+    }
+
+    public void injectNettyPipeline() {
+        ConnectedPlayer connectedPlayer = (ConnectedPlayer) this.parent;
+        connectedPlayer.getConnection().getChannel().pipeline()
+                .addAfter(Connections.MINECRAFT_ENCODER, "triton-custom-encoder", new VelocityNettyEncoder(this));
     }
 
     @Override

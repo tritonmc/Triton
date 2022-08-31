@@ -2,7 +2,6 @@ package com.rexcantor64.triton.bungeecord.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.api.language.TranslationResult;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.utils.ComponentUtils;
@@ -11,10 +10,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.packet.BossBar;

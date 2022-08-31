@@ -34,6 +34,7 @@ public class VelocityListener {
         val player = e.getPlayer();
         val lp = new VelocityLanguagePlayer(player);
         VelocityTriton.asVelocity().getPlayerManager().registerPlayer(lp);
+        lp.injectNettyPipeline();
     }
 
     @Subscribe
