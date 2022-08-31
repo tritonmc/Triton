@@ -1,7 +1,6 @@
 package com.rexcantor64.triton;
 
 import com.rexcantor64.triton.api.language.LanguageParser;
-import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.api.legacy.LegacyLanguageParser;
 import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.config.MainConfig;
@@ -47,7 +46,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     // Managers
     private LanguageManager languageManager;
     @Deprecated
-    private LanguageParser languageParser;
+    private final LanguageParser languageParser = new LegacyLanguageParser();
     private TranslationManager translationManager;
     private final AdventureParser messageParser = new AdventureParser();
     private TwinManager twinManager;
@@ -99,7 +98,6 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
 
         reload();
 
-        languageParser = new LegacyLanguageParser(); // legacy
         twinManager = new TwinManager(this);
     }
 

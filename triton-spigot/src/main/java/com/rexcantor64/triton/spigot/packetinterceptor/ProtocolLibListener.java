@@ -712,7 +712,9 @@ public class ProtocolLibListener implements PacketListener {
 
     @Override
     public void onPacketSending(PacketEvent packet) {
-        if (!packet.isServerPacket()) return;
+        if (!packet.isServerPacket()) {
+            return;
+        }
 
         if (firstRun.compareAndSet(true, false) && !Bukkit.getServer().isPrimaryThread()) {
             Thread.currentThread().setName("Triton Async Packet Handler");
@@ -720,18 +722,14 @@ public class ProtocolLibListener implements PacketListener {
 
         SpigotLanguagePlayer languagePlayer;
         try {
-            languagePlayer =
-                    (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
+            languagePlayer = main.getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception e) {
             Triton.get().getLogger()
                     .logWarning("Failed to translate packet because UUID of the player is unknown (possibly " +
                             "because the player hasn't joined yet).");
-            if (Triton.get().getConfig().getLogLevel() >= 1)
+            if (Triton.get().getConfig().getLogLevel() >= 1) {
                 e.printStackTrace();
-            return;
-        }
-        if (languagePlayer == null) {
-            Triton.get().getLogger().logWarning("Language Player is null on packet sending");
+            }
             return;
         }
 
@@ -746,24 +744,26 @@ public class ProtocolLibListener implements PacketListener {
         if (packet.isServerPacket()) return;
         SpigotLanguagePlayer languagePlayer;
         try {
-            languagePlayer =
-                    (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
+            languagePlayer = main.getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
                     .logWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
                             "(possibly because the player hasn't joined yet).");
             return;
         }
-        if (languagePlayer == null) {
-            Triton.get().getLogger().logWarning("Language Player is null on packet receiving");
+        if (packet.getPacketType() != PacketType.Play.Client.SETTINGS) {
             return;
         }
-        if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
-            if (languagePlayer.isWaitingForClientLocale())
-                Bukkit.getScheduler().runTask(SpigotTriton.asSpigot().getLoader(), () -> languagePlayer
-                        .setLang(Triton.get().getLanguageManager()
-                                .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
+        if (!languagePlayer.isWaitingForClientLocale()) {
+            return;
         }
+        Bukkit.getScheduler().runTask(
+                main.getLoader(),
+                () -> languagePlayer.setLang(
+                        main.getLanguageManager()
+                                .getLanguageByLocaleOrDefault(packet.getPacket().getStrings().readSafely(0))
+                )
+        );
     }
 
     @Override

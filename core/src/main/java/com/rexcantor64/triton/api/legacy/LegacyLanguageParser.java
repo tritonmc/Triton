@@ -7,8 +7,10 @@ import com.rexcantor64.triton.language.localized.StringLocale;
 
 import java.util.function.Function;
 
+@Deprecated
 public class LegacyLanguageParser implements LanguageParser {
 
+    @SuppressWarnings("deprecation")
     @Override
     @Deprecated
     public String parseString(String language, FeatureSyntax syntax, String input) {

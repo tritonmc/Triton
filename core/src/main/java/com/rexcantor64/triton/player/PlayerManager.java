@@ -1,9 +1,10 @@
 package com.rexcantor64.triton.player;
 
 import com.rexcantor64.triton.Triton;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +20,7 @@ public class PlayerManager<T extends LanguagePlayer> implements com.rexcantor64.
         this.languagePlayerSupplier = languagePlayerSupplier;
     }
 
-    public T get(UUID uuid) {
+    public @NotNull T get(@NotNull UUID uuid) {
         T languagePlayer = players.get(uuid);
         if (languagePlayer != null) {
             return languagePlayer;
@@ -31,22 +32,22 @@ public class PlayerManager<T extends LanguagePlayer> implements com.rexcantor64.
         return languagePlayer;
     }
 
-    public boolean hasPlayer(UUID uuid) {
+    public boolean hasPlayer(@NotNull UUID uuid) {
         return players.containsKey(uuid);
     }
 
-    public void unregisterPlayer(UUID uuid) {
+    public void unregisterPlayer(@NotNull UUID uuid) {
         Triton.get().getLogger().logTrace("[Player Manager] Unregistering language player with UUID %1", uuid);
         players.remove(uuid);
     }
 
-    public void registerPlayer(T languagePlayer) {
+    public void registerPlayer(@NotNull T languagePlayer) {
         Triton.get().getLogger().logTrace("[Player Manager] Registering language player %1", languagePlayer);
         players.put(languagePlayer.getUUID(), languagePlayer);
     }
 
-    public List<T> getAll() {
-        return new ArrayList<>(players.values());
+    public @NotNull Collection<T> getAll() {
+        return Collections.unmodifiableCollection(players.values());
     }
 
 }

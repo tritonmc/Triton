@@ -18,12 +18,13 @@ public class BungeeDecoder extends MessageToMessageDecoder<PacketWrapper> {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext chx, PacketWrapper wrapper, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext chx, PacketWrapper wrapper, List<Object> out) {
         try {
             if (wrapper.packet instanceof ClientSettings) {
                 ClientSettings packet = (ClientSettings) wrapper.packet;
-                if (lp.isWaitingForClientLocale())
-                    lp.setLang(Triton.get().getLanguageManager().getLanguageByLocale(packet.getLocale(), true));
+                if (lp.isWaitingForClientLocale()) {
+                    lp.setLang(Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(packet.getLocale()));
+                }
             }
             out.add(wrapper);
         } catch (NullPointerException e) {

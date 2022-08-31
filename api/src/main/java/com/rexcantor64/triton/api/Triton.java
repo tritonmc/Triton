@@ -22,6 +22,7 @@ public interface Triton {
      * @since 1.0.0
      * @deprecated Use {@link Triton#getConfig()} instead.
      */
+    @Deprecated
     default TritonConfig getConf() {
         return getConfig();
     }
@@ -49,6 +50,7 @@ public interface Triton {
      * @since 3.0.0
      * @deprecated Since 4.0.0. Use {@link Triton#getMessageParser()} instead.
      */
+    @Deprecated
     LanguageParser getLanguageParser();
 
     /**
