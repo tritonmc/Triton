@@ -46,6 +46,7 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
             out.add(packet);
             return;
         }
+        @SuppressWarnings("unchecked")
         val handler = (BiFunction<MinecraftPacket, VelocityLanguagePlayer, Optional<MinecraftPacket>>) handlerMap.get(packet.getClass());
         if (handler != null) {
             Optional<MinecraftPacket> result = handler.apply(packet, this.player);
