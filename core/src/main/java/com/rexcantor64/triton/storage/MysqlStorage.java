@@ -17,6 +17,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.sql.Connection;
@@ -135,7 +137,7 @@ public class MysqlStorage extends Storage {
     }
 
     @Override
-    public void setLanguage(UUID uuid, String ip, Language newLanguage) {
+    public void setLanguage(@Nullable UUID uuid, @Nullable String ip, @NotNull Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
         if (uuid == null && ip == null) return;
         Triton.get().getLogger().logDebug("Saving language for %1...", entity);
@@ -151,6 +153,8 @@ public class MysqlStorage extends Storage {
             if (ip != null && Triton.get().getConfig().isMotd()) {
                 stmt.setString(1, ip);
                 stmt.executeUpdate();
+                // update cache
+                ipCache.addToCache(ip, newLanguage.getName());
             }
             stmt.close();
             Triton.get().getLogger().logDebug("Saved language for %1!", entity);

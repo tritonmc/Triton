@@ -9,6 +9,8 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ public abstract class Storage {
 
     public abstract Language getLanguage(LanguagePlayer lp);
 
-    public abstract void setLanguage(UUID uuid, String ip, Language newLanguage);
+    public abstract void setLanguage(@Nullable UUID uuid, @Nullable String ip, @NotNull Language newLanguage);
 
     public abstract void load();
 
