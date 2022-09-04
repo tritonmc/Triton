@@ -14,6 +14,8 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -52,7 +54,7 @@ public class LocalStorage extends Storage {
     public Language getLanguageFromIp(String ip) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for IP %1", ip);
         String lang = languageMap.get(ip.replace(".", "-"));
-        return Triton.get().getLanguageManager().getLanguageByName(lang, true);
+        return Triton.get().getLanguageManager().getLanguageByNameOrDefault(lang);
     }
 
     @Override
@@ -61,13 +63,17 @@ public class LocalStorage extends Storage {
         String lang = languageMap.get(lp.getUUID().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
                 (lang == null
-                        || (Triton.get().getConfig().isAlwaysCheckClientLocale())))
+                        || (Triton.get().getConfig().isAlwaysCheckClientLocale()))) {
             lp.waitForClientLocale();
-        return Triton.get().getLanguageManager().getLanguageByName(lang, true);
+        }
+        if (lang == null) {
+            return Triton.get().getLanguageManager().getMainLanguage();
+        }
+        return Triton.get().getLanguageManager().getLanguageByNameOrDefault(lang);
     }
 
     @Override
-    public void setLanguage(UUID uuid, String ip, Language newLanguage) {
+    public void setLanguage(@Nullable UUID uuid, @Nullable String ip, @NotNull Language newLanguage) {
         String entity = uuid != null ? uuid.toString() : ip;
         try {
             if (uuid == null && ip == null) return;
