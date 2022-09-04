@@ -67,7 +67,7 @@ public class VelocityListener {
         }
     }
 
-    @Subscribe
+    @Subscribe(order = PostOrder.LAST)
     public void onProxyPing(ProxyPingEvent event) {
         if (shouldNotTranslateMotd()) {
             return;
