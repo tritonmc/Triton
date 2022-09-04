@@ -7,6 +7,7 @@ import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.web.TwinManager;
 import com.rexcantor64.triton.web.TwinParser;
+import com.rexcantor64.triton.web.exceptions.NotOnProxyException;
 import lombok.val;
 
 import java.util.Arrays;
@@ -23,10 +24,11 @@ public class TwinCommand implements Command {
         val args = event.getArgs();
         val downloading = args.length > 0 && !args[0].equalsIgnoreCase("upload");
 
-        if (downloading)
+        if (downloading) {
             sender.assertPermission("twin.download");
-        else
+        } else {
             sender.assertPermission("twin.upload");
+        }
 
         if (downloading && args[0].equals(lastDownload)) {
             sender.sendMessageFormatted("twin.repeated-download");
@@ -40,24 +42,21 @@ public class TwinCommand implements Command {
             val twinManager = Triton.get().getTwinManager();
 
             TwinManager.HttpResponse response;
-            if (downloading) {
-                response = twinManager.download(args[0]);
-            } else {
-                if (args.length == 0)
-                    twinManager.upload();
+            try {
+                if (downloading) {
+                    response = twinManager.download(args[0]);
+                } else {
+                    List<String> collections = null;
+                    if (args.length >= 2 && !args[1].equalsIgnoreCase("*"))
+                        collections = Arrays.asList(args[1].split(":"));
 
-                List<String> collections = null;
-                if (args.length >= 2 && !args[1].equalsIgnoreCase("*"))
-                    collections = Arrays.asList(args[1].split(":"));
+                    List<String> languages = null;
+                    if (args.length >= 3 && !args[2].equalsIgnoreCase("*"))
+                        languages = Arrays.asList(args[2].split(":"));
 
-                List<String> languages = null;
-                if (args.length >= 3 && !args[2].equalsIgnoreCase("*"))
-                    languages = Arrays.asList(args[2].split(":"));
-
-                response = twinManager.upload(collections, languages);
-            }
-
-            if (response == null) {
+                    response = twinManager.upload(collections, languages);
+                }
+            } catch (NotOnProxyException exception) {
                 sender.sendMessageFormatted("twin.failed-bungeecord");
                 return;
             }
@@ -101,7 +100,7 @@ public class TwinCommand implements Command {
 
             long start = System.currentTimeMillis();
             Triton.get().getLogger().logDebug("[TWIN] Parsing changes from TWIN...");
-            val data = new JsonParser().parse(response).getAsJsonObject();
+            val data = JsonParser.parseString(response).getAsJsonObject();
             val twinResponse = TwinParser.parseDownload(storage.getCollections(), data);
 
             Triton.get().getLogger().logDebug("[TWIN] Saving changes to permanent storage...");
@@ -114,6 +113,7 @@ public class TwinCommand implements Command {
 
             Triton.get().getLogger().logDebug("[TWIN] Reloading translation manager...");
             Triton.get().getLanguageManager().setup();
+            Triton.get().getTranslationManager().setup();
 
             if (Triton.isProxy()) {
                 Triton.get().getBridgeManager().sendConfigToEveryone();

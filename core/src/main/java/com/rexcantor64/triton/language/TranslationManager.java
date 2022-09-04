@@ -166,7 +166,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     }
 
     private @NotNull Optional<Component> getTextComponentForLanguage(@NotNull Language language, @NotNull String key, @NotNull Component... arguments) {
-        this.triton.getLogger().logTrace("Trying to get translation with key '%1' in language '%2'", key, language);
+        this.triton.getLogger().logTrace("Trying to get translation with key '%1' in language '%2'", key, language.getLanguageId());
         val langItems = this.textItems.get(language);
         if (langItems == null) {
             return Optional.empty();
@@ -177,7 +177,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
             return Optional.empty();
         }
 
-        this.triton.getLogger().logTrace("Found translation with key '%1' in language '%2'", key, language);
+        this.triton.getLogger().logTrace("Found translation with key '%1' in language '%2'", key, language.getLanguageId());
         return Optional.of(replaceArguments(handleTranslationType(msg), arguments));
     }
 
@@ -227,7 +227,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     private @NotNull Optional<Component[]> getSignComponentsForLanguage(@NotNull Language language,
                                                                         @NotNull SignLocation location,
                                                                         @NotNull Supplier<Component[]> defaultLinesSupplier) {
-        this.triton.getLogger().logTrace("Trying to get sign translation on location '%1' in language '%2'", location, language);
+        this.triton.getLogger().logTrace("Trying to get sign translation on location '%1' in language '%2'", location, language.getLanguageId());
         val signTranslations = this.signItems.get(language);
         if (signTranslations == null) {
             return Optional.empty();
@@ -238,7 +238,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
             return Optional.empty();
         }
 
-        this.triton.getLogger().logTrace("Found sign translation on location '%1' in language '%2'", location, language);
+        this.triton.getLogger().logTrace("Found sign translation on location '%1' in language '%2'", location, language.getLanguageId());
         return Optional.of(formatLines(language, lines, defaultLinesSupplier));
     }
 

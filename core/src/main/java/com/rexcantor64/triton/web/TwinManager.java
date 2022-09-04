@@ -9,8 +9,12 @@ import com.rexcantor64.triton.language.item.TWINData;
 import com.rexcantor64.triton.language.item.serializers.LanguageItemSerializer;
 import com.rexcantor64.triton.language.item.serializers.LanguageSignSerializer;
 import com.rexcantor64.triton.language.item.serializers.LanguageTextSerializer;
-import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.web.exceptions.NotOnProxyException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -19,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class TwinManager {
 
     static final Gson gson = new GsonBuilder()
@@ -28,21 +33,14 @@ public class TwinManager {
             .create();
     private static final int TWIN_VERSION = 6;
     private static final String BASE_URL = "https://twin.rexcantor64.com";
-    private final Triton main;
+    private final Triton<?, ?> main;
 
-    public TwinManager(Triton main) {
-        this.main = main;
-    }
-
-    public HttpResponse upload() {
-        return upload(null, null);
-    }
-
-    public HttpResponse upload(List<String> allowedCollections, List<String> allowedLanguages) {
+    public @NotNull HttpResponse upload(@Nullable List<String> allowedCollections, @Nullable List<String> allowedLanguages) throws NotOnProxyException {
+        val isProxy = Triton.isProxy();
+        if (!isProxy && main.getConfig().isBungeecord()) {
+            throw new NotOnProxyException();
+        }
         try {
-            val isProxy = Triton.isProxy();
-            if (!isProxy && main.getConfig().isBungeecord())
-                return null;
 
             val data = new JsonObject();
 
@@ -54,17 +52,21 @@ public class TwinManager {
 
             if (allowedCollections != null || allowedLanguages != null) {
                 val limit = new JsonObject();
-                if (allowedCollections != null)
+                if (allowedCollections != null) {
                     limit.add("collections", gson.toJsonTree(allowedCollections));
-                if (allowedLanguages != null)
+                }
+                if (allowedLanguages != null) {
                     limit.add("languages", gson.toJsonTree(allowedLanguages));
+                }
                 data.add("limit", limit);
             }
 
             val languages = new JsonArray();
-            for (val lang : main.getLanguageManager().getAllLanguages())
-                if (allowedLanguages == null || allowedLanguages.contains(lang.getName()))
+            for (val lang : main.getLanguageManager().getAllLanguages()) {
+                if (allowedLanguages == null || allowedLanguages.contains(lang.getName())) {
                     languages.add(new JsonPrimitive(lang.getName()));
+                }
+            }
             data.add("languages", languages);
             data.addProperty("mainLanguage", main.getLanguageManager().getMainLanguage().getName());
 
@@ -151,11 +153,11 @@ public class TwinManager {
         }
     }
 
-    public HttpResponse download(String id) {
+    public @NotNull HttpResponse download(@NotNull String id) throws NotOnProxyException {
+        if (Triton.isSpigot() && main.getConfig().isBungeecord()) {
+            throw new NotOnProxyException();
+        }
         try {
-            if (Triton.isSpigot() && main.getConfig().isBungeecord())
-                return null;
-
             URL u = new URL(BASE_URL + "/api/v1/get/" + id);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
@@ -189,29 +191,12 @@ public class TwinManager {
         }
     }
 
+    @RequiredArgsConstructor
+    @Getter
     public static class HttpResponse {
-
         private final boolean success;
         private final int statusCode;
-        private final String page;
-
-        private HttpResponse(boolean success, int statusCode, String page) {
-            this.success = success;
-            this.statusCode = statusCode;
-            this.page = page;
-        }
-
-        public String getPage() {
-            return page;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public int getStatusCode() {
-            return statusCode;
-        }
+        private final @NotNull String page;
     }
 
 }
