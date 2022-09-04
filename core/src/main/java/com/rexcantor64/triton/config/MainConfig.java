@@ -87,6 +87,8 @@ public class MainConfig implements TritonConfig {
     private boolean advancements;
     private FeatureSyntax advancementsSyntax;
     private boolean advancementsRefresh;
+    private boolean resourcePackPrompt;
+    private FeatureSyntax resourcePackPromptSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -284,6 +286,10 @@ public class MainConfig implements TritonConfig {
         this.advancements = advancements.getBoolean("enabled", false);
         this.advancementsSyntax = FeatureSyntax.fromSection(advancements);
         this.advancementsRefresh = advancements.getBoolean("experimental-advancements-refresh", false);
+
+        Configuration resourcePackPrompt = section.getSection("resource-pack-prompt");
+        this.resourcePackPrompt = resourcePackPrompt.getBoolean("enabled", true);
+        this.resourcePackPromptSyntax = FeatureSyntax.fromSection(resourcePackPrompt);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)

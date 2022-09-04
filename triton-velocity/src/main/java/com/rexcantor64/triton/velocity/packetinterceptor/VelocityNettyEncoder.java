@@ -2,9 +2,11 @@ package com.rexcantor64.triton.velocity.packetinterceptor;
 
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.ChatHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.DisconnectHandler;
+import com.rexcantor64.triton.velocity.packetinterceptor.packets.ResourcePackHandler;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.Disconnect;
+import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
 import com.velocitypowered.proxy.protocol.packet.chat.LegacyChat;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,6 +34,7 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
         addHandler(LegacyChat.class, chatHandler::handleLegacyChat);
 
         addHandler(Disconnect.class, new DisconnectHandler()::handleDisconnect);
+        addHandler(ResourcePackRequest.class, new ResourcePackHandler()::handleResourcePackRequest);
     }
 
     private static <T extends MinecraftPacket> void addHandler(final @NotNull Class<T> type, final @NotNull BiFunction<@NotNull T, @NotNull VelocityLanguagePlayer, @NotNull Optional<MinecraftPacket>> handler) {
