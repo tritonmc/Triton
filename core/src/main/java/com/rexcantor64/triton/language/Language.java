@@ -1,8 +1,6 @@
 package com.rexcantor64.triton.language;
 
-import com.rexcantor64.triton.Triton;
 import lombok.Data;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collections;
