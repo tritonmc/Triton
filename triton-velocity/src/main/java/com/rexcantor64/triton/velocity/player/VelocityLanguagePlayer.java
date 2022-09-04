@@ -15,7 +15,9 @@ import lombok.val;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class VelocityLanguagePlayer implements LanguagePlayer {
@@ -25,11 +27,13 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
 
     private String lastTabHeader;
     private String lastTabFooter;
-    private HashMap<UUID, String> bossBars = new HashMap<>();
+    private final HashMap<UUID, String> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
+    private final RefreshFeatures refresher;
 
     public VelocityLanguagePlayer(@NotNull Player parent) {
         this.parent = parent;
+        this.refresher = new RefreshFeatures(this);
         Triton.get().runAsync(this::load);
     }
 
@@ -44,6 +48,10 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
 
     public void removeBossbar(UUID uuid) {
         bossBars.remove(uuid);
+    }
+
+    Map<UUID, String> getCachedBossBars() {
+        return Collections.unmodifiableMap(bossBars);
     }
 
     public void setLastTabHeader(String lastTabHeader) {
@@ -92,7 +100,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     }
 
     public void refreshAll() {
-        // TODO
+        this.refresher.refreshAll();
     }
 
     public void injectNettyPipeline() {

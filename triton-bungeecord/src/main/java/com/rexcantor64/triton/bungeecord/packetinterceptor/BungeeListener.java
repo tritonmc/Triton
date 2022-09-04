@@ -185,9 +185,9 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                         owner,
                         config().getBossbarSyntax()
                 )
+                .getResultOrToRemove(Component::empty)
                 .map(ComponentUtils::serializeToJson)
-                .ifChanged(p::setTitle)
-                .isToRemove();
+                .ifPresent(p::setTitle);
     }
 
     private void handlePlayerListHeaderFooter(DefinedPacket packet) {
