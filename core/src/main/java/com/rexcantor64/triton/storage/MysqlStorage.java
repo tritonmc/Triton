@@ -57,6 +57,7 @@ public class MysqlStorage extends Storage {
     public void load() {
         this.ipCache = new IpCache();
 
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
         config.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=false" +
                 "&useUnicode=yes&characterEncoding=UTF-8");
         config.setUsername(user);
