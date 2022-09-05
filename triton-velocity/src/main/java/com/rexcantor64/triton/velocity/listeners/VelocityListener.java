@@ -8,6 +8,7 @@ import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
+import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.PlayerSettingsChangedEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
@@ -33,6 +34,14 @@ public class VelocityListener {
 
     private FeatureSyntax getMotdSyntax() {
         return Triton.get().getConfig().getMotdSyntax();
+    }
+
+    private boolean shouldNotTranslateKick() {
+        return !Triton.get().getConfig().isKick();
+    }
+
+    private FeatureSyntax getKickSyntax() {
+        return Triton.get().getConfig().getKickSyntax();
     }
 
     @Subscribe
@@ -115,6 +124,24 @@ public class VelocityListener {
                 .ifChanged(result -> serverPing.version(new ServerPing.Version(version.getProtocol(), result)));
 
         event.setPing(serverPing.build());
+    }
+
+    @Subscribe(order = PostOrder.LAST)
+    public void onPreLogin(PreLoginEvent event) {
+        if (shouldNotTranslateKick()) {
+            return;
+        }
+
+        val ip = event.getConnection().getRemoteAddress().getAddress().getHostAddress();
+
+        val language = Triton.get().getStorage().getLanguageFromIp(ip);
+
+        if (event.getResult().getReasonComponent().isPresent()) {
+            parser().translateComponent(event.getResult().getReasonComponent().get(), language, getKickSyntax())
+                    .getResultOrToRemove(Component::empty)
+                    .ifPresent(result -> event.setResult(PreLoginEvent.PreLoginComponentResult.denied(result)));
+        }
+
     }
 
 }
