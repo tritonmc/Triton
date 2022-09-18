@@ -1,0 +1,13 @@
+publishing {
+    repositories {
+        maven {
+            credentials(PasswordCredentials.class)
+
+            name = "diogotcRepository"
+            def base = 'https://repo.diogotc.com'
+            def releasesRepoUrl = "$base/releases/"
+            def snapshotsRepoUrl = "$base/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+}

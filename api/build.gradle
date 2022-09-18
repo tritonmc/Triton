@@ -1,8 +1,17 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'com.rexcantor64.triton'
+
+apply from: '../gradle/publish.gradle'
+
+sourceSets {
+    ap {
+        compileClasspath += main.compileClasspath + main.output
+    }
+}
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
@@ -10,4 +19,56 @@ dependencies {
 
     compileOnly 'net.kyori:adventure-api:4.11.0'
     compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.1.2'
+}
+
+task javadocJar(type: Jar) {
+    classifier 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier 'sources'
+    from sourceSets.main.allSource
+    from sourceSets.ap.output
+}
+
+jar {
+    from sourceSets.ap.output
+    manifest {
+        attributes 'Automatic-Module-Name': 'com.rexcantor64.triton.api'
+    }
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.source = '8'
+    options.links(
+            'https://hub.spigotmc.org/javadocs/spigot/',
+            'https://jd.papermc.io/waterfall/1.19/', // Use Waterfall's JavaDocs instead of Bungee's since those are broken
+            'https://docs.oracle.com/en/java/javase/11/docs/api//',
+            'https://jd.adventure.kyori.net/api/4.11.0/'
+    )
+
+    // Disable the crazy super-strict doclint tool in Java 8
+    options.addStringOption('Xdoclint:none', '-quiet')
+
+    // Mark sources as Java 8 source compatible
+    options.source = '8'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
 }
