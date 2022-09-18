@@ -6,4 +6,3 @@ include 'core'
 include 'triton-bungeecord'
 include 'triton-spigot'
 include 'triton-velocity'
-
