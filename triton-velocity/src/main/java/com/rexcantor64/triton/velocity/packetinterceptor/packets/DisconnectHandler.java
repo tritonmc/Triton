@@ -22,11 +22,9 @@ public class DisconnectHandler {
         return !Triton.get().getConfig().isKick();
     }
 
-
     private FeatureSyntax getKickSyntax() {
         return Triton.get().getConfig().getKickSyntax();
     }
-
 
     public @NotNull Optional<MinecraftPacket> handleDisconnect(@NotNull Disconnect disconnectPacket, @NotNull VelocityLanguagePlayer player) {
         if (shouldNotTranslateKick()) {

@@ -4,11 +4,14 @@ import com.rexcantor64.triton.velocity.packetinterceptor.packets.BossBarHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.ChatHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.DisconnectHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.ResourcePackHandler;
+import com.rexcantor64.triton.velocity.packetinterceptor.packets.TabHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.TitleHandler;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
 import com.velocitypowered.proxy.protocol.packet.Disconnect;
+import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
+import com.velocitypowered.proxy.protocol.packet.PlayerListItem;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
 import com.velocitypowered.proxy.protocol.packet.chat.LegacyChat;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
@@ -45,6 +48,10 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
         addHandler(TitleSubtitlePacket.class, titleHandler::handleGenericTitle);
         addHandler(TitleActionbarPacket.class, titleHandler::handleGenericTitle);
         addHandler(LegacyTitlePacket.class, titleHandler::handleLegacyTitle);
+
+        val tabHandler = new TabHandler();
+        addHandler(HeaderAndFooter.class, tabHandler::handlePlayerListHeaderFooter);
+        addHandler(PlayerListItem.class, tabHandler::handlePlayerListItem);
 
         addHandler(Disconnect.class, new DisconnectHandler()::handleDisconnect);
         addHandler(ResourcePackRequest.class, new ResourcePackHandler()::handleResourcePackRequest);

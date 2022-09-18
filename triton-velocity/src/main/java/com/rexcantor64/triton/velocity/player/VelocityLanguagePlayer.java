@@ -11,7 +11,11 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.network.Connections;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,15 +23,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class VelocityLanguagePlayer implements LanguagePlayer {
     private final Player parent;
 
     private Language language;
 
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PUBLIC)
     private String lastTabHeader;
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PUBLIC)
     private String lastTabFooter;
-    private final HashMap<UUID, String> bossBars = new HashMap<>();
+    private final Map<UUID, String> bossBars = new HashMap<>();
+    private final Map<UUID, Component> playerListItemCache = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
     private final RefreshFeatures refresher;
 
@@ -54,12 +64,16 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         return Collections.unmodifiableMap(bossBars);
     }
 
-    public void setLastTabHeader(String lastTabHeader) {
-        this.lastTabHeader = lastTabHeader;
+    public void cachePlayerListItem(UUID uuid, Component lastDisplayName) {
+        playerListItemCache.put(uuid, lastDisplayName);
     }
 
-    public void setLastTabFooter(String lastTabFooter) {
-        this.lastTabFooter = lastTabFooter;
+    public void deleteCachedPlayerListItem(UUID uuid) {
+        playerListItemCache.remove(uuid);
+    }
+
+    Map<UUID, Component> getCachedPlayerListItems() {
+        return Collections.unmodifiableMap(playerListItemCache);
     }
 
     @Override

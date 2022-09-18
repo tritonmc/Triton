@@ -3,10 +3,13 @@ package com.rexcantor64.triton.velocity.player;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
+import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
+import com.velocitypowered.proxy.protocol.packet.PlayerListItem;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class RefreshFeatures {
@@ -15,6 +18,8 @@ public class RefreshFeatures {
 
     public synchronized void refreshAll() {
         refreshBossBars();
+        refreshPlayerListHeaderFooter();
+        refreshPlayerListItems();
     }
 
     private void refreshBossBars() {
@@ -28,6 +33,25 @@ public class RefreshFeatures {
         bossBarPacket.setName(json);
 
         sendPacket(bossBarPacket);
+    }
+
+    private void refreshPlayerListHeaderFooter() {
+        val header = player.getLastTabHeader();
+        val footer = player.getLastTabFooter();
+        val headerFooterPacket = new HeaderAndFooter(header, footer);
+
+        sendPacket(headerFooterPacket);
+    }
+
+    private void refreshPlayerListItems() {
+        val items = player.getCachedPlayerListItems()
+                .entrySet()
+                .stream()
+                .map(entry -> new PlayerListItem.Item(entry.getKey()).setDisplayName(entry.getValue()))
+                .collect(Collectors.toList());
+        val playerListItemsPacket = new PlayerListItem(PlayerListItem.UPDATE_DISPLAY_NAME, items);
+
+        sendPacket(playerListItemsPacket);
     }
 
     private void sendPacket(MinecraftPacket packet) {
