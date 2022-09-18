@@ -4,6 +4,7 @@ import com.rexcantor64.triton.velocity.packetinterceptor.packets.BossBarHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.ChatHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.DisconnectHandler;
 import com.rexcantor64.triton.velocity.packetinterceptor.packets.ResourcePackHandler;
+import com.rexcantor64.triton.velocity.packetinterceptor.packets.TitleHandler;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
@@ -11,6 +12,10 @@ import com.velocitypowered.proxy.protocol.packet.Disconnect;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
 import com.velocitypowered.proxy.protocol.packet.chat.LegacyChat;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
+import com.velocitypowered.proxy.protocol.packet.title.LegacyTitlePacket;
+import com.velocitypowered.proxy.protocol.packet.title.TitleActionbarPacket;
+import com.velocitypowered.proxy.protocol.packet.title.TitleSubtitlePacket;
+import com.velocitypowered.proxy.protocol.packet.title.TitleTextPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.ReferenceCounted;
@@ -34,6 +39,12 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
         val chatHandler = new ChatHandler();
         addHandler(SystemChat.class, chatHandler::handleSystemChat);
         addHandler(LegacyChat.class, chatHandler::handleLegacyChat);
+
+        val titleHandler = new TitleHandler();
+        addHandler(TitleTextPacket.class, titleHandler::handleGenericTitle);
+        addHandler(TitleSubtitlePacket.class, titleHandler::handleGenericTitle);
+        addHandler(TitleActionbarPacket.class, titleHandler::handleGenericTitle);
+        addHandler(LegacyTitlePacket.class, titleHandler::handleLegacyTitle);
 
         addHandler(Disconnect.class, new DisconnectHandler()::handleDisconnect);
         addHandler(ResourcePackRequest.class, new ResourcePackHandler()::handleResourcePackRequest);
