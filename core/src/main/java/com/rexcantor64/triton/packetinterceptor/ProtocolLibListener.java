@@ -441,7 +441,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         .parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
-        msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
+        if (getMCVersion() >= 16) {
+            msg.setJson(ComponentSerializer.toString(result));
+        } else {
+            msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
+        }
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
