@@ -4,6 +4,8 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -81,8 +83,21 @@ public class ComponentUtils {
      * @return The component after it has been modified
      */
     public static Component ensureNotItalic(Component component) {
-        // TODO check if this is still necessary
-        return component;
+        if (!hasAnyFormatting(component)) {
+            return component;
+        }
+        return component.applyFallbackStyle(Style.style().decoration(TextDecoration.ITALIC, false).build());
+    }
+
+    /**
+     * Checks if the given component or any of its children have formatting.
+     *
+     * @param component The component to check for formatting
+     * @return Whether there is any kind of formatting in the given component or its children
+     */
+    private static boolean hasAnyFormatting(Component component) {
+        return !component.style().equals(Style.empty()) ||
+                component.children().stream().anyMatch(ComponentUtils::hasAnyFormatting);
     }
 
 }
