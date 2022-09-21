@@ -18,6 +18,7 @@ import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
@@ -146,6 +147,9 @@ public class AdventureParser implements MessageParser {
      * @since 4.0.0
      */
     private Optional<Component> handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
+        Style defaultStyle = getStyleOfFirstCharacter(placeholder);
+        placeholder = stripStyleOfFirstCharacter(placeholder);
+
         String placeholderStr = componentToString(placeholder);
         val indexes = this.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
         Queue<Integer> indexesToSplitAt = indexes.stream()
@@ -167,7 +171,8 @@ public class AdventureParser implements MessageParser {
                 if (key.endsWith("[" + configuration.getFeatureSyntax().getArgs() + "]")) {
                     key = key.substring(0, key.length() - configuration.getFeatureSyntax().getArgs().length() - 2);
                 }
-                if (!StringUtils.isEmptyOrNull(configuration.getDisabledLine()) && configuration.getDisabledLine().equals(key)) {
+                if (!StringUtils.isEmptyOrNull(configuration.getDisabledLine()) && configuration.getDisabledLine()
+                        .equals(key)) {
                     return Optional.empty();
                 }
             }
@@ -180,8 +185,8 @@ public class AdventureParser implements MessageParser {
             }
         }
 
-        Style defaultStyle = getStyleOfFirstCharacter(placeholder);
-        Component result = configuration.translationSupplier.apply(key, arguments.toArray(new Component[0])).applyFallbackStyle(defaultStyle);
+        Component result = configuration.translationSupplier.apply(key, arguments.toArray(new Component[0]))
+                .applyFallbackStyle(defaultStyle);
 
         TranslationResult<Component> translationResult = translateComponent(result, configuration);
         if (translationResult.getState() == TranslationResult.ResultState.TO_REMOVE) {
@@ -309,6 +314,43 @@ public class AdventureParser implements MessageParser {
     }
 
     /**
+     * Recursively removes the styles applied to the first character in a component.
+     * This is so styles from higher up in the tree are ignored while splitting arguments.
+     *
+     * @param component The component to remove the styles from
+     * @return The new component without styles
+     * @since 4.0.0
+     */
+    @Contract("_ -> new")
+    private @NotNull Component stripStyleOfFirstCharacter(@NotNull Component component) {
+        if (component instanceof TextComponent) {
+            TextComponent textComponent = (TextComponent) component;
+            if (!textComponent.content().isEmpty()) {
+                return component.style(Style.empty());
+            }
+            return component;
+        }
+
+        ArrayList<Component> newChildren = new ArrayList<>(component.children().size());
+        Iterator<Component> it = component.children().iterator();
+        boolean foundFirstCharacter = false;
+        while (it.hasNext()) {
+            Component next = it.next();
+            if (foundFirstCharacter) {
+                newChildren.add(next);
+            }
+            Component result = stripStyleOfFirstCharacter(component);
+            newChildren.add(next);
+            if (result != next) {
+                foundFirstCharacter = true;
+            }
+        }
+        newChildren.trimToSize();
+
+        return component.style(Style.empty()).children(newChildren);
+    }
+
+    /**
      * Serializes a Component as a string, replacing
      * non-text components with a '?' (question mark) character.
      *
@@ -382,7 +424,12 @@ public class AdventureParser implements MessageParser {
                 acc.add(part);
                 continue;
             }
-            acc.add(Objects.requireNonNull(replacementMap.poll()).getKey());
+            acc.add(
+                    Objects.requireNonNull(replacementMap.poll())
+                            .getKey()
+                            // apply the sames styles to the replacement as "%X" had
+                            .applyFallbackStyle(getStyleOfFirstCharacter(part))
+            );
         }
 
         return Component.join(JoinConfiguration.noSeparators(), acc);
@@ -427,7 +474,10 @@ public class AdventureParser implements MessageParser {
             TextComponent textComponent = (TextComponent) comp;
             String[] textSplit = state.splitString(textComponent.content());
             for (int i = 0; i < textSplit.length; ++i) {
-                Component newSplit = convertEmptyComponent(Component.text().content(textSplit[i]).mergeStyle(textComponent).build());
+                Component newSplit = convertEmptyComponent(Component.text()
+                        .content(textSplit[i])
+                        .mergeStyle(textComponent)
+                        .build());
                 if (i == textSplit.length - 1) {
                     // the last split keeps the extras
                     acc = handleChildren(newSplit, textComponent.children(), acc, split, state);
@@ -557,7 +607,8 @@ public class AdventureParser implements MessageParser {
     private Component convertEmptyComponent(Component component) {
         if (component instanceof TextComponent) {
             TextComponent textComponent = (TextComponent) component;
-            if (textComponent.content().isEmpty() && textComponent.children().isEmpty() && textComponent.style().isEmpty()) {
+            if (textComponent.content().isEmpty() && textComponent.children().isEmpty() && textComponent.style()
+                    .isEmpty()) {
                 return Component.empty();
             }
         }
