@@ -39,15 +39,25 @@ public class AdventureParserTest {
             return Component.text("This text is green").color(NamedTextColor.GREEN);
         }
         if (key.equals("with.colors.two.args")) {
-            return Component.text("This text is pink and has two arguments (%1 and %2)").color(NamedTextColor.LIGHT_PURPLE);
+            return Component.text("This text is pink and has two arguments (%1 and %2)")
+                    .color(NamedTextColor.LIGHT_PURPLE);
         }
         if (key.equals("with.colors.repeated.args")) {
-            return Component.text("This text is pink and has three arguments (%1 and %2 and %1)").color(NamedTextColor.LIGHT_PURPLE);
+            return Component.text("This text is pink and has three arguments (%1 and %2 and %1)")
+                    .color(NamedTextColor.LIGHT_PURPLE);
         }
         if (key.equals("nested")) {
             return Component.text()
                     .content("some text")
                     .append(Component.text("[lang]without.formatting[/lang]"))
+                    .asComponent();
+        }
+        if (key.equals("with.placeholder.colors")) {
+            return Component.text()
+                    .append(
+                            Component.text("%1 ").color(NamedTextColor.LIGHT_PURPLE),
+                            Component.text("is a very cool guy").color(NamedTextColor.GREEN)
+                    )
                     .asComponent();
         }
         return Component.text("unknown placeholder");
@@ -339,16 +349,8 @@ public class AdventureParserTest {
                 .append(
                         Component.text("Text "),
                         Component.text()
-                                .append(
-                                        Component.text()
-                                                .color(NamedTextColor.LIGHT_PURPLE)
-                                                .content("This text is pink and has two arguments ("),
-                                        Component.text()
-                                                .content("test"),
-                                        Component.text()
-                                                .content(" and %2)")
-                                                .color(NamedTextColor.LIGHT_PURPLE)
-                                ),
+                                .color(NamedTextColor.LIGHT_PURPLE)
+                                .content("This text is pink and has two arguments (test and %2)"),
                         Component.text(" more text")
                 )
                 .asComponent();
@@ -490,6 +492,45 @@ public class AdventureParserTest {
                                         .append(Component.text("This is text without formatting"))
                                         .asComponent()
                         )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWhileRetainingCorrectStyles() {
+        Component comp = Component.text()
+                .content("[lang]with.placeholder.colors[arg]Rexcantor64[/arg][/lang]")
+                .color(NamedTextColor.BLUE)
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("")
+                                .color(NamedTextColor.BLUE), // hack because component compaction is buggy
+                        Component.text()
+                                .content("")
+                                .color(NamedTextColor.BLUE)
+                                .append(
+                                        Component.text()
+                                                .append(
+                                                        Component.text("Rexcantor64")
+                                                                .color(NamedTextColor.LIGHT_PURPLE),
+                                                        Component.text()
+                                                                .content(" ")
+                                                                .color(NamedTextColor.BLUE)
+                                                                .append(
+                                                                        Component.text("is a very cool guy")
+                                                                                .color(NamedTextColor.GREEN)
+                                                                )
+                                                )
+                                )
                 )
                 .asComponent();
 
@@ -1068,7 +1109,6 @@ public class AdventureParserTest {
         String input = "Lorem ipsum [tag]dolor [tag]sit[/tag] amet[/tag], [tag2]consectetur[/tag2] [tag]adipiscing elit[/tag]. Nullam posuere.";
 
         List<Integer[]> result = parser.getPatternIndexArray(input, "tag");
-        System.out.println("result = " + result);
 
         List<Integer[]> expected = Arrays.asList(
                 new Integer[]{12, 48, 17, 42},
