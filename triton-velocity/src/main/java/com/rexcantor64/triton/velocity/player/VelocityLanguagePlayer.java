@@ -7,6 +7,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import com.rexcantor64.triton.velocity.VelocityTriton;
 import com.rexcantor64.triton.velocity.packetinterceptor.VelocityNettyEncoder;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
@@ -130,6 +131,10 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
 
     public Player getParent() {
         return parent;
+    }
+
+    public @NotNull ProtocolVersion getProtocolVersion() {
+        return this.getParent().getProtocolVersion();
     }
 
     private void load() {

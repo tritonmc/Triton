@@ -3,7 +3,7 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
@@ -48,12 +48,12 @@ public class BossBarHandler {
 
             parser()
                     .translateComponent(
-                            ComponentUtils.deserializeFromJson(bossBarPacket.getName()),
+                            ComponentUtils.deserializeFromJson(bossBarPacket.getName(), player.getProtocolVersion()),
                             player,
                             getBossBarSyntax()
                     )
                     .getResultOrToRemove(Component::empty)
-                    .map(ComponentUtils::serializeToJson)
+                    .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
                     .ifPresent(bossBarPacket::setName);
         }
         return Optional.of(bossBarPacket);

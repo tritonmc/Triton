@@ -3,7 +3,7 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
@@ -38,18 +38,18 @@ public class TabHandler {
         player.setLastTabFooter(headerFooterPacket.getFooter());
 
         Optional<String> newHeader = parser().translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getHeader()),
+                        ComponentUtils.deserializeFromJson(headerFooterPacket.getHeader(), player.getProtocolVersion()),
                         player,
                         getTabSyntax()
                 )
                 .map(ComponentUtils::serializeToJson)
                 .getResultOrToRemove(() -> EMPTY_COMPONENT);
         Optional<String> newFooter = parser().translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter()),
+                        ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter(), player.getProtocolVersion()),
                         player,
                         getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
                 .getResultOrToRemove(() -> EMPTY_COMPONENT);
 
         if (newFooter.isPresent() || newHeader.isPresent()) {

@@ -3,7 +3,7 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ChatBuilder;
@@ -67,11 +67,11 @@ public class ChatHandler {
 
         return Objects.requireNonNull(
                 parser().translateComponent(
-                                ComponentUtils.deserializeFromJson(legacyChatPacket.getMessage()),
+                                ComponentUtils.deserializeFromJson(legacyChatPacket.getMessage(), player.getProtocolVersion()),
                                 player,
                                 actionBar ? getActionBarSyntax() : getChatSyntax()
                         )
-                        .map(ComponentUtils::serializeToJson)
+                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
                         .mapToObj(
                                 result -> Optional.of(cloneLegacyChatWithComponent(legacyChatPacket, result)),
                                 () -> Optional.of(legacyChatPacket),

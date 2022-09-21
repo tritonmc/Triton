@@ -3,8 +3,8 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.title.GenericTitlePacket;
 import com.velocitypowered.proxy.protocol.packet.title.LegacyTitlePacket;
@@ -52,11 +52,11 @@ public class TitleHandler {
 
         return Objects.requireNonNull(
                 parser().translateComponent(
-                                ComponentUtils.deserializeFromJson(titlePacket.getComponent()),
+                                ComponentUtils.deserializeFromJson(titlePacket.getComponent(), player.getProtocolVersion()),
                                 player,
                                 isActionBarPacket ? getActionBarSyntax() : getTitleSyntax()
                         )
-                        .map(ComponentUtils::serializeToJson)
+                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
                         .mapToObj(
                                 result -> {
                                     titlePacket.setComponent(result);
