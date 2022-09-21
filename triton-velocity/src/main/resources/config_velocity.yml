@@ -159,6 +159,12 @@ language-creation:
     syntax-lang: lang
     syntax-args: args
     syntax-arg: arg
+  resource-pack-prompt:
+    # Should the plugin translate the prompt for Resource Pack requests? (1.17+)
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
