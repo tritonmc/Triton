@@ -38,6 +38,9 @@ public class RefreshFeatures {
     private void refreshPlayerListHeaderFooter() {
         val header = player.getLastTabHeader();
         val footer = player.getLastTabFooter();
+        if (header == null || footer == null) {
+            return;
+        }
         val headerFooterPacket = new HeaderAndFooter(header, footer);
 
         sendPacket(headerFooterPacket);
