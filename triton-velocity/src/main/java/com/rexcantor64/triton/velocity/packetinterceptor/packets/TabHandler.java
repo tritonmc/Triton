@@ -42,7 +42,7 @@ public class TabHandler {
                         player,
                         getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
                 .getResultOrToRemove(() -> EMPTY_COMPONENT);
         Optional<String> newFooter = parser().translateComponent(
                         ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter(), player.getProtocolVersion()),

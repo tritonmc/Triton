@@ -445,7 +445,7 @@ public class ProtocolLibListener implements PacketListener {
                     }
                 });
         parser()
-                .translateComponent(header, languagePlayer, main.getConfig().getTabSyntax())
+                .translateComponent(footer, languagePlayer, main.getConfig().getTabSyntax())
                 .getResultOrToRemove(Component::empty)
                 .ifPresent(result -> {
                     if (adventureModifier.size() > 1) {
