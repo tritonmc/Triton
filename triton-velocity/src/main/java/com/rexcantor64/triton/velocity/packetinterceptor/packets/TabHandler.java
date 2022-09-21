@@ -83,8 +83,8 @@ public class TabHandler {
                                     getTabSyntax()
                             )
                             .ifChanged(result -> {
+                                player.cachePlayerListItem(uuid, item.getDisplayName());
                                 item.setDisplayName(result);
-                                player.cachePlayerListItem(uuid, result);
                             })
                             .ifUnchanged(() -> player.deleteCachedPlayerListItem(item.getUuid()))
                             .ifToRemove(() -> player.deleteCachedPlayerListItem(item.getUuid()));
