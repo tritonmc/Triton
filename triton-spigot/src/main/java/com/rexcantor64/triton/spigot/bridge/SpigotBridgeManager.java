@@ -159,12 +159,13 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
+                    Triton.get().getTranslationManager().setup();
                     Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 }
             } else if (action == 1) {
                 val uuid = new UUID(in.readLong(), in.readLong());
-                val lang = Triton.get().getLanguageManager().getLanguageByName(in.readUTF(), true);
+                val lang = Triton.get().getLanguageManager().getLanguageByNameOrDefault(in.readUTF());
                 Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(),
                         () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false)
                         , 10L);
@@ -186,6 +187,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                     storage.setCollections(col);
 
                     Triton.get().getLanguageManager().setup();
+                    Triton.get().getTranslationManager().setup();
                     Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 });
