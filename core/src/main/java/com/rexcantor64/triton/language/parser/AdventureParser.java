@@ -147,7 +147,7 @@ public class AdventureParser implements MessageParser {
      * @since 4.0.0
      */
     private Optional<Component> handlePlaceholder(Component placeholder, TranslationConfiguration configuration) {
-        Style defaultStyle = getStyleOfFirstCharacter(placeholder);
+        Style defaultStyle = getStyleOfFirstCharacterOrEmpty(placeholder);
         placeholder = stripStyleOfFirstCharacter(placeholder);
 
         String placeholderStr = componentToString(placeholder);
@@ -289,28 +289,38 @@ public class AdventureParser implements MessageParser {
     /**
      * Recursively gets the styles applied to the first character in a component,
      * merging styles from parent components with child components.
-     * If the component does not include text, an empty style is returned.
+     * If the component does not include text, an empty optional is returned.
      *
      * @param component The component containing the text
      * @return The styles applied to the first character in the component
      * @since 4.0.0
      */
-    private Style getStyleOfFirstCharacter(Component component) {
+    @VisibleForTesting
+    Optional<Style> getStyleOfFirstCharacter(Component component) {
         if (component instanceof TextComponent) {
             TextComponent textComponent = (TextComponent) component;
             if (!textComponent.content().isEmpty()) {
-                return component.style();
+                return Optional.of(component.style());
             }
         }
 
         Iterator<Component> it = component.children().iterator();
-        Style style = Style.empty();
-        while (it.hasNext() && style.isEmpty()) {
+        Optional<Style> style = Optional.empty();
+        while (it.hasNext() && !style.isPresent()) {
             style = getStyleOfFirstCharacter(it.next());
         }
 
-        style = component.style().merge(style);
-        return style;
+        return style.map(s -> component.style().merge(s));
+    }
+
+    /**
+     * Same as {@link AdventureParser#getStyleOfFirstCharacter(Component)} but
+     * returns an empty style if the component does not include text.
+     *
+     * @see AdventureParser#getStyleOfFirstCharacter(Component)
+     */
+    private Style getStyleOfFirstCharacterOrEmpty(Component component) {
+        return getStyleOfFirstCharacter(component).orElseGet(Style::empty);
     }
 
     /**
@@ -428,7 +438,7 @@ public class AdventureParser implements MessageParser {
                     Objects.requireNonNull(replacementMap.poll())
                             .getKey()
                             // apply the sames styles to the replacement as "%X" had
-                            .applyFallbackStyle(getStyleOfFirstCharacter(part))
+                            .applyFallbackStyle(getStyleOfFirstCharacterOrEmpty(part))
             );
         }
 

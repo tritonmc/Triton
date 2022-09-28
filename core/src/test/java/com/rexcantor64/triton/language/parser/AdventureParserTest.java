@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
@@ -14,14 +15,13 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AdventureParserTest {
 
@@ -1119,6 +1119,67 @@ public class AdventureParserTest {
         for (int i = 0; i < expected.size(); i++) {
             assertArrayEquals(expected.get(i), result.get(i));
         }
+    }
+
+    @Test
+    public void testGetStyleOfFirstStyle() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE)
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Optional<Style> result = parser.getStyleOfFirstCharacter(comp);
+
+        Style expected = Style.style()
+                .color(NamedTextColor.BLUE)
+                .decorate(TextDecoration.BOLD)
+                .build();
+
+        assertTrue(result.isPresent());
+        assertEquals(expected, result.get());
+    }
+
+    @Test
+    public void testGetStyleOfFirstStyleEmpty() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.BLUE)
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Optional<Style> result = parser.getStyleOfFirstCharacter(comp);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void testGetStyleOfFirstStyleWithEmptyTextComponent() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE)
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Optional<Style> result = parser.getStyleOfFirstCharacter(comp);
+
+        Style expected = Style.style()
+                .color(NamedTextColor.BLUE)
+                .decorate(TextDecoration.BOLD)
+                .build();
+
+        assertTrue(result.isPresent());
+        assertEquals(expected, result.get());
     }
 
 }
