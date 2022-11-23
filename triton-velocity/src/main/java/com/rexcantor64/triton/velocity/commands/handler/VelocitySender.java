@@ -7,6 +7,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.UUID;
@@ -19,7 +20,12 @@ public class VelocitySender implements Sender {
 
     @Override
     public void sendMessage(String message) {
-        handler.sendMessage(serializer.deserialize(message));
+        this.sendMessage(serializer.deserialize(message));
+    }
+
+    @Override
+    public void sendMessage(Component component) {
+        handler.sendMessage(component);
     }
 
     @Override

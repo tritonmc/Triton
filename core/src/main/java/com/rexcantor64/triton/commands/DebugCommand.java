@@ -1,13 +1,16 @@
 package com.rexcantor64.triton.commands;
 
+import com.google.gson.JsonParseException;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
+import com.rexcantor64.triton.debug.LoadDump;
 import lombok.val;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +45,7 @@ public class DebugCommand implements Command {
                 handleDumpCommand(event);
                 break;
             case LOAD:
-                sender.sendMessage("Not implemented yet :(");
+                handleLoadCommand(event);
                 break;
         }
     }
@@ -125,6 +128,55 @@ public class DebugCommand implements Command {
                 dumpManager.disable();
                 sender.sendMessage("Disabled dumping for everyone");
                 break;
+        }
+    }
+
+    public void handleLoadCommand(CommandEvent event) {
+        val sender = event.getSender();
+        val args = event.getArgs();
+
+        if (args.length < 2) {
+            // TODO get from messages.yml
+            sender.sendMessage("You must provide a dump name");
+            return;
+        }
+
+        val dumpName = args[1];
+
+        int startLine = 0;
+        int endLine = Integer.MAX_VALUE;
+
+        try {
+            if (args.length >= 3) {
+                startLine = Integer.parseInt(args[2]);
+                endLine = startLine + 1;
+            }
+            if (args.length >= 4) {
+                endLine = Integer.parseInt(args[3]);
+            }
+        } catch (NumberFormatException e) {
+            // TODO get from messages.yml
+            sender.sendMessage("Invalid number");
+            return;
+        }
+
+        try {
+            val messages = LoadDump.getMessagesFromDump(dumpName, startLine, endLine);
+
+            for (val message : messages) {
+                sender.sendMessage(message);
+            }
+
+            // TODO get from messages.yml
+            sender.sendMessage("Sent " + messages.size() + " messages!");
+        } catch (IOException e) {
+            // TODO get from messages.yml
+            sender.sendMessage("Failed to open dump file: " + e.getMessage());
+            e.printStackTrace();
+        } catch (JsonParseException e) {
+            // TODO get from messages.yml
+            sender.sendMessage("Invalid message JSON " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

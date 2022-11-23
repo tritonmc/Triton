@@ -1,10 +1,12 @@
 package com.rexcantor64.triton.bungeecord.commands.handler;
 
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.Sender;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -19,6 +21,11 @@ public class BungeeSender implements Sender {
     @Override
     public void sendMessage(String message) {
         handler.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
+    }
+
+    @Override
+    public void sendMessage(Component component) {
+        handler.sendMessage(BaseComponentUtils.serialize(component));
     }
 
     @Override

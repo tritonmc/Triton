@@ -162,7 +162,7 @@ public class DumpManager {
     private String getDumpName() {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
         return String.format(DUMP_NAME_TEMPLATE, year, month, day);
