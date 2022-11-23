@@ -47,6 +47,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                         } else tabListCache.remove(i.getUuid());
                     } catch (Exception e) {
                         e.printStackTrace();
+                        System.out.println(i);
                     }
                 } else {
                     tabListCache.remove(i.getUuid());
