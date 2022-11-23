@@ -347,7 +347,7 @@ public class AdventureParser implements MessageParser {
         while (it.hasNext()) {
             Component next = it.next();
             if (foundFirstCharacter) {
-                newChildren.add(next);
+                newChildren.add(next.applyFallbackStyle(component.style()));
                 continue;
             }
             Component result = stripStyleOfFirstCharacter(next);

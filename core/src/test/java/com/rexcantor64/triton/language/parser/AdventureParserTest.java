@@ -1255,4 +1255,33 @@ public class AdventureParserTest {
         assertEquals(expected, result);
     }
 
+    @Test
+    public void testStripStyleOfFirstCharacterApplyFallback() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE),
+                        Component.text(" dolor sit amet")
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Component result = parser.stripStyleOfFirstCharacter(comp);
+
+        Component expected = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum"),
+                        Component.text(" dolor sit amet")
+                                .color(NamedTextColor.LIGHT_PURPLE)
+                                .decorate(TextDecoration.BOLD)
+                )
+                .asComponent();
+
+        assertEquals(expected, result);
+    }
+
 }
