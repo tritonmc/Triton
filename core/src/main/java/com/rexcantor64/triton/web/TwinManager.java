@@ -1,6 +1,10 @@
 package com.rexcantor64.triton.web;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -9,10 +13,13 @@ import com.rexcantor64.triton.language.item.TWINData;
 import com.rexcantor64.triton.language.item.serializers.LanguageItemSerializer;
 import com.rexcantor64.triton.language.item.serializers.LanguageSignSerializer;
 import com.rexcantor64.triton.language.item.serializers.LanguageTextSerializer;
-import com.rexcantor64.triton.plugin.PluginLoader;
 import lombok.val;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -187,6 +194,10 @@ public class TwinManager {
             e.printStackTrace();
             return new HttpResponse(false, 0, e.getMessage());
         }
+    }
+
+    public static String getBaseUrl() {
+        return BASE_URL;
     }
 
     public static class HttpResponse {
