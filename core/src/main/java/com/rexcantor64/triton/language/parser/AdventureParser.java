@@ -331,14 +331,14 @@ public class AdventureParser implements MessageParser {
      * @return The new component without styles
      * @since 4.0.0
      */
+    @VisibleForTesting
     @Contract("_ -> new")
-    private @NotNull Component stripStyleOfFirstCharacter(@NotNull Component component) {
+    @NotNull Component stripStyleOfFirstCharacter(@NotNull Component component) {
         if (component instanceof TextComponent) {
             TextComponent textComponent = (TextComponent) component;
             if (!textComponent.content().isEmpty()) {
                 return component.style(Style.empty());
             }
-            return component;
         }
 
         ArrayList<Component> newChildren = new ArrayList<>(component.children().size());
@@ -348,13 +348,19 @@ public class AdventureParser implements MessageParser {
             Component next = it.next();
             if (foundFirstCharacter) {
                 newChildren.add(next);
+                continue;
             }
-            Component result = stripStyleOfFirstCharacter(component);
-            newChildren.add(next);
+            Component result = stripStyleOfFirstCharacter(next);
+            newChildren.add(result);
             if (result != next) {
                 foundFirstCharacter = true;
             }
         }
+
+        if (!foundFirstCharacter) {
+            return component;
+        }
+
         newChildren.trimToSize();
 
         return component.style(Style.empty()).children(newChildren);

@@ -553,8 +553,7 @@ public class AdventureParserTest {
         Component comp = Component.text()
                 .append(
                         Component.text("[lang]")
-                                .color(NamedTextColor.DARK_GRAY)
-                        ,
+                                .color(NamedTextColor.DARK_GRAY),
                         Component.text("change.colors.on.args[arg]5[/arg][/lang]")
                                 .color(NamedTextColor.DARK_GRAY)
                                 .clickEvent(ClickEvent.openUrl("http://change.colors.on.args[arg]5[/arg][/lang]"))
@@ -1229,6 +1228,31 @@ public class AdventureParserTest {
 
         assertTrue(result.isPresent());
         assertEquals(expected, result.get());
+    }
+
+    @Test
+    public void testStripStyleOfFirstCharacter() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE)
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Component result = parser.stripStyleOfFirstCharacter(comp);
+
+        Component expected = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum")
+                )
+                .asComponent();
+
+        assertEquals(expected, result);
     }
 
 }
