@@ -83,7 +83,7 @@ public class TwinCommand implements Command {
             }
 
             if (!downloading) {
-                sender.sendMessageFormatted("twin.uploaded", "https://twin.rexcantor64.com/" + response.getPage());
+                sender.sendMessageFormatted("twin.uploaded", TwinManager.getBaseUrl() + "/" + response.getPage());
                 return;
             }
 
