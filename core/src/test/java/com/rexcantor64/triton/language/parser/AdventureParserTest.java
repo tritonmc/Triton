@@ -60,6 +60,14 @@ public class AdventureParserTest {
                     )
                     .asComponent();
         }
+        if (key.equals("change.colors.on.args")) {
+            return Component.text()
+                    .append(
+                            Component.text("Some text ").color(NamedTextColor.RED),
+                            Component.text("%1 more text").color(NamedTextColor.BLUE)
+                    )
+                    .asComponent();
+        }
         return Component.text("unknown placeholder");
     };
 
@@ -530,6 +538,46 @@ public class AdventureParserTest {
                                                                                 .color(NamedTextColor.GREEN)
                                                                 )
                                                 )
+                                )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWhileRetainingCorrectStylesWithLinkBug() {
+        // server adds invalid link to text
+        Component comp = Component.text()
+                .append(
+                        Component.text("[lang]")
+                                .color(NamedTextColor.DARK_GRAY),
+                        Component.text("change.colors.on.args[arg]5[/arg][/lang]")
+                                .color(NamedTextColor.DARK_GRAY)
+                                .clickEvent(ClickEvent.openUrl("http://change.colors.on.args[arg]5[/arg][/lang]"))
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("")
+                                .color(NamedTextColor.DARK_GRAY), // hack because component compaction is buggy
+                        Component.text()
+                                .content("")
+                                .color(NamedTextColor.DARK_GRAY)
+                                .clickEvent(ClickEvent.openUrl("http://change.colors.on.args[arg]5[/arg][/lang]"))
+                                .append(
+                                        Component.text()
+                                                .append(
+                                                        Component.text("Some text ").color(NamedTextColor.RED),
+                                                        Component.text("5 more text").color(NamedTextColor.BLUE)
+                                                )
+                                                .asComponent()
                                 )
                 )
                 .asComponent();
@@ -1180,6 +1228,60 @@ public class AdventureParserTest {
 
         assertTrue(result.isPresent());
         assertEquals(expected, result.get());
+    }
+
+    @Test
+    public void testStripStyleOfFirstCharacter() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE)
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Component result = parser.stripStyleOfFirstCharacter(comp);
+
+        Component expected = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum")
+                )
+                .asComponent();
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testStripStyleOfFirstCharacterApplyFallback() {
+        Component comp = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum").color(NamedTextColor.BLUE),
+                        Component.text(" dolor sit amet")
+                )
+                .color(NamedTextColor.LIGHT_PURPLE)
+                .decorate(TextDecoration.BOLD)
+                .asComponent();
+
+        Component result = parser.stripStyleOfFirstCharacter(comp);
+
+        Component expected = Component.text()
+                .append(
+                        Component.keybind("test"),
+                        Component.text("").color(NamedTextColor.RED),
+                        Component.text("Lorem Ipsum"),
+                        Component.text(" dolor sit amet")
+                                .color(NamedTextColor.LIGHT_PURPLE)
+                                .decorate(TextDecoration.BOLD)
+                )
+                .asComponent();
+
+        assertEquals(expected, result);
     }
 
 }
