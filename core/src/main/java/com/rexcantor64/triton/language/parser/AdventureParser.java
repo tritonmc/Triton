@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -91,6 +92,12 @@ public class AdventureParser implements MessageParser {
     @VisibleForTesting
     TranslationResult<Component> translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
+
+        if (ComponentUtils.hasLegacyFormatting(plainText)) {
+            component = ComponentUtils.unflattenLegacyFormatting(component);
+            plainText = componentToString(component);
+        }
+
         val indexes = this.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
