@@ -21,7 +21,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static com.rexcantor64.triton.utils.ComponentUtils.SECTION_CHAR;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AdventureParserTest {
 
@@ -611,6 +616,27 @@ public class AdventureParserTest {
         TranslationResult<Component> result = parser.translateComponent(comp, configuration);
 
         assertEquals(TranslationResult.ResultState.TO_REMOVE, result.getState());
+    }
+
+    @Test
+    public void testParseComponentWithLegacyColorCodesInsideJson() {
+        Component comp = Component.text(SECTION_CHAR + "asomething " + SECTION_CHAR + "c[lang]without.formatting[/lang]");
+
+        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("something ")
+                                .color(NamedTextColor.GREEN),
+                        Component.text("This is text without formatting")
+                                .color(NamedTextColor.RED)
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
     }
 
     @Test
