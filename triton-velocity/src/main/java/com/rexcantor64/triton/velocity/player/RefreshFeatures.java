@@ -4,7 +4,7 @@ import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
-import com.velocitypowered.proxy.protocol.packet.PlayerListItem;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -50,9 +50,9 @@ public class RefreshFeatures {
         val items = player.getCachedPlayerListItems()
                 .entrySet()
                 .stream()
-                .map(entry -> new PlayerListItem.Item(entry.getKey()).setDisplayName(entry.getValue()))
+                .map(entry -> new LegacyPlayerListItem.Item(entry.getKey()).setDisplayName(entry.getValue()))
                 .collect(Collectors.toList());
-        val playerListItemsPacket = new PlayerListItem(PlayerListItem.UPDATE_DISPLAY_NAME, items);
+        val playerListItemsPacket = new LegacyPlayerListItem(LegacyPlayerListItem.UPDATE_DISPLAY_NAME, items);
 
         sendPacket(playerListItemsPacket);
     }

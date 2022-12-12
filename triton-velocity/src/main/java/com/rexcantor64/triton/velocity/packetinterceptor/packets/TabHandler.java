@@ -3,11 +3,11 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
-import com.velocitypowered.proxy.protocol.packet.PlayerListItem;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,15 +63,15 @@ public class TabHandler {
         return Optional.of(headerFooterPacket);
     }
 
-    public @NotNull Optional<MinecraftPacket> handlePlayerListItem(@NotNull PlayerListItem playerListItemPacket, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handlePlayerListItem(@NotNull LegacyPlayerListItem playerListItemPacket, @NotNull VelocityLanguagePlayer player) {
         val items = playerListItemPacket.getItems();
         val action = playerListItemPacket.getAction();
 
-        for (PlayerListItem.Item item : items) {
+        for (LegacyPlayerListItem.Item item : items) {
             val uuid = item.getUuid();
             switch (action) {
-                case PlayerListItem.ADD_PLAYER:
-                case PlayerListItem.UPDATE_DISPLAY_NAME:
+                case LegacyPlayerListItem.ADD_PLAYER:
+                case LegacyPlayerListItem.UPDATE_DISPLAY_NAME:
                     if (item.getDisplayName() == null) {
                         player.deleteCachedPlayerListItem(uuid);
                         break;
@@ -89,7 +89,7 @@ public class TabHandler {
                             .ifUnchanged(() -> player.deleteCachedPlayerListItem(item.getUuid()))
                             .ifToRemove(() -> player.deleteCachedPlayerListItem(item.getUuid()));
                     break;
-                case PlayerListItem.REMOVE_PLAYER:
+                case LegacyPlayerListItem.REMOVE_PLAYER:
                     player.deleteCachedPlayerListItem(uuid);
                     break;
             }

@@ -3,12 +3,12 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
+import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.chat.ChatBuilder;
-import com.velocitypowered.proxy.protocol.packet.chat.LegacyChat;
+import com.velocitypowered.proxy.protocol.packet.chat.ChatType;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
+import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChat;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +38,7 @@ public class ChatHandler {
     }
 
     public @NotNull Optional<MinecraftPacket> handleSystemChat(@NotNull SystemChat systemChatPacket, @NotNull VelocityLanguagePlayer player) {
-        boolean actionBar = systemChatPacket.getType() == ChatBuilder.ChatType.GAME_INFO;
+        boolean actionBar = systemChatPacket.getType() == ChatType.GAME_INFO;
 
         if ((!actionBar && shouldNotTranslateChat()) || (actionBar && shouldNotTranslateActionBars())) {
             return Optional.of(systemChatPacket);
