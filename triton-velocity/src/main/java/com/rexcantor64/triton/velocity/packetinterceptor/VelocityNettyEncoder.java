@@ -12,7 +12,9 @@ import com.velocitypowered.proxy.protocol.packet.BossBar;
 import com.velocitypowered.proxy.protocol.packet.Disconnect;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
 import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
+import com.velocitypowered.proxy.protocol.packet.RemovePlayerInfo;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
 import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChat;
 import com.velocitypowered.proxy.protocol.packet.title.LegacyTitlePacket;
@@ -52,6 +54,8 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
         val tabHandler = new TabHandler();
         addHandler(HeaderAndFooter.class, tabHandler::handlePlayerListHeaderFooter);
         addHandler(LegacyPlayerListItem.class, tabHandler::handlePlayerListItem);
+        addHandler(UpsertPlayerInfo.class, tabHandler::handleUpsertPlayerInfo);
+        addHandler(RemovePlayerInfo.class, tabHandler::handleRemovePlayerInfo);
 
         addHandler(Disconnect.class, new DisconnectHandler()::handleDisconnect);
         addHandler(ResourcePackRequest.class, new ResourcePackHandler()::handleResourcePackRequest);
