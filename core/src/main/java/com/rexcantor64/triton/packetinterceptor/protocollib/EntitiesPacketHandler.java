@@ -4,14 +4,8 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.utility.MinecraftVersion;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedWatchableObject;
+import com.comphenix.protocol.wrappers.*;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.player.LanguagePlayer;
@@ -304,14 +298,16 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
+        List<PlayerInfoData> dataList ;
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
             val infoActions = packet.getPacket().getPlayerInfoActions().readSafely(0);
             if (!infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
                 return;
             }
+            dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(1);
         } else {
             EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
+            dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
             if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
                 for (PlayerInfoData data : dataList) {
                     languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
@@ -351,7 +347,11 @@ public class EntitiesPacketHandler extends PacketHandler {
             }
             dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
         }
-        packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
+            packet.getPacket().getPlayerInfoDataLists().writeSafely(1, dataListNew);
+        } else {
+            packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
+        }
     }
 
     /**
@@ -367,7 +367,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        List<UUID> uuids = packet.getPacket().getLists((EquivalentConverter<UUID>) null).readSafely(0);
+        List<UUID> uuids = packet.getPacket().getLists(Converters.passthrough(UUID.class)).readSafely(0);
         for (UUID uuid : uuids) {
             languagePlayer.getShownPlayers().remove(uuid);
         }
@@ -541,7 +541,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             );
 
             val packetRemove = createPacket(PacketType.Play.Server.PLAYER_INFO_REMOVE);
-            packetRemove.getLists((EquivalentConverter<UUID>) null).writeSafely(0, uuidList);
+            packetRemove.getLists(Converters.passthrough(UUID.class)).writeSafely(0, uuidList);
             return packetRemove;
         } else {
             val playerInfoDataList = Collections.singletonList(
@@ -583,7 +583,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             val packetAdd = createPacket(PacketType.Play.Server.PLAYER_INFO);
             packetAdd.getPlayerInfoActions().writeSafely(0, actionList);
-            packetAdd.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            packetAdd.getPlayerInfoDataLists().writeSafely(1, playerInfoDataList);
             return packetAdd;
         } else {
             val playerInfoDataList = Collections.singletonList(
