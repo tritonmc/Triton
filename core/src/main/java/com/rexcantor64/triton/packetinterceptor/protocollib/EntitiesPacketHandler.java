@@ -2,7 +2,10 @@ package com.rexcantor64.triton.packetinterceptor.protocollib;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.EquivalentConverter;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
@@ -27,14 +30,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -298,6 +294,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * Handle a Player Info packet by translating the name and display name of all game profiles.
      * This is more directed to translating the names of human entities, but it can also
      * translate custom TABs.
+     * This packet was changed in MC 1.19.3, making actions a set instead of a single value.
      *
      * @param packet         ProtocolLib's packet event.
      * @param languagePlayer The language player this packet is being sent to.
@@ -307,27 +304,38 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
         List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
-        if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
-            for (PlayerInfoData data : dataList) {
-                languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+            val infoActions = packet.getPacket().getPlayerInfoActions().readSafely(0);
+            if (!infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
+                return;
             }
-            return;
-        }
+        } else {
+            EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
+            if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
+                for (PlayerInfoData data : dataList) {
+                    languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
+                }
+                return;
+            }
 
-        if (infoAction != EnumWrappers.PlayerInfoAction.ADD_PLAYER && infoAction != EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)
-            return;
+            if (infoAction != EnumWrappers.PlayerInfoAction.ADD_PLAYER && infoAction != EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME) {
+                return;
+            }
+        }
 
         List<PlayerInfoData> dataListNew = new ArrayList<>();
         for (PlayerInfoData data : dataList) {
+            languagePlayer.getShownPlayers().add(data.getProfileId());
+            WrappedGameProfile newGP = data.getProfile();
             WrappedGameProfile oldGP = data.getProfile();
-            languagePlayer.getShownPlayers().add(oldGP.getUUID());
-            WrappedGameProfile newGP = oldGP.withName(translateAndTruncate(
-                    languagePlayer,
-                    oldGP.getName()
-            ));
-            newGP.getProperties().putAll(oldGP.getProperties());
+            if (oldGP != null) {
+                newGP = oldGP.withName(translateAndTruncate(
+                        languagePlayer,
+                        oldGP.getName()
+                ));
+                newGP.getProperties().putAll(oldGP.getProperties());
+            }
             WrappedChatComponent msg = data.getDisplayName();
             if (msg != null) {
                 BaseComponent[] result = getLanguageParser().parseComponent(
@@ -344,6 +352,25 @@ public class EntitiesPacketHandler extends PacketHandler {
             dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
         }
         packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
+    }
+
+    /**
+     * Handle a Player Info packet by translating the name and display name of all game profiles.
+     * This is more directed to translating the names of human entities, but it can also
+     * translate custom TABs.
+     *
+     * @param packet         ProtocolLib's packet event.
+     * @param languagePlayer The language player this packet is being sent to.
+     */
+    private void handlePlayerInfoRemove(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (isEntityTypeDisabled(EntityType.PLAYER)) {
+            return;
+        }
+
+        List<UUID> uuids = packet.getPacket().getLists((EquivalentConverter<UUID>) null).readSafely(0);
+        for (UUID uuid : uuids) {
+            languagePlayer.getShownPlayers().remove(uuid);
+        }
     }
 
     /**
@@ -453,18 +480,14 @@ public class EntitiesPacketHandler extends PacketHandler {
             );
 
             // To be able to change the name of a human entity, we must first remove its player info
-            val packetRemove = createPacket(PacketType.Play.Server.PLAYER_INFO);
-            packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
-            packetRemove.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            val packetRemove = getPlayerInfoRemovePacket(humanEntity);
 
             // Destroy the current entity
             val packetDestroy = createPacket(PacketType.Play.Server.ENTITY_DESTROY);
             packetDestroy.getIntegerArrays().writeSafely(0, new int[]{humanEntity.getEntityId()});
 
             // Then send the player info again
-            val packetAdd = createPacket(PacketType.Play.Server.PLAYER_INFO);
-            packetAdd.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
-            packetAdd.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            val packetAdd = getPlayerInfoAddPacket(humanEntity);
 
             // Spawn the entity again
             val packetSpawn = createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
@@ -507,6 +530,75 @@ public class EntitiesPacketHandler extends PacketHandler {
                         4L
                 );
             }
+        }
+    }
+
+    @SuppressWarnings({"deprecation"})
+    private PacketContainer getPlayerInfoRemovePacket(Player humanEntity) {
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+            val uuidList = Collections.singletonList(
+                    humanEntity.getUniqueId()
+            );
+
+            val packetRemove = createPacket(PacketType.Play.Server.PLAYER_INFO_REMOVE);
+            packetRemove.getLists((EquivalentConverter<UUID>) null).writeSafely(0, uuidList);
+            return packetRemove;
+        } else {
+            val playerInfoDataList = Collections.singletonList(
+                    new PlayerInfoData(
+                            WrappedGameProfile.fromPlayer(humanEntity),
+                            50,
+                            EnumWrappers.NativeGameMode.fromBukkit(humanEntity.getGameMode()),
+                            WrappedChatComponent.fromText(humanEntity.getPlayerListName())
+                    )
+            );
+
+            val packetRemove = createPacket(PacketType.Play.Server.PLAYER_INFO);
+            packetRemove.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
+            packetRemove.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            return packetRemove;
+        }
+    }
+
+    private PacketContainer getPlayerInfoAddPacket(Player humanEntity) {
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+            val playerInfoDataList = Collections.singletonList(
+                    new PlayerInfoData(
+                            humanEntity.getUniqueId(),
+                            50,
+                            true,
+                            EnumWrappers.NativeGameMode.fromBukkit(humanEntity.getGameMode()),
+                            WrappedGameProfile.fromPlayer(humanEntity),
+                            WrappedChatComponent.fromText(humanEntity.getPlayerListName()),
+                            null // FIXME this is preventing secure chat from working
+                    )
+            );
+
+            val actionList = EnumSet.of(
+                    EnumWrappers.PlayerInfoAction.ADD_PLAYER,
+                    EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE,
+                    EnumWrappers.PlayerInfoAction.UPDATE_LATENCY,
+                    EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME
+            );
+
+            val packetAdd = createPacket(PacketType.Play.Server.PLAYER_INFO);
+            packetAdd.getPlayerInfoActions().writeSafely(0, actionList);
+            packetAdd.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            return packetAdd;
+        } else {
+            val playerInfoDataList = Collections.singletonList(
+                    new PlayerInfoData(
+                            WrappedGameProfile.fromPlayer(humanEntity),
+                            50,
+                            EnumWrappers.NativeGameMode.fromBukkit(humanEntity.getGameMode()),
+                            WrappedChatComponent.fromText(humanEntity.getPlayerListName())
+                    )
+            );
+
+            val packetAdd = createPacket(PacketType.Play.Server.PLAYER_INFO);
+            packetAdd.getPlayerInfoAction().writeSafely(0, EnumWrappers.PlayerInfoAction.ADD_PLAYER);
+            packetAdd.getPlayerInfoDataLists().writeSafely(0, playerInfoDataList);
+            return packetAdd;
         }
     }
 
@@ -620,6 +712,9 @@ public class EntitiesPacketHandler extends PacketHandler {
         registry.put(PacketType.Play.Server.ENTITY_DESTROY, asSync(this::handleEntityDestroy));
 
         registry.put(PacketType.Play.Server.PLAYER_INFO, asSync(this::handlePlayerInfo));
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+            registry.put(PacketType.Play.Server.PLAYER_INFO_REMOVE, asSync(this::handlePlayerInfoRemove));
+        }
     }
 
     private abstract static class DataWatcherHandler {
