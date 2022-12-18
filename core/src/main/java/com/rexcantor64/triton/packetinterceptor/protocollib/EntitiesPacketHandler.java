@@ -35,6 +35,7 @@ import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFuncti
 public class EntitiesPacketHandler extends PacketHandler {
 
     private final DataWatcherHandler dataWatcherHandler;
+    private final DataValueHandler dataValueHandler;
 
     public EntitiesPacketHandler() {
         if (getMcVersion() < 9) {
@@ -47,6 +48,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             // MC 1.13+
             this.dataWatcherHandler = new DataWatcherHandler1_13();
         }
+        this.dataValueHandler = new DataValueHandler();
     }
 
     /**
@@ -183,11 +185,12 @@ public class EntitiesPacketHandler extends PacketHandler {
     /**
      * Handle an Entity Metadata packet by replacing the display name of the entity.
      * If the entity is a (glowing) item frame, translate the item inside it.
+     * WatchableObjects are no longer sent in this packet starting in MC 1.19.3.
      *
      * @param packet         ProtocolLib's packet event.
      * @param languagePlayer The language player this packet is being sent to.
      */
-    private void handleEntityMetadata(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+    private void handleEntityMetadataForWatchableObjects(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         int entityId = packet.getPacket().getIntegers().readSafely(0);
 
         val worldEntitiesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
@@ -258,6 +261,86 @@ public class EntitiesPacketHandler extends PacketHandler {
     }
 
     /**
+     * Handle an Entity Metadata packet by replacing the display name of the entity.
+     * If the entity is a (glowing) item frame, translate the item inside it.
+     * DataValues are sent in this packet starting in MC 1.19.3.
+     *
+     * @param packet         ProtocolLib's packet event.
+     * @param languagePlayer The language player this packet is being sent to.
+     * @since 3.8.3
+     */
+    private void handleEntityMetadataForDataValues(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        int entityId = packet.getPacket().getIntegers().readSafely(0);
+
+        val worldEntitiesMap = languagePlayer.getEntitiesMap().get(packet.getPlayer().getWorld());
+        if (worldEntitiesMap == null || !worldEntitiesMap.containsKey(entityId)) {
+            // If the entity isn't in the cache, don't translate it
+            return;
+        }
+
+        val dataValues = packet.getPacket().getDataValueCollectionModifier().readSafely(0);
+        if (dataValues == null) {
+            // The DataWatcher.b List is Nullable
+            // Since it's null, it doesn't have any text to translate anyway, so just ignore it
+            return;
+        }
+
+        List<WrappedDataValue> newWatchableObjects = new ArrayList<>();
+        AtomicBoolean skipHideCustomName = new AtomicBoolean(false);
+        for (WrappedDataValue oldObject : dataValues) {
+            if (oldObject.getIndex() == 2) {
+                oldObject.getValue();
+                // Index 2 is "Custom Name" of type "OptChat"
+                // https://wiki.vg/Entity_metadata#Entity
+                newWatchableObjects.add(
+                        this.dataValueHandler.translatePlayerDisplayNameDataValue(
+                                languagePlayer,
+                                oldObject,
+                                (displayName) -> addEntity(
+                                        languagePlayer.getEntitiesMap(),
+                                        packet.getPlayer().getWorld(),
+                                        entityId,
+                                        Optional.of(displayName)
+                                ),
+                                (hasCustomName) -> this.dataValueHandler
+                                        .getCustomNameVisibilityDataValue(hasCustomName)
+                                        .ifPresent(obj -> {
+                                            newWatchableObjects.add(obj);
+                                            // Ensure the original WatchableObject, if existed, will not be added to the list
+                                            skipHideCustomName.set(true);
+                                        })
+                        ).orElse(oldObject)
+                );
+            } else if (oldObject.getIndex() == 3) {
+                // Index 3 is "Is custom name visible" of type "Boolean"
+                // https://wiki.vg/Entity_metadata#Entity
+                if (!skipHideCustomName.get()) {
+                    newWatchableObjects.add(oldObject);
+                }
+            } else if (oldObject.getIndex() == 8) {
+                // Index 8 is "Item" of type "Slot"
+                // https://wiki.vg/Entity_metadata#Entity
+                // Used to translate items inside (glowing) item frames
+                newWatchableObjects.add(
+                        this.dataValueHandler.translateItemFrameItems(
+                                languagePlayer,
+                                oldObject,
+                                (itemStack) -> addEntity(
+                                        languagePlayer.getItemFramesMap(),
+                                        packet.getPlayer().getWorld(),
+                                        entityId,
+                                        itemStack
+                                )
+                        ).orElse(oldObject)
+                );
+            } else {
+                newWatchableObjects.add(oldObject);
+            }
+        }
+        packet.getPacket().getDataValueCollectionModifier().writeSafely(0, newWatchableObjects);
+    }
+
+    /**
      * Handle an Entity Destroy packet by removing its entities from Triton's internal cache.
      * Depending on the MC version, this packet might contain one or multiple entities,
      * represented either by an integer, an integer array or an integer list.
@@ -298,7 +381,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        List<PlayerInfoData> dataList ;
+        List<PlayerInfoData> dataList;
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
             val infoActions = packet.getPacket().getPlayerInfoActions().readSafely(0);
             if (!infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
@@ -408,13 +491,31 @@ public class EntitiesPacketHandler extends PacketHandler {
             }
             val displayName = entry.getValue().get();
 
-            final List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
             val packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
 
             // Write entity ID
             packet.getIntegers().writeSafely(0, entry.getKey());
 
-            if (getMcVersion() >= 13) {
+            if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+                final List<WrappedDataValue> dataValues = new ArrayList<>();
+                val result = getLanguageParser().parseComponent(
+                        languagePlayer,
+                        getConfig().getHologramSyntax(),
+                        ComponentSerializer.parse(displayName)
+                );
+
+                this.dataValueHandler.getPlayerDisplayNameDataValue(result).ifPresent(dataValues::add);
+                this.dataValueHandler.getCustomNameVisibilityDataValue(result != null).ifPresent(dataValues::add);
+
+                if (dataValues.size() == 0) {
+                    // Don't send anything if there are no changes
+                    continue;
+                }
+
+                // Write watchable objects
+                packet.getDataValueCollectionModifier().writeSafely(0, dataValues);
+            } else if (MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // 1.13
+                final List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
                 // On MC 1.13+, display names are sent as text components instead of legacy text
                 val result = getLanguageParser().parseComponent(
                         languagePlayer,
@@ -424,7 +525,16 @@ public class EntitiesPacketHandler extends PacketHandler {
 
                 this.dataWatcherHandler.getPlayerDisplayNameWatchableObject(result).ifPresent(watchableObjects::add);
                 this.dataWatcherHandler.getCustomNameVisibilityWatchableObject(result != null).ifPresent(watchableObjects::add);
+
+                if (watchableObjects.size() == 0) {
+                    // Don't send anything if there are no changes
+                    continue;
+                }
+
+                // Write watchable objects
+                packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             } else {
+                final List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
                 // On MC 1.8 to 1.12, display names are sent as legacy text
                 val result = getLanguageParser().replaceLanguages(
                         getLanguageManager().matchPattern(displayName, languagePlayer),
@@ -434,15 +544,17 @@ public class EntitiesPacketHandler extends PacketHandler {
 
                 this.dataWatcherHandler.getPlayerDisplayNameWatchableObject(result).ifPresent(watchableObjects::add);
                 this.dataWatcherHandler.getCustomNameVisibilityWatchableObject(result != null).ifPresent(watchableObjects::add);
+
+                if (watchableObjects.size() == 0) {
+                    // Don't send anything if there are no changes
+                    continue;
+                }
+
+                // Write watchable objects
+                packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             }
 
-            if (watchableObjects.size() == 0) {
-                // Don't send anything if there are no changes
-                continue;
-            }
 
-            // Write watchable objects
-            packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             // Send packet without passing through listeners again
             sendPacket(bukkitPlayer, packet, false);
         }
@@ -618,7 +730,6 @@ public class EntitiesPacketHandler extends PacketHandler {
         for (Map.Entry<Integer, ItemStack> entry : entitiesInCurrentWorld.entrySet()) {
             val itemStack = entry.getValue();
 
-            final List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
             val packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
 
             // Write entity ID
@@ -627,15 +738,30 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             val clonedItemStack = itemStack.clone();
             val translatedItemStack = ItemStackTranslationUtils.translateItemStack(clonedItemStack, languagePlayer, false);
-            this.dataWatcherHandler.getItemStackWatchableObject(translatedItemStack).ifPresent(watchableObjects::add);
 
-            if (watchableObjects.size() == 0) {
-                // Don't send anything if there are no changes
-                continue;
+            if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+                final List<WrappedDataValue> dataValues = new ArrayList<>();
+                this.dataValueHandler.getItemStackDataValue(translatedItemStack).ifPresent(dataValues::add);
+
+                if (dataValues.size() == 0) {
+                    // Don't send anything if there are no changes
+                    continue;
+                }
+
+                // Write watchable objects
+                packet.getDataValueCollectionModifier().writeSafely(0, dataValues);
+            } else {
+                final List<WrappedWatchableObject> watchableObjects = new ArrayList<>();
+                this.dataWatcherHandler.getItemStackWatchableObject(translatedItemStack).ifPresent(watchableObjects::add);
+
+                if (watchableObjects.size() == 0) {
+                    // Don't send anything if there are no changes
+                    continue;
+                }
+
+                // Write watchable objects
+                packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             }
-
-            // Write watchable objects
-            packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             // Send packet without passing through listeners again
             sendPacket(bukkitPlayer, packet, false);
         }
@@ -708,12 +834,14 @@ public class EntitiesPacketHandler extends PacketHandler {
             registry.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, asSync(this::handleSpawnEntityLiving));
         }
         registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, asSync(this::handleNamedEntitySpawn));
-        registry.put(PacketType.Play.Server.ENTITY_METADATA, asSync(this::handleEntityMetadata));
         registry.put(PacketType.Play.Server.ENTITY_DESTROY, asSync(this::handleEntityDestroy));
 
         registry.put(PacketType.Play.Server.PLAYER_INFO, asSync(this::handlePlayerInfo));
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+            registry.put(PacketType.Play.Server.ENTITY_METADATA, asSync(this::handleEntityMetadataForDataValues));
             registry.put(PacketType.Play.Server.PLAYER_INFO_REMOVE, asSync(this::handlePlayerInfoRemove));
+        } else {
+            registry.put(PacketType.Play.Server.ENTITY_METADATA, asSync(this::handleEntityMetadataForWatchableObjects));
         }
     }
 
@@ -1041,6 +1169,115 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             val translatedItemStack = ItemStackTranslationUtils.translateItemStack(clonedItemStack, languagePlayer, false);
             return this.getItemStackWatchableObject(translatedItemStack);
+        }
+    }
+
+    /**
+     * Starting on 1.19.3, the entity metadata packet no longer has WatchableObjects,
+     * but instead has DataValues.
+     * This works similarly to the {@link DataWatcherHandler} class.
+     *
+     * @since 3.8.3
+     */
+    private class DataValueHandler {
+        Optional<WrappedDataValue> getPlayerDisplayNameDataValue(BaseComponent[] components) {
+            Optional<Object> payload;
+            if (components != null) {
+                val wrappedChatComponent = WrappedChatComponent.fromJson(ComponentSerializer.toString(components));
+                payload = Optional.of(wrappedChatComponent.getHandle());
+            } else {
+                payload = Optional.empty();
+            }
+
+            // Display name has: index 2 and type chat
+            // https://wiki.vg/Entity_metadata#Entity
+            return Optional.of(
+                    new WrappedDataValue(
+                            2,
+                            WrappedDataWatcher.Registry.getChatComponentSerializer(true),
+                            payload
+                    )
+            );
+        }
+
+        Optional<WrappedDataValue> getCustomNameVisibilityDataValue(boolean visible) {
+            if (visible) {
+                // If the name should be visible, we don't need to do anything
+                return Optional.empty();
+            }
+
+            // Custom name visibility has: index 3 and type boolean
+            // https://wiki.vg/Entity_metadata#Entity
+            return Optional.of(
+                    new WrappedDataValue(
+                            3,
+                            WrappedDataWatcher.Registry.get(Boolean.class),
+                            false
+                    )
+            );
+        }
+
+        Optional<WrappedDataValue> getItemStackDataValue(ItemStack item) {
+            // Display name has: index 8 and type slot (item stack)
+            // https://wiki.vg/Entity_metadata#Entity
+            // We cannot pass translated item stack to constructor because it doesn't get unwrapped
+            val dataValue = new WrappedDataValue(
+                    8,
+                    WrappedDataWatcher.Registry.getItemStackSerializer(false),
+                    null
+            );
+
+            // The setter unwraps the Bukkit class to the NMS class
+            dataValue.setValue(item);
+            return Optional.of(dataValue);
+        }
+
+        Optional<WrappedDataValue> translatePlayerDisplayNameDataValue(
+                SpigotLanguagePlayer languagePlayer,
+                WrappedDataValue dataValue,
+                Consumer<String> saveToCache,
+                @Nullable Consumer<Boolean> hasCustomNameConsumer) {
+            val displayName = (Optional<WrappedChatComponent>) dataValue.getValue();
+            if (!displayName.isPresent()) {
+                return Optional.empty();
+            }
+
+            val displayNameJson = displayName.get().getJson();
+
+            // Save to cache before translating
+            saveToCache.accept(displayNameJson);
+
+            val result = getLanguageParser().parseComponent(
+                    languagePlayer,
+                    getConfig().getHologramSyntax(),
+                    ComponentSerializer.parse(displayNameJson)
+            );
+
+            if (hasCustomNameConsumer != null) {
+                hasCustomNameConsumer.accept(result != null);
+            }
+            return this.getPlayerDisplayNameDataValue(result);
+        }
+
+        Optional<WrappedDataValue> translateItemFrameItems(
+                SpigotLanguagePlayer languagePlayer,
+                WrappedDataValue dataValue,
+                Consumer<ItemStack> saveToCache) {
+            val value = dataValue.getValue();
+            if (!(value instanceof ItemStack)) {
+                return Optional.empty();
+            }
+
+            val itemStack = (ItemStack) value;
+            if (itemStack.getType() == Material.AIR) {
+                return Optional.empty();
+            }
+
+            saveToCache.accept(itemStack.clone());
+            val clonedItemStack = itemStack.clone();
+
+            val translatedItemStack = ItemStackTranslationUtils.translateItemStack(clonedItemStack, languagePlayer, false);
+            return this.getItemStackDataValue(translatedItemStack);
         }
     }
 }
