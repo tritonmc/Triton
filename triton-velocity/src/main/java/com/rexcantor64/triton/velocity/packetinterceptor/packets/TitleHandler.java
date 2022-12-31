@@ -76,7 +76,7 @@ public class TitleHandler {
             case SET_ACTION_BAR:
                 return handleGenericTitle(titlePacket, player);
             default:
-                return Optional.empty();
+                return Optional.of(titlePacket);
         }
     }
 }

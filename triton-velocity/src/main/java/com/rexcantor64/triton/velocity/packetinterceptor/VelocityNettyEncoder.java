@@ -69,7 +69,7 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
     @Override
     protected void encode(ChannelHandlerContext ctx, MinecraftPacket packet, List<Object> out) {
         if (packet instanceof ReferenceCounted) {
-            // We need ro retain the packet since we're just passing them through, otherwise Netty will throw an error
+            // We need to retain the packet since we're just passing them through, otherwise Netty will throw an error
             ((ReferenceCounted) packet).retain();
             out.add(packet);
             return;
@@ -78,7 +78,12 @@ public class VelocityNettyEncoder extends MessageToMessageEncoder<MinecraftPacke
         val handler = (BiFunction<MinecraftPacket, VelocityLanguagePlayer, Optional<MinecraftPacket>>) handlerMap.get(packet.getClass());
         if (handler != null) {
             Optional<MinecraftPacket> result = handler.apply(packet, this.player);
-            result.ifPresent(out::add);
+            if (result.isPresent()) {
+                out.add(result.get());
+            } else {
+                // Discard the packet
+                out.add(false);
+            }
         } else {
             out.add(packet);
         }
