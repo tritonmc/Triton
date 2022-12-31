@@ -12,18 +12,21 @@ import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
+import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.*;
 
 import java.util.*;
 
 public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
-    private BungeeLanguagePlayer owner;
+    private final BungeeLanguagePlayer owner;
+    private final int protocolVersion;
 
-    private HashMap<UUID, String> tabListCache = new HashMap<>();
+    private final HashMap<UUID, String> tabListCache = new HashMap<>();
 
-    public BungeeListener(BungeeLanguagePlayer owner) {
+    public BungeeListener(BungeeLanguagePlayer owner, int protocolVersion) {
         this.owner = owner;
+        this.protocolVersion = protocolVersion;
         owner.setListener(this);
     }
 
@@ -56,6 +59,43 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
             items.add(i);
         }
         p.setItems(items.toArray(new PlayerListItem.Item[0]));
+    }
+
+    private void handlePlayerListItemUpdate(DefinedPacket packet) {
+        PlayerListItemUpdate p = (PlayerListItemUpdate) packet;
+        if (p.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
+            return;
+        }
+        List<PlayerListItem.Item> items = new ArrayList<>();
+        for (PlayerListItem.Item i : p.getItems()) {
+            if (i.getDisplayName() != null) {
+                try {
+                    String original = TextComponent.toLegacyText(ComponentSerializer.parse(i.getDisplayName()));
+                    String translated = translate(original,
+                            Triton.get().getConf().getTabSyntax());
+                    if (!original.equals(translated)) {
+                        PlayerListItem.Item item = clonePlayerListItem(i);
+                        tabListCache.put(item.getUuid(), item.getDisplayName());
+                        item.setDisplayName(ComponentSerializer.toString(TextComponent.fromLegacyText(translated)));
+                        items.add(item);
+                        continue;
+                    } else tabListCache.remove(i.getUuid());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                tabListCache.remove(i.getUuid());
+            }
+            items.add(i);
+        }
+        p.setItems(items.toArray(new PlayerListItem.Item[0]));
+    }
+
+    private void handlePlayerListItemRemove(DefinedPacket packet) {
+        PlayerListItemRemove p = (PlayerListItemRemove) packet;
+        for (UUID uuid : p.getUuids()) {
+            tabListCache.remove(uuid);
+        }
     }
 
     private boolean handleChat(DefinedPacket packet) {
@@ -149,6 +189,10 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         try {
             if (Triton.get().getConf().isTab() && packet instanceof PlayerListItem) {
                 handlePlayerListItem(packet);
+            } else if (Triton.get().getConf().isTab() && packet instanceof PlayerListItemUpdate) {
+                handlePlayerListItemUpdate(packet);
+            } else if (Triton.get().getConf().isTab() && packet instanceof PlayerListItemRemove) {
+                handlePlayerListItemRemove(packet);
             } else if (packet instanceof Chat) {
                 if (!handleChat(packet)) {
                     out.add(false);
@@ -194,10 +238,17 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
             i.setDisplayName(item.getValue());
             items.add(i);
         }
-        PlayerListItem packet = new PlayerListItem();
-        packet.setAction(PlayerListItem.Action.UPDATE_DISPLAY_NAME);
-        packet.setItems(items.toArray(new PlayerListItem.Item[0]));
-        send(packet);
+        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_19_3) {
+            PlayerListItemUpdate packet = new PlayerListItemUpdate();
+            packet.setActions(EnumSet.of(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME));
+            packet.setItems(items.toArray(new PlayerListItem.Item[0]));
+            send(packet);
+        } else {
+            PlayerListItem packet = new PlayerListItem();
+            packet.setAction(PlayerListItem.Action.UPDATE_DISPLAY_NAME);
+            packet.setItems(items.toArray(new PlayerListItem.Item[0]));
+            send(packet);
+        }
     }
 
     public void refreshBossbar(UUID uuid, String json) {

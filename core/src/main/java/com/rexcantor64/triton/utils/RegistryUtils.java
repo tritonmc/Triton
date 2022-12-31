@@ -5,6 +5,7 @@ import com.comphenix.protocol.wrappers.MinecraftKey;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -36,8 +37,12 @@ public class RegistryUtils {
         if (tileEntityTypeRegistry != null) return;
 
         Class<?> iRegistry = MinecraftReflection.getIRegistry();
+        Class<?> builtInRegistries = MinecraftReflection.getBuiltInRegistries();
 
-        tileEntityTypeRegistry = Arrays.stream(iRegistry.getFields())
+        // Starting on 1.19.3, registry instances are stored on BuiltInRegistries class
+        Field[] fields = builtInRegistries != null ? builtInRegistries.getFields() : iRegistry.getFields();
+
+        tileEntityTypeRegistry = Arrays.stream(fields)
                 .filter(field -> {
                     if (field.getType().equals(iRegistry)) {
                         ParameterizedType type = (ParameterizedType) field.getGenericType();
