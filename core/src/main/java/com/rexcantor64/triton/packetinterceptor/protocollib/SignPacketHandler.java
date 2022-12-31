@@ -229,22 +229,20 @@ public class SignPacketHandler extends PacketHandler {
         }));
 
         player.getLegacySigns().forEach(((signLocation, lines) -> {
-            val resultLines = getLanguageManager()
-                    .formatLines(player.getLang()
-                            .getName(), lines, () -> {
-                        val defaultLines = new String[4];
-                        for (int i = 0; i < 4; i++) {
-                            try {
-                                defaultLines[i] = AdvancedComponent
-                                        .fromBaseComponent(ComponentSerializer.parse(lines[i]))
-                                        .getTextClean();
-                            } catch (Exception e) {
-                                Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, signLocation);
-                                defaultLines[i] = "";
-                            }
-                        }
-                        return defaultLines;
-                    });
+            val resultLines = getLanguageManager().getSign(player, signLocation, () -> {
+                val defaultLines = new String[4];
+                for (int i = 0; i < 4; i++) {
+                    try {
+                        defaultLines[i] = AdvancedComponent
+                                .fromBaseComponent(ComponentSerializer.parse(lines[i]))
+                                .getTextClean();
+                    } catch (Exception e) {
+                        Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, signLocation);
+                        defaultLines[i] = "";
+                    }
+                }
+                return defaultLines;
+            });
 
             PacketContainer packet = buildUpdateSignPacket(signLocation, resultLines);
             ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
