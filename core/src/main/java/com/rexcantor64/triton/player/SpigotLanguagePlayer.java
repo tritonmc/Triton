@@ -1,9 +1,11 @@
 package com.rexcantor64.triton.player;
 
+import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
+import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.packetinterceptor.PacketInterceptor;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Data;
@@ -48,6 +50,12 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     @Getter
     private Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
+
+    @Getter
+    private final Map<SignLocation, NbtCompound> signs = new ConcurrentHashMap<>();
+    @Deprecated
+    @Getter
+    private final Map<SignLocation, String[]> legacySigns = new ConcurrentHashMap<>(); // until 1.19_R1 only
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
@@ -160,6 +168,15 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (Triton.get().getConf().getHolograms().size() == 0 && !Triton.get().getConf().isHologramsAll())
             return;
         getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
+    }
+
+    /**
+     * Signal this player that it has changed worlds.
+     * Used to clean cache.
+     */
+    public void onWorldChange() {
+        this.signs.clear();
+        this.legacySigns.clear();
     }
 
     public void setLastTabHeader(String lastTabHeader) {

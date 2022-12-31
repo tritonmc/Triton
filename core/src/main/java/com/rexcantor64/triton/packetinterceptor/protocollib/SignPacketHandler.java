@@ -11,24 +11,18 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdvancedComponent;
-import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.utils.RegistryUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Sign;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.rexcantor64.triton.packetinterceptor.protocollib.HandlerFunction.asAsync;
 
@@ -92,7 +86,7 @@ public class SignPacketHandler extends PacketHandler {
 
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     chunkX * 16 + sectionX, y, chunkZ * 16 + sectionZ);
-            translateSignNbtCompound(nbt, location, languagePlayer);
+            translateSignNbtCompound(nbt, location, languagePlayer, true);
         }
     }
 
@@ -113,7 +107,7 @@ public class SignPacketHandler extends PacketHandler {
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     position.getX(), position.getY(), position.getZ());
 
-            translateSignNbtCompound(nbt, location, languagePlayer);
+            translateSignNbtCompound(nbt, location, languagePlayer, true);
         }
     }
 
@@ -135,7 +129,7 @@ public class SignPacketHandler extends PacketHandler {
             if (nbt.getString("id").equals(SIGN_TYPE_ID)) {
                 val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                         nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                translateSignNbtCompound(nbt, location, languagePlayer);
+                translateSignNbtCompound(nbt, location, languagePlayer, true);
             }
         }
     }
@@ -158,7 +152,7 @@ public class SignPacketHandler extends PacketHandler {
             val nbt = NbtFactory.asCompound(newPacket.getNbtModifier().readSafely(0));
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-            if (translateSignNbtCompound(nbt, location, languagePlayer)) {
+            if (translateSignNbtCompound(nbt, location, languagePlayer, true)) {
                 packet.setPacket(newPacket);
             }
         }
@@ -179,10 +173,10 @@ public class SignPacketHandler extends PacketHandler {
         val newPacket = packet.getPacket().shallowClone();
         val pos = newPacket.getBlockPositionModifier().readSafely(0);
         val linesModifier = newPacket.getChatComponentArrays();
+        val defaultLinesWrapped = linesModifier.readSafely(0);
 
         val l = new SignLocation(packet.getPlayer().getWorld().getName(), pos.getX(), pos.getY(), pos.getZ());
         String[] lines = getLanguageManager().getSign(languagePlayer, l, () -> {
-            val defaultLinesWrapped = linesModifier.readSafely(0);
             val defaultLines = new String[4];
             for (int i = 0; i < 4; i++) {
                 try {
@@ -191,6 +185,7 @@ public class SignPacketHandler extends PacketHandler {
                             .getTextClean();
                 } catch (Exception e) {
                     Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, l);
+                    defaultLines[i] = "";
                 }
             }
             return defaultLines;
@@ -201,6 +196,9 @@ public class SignPacketHandler extends PacketHandler {
             comps[i] =
                     WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
         linesModifier.writeSafely(0, comps);
+
+        languagePlayer.getLegacySigns().put(l, Arrays.stream(defaultLinesWrapped).map(WrappedChatComponent::getJson).toArray(String[]::new));
+
         packet.setPacket(newPacket);
     }
 
@@ -215,52 +213,53 @@ public class SignPacketHandler extends PacketHandler {
         if (!bukkitPlayerOpt.isPresent()) return;
         val bukkitPlayer = bukkitPlayerOpt.get();
 
-        val storage = getMain().getStorage();
-        val filterItems = Triton.get().getConfig().isBungeecord() && !(Triton.get().getStorage() instanceof LocalStorage);
-        val serverName = Triton.get().getConfig().getServerName();
+        player.getSigns().forEach(((signLocation, compound) -> {
+            val compoundClone = NbtFactory.asCompound(compound.deepClone());
 
-        storage.getCollections().values().forEach(collection ->
-                collection.getItems().forEach(item -> {
-                    if (!(item instanceof LanguageSign)) return;
-                    val sign = (LanguageSign) item;
+            if (translateSignNbtCompound(compoundClone, signLocation, player, false)) {
+                PacketContainer packet;
+                if (getMcVersion() >= 18) {
+                    packet = buildTileEntityDataPacketPost1_18(signLocation, compoundClone);
+                } else {
+                    packet = buildTileEntityDataPacketPre1_18(signLocation, compoundClone);
+                }
 
-                    if (sign.getLocations() == null) return;
+                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
+            }
+        }));
 
-                    val lines = Optional.ofNullable(sign.getLines(player.getLang().getName()))
-                            .orElse(sign.getLines(getLanguageManager().getMainLanguage().getName()));
-                    if (lines == null) return;
+        player.getLegacySigns().forEach(((signLocation, lines) -> {
+            val resultLines = getLanguageManager()
+                    .formatLines(player.getLang()
+                            .getName(), lines, () -> {
+                        val defaultLines = new String[4];
+                        for (int i = 0; i < 4; i++) {
+                            try {
+                                defaultLines[i] = AdvancedComponent
+                                        .fromBaseComponent(ComponentSerializer.parse(lines[i]))
+                                        .getTextClean();
+                            } catch (Exception e) {
+                                Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, signLocation);
+                                defaultLines[i] = "";
+                            }
+                        }
+                        return defaultLines;
+                    });
 
-                    sign.getLocations().stream()
-                            .filter((loc) -> !filterItems || loc.getServer() == null || serverName.equals(loc.getServer()))
-                            .forEach(location -> {
-                                val resultLines = getLanguageManager()
-                                        .formatLines(player.getLang()
-                                                .getName(), lines, () -> getSignLinesFromLocation(location).orElse(new String[]{"", "", "", ""}));
-
-                                PacketContainer packet;
-                                if (getMcVersion() >= 18) {
-                                    packet = buildTileEntityDataPacketPost1_18(location, resultLines);
-                                } else if (!MinecraftReflection.signUpdateExists()) {
-                                    packet = buildTileEntityDataPacketPre1_18(location, resultLines);
-                                } else {
-                                    packet = buildUpdateSignPacket(location, resultLines);
-                                }
-
-                                ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
-                            });
-                })
-        );
+            PacketContainer packet = buildUpdateSignPacket(signLocation, resultLines);
+            ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, false);
+        }));
     }
 
     /**
      * Builds a Tile Entity Data packet for Minecraft 1.18 and above, used to refresh the content of a sign.
      *
      * @param location The location of the sign
-     * @param lines    The lines of the sign
+     * @param compound The NBT Compound of the sign
      * @return The packet that was built
      */
     @SuppressWarnings({"unchecked"})
-    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, String[] lines) {
+    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, NbtCompound compound) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.TILE_ENTITY_DATA);
 
@@ -271,11 +270,6 @@ public class SignPacketHandler extends PacketHandler {
         val type = RegistryUtils.getTileEntityTypeFromKey(new MinecraftKey("sign"));
         packet.getSpecificModifier((Class<Object>) TILE_ENTITY_TYPES_CLASS).writeSafely(0, type);
 
-        val compound = NbtFactory.ofCompound(null);
-        for (int i = 0; i < 4; ++i) {
-            compound.put("Text" + (i + 1),
-                    ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-        }
         packet.getNbtModifier().writeSafely(0, compound);
 
         return packet;
@@ -285,12 +279,12 @@ public class SignPacketHandler extends PacketHandler {
      * Builds a Tile Entity Data packet for Minecraft 1.17 and below, used to refresh the content of a sign.
      *
      * @param location The location of the sign
-     * @param lines    The lines of the sign
+     * @param compound The NBT Compound of the sign
      * @return The packet that was built
      * @deprecated Changed in Minecraft 1.18.
      */
     @Deprecated
-    private PacketContainer buildTileEntityDataPacketPre1_18(SignLocation location, String[] lines) {
+    private PacketContainer buildTileEntityDataPacketPre1_18(SignLocation location, NbtCompound compound) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.TILE_ENTITY_DATA);
 
@@ -300,22 +294,13 @@ public class SignPacketHandler extends PacketHandler {
         // Update sign action ID is 9
         packet.getIntegers().writeSafely(0, 9);
 
-        val compound = NbtFactory.ofCompound(null);
-        compound.put("x", location.getX());
-        compound.put("y", location.getY());
-        compound.put("z", location.getZ());
-        compound.put("id", SIGN_TYPE_ID);
-        for (int i = 0; i < 4; ++i) {
-            compound.put("Text" + (i + 1),
-                    ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-        }
         packet.getNbtModifier().writeSafely(0, compound);
 
         return packet;
     }
 
     /**
-     * Builds an Update Sign packet for Minecraft 1.8 and 1.9_R2, used to refresh the content of a sign.
+     * Builds an Update Sign packet for Minecraft 1.8 and 1.9_R1, used to refresh the content of a sign.
      *
      * @param location The location of the sign
      * @param lines    The lines of the sign
@@ -343,12 +328,13 @@ public class SignPacketHandler extends PacketHandler {
     /**
      * Translates the sign text using by mutating its NBT Tag Compound.
      *
-     * @param compound Sign's NBT data
-     * @param location The location of the sign
-     * @param player   The language player to translate for
+     * @param compound    Sign's NBT data
+     * @param location    The location of the sign
+     * @param player      The language player to translate for
+     * @param saveToCache Whether to save the location and original compound to the player's cache
      * @return True if the sign was translated or false if left untouched
      */
-    private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, LanguagePlayer player) {
+    private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player, boolean saveToCache) {
         String[] sign = getLanguageManager().getSign(player, location, () -> {
             val defaultLines = new String[4];
             for (int i = 0; i < 4; i++) {
@@ -366,35 +352,16 @@ public class SignPacketHandler extends PacketHandler {
         });
 
         if (sign != null) {
+            val compoundClone = saveToCache ? NbtFactory.asCompound(compound.deepClone()) : null;
             for (int i = 0; i < 4; i++) {
                 compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+            }
+            if (compoundClone != null) {
+                player.getSigns().put(location, compoundClone);
             }
             return true;
         }
         return false;
-    }
-
-    /**
-     * Gets lines from a sign given its location.
-     * If the sign cannot be found, an empty string array is located.
-     *
-     * @param location The location of the sign
-     * @return An array with length 4, representing each line of the sign
-     */
-    private Optional<String[]> getSignLinesFromLocation(SignLocation location) {
-        return Triton.asSpigot().callSync(() -> {
-            val world = Bukkit.getWorld(location.getWorld());
-            if (world == null) return new String[4];
-
-            val bukkitLocation = new Location(world, location.getX(), location.getY(), location.getZ());
-
-            val state = bukkitLocation.getBlock().getState();
-            if (!(state instanceof Sign)) {
-                return new String[4];
-            }
-
-            return ((Sign) state).getLines();
-        });
     }
 
     @Override
