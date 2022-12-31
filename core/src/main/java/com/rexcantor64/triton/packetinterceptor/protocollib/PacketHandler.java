@@ -2,7 +2,9 @@ package com.rexcantor64.triton.packetinterceptor.protocollib;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
@@ -37,10 +39,13 @@ public abstract class PacketHandler {
         return getMain().getLanguageParser();
     }
 
+    /**
+     * @deprecated Use {@link MinecraftVersion#atOrAbove()} instead.
+     */
+    @Deprecated
     protected int getMcVersion() {
         return Triton.get().getMcVersion();
     }
-
 
     /**
      * Wrapper for {@link com.comphenix.protocol.ProtocolManager#sendServerPacket(Player, PacketContainer, boolean)}.
