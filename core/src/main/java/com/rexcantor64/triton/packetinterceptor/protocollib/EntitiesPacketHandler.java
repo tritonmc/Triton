@@ -376,6 +376,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * @param packet         ProtocolLib's packet event.
      * @param languagePlayer The language player this packet is being sent to.
      */
+    @SuppressWarnings("deprecation")
     private void handlePlayerInfo(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (isEntityTypeDisabled(EntityType.PLAYER)) {
             return;
@@ -428,7 +429,7 @@ public class EntitiesPacketHandler extends PacketHandler {
                     msg.setJson(ComponentSerializer.toString(result));
                 }
             }
-            dataListNew.add(new PlayerInfoData(newGP, data.getLatency(), data.getGameMode(), msg));
+            dataListNew.add(new PlayerInfoData(data.getProfileId(), data.getLatency(), data.isListed(), data.getGameMode(), newGP, msg, data.getProfileKeyData()));
         }
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
             packet.getPacket().getPlayerInfoDataLists().writeSafely(1, dataListNew);
@@ -682,7 +683,7 @@ public class EntitiesPacketHandler extends PacketHandler {
                             EnumWrappers.NativeGameMode.fromBukkit(humanEntity.getGameMode()),
                             WrappedGameProfile.fromPlayer(humanEntity),
                             WrappedChatComponent.fromText(humanEntity.getPlayerListName()),
-                            null // FIXME this is preventing secure chat from working
+                            null
                     )
             );
 
