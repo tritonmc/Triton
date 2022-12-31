@@ -4,13 +4,13 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import lombok.val;
-import lombok.var;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -49,6 +49,13 @@ public class BukkitListener implements Listener {
             msg = msg.substring(0, index[0] + 1 + i) + ChatColor.RESET + msg.substring(index[0] + 1 + i);
         }
         e.setMessage(msg);
+    }
+
+    @EventHandler
+    public void onChangeWorld(PlayerChangedWorldEvent e) {
+        val lp = (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
+
+        lp.onWorldChange();
     }
 
 }
