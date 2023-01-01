@@ -8,7 +8,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
 
+import static com.rexcantor64.triton.utils.ComponentUtils.SECTION_CHAR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ComponentUtilsTest {
 
@@ -121,6 +124,77 @@ public class ComponentUtilsTest {
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].asComponent().compact(), result.get(i).compact());
         }
+    }
+
+    @Test
+    public void testHasLegacyFormattingWithLegacyText() {
+        String input = SECTION_CHAR + "aHello World!";
+
+        assertTrue(ComponentUtils.hasLegacyFormatting(input));
+    }
+
+    @Test
+    public void testHasLegacyFormattingWithoutLegacyText() {
+        String input = "Hello World!";
+
+        assertFalse(ComponentUtils.hasLegacyFormatting(input));
+    }
+
+    @Test
+    public void testUnflattenLegacyFormattingFromSimpleComponent() {
+        Component component = Component.text("Hello " + SECTION_CHAR + "bWorld!");
+
+        Component result = ComponentUtils.unflattenLegacyFormatting(component);
+
+        Component expected = Component.text("Hello ")
+                .append(
+                        Component.text("World!").color(NamedTextColor.AQUA)
+                );
+
+        assertEquals(result.compact(), expected.compact());
+    }
+
+    @Test
+    public void testUnflattenLegacyFormattingFromNestedComponent() {
+        Component component = Component.keybind()
+                .keybind("test")
+                .append(
+                        Component.text()
+                                .content("Hello " + SECTION_CHAR + "cWorld!")
+                                .color(NamedTextColor.GREEN)
+                                .append(
+                                        Component.text()
+                                                .content(" Lorem " + SECTION_CHAR + "0Ipsum")
+                                                .color(NamedTextColor.BLUE)
+                                )
+                )
+                .asComponent();
+
+        Component result = ComponentUtils.unflattenLegacyFormatting(component);
+
+        Component expected = Component.keybind()
+                .keybind("test")
+                .append(
+                        Component.text()
+                                .content("Hello ")
+                                .color(NamedTextColor.GREEN)
+                                .append(
+                                        Component.text()
+                                                .content("World!")
+                                                .color(NamedTextColor.RED),
+                                        Component.text()
+                                                .content(" Lorem ")
+                                                .color(NamedTextColor.BLUE)
+                                                .append(
+                                                        Component.text()
+                                                                .content("Ipsum")
+                                                                .color(NamedTextColor.BLACK)
+                                                )
+                                )
+                )
+                .asComponent();
+
+        assertEquals(result.compact(), expected.compact());
     }
 
 }

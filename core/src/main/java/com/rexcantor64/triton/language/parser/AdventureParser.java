@@ -4,6 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -94,6 +95,12 @@ public class AdventureParser implements MessageParser {
     @VisibleForTesting
     TranslationResult<Component> translateComponent(Component component, TranslationConfiguration configuration) {
         String plainText = componentToString(component);
+
+        if (ComponentUtils.hasLegacyFormatting(plainText)) {
+            component = ComponentUtils.unflattenLegacyFormatting(component);
+            plainText = componentToString(component);
+        }
+
         val indexes = this.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
 
         if (indexes.size() == 0) {
@@ -334,14 +341,14 @@ public class AdventureParser implements MessageParser {
      * @return The new component without styles
      * @since 4.0.0
      */
+    @VisibleForTesting
     @Contract("_ -> new")
-    private @NotNull Component stripStyleOfFirstCharacter(@NotNull Component component) {
+    @NotNull Component stripStyleOfFirstCharacter(@NotNull Component component) {
         if (component instanceof TextComponent) {
             TextComponent textComponent = (TextComponent) component;
             if (!textComponent.content().isEmpty()) {
                 return component.style(Style.empty());
             }
-            return component;
         }
 
         ArrayList<Component> newChildren = new ArrayList<>(component.children().size());
@@ -350,14 +357,20 @@ public class AdventureParser implements MessageParser {
         while (it.hasNext()) {
             Component next = it.next();
             if (foundFirstCharacter) {
-                newChildren.add(next);
+                newChildren.add(next.applyFallbackStyle(component.style()));
+                continue;
             }
-            Component result = stripStyleOfFirstCharacter(component);
-            newChildren.add(next);
+            Component result = stripStyleOfFirstCharacter(next);
+            newChildren.add(result);
             if (result != next) {
                 foundFirstCharacter = true;
             }
         }
+
+        if (!foundFirstCharacter) {
+            return component;
+        }
+
         newChildren.trimToSize();
 
         return component.style(Style.empty()).children(newChildren);

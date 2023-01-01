@@ -8,15 +8,11 @@ import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
+import com.google.gson.JsonSyntaxException;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -92,19 +88,7 @@ public class ItemStackTranslationUtils {
                     Collection<NbtBase<String>> pagesCollection = pages.asCollection();
                     List<String> newPagesCollection = new ArrayList<>();
                     for (NbtBase<String> page : pagesCollection) {
-                        if (page.getValue().startsWith("\"")) {
-                            val pageString = page.getValue().substring(1, page.getValue().length() - 1);
-                            val pageComponent = LegacyComponentSerializer.legacySection().deserialize(pageString);
-                            main().getMessageParser()
-                                    .translateComponent(
-                                            pageComponent,
-                                            languagePlayer,
-                                            main().getConfig().getItemsSyntax()
-                                    )
-                                    .map(ComponentUtils::serializeToJson)
-                                    .ifChanged(newPagesCollection::add)
-                                    .ifUnchanged(() -> newPagesCollection.add(ComponentUtils.serializeToJson(pageComponent)));
-                        } else {
+                        try {
                             main().getMessageParser()
                                     .translateComponent(
                                             ComponentUtils.deserializeFromJson(page.getValue()),
@@ -114,6 +98,16 @@ public class ItemStackTranslationUtils {
                                     .map(ComponentUtils::serializeToJson)
                                     .ifChanged(newPagesCollection::add)
                                     .ifUnchanged(() -> newPagesCollection.add(page.getValue()));
+                        } catch (JsonSyntaxException e) {
+                            val pageString = page.getValue();
+                            main().getMessageParser()
+                                    .translateString(
+                                            pageString,
+                                            languagePlayer,
+                                            main().getConfig().getItemsSyntax()
+                                    )
+                                    .ifChanged(newPagesCollection::add)
+                                    .ifUnchanged(() -> newPagesCollection.add(pageString));
                         }
                     }
                     compound.put("pages", NbtFactory.ofList("pages", newPagesCollection));
@@ -163,7 +157,7 @@ public class ItemStackTranslationUtils {
         NbtCompound display = compound.getCompoundOrDefault("display");
         if (display.containsKey("Name")) {
             String name = display.getStringOrDefault("Name");
-            if (main().getMcVersion() >= 13) {
+            try {
                 main().getMessageParser()
                         .translateComponent(
                                 ComponentUtils.deserializeFromJson(name),
@@ -174,7 +168,7 @@ public class ItemStackTranslationUtils {
                         .map(ComponentUtils::serializeToJson)
                         .ifChanged(result -> display.put("Name", result))
                         .ifToRemove(() -> display.remove("Name"));
-            } else {
+            } catch (JsonSyntaxException e) {
                 main().getMessageParser()
                         .translateString(
                                 name,
@@ -183,6 +177,7 @@ public class ItemStackTranslationUtils {
                         )
                         .ifChanged(result -> display.put("Name", result))
                         .ifToRemove(() -> display.remove("Name"));
+
             }
         }
 
@@ -191,7 +186,7 @@ public class ItemStackTranslationUtils {
 
             List<String> newLore = new ArrayList<>();
             for (String lore : loreNbt) {
-                if (main().getMcVersion() >= 13) {
+                try {
                     main().getMessageParser()
                             .translateComponent(
                                     ComponentUtils.deserializeFromJson(lore),
@@ -206,7 +201,7 @@ public class ItemStackTranslationUtils {
                                             .collect(Collectors.toList())
                             ))
                             .ifUnchanged(() -> newLore.add(lore));
-                } else {
+                } catch (JsonSyntaxException e) {
                     main().getMessageParser()
                             .translateString(
                                     lore,

@@ -4,12 +4,15 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ComponentUtils {
+
+    public final static char SECTION_CHAR = '§';
 
     /**
      * Deserialize a JSON string representing a {@link Component}.
@@ -98,6 +103,57 @@ public class ComponentUtils {
     private static boolean hasAnyFormatting(Component component) {
         return !component.style().equals(Style.empty()) ||
                 component.children().stream().anyMatch(ComponentUtils::hasAnyFormatting);
+    }
+
+    /**
+     * Check whether the string has legacy styles (i.e. the SECTION_CHAR character).
+     *
+     * @param text The string to test.
+     * @return Whether the text contains legacy styles.
+     * @since 4.0.0
+     */
+    public static boolean hasLegacyFormatting(String text) {
+        return text.indexOf(SECTION_CHAR) != -1;
+    }
+
+    /**
+     * Replace all text components that contain legacy formatted text
+     * (e.g. {"text": "§aHello world!"}) with their JSON counterpart.
+     *
+     * @param component The component to convert legacy formatter text from.
+     * @return The new component, which will be the same as the input
+     * if it did not contain legacy text.
+     * @since 4.0.0
+     */
+    public static Component unflattenLegacyFormatting(final Component component) {
+        boolean hasChanged = false;
+        final List<Component> newChildren = new ArrayList<>(component.children().size());
+
+        for (final Component child : component.children()) {
+            final Component newChild = unflattenLegacyFormatting(child);
+            if (child != newChild) {
+                hasChanged = true;
+            }
+            newChildren.add(newChild);
+        }
+
+        // Only check the component itself last to avoid processing the generated children
+        if (component instanceof TextComponent) {
+            final TextComponent textComponent = (TextComponent) component;
+            if (hasLegacyFormatting(textComponent.content())) {
+                val deserializedComponent = LegacyComponentSerializer.legacySection()
+                        .deserialize(textComponent.content());
+                val children = new ArrayList<>(deserializedComponent.children());
+                children.addAll(newChildren);
+                return deserializedComponent.applyFallbackStyle(textComponent.style())
+                        .children(children);
+            }
+        }
+
+        if (hasChanged) {
+            return component.children(newChildren);
+        }
+        return component;
     }
 
 }
