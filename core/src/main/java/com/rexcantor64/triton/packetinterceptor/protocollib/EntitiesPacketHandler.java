@@ -289,7 +289,6 @@ public class EntitiesPacketHandler extends PacketHandler {
         AtomicBoolean skipHideCustomName = new AtomicBoolean(false);
         for (WrappedDataValue oldObject : dataValues) {
             if (oldObject.getIndex() == 2) {
-                oldObject.getValue();
                 // Index 2 is "Custom Name" of type "OptChat"
                 // https://wiki.vg/Entity_metadata#Entity
                 newWatchableObjects.add(
