@@ -32,6 +32,13 @@ public interface TranslationManager {
      *
      * @since 4.0.0
      */
+    @NotNull Optional<String> getTextString(@NotNull Localized locale, @NotNull String key);
+
+    /**
+     * // TODO javadoc
+     *
+     * @since 4.0.0
+     */
     @NotNull Optional<Component[]> getSignComponents(@NotNull Localized locale, @NotNull SignLocation location);
 
     /**

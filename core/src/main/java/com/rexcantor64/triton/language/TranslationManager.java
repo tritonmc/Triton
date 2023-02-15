@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.language;
 
+import com.google.common.collect.Streams;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.api.language.Localized;
@@ -13,7 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +30,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class TranslationManager implements com.rexcantor64.triton.api.language.TranslationManager {
@@ -52,6 +60,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     private int signTranslationCount = 0;
 
     private Component translationNotFoundComponent = Component.empty();
+
+    private final Map<Language, MiniMessage> miniMessageInstances = new HashMap<>();
 
     public synchronized void setup() {
         this.translationNotFoundComponent = this.triton.getMessagesConfig().getMessageComponent("error.message-not-found");
@@ -129,6 +139,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         this.textTranslationCount = textTranslationCount;
         this.signTranslationCount = signTranslationCount;
 
+        setupMiniMessage();
 
         this.triton.getLogger()
                 .logInfo(
@@ -136,6 +147,76 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
                         textTranslationCount,
                         signTranslationCount
                 );
+    }
+
+    /**
+     * Sets up a {@link MiniMessage} instance for each language,
+     * allowing Triton to define custom tags.
+     *
+     * @since 4.0.0
+     */
+    private synchronized void setupMiniMessage() {
+        this.miniMessageInstances.clear();
+        Streams.concat(this.textItems.keySet().stream(), this.signItems.keySet().stream())
+                .distinct()
+                .forEach(language -> {
+                    val miniMessage = MiniMessage.builder()
+                            .tags(TagResolver.builder()
+                                    .resolvers(TagResolver.standard())
+                                    .tag("triton", this.createTritonMiniMessageTagHandler(language))
+                                    .build())
+                            .build();
+                    this.miniMessageInstances.put(language, miniMessage);
+                });
+    }
+
+    /**
+     * Generates a handler for the <code>&lt;triton:translationKey&gt;</code> MiniMessage tag.
+     * This tag replaces itself with the content of the given translation (without any processing whatsoever) in the current language.
+     * <p>
+     * For example, this can be used for a palette system, where a user might define "translations" that only
+     * contain style tags, and "import" them into other translations.
+     *
+     * @param language The language that this resolver will handle.
+     * @return The resolver function for the `triton` MiniMessage tag.
+     * @since 4.0.0
+     */
+    private @NotNull BiFunction<ArgumentQueue, Context, Tag> createTritonMiniMessageTagHandler(@NotNull final Language language) {
+        return (arguments, context) -> {
+            Tag.Argument key = arguments.popOr("The <triton> tag should have exactly one argument that corresponds to the translation key");
+
+            Optional<String> rawTranslation = getTextString(language, key.value());
+
+            if (!rawTranslation.isPresent()) {
+                throw context.newException("The translation `" + key.value() + "` could not be found for the user's language.");
+            }
+
+            return Tag.preProcessParsed(rawTranslation.get());
+        };
+    }
+
+    /**
+     * Returns the MiniMessage instance to use for a given language.
+     * If that is not found, it tries to return the handlers of the fallback languages
+     * defined for that language, followed by the handler of the default language.
+     *
+     * @param language The language to get the instance for.
+     * @return The instance for the given language.
+     * @since 4.0.0
+     */
+    private @NotNull MiniMessage getMiniMessageInstanceForLanguage(@NotNull Language language) {
+        return Streams.concat(
+                        Stream.of(language),
+                        language.getFallbackLanguages()
+                                .stream()
+                                .map(triton.getLanguageManager()::getLanguageByName)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                )
+                .map(this.miniMessageInstances::get)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseGet(MiniMessage::miniMessage);
     }
 
     @Override
@@ -146,7 +227,12 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
 
     @Override
     public @NotNull Optional<Component> getTextComponent(@NotNull Localized locale, @NotNull String key, Component... arguments) {
-        val text = getTextComponentForLanguage(locale.getLanguage(), key, arguments);
+        return getTextString(locale, key).map(string -> replaceArguments(handleTranslationType(string, locale.getLanguage()), arguments));
+    }
+
+    @Override
+    public @NotNull Optional<String> getTextString(@NotNull Localized locale, @NotNull String key) {
+        val text = getTextStringForLanguage(locale.getLanguage(), key);
         if (text.isPresent()) {
             return text;
         }
@@ -156,16 +242,16 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
             if (!fallbackLanguage.isPresent()) {
                 continue;
             }
-            val textFallback = getTextComponentForLanguage(fallbackLanguage.get(), key, arguments);
+            val textFallback = getTextStringForLanguage(fallbackLanguage.get(), key);
             if (textFallback.isPresent()) {
                 return textFallback;
             }
         }
 
-        return getTextComponentForLanguage(triton.getLanguageManager().getMainLanguage(), key, arguments);
+        return getTextStringForLanguage(triton.getLanguageManager().getMainLanguage(), key);
     }
 
-    private @NotNull Optional<Component> getTextComponentForLanguage(@NotNull Language language, @NotNull String key, @NotNull Component... arguments) {
+    private @NotNull Optional<String> getTextStringForLanguage(@NotNull Language language, @NotNull String key) {
         this.triton.getLogger().logTrace("Trying to get translation with key '%1' in language '%2'", key, language.getLanguageId());
         val langItems = this.textItems.get(language);
         if (langItems == null) {
@@ -178,13 +264,13 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         }
 
         this.triton.getLogger().logTrace("Found translation with key '%1' in language '%2'", key, language.getLanguageId());
-        return Optional.of(replaceArguments(handleTranslationType(msg), arguments));
+        return Optional.of(msg);
     }
 
-    private Component handleTranslationType(String message) {
+    private @NotNull Component handleTranslationType(@NotNull String message, @NotNull Language language) {
         // TODO make minimsg the default (?)
         if (message.startsWith(MINIMESSAGE_TYPE_TAG)) {
-            return MiniMessage.miniMessage().deserialize(message.substring(MINIMESSAGE_TYPE_TAG.length()));
+            return getMiniMessageInstanceForLanguage(language).deserialize(message.substring(MINIMESSAGE_TYPE_TAG.length()));
         } else if (message.startsWith(JSON_TYPE_TAG)) {
             return GsonComponentSerializer.gson().deserialize(message.substring(JSON_TYPE_TAG.length()));
         } else {
@@ -254,7 +340,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
                 continue;
             }
             if (!lines[i].equals("%use_line_default%")) {
-                result[i] = handleTranslationType(lines[i]);
+                result[i] = handleTranslationType(lines[i], language);
                 continue;
             }
 
@@ -280,7 +366,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         return result;
     }
 
-    public String matchPattern(String input, Localized localized) {
+    public String matchPattern(String input, @NotNull Localized localized) {
         return matchPattern(input, localized.getLanguageId());
     }
 
