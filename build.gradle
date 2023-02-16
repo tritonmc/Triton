@@ -36,6 +36,11 @@ allprojects {
             name 'diogotcRepositorySnapshots'
             url 'https://repo.diogotc.com/snapshots/'
         }
+        maven {
+            // Mirror other people's repositories
+            name 'diogotcRepositoryMirror'
+            url 'https://repo.diogotc.com/mirror/'
+        }
     }
 }
 
@@ -66,4 +71,11 @@ shadowJar {
     relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.shaded.minimessage'
     relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
     relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
+
+    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.serializer.gson'
+    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.serializer.legacy'
+    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.serializer.plain'
+    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.serializer.bungeecord'
+
+    relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
 }
