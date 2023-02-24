@@ -563,7 +563,6 @@ public class ProtocolLibListener implements PacketListener {
             bossbar = packet.getPacket().getChatComponents().readSafely(0);
         }
 
-
         languagePlayer.setBossbar(uuid, bossbar.getJson());
 
         final Object finalActionObj = actionObj; // required for lambda
@@ -577,9 +576,9 @@ public class ProtocolLibListener implements PacketListener {
                 .map(WrappedComponentUtils::serialize)
                 .ifPresent(result -> {
                     if (getMCVersion() >= 17) {
-                        ReflectionUtils.setDeclaredField(finalActionObj, "a", bossbar.getHandle());
+                        ReflectionUtils.setDeclaredField(finalActionObj, "a", result.getHandle());
                     } else {
-                        packet.getPacket().getChatComponents().writeSafely(0, bossbar);
+                        packet.getPacket().getChatComponents().writeSafely(0, result);
                     }
                 });
     }
