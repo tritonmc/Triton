@@ -457,7 +457,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        List<UUID> uuids = packet.getPacket().getLists(Converters.passthrough(UUID.class)).readSafely(0);
+        List<UUID> uuids = packet.getPacket().getUUIDLists().readSafely(0);
         for (UUID uuid : uuids) {
             languagePlayer.getShownPlayers().remove(uuid);
         }
