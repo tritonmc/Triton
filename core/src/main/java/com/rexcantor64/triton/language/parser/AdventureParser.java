@@ -79,6 +79,9 @@ public class AdventureParser implements MessageParser {
                 // TODO properly integrate this
                 (key, arguments) -> Triton.get().getTranslationManager().getTextComponentOr404(language, key, arguments)
         );
+
+        Triton.get().getDumpManager().dump(component, language, syntax);
+
         return translateComponent(component, configuration);
     }
 

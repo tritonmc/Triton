@@ -27,6 +27,7 @@ public abstract class CommandHandler {
         commands.put("setlanguage", new SetLanguageCommand());
         commands.put("sign", new SignCommand());
         commands.put("twin", new TwinCommand());
+        commands.put("debug", new DebugCommand());
     }
 
     public void handleCommand(CommandEvent event) {

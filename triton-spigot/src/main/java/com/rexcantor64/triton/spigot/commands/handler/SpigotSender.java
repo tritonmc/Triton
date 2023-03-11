@@ -3,8 +3,11 @@ package com.rexcantor64.triton.spigot.commands.handler;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.Sender;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,6 +21,11 @@ public class SpigotSender implements Sender {
     @Override
     public void sendMessage(String message) {
         handler.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+    }
+
+    @Override
+    public void sendMessage(Component component) {
+        handler.spigot().sendMessage(BaseComponentUtils.serialize(component));
     }
 
     @Override
