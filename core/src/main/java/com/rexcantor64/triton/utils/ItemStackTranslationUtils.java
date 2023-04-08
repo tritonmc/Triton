@@ -8,6 +8,7 @@ import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
+import com.google.gson.JsonSyntaxException;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.config.MainConfig;
@@ -90,7 +91,17 @@ public class ItemStackTranslationUtils {
                     Collection<NbtBase<String>> pagesCollection = pages.asCollection();
                     List<String> newPagesCollection = new ArrayList<>();
                     for (NbtBase<String> page : pagesCollection) {
-                        if (page.getValue().startsWith("\"")) {
+                        try {
+                            BaseComponent[] result = main().getLanguageParser()
+                                    .parseComponent(
+                                            languagePlayer,
+                                            main().getConf().getItemsSyntax(),
+                                            ComponentSerializer.parse(page.getValue())
+                                    );
+                            if (result != null) {
+                                newPagesCollection.add(ComponentSerializer.toString(result));
+                            }
+                        } catch (JsonSyntaxException e) {
                             String result = translate(
                                     page.getValue().substring(1, page.getValue().length() - 1),
                                     languagePlayer,
@@ -100,16 +111,6 @@ public class ItemStackTranslationUtils {
                                 newPagesCollection.add(
                                         ComponentSerializer.toString(
                                                 TextComponent.fromLegacyText(result)));
-                            }
-                        } else {
-                            BaseComponent[] result = main().getLanguageParser()
-                                    .parseComponent(
-                                            languagePlayer,
-                                            main().getConf().getItemsSyntax(),
-                                            ComponentSerializer.parse(page.getValue())
-                                    );
-                            if (result != null) {
-                                newPagesCollection.add(ComponentSerializer.toString(result));
                             }
                         }
                     }
@@ -154,7 +155,7 @@ public class ItemStackTranslationUtils {
         NbtCompound display = compound.getCompoundOrDefault("display");
         if (display.containsKey("Name")) {
             String name = display.getStringOrDefault("Name");
-            if (main().getMcVersion() >= 13) {
+            try {
                 BaseComponent[] result = main().getLanguageParser()
                         .parseComponent(
                                 languagePlayer,
@@ -166,7 +167,7 @@ public class ItemStackTranslationUtils {
                 } else {
                     display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
                 }
-            } else {
+            } catch (JsonSyntaxException e) {
                 String result = translate(name, languagePlayer, main().getConf().getItemsSyntax());
                 if (result == null) {
                     display.remove("Name");
@@ -181,7 +182,7 @@ public class ItemStackTranslationUtils {
 
             List<String> newLore = new ArrayList<>();
             for (String lore : loreNbt) {
-                if (main().getMcVersion() >= 13) {
+                try {
                     BaseComponent[] result = main().getLanguageParser()
                             .parseComponent(
                                     languagePlayer,
@@ -195,7 +196,7 @@ public class ItemStackTranslationUtils {
                                 .map(ComponentSerializer::toString)
                                 .collect(Collectors.toList()));
                     }
-                } else {
+                } catch (JsonSyntaxException e) {
                     String result = translate(
                             lore,
                             languagePlayer,
