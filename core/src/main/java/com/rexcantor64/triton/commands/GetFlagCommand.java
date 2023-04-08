@@ -5,9 +5,9 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.commands.handler.Command;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.exceptions.PlayerOnlyCommandException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import com.rexcantor64.triton.plugin.Platform;
-import lombok.val;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,14 +16,8 @@ import java.util.stream.Collectors;
 public class GetFlagCommand implements Command {
 
     @Override
-    public void handleCommand(CommandEvent event) throws NoPermissionException, UnsupportedPlatformException {
-        val sender = event.getSender();
-        val uuid = sender.getUUID();
-
-        if (uuid == null) {
-            sender.sendMessage("Only players");
-            return;
-        }
+    public void handleCommand(CommandEvent event) throws NoPermissionException, PlayerOnlyCommandException, UnsupportedPlatformException {
+        assertPlayersOnly(event);
 
         if (event.getPlatform() != Platform.SPIGOT) {
             throw new UnsupportedPlatformException();
