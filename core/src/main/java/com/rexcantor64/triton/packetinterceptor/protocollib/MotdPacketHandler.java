@@ -5,6 +5,7 @@ import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
@@ -74,6 +75,12 @@ public class MotdPacketHandler extends PacketAdapter {
         if (result != null)
             motd.setJson(ComponentSerializer.toString(result));
         serverPing.setMotD(motd);
+
+        if (MinecraftVersion.FEATURE_PREVIEW_2.atOrAbove()) {
+            // Starting in 1.19.4, the ServerPing object is immutable and therefore needs to be
+            // updated manually.
+            event.getPacket().getServerPings().writeSafely(0, serverPing);
+        }
     }
 
     @Override
