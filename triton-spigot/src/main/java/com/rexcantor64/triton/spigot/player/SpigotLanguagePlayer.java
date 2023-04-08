@@ -124,7 +124,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         refreshAll();
         if (SpigotTriton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
             save();
-        if (sendToBungee && SpigotTriton.asSpigot().getBridgeManager() != null)
+        if (sendToBungee && SpigotTriton.asSpigot().getBridgeManager() != null && Triton.get().getConfig().isBungeecord())
             SpigotTriton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
         executeCommands();
     }
