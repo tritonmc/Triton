@@ -3,6 +3,7 @@ package com.rexcantor64.triton.spigot.commands;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
+import com.rexcantor64.triton.commands.handler.exceptions.PlayerOnlyCommandException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 public class SignCommand extends com.rexcantor64.triton.commands.SignCommand {
 
     @Override
-    public void handleCommand(CommandEvent event) throws NoPermissionException, UnsupportedPlatformException {
+    public void handleCommand(CommandEvent event) throws NoPermissionException, PlayerOnlyCommandException, UnsupportedPlatformException {
         super.handleCommand(event);
 
         val sender = event.getSender();

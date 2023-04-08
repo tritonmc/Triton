@@ -2,6 +2,7 @@ package com.rexcantor64.triton.commands.handler;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.*;
+import com.rexcantor64.triton.commands.handler.exceptions.PlayerOnlyCommandException;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import lombok.val;
@@ -49,6 +50,8 @@ public abstract class CommandHandler {
             }
 
             command.handleCommand(event);
+        } catch (PlayerOnlyCommandException e) {
+            event.getSender().sendMessage("Only players");
         } catch (NoPermissionException e) {
             event.getSender().sendMessageFormatted("error.no-permission", e.getPermission());
         } catch (UnsupportedPlatformException e) {
