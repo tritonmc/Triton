@@ -21,7 +21,8 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getTag().equals("triton:main") || e.isCancelled()) return;
+        if (!e.getTag().equals("triton:main") || e.isCancelled() || !(e.getSender() instanceof Server)) return;
+
         val in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
         try {

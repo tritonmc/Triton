@@ -37,7 +37,11 @@ public class SpigotBridgeManager implements PluginMessageListener {
 
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] bytes) {
-        if (!channel.equals("triton:main")) return;
+        if (!channel.equals("triton:main")) 
+            return;
+
+        if(Bukkit.getServer().getPlayer(player.getName()) != null)
+            return;
 
         val start = System.currentTimeMillis();
 
