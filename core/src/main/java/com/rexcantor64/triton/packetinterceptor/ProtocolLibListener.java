@@ -154,8 +154,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (main.getMcVersion() >= 13) {
             // Scoreboard rewrite on 1.13
             // It allows unlimited length team prefixes and suffixes
-            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, asAsync(this::handleScoreboardTeam));
-            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, asAsync(this::handleScoreboardObjective));
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, asSync(this::handleScoreboardTeam));
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, asSync(this::handleScoreboardObjective));
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
