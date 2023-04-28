@@ -19,8 +19,17 @@ public class VelocityBridgeManager {
 
     @Subscribe
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getIdentifier().equals(Triton.asVelocity().getBridgeChannelIdentifier()) ||
-                !(e.getSource() instanceof ServerConnection)) return;
+        if (!e.getIdentifier().equals(Triton.asVelocity().getBridgeChannelIdentifier())) {
+            return;
+        }
+
+        // Avoid propagating messages from player to server
+        // and ignore message if it doesn't come from a server.
+        // Fixes security advisory GHSA-8vj5-jccf-q25r (CVE-2023-30859).
+        e.setResult(PluginMessageEvent.ForwardResult.handled());
+        if (!(e.getSource() instanceof ServerConnection)) {
+            return;
+        }
 
         val in = e.dataAsDataStream();
 

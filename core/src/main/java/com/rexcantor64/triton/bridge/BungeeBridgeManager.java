@@ -21,7 +21,18 @@ public class BungeeBridgeManager implements Listener {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getTag().equals("triton:main") || e.isCancelled()) return;
+        if (!e.getTag().equals("triton:main") || e.isCancelled()) {
+            return;
+        }
+
+        // Avoid propagating messages from player to server
+        // and ignore message if it doesn't come from a server.
+        // Fixes security advisory GHSA-8vj5-jccf-q25r (CVE-2023-30859).
+        e.setCancelled(true);
+        if (!(e.getSender() instanceof Server)) {
+            return;
+        }
+
         val in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
         try {

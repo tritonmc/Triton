@@ -103,6 +103,13 @@ public class SpigotMLP extends Triton {
         }
 
         if (getConf().isBungeecord()) {
+            if (!isSpigotProxyMode()) {
+                getLogger().logError("DANGER! DANGER! DANGER!");
+                getLogger().logError("Proxy mode is enabled on Triton but disabled on Spigot!");
+                getLogger().logError("A malicious player can run ANY command as the server.");
+                getLogger().logError("DANGER! DANGER! DANGER!");
+            }
+
             getLoader().getServer().getMessenger().registerOutgoingPluginChannel(getLoader(), "triton" +
                     ":main");
             getLoader().getServer().getMessenger().registerIncomingPluginChannel(getLoader(), "triton" +
@@ -244,6 +251,29 @@ public class SpigotMLP extends Triton {
             return UUID.fromString(input);
         } catch (IllegalArgumentException e) {
             return null;
+        }
+    }
+
+    /**
+     * Use reflection to check if this Spigot server has "bungeecord" mode enabled on spigot.yml.
+     * This is used to show a warning if Spigot is in proxy mode, but the server is not.
+     *
+     * @return Whether this Spigot server has bungeecord enabled on spigot.yml.
+     */
+    public boolean isSpigotProxyMode() {
+        try {
+            Class<?> spigotConfigClass = NMSUtils.getClass("org.spigotmc.SpigotConfig");
+            if (spigotConfigClass == null) {
+                return false;
+            }
+
+            Object bungeeEnabled = NMSUtils.getStaticField(spigotConfigClass, "bungee");
+            if (bungeeEnabled == null) {
+                return false;
+            }
+            return (boolean) bungeeEnabled;
+        } catch (Exception e) {
+            return false;
         }
     }
 }
