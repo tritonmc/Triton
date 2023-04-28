@@ -38,8 +38,10 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
     private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
-    public void onPluginMessageReceived(String channel, @NotNull Player player, byte[] bytes) {
-        if (!channel.equals("triton:main")) return;
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] bytes) {
+        if (!channel.equals("triton:main")) {
+            return;
+        }
 
         val start = System.currentTimeMillis();
 
