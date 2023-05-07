@@ -4,10 +4,12 @@ import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.comphenix.protocol.wrappers.nbt.NbtList;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
@@ -101,7 +103,7 @@ public class ItemStackTranslationUtils {
                             if (result != null) {
                                 newPagesCollection.add(ComponentSerializer.toString(result));
                             }
-                        } catch (JsonSyntaxException e) {
+                        } catch (JsonParseException e) {
                             String result = translate(
                                     page.getValue().substring(1, page.getValue().length() - 1),
                                     languagePlayer,
@@ -160,14 +162,14 @@ public class ItemStackTranslationUtils {
                         .parseComponent(
                                 languagePlayer,
                                 main().getConf().getItemsSyntax(),
-                                ComponentSerializer.parse(name)
+                                parseJsonComponent(name)
                         );
                 if (result == null) {
                     display.remove("Name");
                 } else {
                     display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
                 }
-            } catch (JsonSyntaxException e) {
+            } catch (JsonParseException e) {
                 String result = translate(name, languagePlayer, main().getConf().getItemsSyntax());
                 if (result == null) {
                     display.remove("Name");
@@ -187,7 +189,7 @@ public class ItemStackTranslationUtils {
                             .parseComponent(
                                     languagePlayer,
                                     main().getConf().getItemsSyntax(),
-                                    ComponentSerializer.parse(lore)
+                                    parseJsonComponent(lore)
                             );
                     if (result != null) {
                         List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
@@ -196,7 +198,7 @@ public class ItemStackTranslationUtils {
                                 .map(ComponentSerializer::toString)
                                 .collect(Collectors.toList()));
                     }
-                } catch (JsonSyntaxException e) {
+                } catch (JsonParseException e) {
                     String result = translate(
                             lore,
                             languagePlayer,
@@ -235,6 +237,23 @@ public class ItemStackTranslationUtils {
                 localized,
                 featureSyntax
         );
+    }
+
+    /**
+     * Wrap {@link ComponentSerializer#parse(String)} since the underlying
+     * Gson library does not throw on strings without JSON syntax.
+     * Also prevent older versions of Minecraft from deserializing JSON.
+     *
+     * @see ComponentSerializer#parse(String)
+     */
+    private static BaseComponent[] parseJsonComponent(String json) {
+        if (json.trim().isEmpty()) {
+            throw new JsonParseException("Empty string");
+        }
+        if (!MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // MC 1.13
+            throw new JsonParseException("This Minecraft version does not support JSON text on items");
+        }
+        return ComponentSerializer.parse(json);
     }
 
     private static Triton main() {
