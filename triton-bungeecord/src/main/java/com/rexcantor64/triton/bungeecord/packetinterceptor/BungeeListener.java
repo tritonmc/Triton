@@ -3,6 +3,7 @@ package com.rexcantor64.triton.bungeecord.packetinterceptor;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
@@ -138,7 +139,18 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                         owner,
                         type != 2 ? config().getChatSyntax() : config().getActionbarSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(result -> {
+                    if (type == 2 && protocolVersion <= ProtocolConstants.MINECRAFT_1_10) {
+                        // The Notchian client does not support true JSON messages on actionbars
+                        // on 1.10 and below. Therefore, we must convert to a legacy string inside
+                        // a TextComponent.
+                        return ComponentSerializer.toString(new TextComponent(
+                                ComponentSerializer.toString(BaseComponentUtils.serialize(result))
+                        ));
+                    } else {
+                        return ComponentUtils.serializeToJson(result);
+                    }
+                })
                 .ifChanged(chatPacket::setMessage)
                 .isToRemove();
     }
