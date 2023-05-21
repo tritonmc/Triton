@@ -108,7 +108,15 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 Triton.get().getConf().getChatSyntax() : Triton.get().getConf().getActionbarSyntax(), text);
         if (text == null)
             return false;
-        p.setMessage(ComponentSerializer.toString(text));
+
+        if (type == 2 && protocolVersion <= ProtocolConstants.MINECRAFT_1_10) {
+            // The Notchian client does not support true JSON messages on actionbars
+            // on 1.10 and below. Therefore, we must convert to a legacy string inside
+            // a TextComponent.
+            p.setMessage(ComponentSerializer.toString(new TextComponent(TextComponent.toLegacyText(text))));
+        } else {
+            p.setMessage(ComponentSerializer.toString(text));
+        }
         return true;
     }
 
