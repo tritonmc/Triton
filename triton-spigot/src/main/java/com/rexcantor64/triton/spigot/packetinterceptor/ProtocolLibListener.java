@@ -12,6 +12,7 @@ import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.BukkitConverters;
 import com.comphenix.protocol.wrappers.EnumWrappers;
@@ -221,8 +222,10 @@ public class ProtocolLibListener implements PacketListener {
                         adventureModifier.writeSafely(0, result);
                     } else {
                         BaseComponent[] resultComponent;
-                        if (ab && getMCVersion() < 16) {
-                            // Flatten action bar's json on 1.15 and below
+                        if (ab && !MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) {
+                            // The Notchian client does not support true JSON messages on actionbars
+                            // on 1.10 and below. Therefore, we must convert to a legacy string inside
+                            // a TextComponent.
                             resultComponent = new BaseComponent[]{new TextComponent(LegacyComponentSerializer.legacySection().serialize(result))};
                         } else {
                             resultComponent = BaseComponentUtils.serialize(result);

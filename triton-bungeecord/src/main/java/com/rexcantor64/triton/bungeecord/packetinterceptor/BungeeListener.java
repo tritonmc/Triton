@@ -3,6 +3,7 @@ package com.rexcantor64.triton.bungeecord.packetinterceptor;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
@@ -109,7 +110,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     private void handlePlayerListItemUpdate(DefinedPacket packet) {
         PlayerListItemUpdate playerListItemUpdatePacket = (PlayerListItemUpdate) packet;
-        if (playerListItemUpdatePacket.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
+        if (!playerListItemUpdatePacket.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
             return;
         }
         val items = Arrays.stream(playerListItemUpdatePacket.getItems())
@@ -138,7 +139,18 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                         owner,
                         type != 2 ? config().getChatSyntax() : config().getActionbarSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(result -> {
+                    if (type == 2 && protocolVersion <= ProtocolConstants.MINECRAFT_1_10) {
+                        // The Notchian client does not support true JSON messages on actionbars
+                        // on 1.10 and below. Therefore, we must convert to a legacy string inside
+                        // a TextComponent.
+                        return ComponentSerializer.toString(new TextComponent(
+                                ComponentSerializer.toString(BaseComponentUtils.serialize(result))
+                        ));
+                    } else {
+                        return ComponentUtils.serializeToJson(result);
+                    }
+                })
                 .ifChanged(chatPacket::setMessage)
                 .isToRemove();
     }
@@ -349,11 +361,20 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     private PlayerListItem.Item clonePlayerListItem(PlayerListItem.Item item) {
         PlayerListItem.Item item1 = new PlayerListItem.Item();
         item1.setUuid(item.getUuid());
-        item1.setDisplayName(item.getDisplayName());
-        item1.setGamemode(item.getGamemode());
-        item1.setProperties(item.getProperties());
-        item1.setPing(item.getPing());
+
         item1.setUsername(item.getUsername());
+        item1.setProperties(item.getProperties());
+
+        item1.setChatSessionId(item.getChatSessionId());
+        item1.setPublicKey(item.getPublicKey());
+
+        item1.setListed(item.getListed());
+
+        item1.setGamemode(item.getGamemode());
+
+        item1.setPing(item.getPing());
+
+        item1.setDisplayName(item.getDisplayName());
         return item1;
     }
 

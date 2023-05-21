@@ -71,7 +71,7 @@ public class ChatHandler {
                                 player,
                                 actionBar ? getActionBarSyntax() : getChatSyntax()
                         )
-                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
+                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion(), actionBar))
                         .mapToObj(
                                 result -> Optional.of(cloneLegacyChatWithComponent(legacyChatPacket, result)),
                                 () -> Optional.of(legacyChatPacket),
