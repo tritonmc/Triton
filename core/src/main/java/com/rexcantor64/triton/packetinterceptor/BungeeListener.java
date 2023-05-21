@@ -273,11 +273,20 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     private PlayerListItem.Item clonePlayerListItem(PlayerListItem.Item item) {
         PlayerListItem.Item item1 = new PlayerListItem.Item();
         item1.setUuid(item.getUuid());
-        item1.setDisplayName(item.getDisplayName());
-        item1.setGamemode(item.getGamemode());
-        item1.setProperties(item.getProperties());
-        item1.setPing(item.getPing());
+
         item1.setUsername(item.getUsername());
+        item1.setProperties(item.getProperties());
+
+        item1.setChatSessionId(item.getChatSessionId());
+        item1.setPublicKey(item.getPublicKey());
+
+        item1.setListed(item.getListed());
+
+        item1.setGamemode(item.getGamemode());
+
+        item1.setPing(item.getPing());
+
+        item1.setDisplayName(item.getDisplayName());
         return item1;
     }
 
