@@ -109,7 +109,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     private void handlePlayerListItemUpdate(DefinedPacket packet) {
         PlayerListItemUpdate playerListItemUpdatePacket = (PlayerListItemUpdate) packet;
-        if (playerListItemUpdatePacket.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
+        if (!playerListItemUpdatePacket.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
             return;
         }
         val items = Arrays.stream(playerListItemUpdatePacket.getItems())
