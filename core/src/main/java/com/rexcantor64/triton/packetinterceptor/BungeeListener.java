@@ -63,7 +63,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     private void handlePlayerListItemUpdate(DefinedPacket packet) {
         PlayerListItemUpdate p = (PlayerListItemUpdate) packet;
-        if (p.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
+        if (!p.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
             return;
         }
         List<PlayerListItem.Item> items = new ArrayList<>();
