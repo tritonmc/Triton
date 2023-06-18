@@ -1,27 +1,53 @@
 package com.rexcantor64.triton.config.interfaces;
 
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.BaseRepresenter;
+import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class YamlConfiguration extends ConfigurationProvider {
 
     private final ThreadLocal<Yaml> yaml = ThreadLocal.withInitial(() -> {
-        Representer representer = new Representer() {
-            {
-                representers.put(Configuration.class, data -> represent(((Configuration) data).self));
-            }
-        };
-
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
-        return new Yaml(new Constructor(), representer, options);
+        try {
+            Representer representer = new Representer(options) {
+                {
+                    representers.put(Configuration.class, data -> represent(((Configuration) data).self));
+                }
+            };
+
+            return new Yaml(new Constructor(new LoaderOptions()), representer, options);
+        } catch (NoSuchMethodError e) {
+            // Compatibility with SnakeYAML v1 (for old Spigot versions)
+
+            try {
+                // noinspection JavaReflectionMemberAccess
+                Representer representer = Representer.class.getConstructor().newInstance();
+                Field representersField = BaseRepresenter.class.getDeclaredField("representers");
+                representersField.setAccessible(true);
+                @SuppressWarnings("unchecked") Map<Class<?>, Represent> representers =
+                        (Map<Class<?>, Represent>) representersField.get(representer);
+                representers.put(Configuration.class, data -> representer.represent(((Configuration) data).self));
+
+                // noinspection JavaReflectionMemberAccess
+                Constructor constructor = Constructor.class.getConstructor().newInstance();
+                return new Yaml(constructor, representer, options);
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException | NoSuchFieldException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     });
 
     @Override
