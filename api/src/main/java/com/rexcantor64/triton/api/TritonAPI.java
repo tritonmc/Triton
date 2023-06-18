@@ -16,8 +16,8 @@ public class TritonAPI {
      * @since 1.0.0
      */
     public static @NotNull Triton getInstance() {
-        //noinspection ConstantConditions
-        return null;
+        // This class gets replaced with a proper implementation in Triton's build.
+        throw new UnsupportedOperationException("Triton is not running! If you're seeing this, it is because some plugin shadowed the TritonAPI (when it should not have!).");
     }
 
 }
