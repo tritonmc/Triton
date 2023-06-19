@@ -5,33 +5,26 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.BlockPosition;
-import com.comphenix.protocol.wrappers.MinecraftKey;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.LanguagePlayer;
-import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
-import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
-import com.rexcantor64.triton.storage.LocalStorage;
-import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.RegistryUtils;
+import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.val;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.asAsync;
 
@@ -41,6 +34,7 @@ public class SignPacketHandler extends PacketHandler {
     private final Class<?> LEVEL_CHUNK_PACKET_DATA_CLASS;
     private final Class<?> TILE_ENTITY_TYPES_CLASS;
     private final String SIGN_TYPE_ID;
+    private final String HANGING_SIGN_TYPE_ID;
 
     public SignPacketHandler() {
         LEVEL_CHUNK_PACKET_DATA_CLASS = getMcVersion() >= 18 ?
@@ -48,6 +42,7 @@ public class SignPacketHandler extends PacketHandler {
         TILE_ENTITY_TYPES_CLASS = getMcVersion() >= 18 ?
                 ReflectionUtils.getClass("net.minecraft.world.level.block.entity.TileEntityTypes") : null;
         SIGN_TYPE_ID = getMcVersion() >= 11 ? "minecraft:sign" : "Sign";
+        HANGING_SIGN_TYPE_ID = "minecraft:hanging_sign";
     }
 
     /**
@@ -82,7 +77,8 @@ public class SignPacketHandler extends PacketHandler {
 
             // Try to determine type
             val tileEntityType = ReflectionUtils.getDeclaredField(blockEntity, "c");
-            if (!SIGN_TYPE_ID.equals(RegistryUtils.getTileEntityTypeKey(tileEntityType))) continue;
+            val tileEntityTypeKey = RegistryUtils.getTileEntityTypeKey(tileEntityType);
+            if (!SIGN_TYPE_ID.equals(tileEntityTypeKey) && !HANGING_SIGN_TYPE_ID.equals(tileEntityTypeKey)) continue;
 
             // The NBT compound below does not include the position, so we have to calculate it
             // from the chunk position and block section position
@@ -95,7 +91,7 @@ public class SignPacketHandler extends PacketHandler {
 
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     chunkX * 16 + sectionX, y, chunkZ * 16 + sectionZ);
-            translateSignNbtCompound(nbt, location, languagePlayer, true);
+            translateSignNbtCompound(nbt, location, languagePlayer, true, tileEntityType);
         }
     }
 
@@ -110,13 +106,14 @@ public class SignPacketHandler extends PacketHandler {
         if (areSignsDisabled()) return;
 
         val tileEntityType = packet.getPacket().getSpecificModifier(TILE_ENTITY_TYPES_CLASS).readSafely(0);
-        if (SIGN_TYPE_ID.equals(RegistryUtils.getTileEntityTypeKey(tileEntityType))) {
+        val tileEntityTypeKey = RegistryUtils.getTileEntityTypeKey(tileEntityType);
+        if (SIGN_TYPE_ID.equals(tileEntityTypeKey) || HANGING_SIGN_TYPE_ID.equals(tileEntityTypeKey)) {
             val position = packet.getPacket().getBlockPositionModifier().readSafely(0);
             val nbt = NbtFactory.asCompound(packet.getPacket().getNbtModifier().readSafely(0));
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     position.getX(), position.getY(), position.getZ());
 
-            translateSignNbtCompound(nbt, location, languagePlayer, true);
+            translateSignNbtCompound(nbt, location, languagePlayer, true, tileEntityType);
         }
     }
 
@@ -138,7 +135,7 @@ public class SignPacketHandler extends PacketHandler {
             if (nbt.getString("id").equals(SIGN_TYPE_ID)) {
                 val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                         nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-                translateSignNbtCompound(nbt, location, languagePlayer, true);
+                translateSignNbtCompound(nbt, location, languagePlayer, true, null);
             }
         }
     }
@@ -161,7 +158,7 @@ public class SignPacketHandler extends PacketHandler {
             val nbt = NbtFactory.asCompound(newPacket.getNbtModifier().readSafely(0));
             val location = new SignLocation(packet.getPlayer().getWorld().getName(),
                     nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
-            if (translateSignNbtCompound(nbt, location, languagePlayer, true)) {
+            if (translateSignNbtCompound(nbt, location, languagePlayer, true, null)) {
                 packet.setPacket(newPacket);
             }
         }
@@ -224,13 +221,13 @@ public class SignPacketHandler extends PacketHandler {
         if (!bukkitPlayerOpt.isPresent()) return;
         val bukkitPlayer = bukkitPlayerOpt.get();
 
-        player.getSigns().forEach(((signLocation, compound) -> {
-            val compoundClone = NbtFactory.asCompound(compound.deepClone());
+        player.getSigns().forEach(((signLocation, sign) -> {
+            val compoundClone = NbtFactory.asCompound(sign.getCompound().deepClone());
 
-            if (translateSignNbtCompound(compoundClone, signLocation, player, false)) {
+            if (translateSignNbtCompound(compoundClone, signLocation, player, false, null)) {
                 PacketContainer packet;
                 if (getMcVersion() >= 18) {
-                    packet = buildTileEntityDataPacketPost1_18(signLocation, compoundClone);
+                    packet = buildTileEntityDataPacketPost1_18(signLocation, compoundClone, sign.getTileEntityType());
                 } else {
                     packet = buildTileEntityDataPacketPre1_18(signLocation, compoundClone);
                 }
@@ -250,21 +247,20 @@ public class SignPacketHandler extends PacketHandler {
     /**
      * Builds a Tile Entity Data packet for Minecraft 1.18 and above, used to refresh the content of a sign.
      *
-     * @param location The location of the sign
-     * @param compound The NBT Compound of the sign
+     * @param location       The location of the sign
+     * @param compound       The NBT Compound of the sign
+     * @param tileEntityType The tile entity type of the sign (NMS Object)
      * @return The packet that was built
      */
     @SuppressWarnings({"unchecked"})
-    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, NbtCompound compound) {
+    private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, NbtCompound compound, Object tileEntityType) {
         val packet = ProtocolLibrary.getProtocolManager()
                 .createPacket(PacketType.Play.Server.TILE_ENTITY_DATA);
 
         packet.getBlockPositionModifier().writeSafely(0,
                 new BlockPosition(location.getX(), location.getY(), location.getZ()));
 
-        // We need to pass the instance of a Sign Tile Entity, which is available in the IRegistry
-        val type = RegistryUtils.getTileEntityTypeFromKey(new MinecraftKey("sign"));
-        packet.getSpecificModifier((Class<Object>) TILE_ENTITY_TYPES_CLASS).writeSafely(0, type);
+        packet.getSpecificModifier((Class<Object>) TILE_ENTITY_TYPES_CLASS).writeSafely(0, tileEntityType);
 
         packet.getNbtModifier().writeSafely(0, compound);
 
@@ -323,13 +319,28 @@ public class SignPacketHandler extends PacketHandler {
     /**
      * Translates the sign text using by mutating its NBT Tag Compound.
      *
-     * @param compound    Sign's NBT data
-     * @param location    The location of the sign
-     * @param player      The language player to translate for
-     * @param saveToCache Whether to save the location and original compound to the player's cache
+     * @param compound       Sign's NBT data
+     * @param location       The location of the sign
+     * @param player         The language player to translate for
+     * @param saveToCache    Whether to save the location and original compound to the player's cache
+     * @param tileEntityType The tile entity type of the sign (NMS Object)
      * @return True if the sign was translated or false if left untouched
      */
-    private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player, boolean saveToCache) {
+    private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player,
+                                             boolean saveToCache, @Nullable Object tileEntityType) {
+        if (MinecraftVersion.TRAILS_AND_TAILS.atOrAbove()) {
+            return translateSignNbtCompoundPost1_20(compound, location, player, saveToCache, tileEntityType);
+        }
+        return translateSignNbtCompoundPre1_20(compound, location, player, saveToCache, tileEntityType);
+    }
+
+    /**
+     * @see this#translateSignNbtCompound(NbtCompound, SignLocation, SpigotLanguagePlayer, boolean, Object)
+     * @deprecated Since 3.9.0.
+     */
+    @Deprecated
+    private boolean translateSignNbtCompoundPre1_20(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player,
+                                                    boolean saveToCache, @Nullable Object tileEntityType) {
         val sign = getTranslationManager().getSignComponents(player, location, () -> {
             val defaultLines = new Component[4];
             for (int i = 0; i < 4; i++) {
@@ -352,7 +363,64 @@ public class SignPacketHandler extends PacketHandler {
                 compound.put("Text" + (i + 1), ComponentUtils.serializeToJson(lines[i]));
             }
             if (compoundClone != null) {
-                player.getSigns().put(location, compoundClone);
+                player.saveSign(location, tileEntityType, compoundClone);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @see this#translateSignNbtCompound(NbtCompound, SignLocation, SpigotLanguagePlayer, boolean, Object)
+     * @since 3.9.0
+     */
+    private boolean translateSignNbtCompoundPost1_20(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player,
+                                                     boolean saveToCache, @Nullable Object tileEntityType) {
+        val sign = getTranslationManager().getSignComponents(player, location, () -> {
+            val defaultLines = new Component[8];
+            val frontText = compound.getCompound("front_text");
+            val frontTextMessages = frontText.<String>getList("messages");
+            for (int i = 0; i < 4; i++) {
+                try {
+                    val nbtLine = frontTextMessages.getValue(i);
+                    if (nbtLine != null)
+                        defaultLines[i] = ComponentUtils.deserializeFromJson(nbtLine);
+                } catch (Exception e) {
+                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
+                }
+            }
+            val backText = compound.getCompound("back_text");
+            val backTextMessages = backText.<String>getList("messages");
+            for (int i = 0; i < 4; i++) {
+                try {
+                    val nbtLine = backTextMessages.getValue(i);
+                    if (nbtLine != null)
+                        defaultLines[i + 4] = ComponentUtils.deserializeFromJson(nbtLine);
+                } catch (Exception e) {
+                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
+                }
+            }
+            return defaultLines;
+        });
+
+        if (sign.isPresent()) {
+            val lines = sign.get();
+            val compoundClone = saveToCache ? NbtFactory.asCompound(compound.deepClone()) : null;
+
+            val frontText = compound.getCompound("front_text");
+            val frontTextMessages = Arrays.stream(lines, 0, 4)
+                    .map(ComponentUtils::serializeToJson)
+                    .collect(Collectors.toList());
+            frontText.put("messages", NbtFactory.ofList("messages", frontTextMessages));
+
+            val backText = compound.getCompound("back_text");
+            val backTextMessages = Arrays.stream(lines, 4, 8)
+                    .map(ComponentUtils::serializeToJson)
+                    .collect(Collectors.toList());
+            backText.put("messages", NbtFactory.ofList("messages", backTextMessages));
+
+            if (compoundClone != null) {
+                player.saveSign(location, tileEntityType, compoundClone);
             }
             return true;
         }

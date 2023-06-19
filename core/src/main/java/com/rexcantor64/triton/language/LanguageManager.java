@@ -60,7 +60,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
     @Deprecated
     public String[] getSign(LanguagePlayer player, SignLocation location) {
-        return getSign(player, location, () -> new String[4]);
+        return getSign(player, location, () -> new String[8]);
     }
 
     @Deprecated
