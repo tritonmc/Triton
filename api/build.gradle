@@ -7,12 +7,6 @@ group 'com.rexcantor64.triton'
 
 apply from: '../gradle/publish.gradle'
 
-sourceSets {
-    ap {
-        compileClasspath += main.compileClasspath + main.output
-    }
-}
-
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
     compileOnly 'net.md-5:bungeecord-api:1.19-R0.1-SNAPSHOT'
@@ -29,11 +23,10 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier 'sources'
     from sourceSets.main.allSource
-    from sourceSets.ap.output
 }
 
 jar {
-    from sourceSets.ap.output
+    from sourceSets.main.output
     manifest {
         attributes 'Automatic-Module-Name': 'com.rexcantor64.triton.api'
     }
