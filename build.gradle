@@ -42,6 +42,10 @@ allprojects {
             name 'velocity'
             url 'https://nexus.velocitypowered.com/repository/maven-public/'
         }
+        maven {
+            name 'diogotcRepositorySnapshots'
+            url 'https://repo.diogotc.com/snapshots/'
+        }
     }
 }
 
