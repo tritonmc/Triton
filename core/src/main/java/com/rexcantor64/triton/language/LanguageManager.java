@@ -106,7 +106,7 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
     }
 
     public String[] getSign(LanguagePlayer player, SignLocation location) {
-        return getSign(player, location, () -> new String[4]);
+        return getSign(player, location, () -> new String[8]);
     }
 
     public String[] getSign(@NonNull LanguagePlayer player, SignLocation location, String[] defaultLines) {
@@ -140,10 +140,10 @@ public class LanguageManager implements com.rexcantor64.triton.api.language.Lang
 
     public String[] formatLines(@NonNull String language, @NonNull String[] lines,
                                 @NonNull Supplier<String[]> defaultLinesSupplier) {
-        val result = new String[4];
+        val result = new String[8];
         String[] defaultLines = null;
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 8; ++i) {
             if (lines.length - 1 < i) {
                 result[i] = "";
                 continue;

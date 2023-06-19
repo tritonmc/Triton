@@ -60,7 +60,7 @@ public interface LanguageManager {
     String getTextFromMain(String code, Object... args);
 
     /**
-     * Get the 4 sign lines for a sign in a player's language.
+     * Get the 8 sign lines (4 for the front, 4 for the back) for a sign in a player's language.
      *
      * @param player   The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
      *                 {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
@@ -72,7 +72,7 @@ public interface LanguageManager {
     String[] getSign(LanguagePlayer player, SignLocation location);
 
     /**
-     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     * Get the 8 sign lines (4 for the front, 4 for the back) for a sign in a player's language, but allows for dynamic signs.
      *
      * @param player       The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
      *                     {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
@@ -85,7 +85,7 @@ public interface LanguageManager {
     String[] getSign(LanguagePlayer player, SignLocation location, String[] defaultLines);
 
     /**
-     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     * Get the 8 sign lines (4 for the front, 4 for the back) for a sign in a player's language, but allows for dynamic signs.
      * This also allows for the defaultLines to only be fetched if needed, improving performance.
      *
      * @param player       The {@link LanguagePlayer LanguagePlayer} to get the language from. Use the
@@ -100,7 +100,7 @@ public interface LanguageManager {
     String[] getSign(LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines);
 
     /**
-     * Get the 4 sign lines for a sign in a player's language, but allows for dynamic signs.
+     * Get the 8 sign lines (4 for the front, 4 for the back) for a sign in a player's language, but allows for dynamic signs.
      * This also allows for the defaultLines to only be fetched if needed, improving performance.
      *
      * @param language     The {@link Language#getName() name of the language} to use. If invalid, this will fallback
