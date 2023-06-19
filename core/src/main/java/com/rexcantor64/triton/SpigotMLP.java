@@ -31,7 +31,6 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
