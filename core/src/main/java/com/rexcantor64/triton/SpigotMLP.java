@@ -31,6 +31,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -151,7 +152,7 @@ public class SpigotMLP extends Triton {
     /**
      * Checks if ProtocolLib is enabled and if its version matches
      * the expected version.
-     * Triton requires ProtocolLib 5.0.0 or later.
+     * Triton requires ProtocolLib 5.1.0 or later.
      *
      * @return Whether the plugin should continue loading
      * @since 3.8.2
@@ -164,12 +165,17 @@ public class SpigotMLP extends Triton {
             return false;
         }
 
+        if (getConfig().isIKnowWhatIAmDoing()) {
+            return true;
+        }
+
         val version = protocolLib.getDescription().getVersion();
         val versionParts = version.split("\\.");
         val majorVersion = Integer.parseInt(versionParts[0]);
-        if (!getConfig().isIKnowWhatIAmDoing() && majorVersion < 5) {
-            // Triton requires ProtocolLib 5.0.0 or later
-            getLogger().logError("ProtocolLib 5.0.0 or later is required! Older versions of ProtocolLib will only partially work, and are therefore not recommended.");
+        val minorVersion = Integer.parseInt(versionParts[1]);
+        if (majorVersion < 5 || (majorVersion == 5 && minorVersion < 1)) {
+            // Triton requires ProtocolLib 5.1.0 or later
+            getLogger().logError("ProtocolLib 5.1.0 or later is required! Older versions of ProtocolLib will only partially work, and are therefore not recommended.");
             getLogger().logError("If you want to enable the plugin anyway, add `i-know-what-i-am-doing: true` to Triton's config.yml.");
             return false;
         }
