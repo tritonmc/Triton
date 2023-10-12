@@ -832,7 +832,10 @@ public class EntitiesPacketHandler extends PacketHandler {
             // 1.19 removed this packet
             registry.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, asSync(this::handleSpawnEntityLiving));
         }
-        registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, asSync(this::handleNamedEntitySpawn));
+        if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
+            // 1.20.2 removed this packet
+            registry.put(PacketType.Play.Server.NAMED_ENTITY_SPAWN, asSync(this::handleNamedEntitySpawn));
+        }
         registry.put(PacketType.Play.Server.ENTITY_DESTROY, asSync(this::handleEntityDestroy));
 
         registry.put(PacketType.Play.Server.PLAYER_INFO, asSync(this::handlePlayerInfo));

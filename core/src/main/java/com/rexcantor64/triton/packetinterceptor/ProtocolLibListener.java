@@ -132,7 +132,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if (main.getMcVersion() >= 19) {
             // New chat packets on 1.19
             packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, asAsync(this::handleSystemChat));
-            packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
+            if (!MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
+                // Removed in 1.19.3
+                packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
+            }
         } else {
             // In 1.19+, this packet is signed, so we cannot edit it.
             // It's sent by the player anyway, so there's nothing to translate.
