@@ -31,6 +31,7 @@ import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
+import com.rexcantor64.triton.wrappers.WrappedClientConfiguration;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -710,7 +711,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     (SpigotLanguagePlayer) Triton.get().getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
-                    .logWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
+                    .logTrace("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
                             "(possibly because the player hasn't joined yet).");
             return;
         }
@@ -718,11 +719,22 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             Triton.get().getLogger().logWarning("Language Player is null on packet receiving");
             return;
         }
+        if (!languagePlayer.isWaitingForClientLocale()) {
+            return;
+        }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
-            if (languagePlayer.isWaitingForClientLocale())
-                Bukkit.getScheduler().runTask(Triton.asSpigot().getLoader(), () -> languagePlayer
-                        .setLang(Triton.get().getLanguageManager()
-                                .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)));
+            Bukkit.getScheduler().runTask(
+                    main.getLoader(),
+                    () -> languagePlayer.setLang(
+                            main.getLanguageManager()
+                                    .getLanguageByLocale(packet.getPacket().getStrings().readSafely(0), true)
+                    )
+            );
+        } else if (packet.getPacketType().getProtocol() == PacketType.Protocol.CONFIGURATION) {
+            val clientConfigurations = packet.getPacket().getStructures().withType(WrappedClientConfiguration.getWrappedClass(), WrappedClientConfiguration.CONVERTER);
+            val locale = clientConfigurations.readSafely(0).getLocale();
+            val language = main.getLanguageManager().getLanguageByLocale(locale, true);
+            Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> languagePlayer.setLang(language), 2L);
         }
     }
 
@@ -746,6 +758,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         return ListeningWhitelist.newBuilder()
                 .gamePhase(GamePhase.PLAYING)
                 .types(PacketType.Play.Client.SETTINGS)
+                .types(PacketType.Configuration.Client.CLIENT_INFORMATION)
                 .mergeOptions(ListenerOptions.ASYNC)
                 .highest()
                 .build();
