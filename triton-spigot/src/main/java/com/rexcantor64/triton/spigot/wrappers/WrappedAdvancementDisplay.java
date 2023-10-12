@@ -7,6 +7,7 @@ import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.AbstractWrapper;
 import com.comphenix.protocol.wrappers.BukkitConverters;
+import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 
 /**
@@ -42,6 +43,10 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
 
     private static EquivalentConverter<WrappedChatComponent> CHAT_CONVERT = BukkitConverters.getWrappedChatComponentConverter();
 
+    public static final EquivalentConverter<WrappedAdvancementDisplay> CONVERTER = Converters.ignoreNull(Converters.handle(WrappedAdvancementDisplay::getHandle, WrappedAdvancementDisplay::fromHandle, WrappedAdvancementDisplay.class));
+
+    private boolean hasChanged = false;
+
     /**
      * Construct a new AdvancementDisplay wrapper.
      */
@@ -60,10 +65,18 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
 
     public void setTitle(WrappedChatComponent title) {
         TITLE.set(handle, CHAT_CONVERT.getGeneric(title));
+        hasChanged = true;
     }
 
     public void setDescription(WrappedChatComponent description) {
         DESCRIPTION.set(handle, CHAT_CONVERT.getGeneric(description));
+        hasChanged = true;
+    }
+
+    public boolean hasChangedAndReset() {
+        boolean changed = hasChanged;
+        hasChanged = false;
+        return changed;
     }
 
     public WrappedAdvancementDisplay shallowClone() {

@@ -6,22 +6,27 @@ import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.MinecraftKey;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.WrappedAdvancementDisplay;
+import com.rexcantor64.triton.spigot.wrappers.WrappedAdvancementHolder;
 import lombok.val;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.asAsync;
 
 public class AdvancementsPacketHandler extends PacketHandler {
-
     private final Class<?> SERIALIZED_ADVANCEMENT_CLASS;
     private final FieldAccessor ADVANCEMENT_DISPLAY_FIELD;
     private final FieldAccessor ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD;
@@ -30,9 +35,21 @@ public class AdvancementsPacketHandler extends PacketHandler {
     private final MethodAccessor MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD;
     private final MethodAccessor ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD;
 
-    public AdvancementsPacketHandler() {
-        SERIALIZED_ADVANCEMENT_CLASS = MinecraftReflection.getMinecraftClass("advancements.Advancement$SerializedAdvancement", "Advancement$SerializedAdvancement");
-        ADVANCEMENT_DISPLAY_FIELD = Accessors.getFieldAccessor(SERIALIZED_ADVANCEMENT_CLASS, WrappedAdvancementDisplay.getWrappedClass(), true);
+    private AdvancementsPacketHandler() {
+        if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
+            SERIALIZED_ADVANCEMENT_CLASS = MinecraftReflection.getMinecraftClass(
+                    "advancements.Advancement$SerializedAdvancement",
+                    "Advancement$SerializedAdvancement"
+            );
+            ADVANCEMENT_DISPLAY_FIELD = Accessors.getFieldAccessor(
+                    SERIALIZED_ADVANCEMENT_CLASS,
+                    WrappedAdvancementDisplay.getWrappedClass(),
+                    true
+            );
+        } else {
+            SERIALIZED_ADVANCEMENT_CLASS = null;
+            ADVANCEMENT_DISPLAY_FIELD = null;
+        }
         val advancementDataPlayerClass = MinecraftReflection.getMinecraftClass("server.AdvancementDataPlayer", "AdvancementDataPlayer");
         ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD = Accessors.getFieldAccessor(MinecraftReflection.getEntityPlayerClass(), advancementDataPlayerClass, true);
         ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD = Accessors.getMethodAccessor(advancementDataPlayerClass, "b", MinecraftReflection.getEntityPlayerClass());
@@ -55,6 +72,25 @@ public class AdvancementsPacketHandler extends PacketHandler {
     }
 
     /**
+     * Build a new instance of {@link AdvancementsPacketHandler} if supported by the current
+     * Minecraft version (1.12 and above).
+     *
+     * @return A new instance of this class.
+     * @since 4.0.0
+     */
+    public static @Nullable AdvancementsPacketHandler newInstance() {
+        try {
+            if (MinecraftVersion.COLOR_UPDATE.atOrAbove()) {
+                // MC 1.12+
+                return new AdvancementsPacketHandler();
+            }
+        } catch (Exception e) {
+            Triton.get().getLogger().logError(e, "Failed to hook into advancements packets. Advancements translation will not work.");
+        }
+        return null;
+    }
+
+    /**
      * @return Whether the plugin should attempt to translate advancements
      */
     private boolean areAdvancementsDisabled() {
@@ -68,7 +104,7 @@ public class AdvancementsPacketHandler extends PacketHandler {
         return areAdvancementsDisabled() || !getMain().getConfig().isAdvancementsRefresh();
     }
 
-    private void handleAdvancements(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+    private void handleAdvancementsPre1_20_2(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (areAdvancementsDisabled()) return;
 
         val serializedAdvancementMap = packet.getPacket().getMaps(MinecraftKey.getConverter(), Converters.passthrough(SERIALIZED_ADVANCEMENT_CLASS)).readSafely(0);
@@ -80,26 +116,52 @@ public class AdvancementsPacketHandler extends PacketHandler {
             }
 
             val advancementDisplay = WrappedAdvancementDisplay.fromHandle(advancementDisplayHandle).shallowClone();
-
-            parser()
-                    .translateComponent(
-                            WrappedComponentUtils.deserialize(advancementDisplay.getTitle()),
-                            languagePlayer,
-                            getConfig().getAdvancementsSyntax()
-                    )
-                    .map(WrappedComponentUtils::serialize)
-                    .ifChanged(advancementDisplay::setTitle);
-            parser()
-                    .translateComponent(
-                            WrappedComponentUtils.deserialize(advancementDisplay.getDescription()),
-                            languagePlayer,
-                            getConfig().getAdvancementsSyntax()
-                    )
-                    .map(WrappedComponentUtils::serialize)
-                    .ifChanged(advancementDisplay::setDescription);
-
-            ADVANCEMENT_DISPLAY_FIELD.set(serializedAdvancement, advancementDisplay.getHandle());
+            translateAdvancementDisplay(advancementDisplay, languagePlayer);
+            if (advancementDisplay.hasChangedAndReset()) {
+                ADVANCEMENT_DISPLAY_FIELD.set(serializedAdvancement, advancementDisplay.getHandle());
+            }
         }
+    }
+
+    private void handleAdvancementsPost1_20_2(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        if (areAdvancementsDisabled()) return;
+
+        val advancementHolders = packet.getPacket().getLists(WrappedAdvancementHolder.CONVERTER).readSafely(0);
+
+        for (WrappedAdvancementHolder advancementHolder : advancementHolders) {
+            val advancement = advancementHolder.getAdvancement();
+            val advancementDisplayOpt = advancement.getAdvancementDisplay();
+            if (!advancementDisplayOpt.isPresent()) {
+                continue;
+            }
+
+            val advancementDisplay = advancementDisplayOpt.get().shallowClone();
+            translateAdvancementDisplay(advancementDisplay, languagePlayer);
+            if (advancementDisplay.hasChangedAndReset()) {
+                val advancementClone = advancement.shallowClone();
+                advancementClone.setAdvancementDisplay(Optional.of(advancementDisplay));
+                advancementHolder.setAdvancement(advancementClone);
+            }
+        }
+    }
+
+    private void translateAdvancementDisplay(WrappedAdvancementDisplay advancementDisplay, Localized locale) {
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(advancementDisplay.getTitle()),
+                        locale,
+                        getConfig().getAdvancementsSyntax()
+                )
+                .map(WrappedComponentUtils::serialize)
+                .ifChanged(advancementDisplay::setTitle);
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(advancementDisplay.getDescription()),
+                        locale,
+                        getConfig().getAdvancementsSyntax()
+                )
+                .map(WrappedComponentUtils::serialize)
+                .ifChanged(advancementDisplay::setDescription);
     }
 
     /**
@@ -135,6 +197,11 @@ public class AdvancementsPacketHandler extends PacketHandler {
 
     @Override
     public void registerPacketTypes(Map<PacketType, HandlerFunction> registry) {
-        registry.put(PacketType.Play.Server.ADVANCEMENTS, asAsync(this::handleAdvancements));
+        if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
+            // MC 1.20.2+
+            registry.put(PacketType.Play.Server.ADVANCEMENTS, asAsync(this::handleAdvancementsPost1_20_2));
+        } else {
+            registry.put(PacketType.Play.Server.ADVANCEMENTS, asAsync(this::handleAdvancementsPre1_20_2));
+        }
     }
 }
