@@ -78,7 +78,7 @@ public class ProtocolLibListener implements PacketListener {
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
-    private final AdvancementsPacketHandler advancementsPacketHandler;
+    private final AdvancementsPacketHandler advancementsPacketHandler = AdvancementsPacketHandler.newInstance();
     private final EntitiesPacketHandler entitiesPacketHandler = new EntitiesPacketHandler();
 
     private final SpigotTriton main;
@@ -115,8 +115,6 @@ public class ProtocolLibListener implements PacketListener {
         val containerClass = MinecraftReflection.getMinecraftClass("world.inventory.Container", "Container");
         PLAYER_ACTIVE_CONTAINER_FIELD = Arrays.stream(MinecraftReflection.getEntityHumanClass().getDeclaredFields())
                 .filter(field -> field.getType() == containerClass && !field.getName().equals("defaultContainer")).findAny().orElse(null);
-
-        this.advancementsPacketHandler = getMCVersion() >= 12 ? new AdvancementsPacketHandler() : null;
 
         setupPacketHandlers();
     }
