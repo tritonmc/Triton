@@ -6,14 +6,13 @@ import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.utils.ComponentUtils;
-import com.rexcantor64.triton.utils.ReflectionUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
@@ -26,7 +25,6 @@ import net.md_5.bungee.protocol.packet.PlayerListItemUpdate;
 import net.md_5.bungee.protocol.packet.Subtitle;
 import net.md_5.bungee.protocol.packet.SystemChat;
 import net.md_5.bungee.protocol.packet.Title;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -320,7 +318,9 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     }
 
     private void send(DefinedPacket packet) {
-        ((ChannelWrapper) ReflectionUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
+        if (owner.getCurrentConnection() instanceof UserConnection) {
+            ((UserConnection)owner.getCurrentConnection()).sendPacketQueued(packet);
+        }
     }
 
     public void refreshTab() {
