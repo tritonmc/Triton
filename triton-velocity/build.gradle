@@ -12,7 +12,7 @@ dependencies {
 
     annotationProcessor 'com.velocitypowered:velocity-api:3.1.0'
 
-    compileOnly 'com.velocitypowered:velocity-proxy:3.1.2-SNAPSHOT'
+    compileOnly 'com.velocitypowered:velocity-proxy:3.2.0-SNAPSHOT'
 
     compileOnly 'io.netty:netty-codec:4.1.80.Final'
 
