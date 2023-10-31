@@ -389,7 +389,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         List<PlayerInfoData> dataList;
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
             val infoActions = packet.getPacket().getPlayerInfoActions().readSafely(0);
-            if (!infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
+            if (!infoActions.contains(EnumWrappers.PlayerInfoAction.ADD_PLAYER) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
                 return;
             }
             dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(1);
