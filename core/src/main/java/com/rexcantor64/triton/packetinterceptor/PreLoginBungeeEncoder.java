@@ -5,8 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.packet.Kick;
 
@@ -28,8 +28,8 @@ public class PreLoginBungeeEncoder extends MessageToMessageEncoder<DefinedPacket
                 if (this.lang == null)
                     this.lang = Triton.get().getStorage().getLanguageFromIp(ip).getName();
 
-                kick.setMessage(serializeComponent(Triton.get().getLanguageParser().parseComponent(this.lang,
-                        Triton.get().getConf().getKickSyntax(), ComponentSerializer.parse(kick.getMessage()))));
+                kick.setMessage(nullOrTranslatable(Triton.get().getLanguageParser().parseComponent(this.lang,
+                        Triton.get().getConf().getKickSyntax(), kick.getMessage())));
             }
         } catch (Exception | Error e) {
             e.printStackTrace();
@@ -37,9 +37,11 @@ public class PreLoginBungeeEncoder extends MessageToMessageEncoder<DefinedPacket
         out.add(packet);
     }
 
-    private String serializeComponent(BaseComponent... bc) {
-        if (bc == null) return ComponentSerializer.toString(new TranslatableComponent(""));
-        return ComponentSerializer.toString(bc);
+    private BaseComponent nullOrTranslatable(BaseComponent... bc) {
+        if (bc == null) {
+            return new TranslatableComponent("");
+        }
+        return TextComponent.fromArray(bc);
     }
 
 }
