@@ -6,8 +6,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-
 /**
  * Utilities for {@link BaseComponent BaseComponents}.
  *
@@ -27,14 +25,25 @@ public class BaseComponentUtils {
     }
 
     /**
+     * Convert {@link Component} to a {@link BaseComponent} array.
+     *
+     * @param component The {@link Component} to convert.
+     * @return The equivalent of the given {@link Component}, but as a {@link BaseComponent} array.
+     * @since 4.0.0
+     */
+    public static @NotNull BaseComponent @NotNull [] serialize(@NotNull Component component) {
+        return BungeeComponentSerializer.get().serialize(component);
+    }
+
+    /**
      * Convert {@link Component} to a {@link BaseComponent}.
      *
      * @param component The {@link Component} to convert.
      * @return The equivalent of the given {@link Component}, but as a {@link BaseComponent}.
      * @since 4.0.0
      */
-    public static @NotNull BaseComponent @NotNull [] serialize(@NotNull Component component) {
-        return BungeeComponentSerializer.get().serialize(component);
+    public static @NotNull BaseComponent serializeToSingle(@NotNull Component component) {
+        return convertArrayToSingle(BungeeComponentSerializer.get().serialize(component));
     }
 
 
@@ -47,12 +56,13 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static BaseComponent convertArrayToSingle(BaseComponent... components) {
+        if (components == null) {
+            return null;
+        }
         if (components.length == 1) {
             return components[0];
         }
-        BaseComponent result = new TextComponent("");
-        result.setExtra(Arrays.asList(components));
-        return result;
+        return new TextComponent(components);
     }
 
 }
