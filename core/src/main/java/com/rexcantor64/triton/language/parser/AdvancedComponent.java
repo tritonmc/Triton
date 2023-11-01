@@ -46,6 +46,7 @@ public class AdvancedComponent {
         for (BaseComponent comp : components) {
             boolean hasClick = false;
             boolean hasHover = false;
+            boolean hasFont = false;
             builder.append(ComponentUtils.getColorFromBaseComponent(comp).toString());
             if (comp.hasFormatting()) {
                 if (comp.isBold())
@@ -76,6 +77,12 @@ public class AdvancedComponent {
                         builder.append(uuid.toString());
                         hasHover = true;
                     }
+                    if (comp.getFontRaw() != null) {
+                        builder.append("\uE800")
+                                .append(comp.getFontRaw())
+                                .append("\uE802");
+                        hasFont = true;
+                    }
                 }
             }
             if (comp instanceof TextComponent)
@@ -95,6 +102,12 @@ public class AdvancedComponent {
                         args.add(fromBaseComponent(false, arg));
                 advancedComponent.setTranslatableArguments(uuid.toString(), args);
             }
+            if (!onlyText && comp instanceof KeybindComponent) {
+                KeybindComponent kc = (KeybindComponent) comp;
+                builder.append("\uE700")
+                        .append(kc.getKeybind())
+                        .append("\uE700");
+            }
             if (comp.getExtra() != null) {
                 AdvancedComponent component = fromBaseComponent(onlyText, comp.getExtra()
                         .toArray(new BaseComponent[0]));
@@ -103,6 +116,8 @@ public class AdvancedComponent {
                 advancedComponent.getHovers().putAll(component.getHovers());
                 advancedComponent.getAllTranslatableArguments().putAll(component.getAllTranslatableArguments());
             }
+            if (hasFont)
+                builder.append("\uE801");
             if (hasHover)
                 builder.append("\uE501");
             if (hasClick)
@@ -172,7 +187,7 @@ public class AdvancedComponent {
                 } else {
                     component.setColor(format);
                 }
-            } else if (c == '\uE400' || c == '\uE500') {
+            } else if (c == '\uE400' || c == '\uE500' || c == '\uE800') {
                 BaseComponent previousComponent = component;
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
@@ -187,17 +202,26 @@ public class AdvancedComponent {
                     ClickEvent.Action action = ComponentUtils.decodeClickAction(actionCode);
                     component.setClickEvent(new ClickEvent(action, this.getComponent(uuid)));
                     i += 2 + 36;
-                } else { // c == '\uE500'
+                } else if (c == '\uE500') {
                     String uuid = text.substring(i + 1, i + 1 + 36);
                     component.setHoverEvent(this.hovers.get(uuid));
                     i += 1 + 36;
+                } else { // c == '\uE800'
+                    i++;
+                    StringBuilder font = new StringBuilder();
+                    while (text.charAt(i) != '\uE802') {
+                        font.append(text.charAt(i));
+                        i++;
+                    }
+                    i++;
+                    component.setFont(font.toString());
                 }
                 int deep = 0;
                 StringBuilder content = new StringBuilder();
                 while (text.charAt(i) != c + 1 || deep != 0) {
                     char c1 = text.charAt(i);
-                    if (c1 == c) deep++; // c == \uE400 || c == \uE500
-                    if (c1 == c + 1) deep--; // c + 1 == \uE401 || c + 1 == \uE501
+                    if (c1 == c) deep++; // c == \uE400 || c == \uE500 || c == \uE800
+                    if (c1 == c + 1) deep--; // c + 1 == \uE401 || c + 1 == \uE501 || c + 1 == \uE801
                     content.append(c1);
                     i++;
                 }
@@ -238,8 +262,27 @@ public class AdvancedComponent {
                         tc.addWith(bc == null ? new TextComponent("") : bc[0]);
                     }
                 list.add(tc);
-            } else
+            } else if (c == '\uE700') {
+                i++;
+                StringBuilder key = new StringBuilder();
+                while (text.charAt(i) != '\uE700') {
+                    key.append(text.charAt(i));
+                    i++;
+                }
+                if (builder.length() != 0) {
+                    component.setText(builder.toString());
+                    builder = new StringBuilder();
+                    BaseComponent previousComponent = component;
+                    list.add(component);
+                    component = new TextComponent("");
+                    ComponentUtils.copyFormatting(previousComponent, component);
+                }
+                KeybindComponent kc = new KeybindComponent(key.toString());
+                ComponentUtils.copyFormatting(component, kc);
+                list.add(kc);
+            } else {
                 builder.append(c);
+            }
         }
         if (builder.length() != 0) {
             component.setText(builder.toString());
