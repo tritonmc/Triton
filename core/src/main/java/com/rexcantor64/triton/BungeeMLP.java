@@ -20,7 +20,6 @@ import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
-import net.md_5.bungee.protocol.MinecraftEncoder;
 import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.SingleLineChart;
 
@@ -60,7 +59,7 @@ public class BungeeMLP extends Triton {
 
         for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
             BungeeLanguagePlayer lp = (BungeeLanguagePlayer) getPlayerManager().get(p.getUniqueId());
-            injectPipeline(lp, p);
+            injectPipeline(lp, p, p.getPendingConnection().getVersion());
         }
 
         val commandHandler = new BungeeCommandHandler();
@@ -115,19 +114,12 @@ public class BungeeMLP extends Triton {
         return getLoader().getDescription().getVersion();
     }
 
-    public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
+    public void injectPipeline(BungeeLanguagePlayer lp, Connection p, int protocolVersion) {
         Triton.get().getLogger().logTrace("Injecting pipeline for player %1", lp);
         try {
             Object ch = NMSUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");
             Channel channel = (Channel) method.invoke(ch, new Object[0]);
-            MinecraftEncoder encoder = channel.pipeline().get(MinecraftEncoder.class);
-            if (encoder == null) {
-                getLogger().logWarning("[PacketInjector] Player %1's pipeline does not have a MinecraftEncoder. Failed to get protocol version. Ignore this if the player was kicked from the server.",
-                        lp.getUUID());
-                return;
-            }
-            int protocolVersion = encoder.getProtocolVersion();
 
             channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
             channel.pipeline()
