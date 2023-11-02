@@ -51,6 +51,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     @Getter
     private final Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
     @Getter
+    private final Map<World, Map<Integer, String>> textDisplayEntitiesMap = new ConcurrentHashMap<>();
+    @Getter
     private final Set<UUID> shownPlayers = new HashSet<>();
     @Getter
     private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();

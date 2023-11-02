@@ -337,6 +337,22 @@ public class EntitiesPacketHandler extends PacketHandler {
                                 )
                         ).orElse(oldObject)
                 );
+            } else if (oldObject.getIndex() == 23) {
+                // Index 23 is "Text" of type "Chat"
+                // https://wiki.vg/Entity_metadata#Text_Display
+                // Used to translate text display entities
+                newWatchableObjects.add(
+                        this.dataValueHandler.translateTextDisplayTextDataValue(
+                                languagePlayer,
+                                oldObject,
+                                (text) -> addEntity(
+                                        languagePlayer.getTextDisplayEntitiesMap(),
+                                        packet.getPlayer().getWorld(),
+                                        entityId,
+                                        text
+                                )
+                        ).orElse(oldObject)
+                );
             } else {
                 newWatchableObjects.add(oldObject);
             }
@@ -477,6 +493,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         refreshNormalEntities(languagePlayer, bukkitPlayer);
         refreshHumanEntities(languagePlayer, bukkitPlayer);
         refreshItemFramesEntities(languagePlayer, bukkitPlayer);
+        refreshTextDisplayEntities(languagePlayer, bukkitPlayer);
     }
 
     /**
@@ -775,6 +792,57 @@ public class EntitiesPacketHandler extends PacketHandler {
                 // Write watchable objects
                 packet.getWatchableCollectionModifier().writeSafely(0, watchableObjects);
             }
+            // Send packet without passing through listeners again
+            sendPacket(bukkitPlayer, packet, false);
+        }
+    }
+
+    /**
+     * Resend text of text display entities when the language of a player changes.
+     * This will send entity metadata packets.
+     *
+     * @param languagePlayer The player to resend the entity packets to.
+     * @param bukkitPlayer   The bukkit handler of languagePlayer.
+     * @since 3.9.1
+     */
+    private void refreshTextDisplayEntities(@NotNull SpigotLanguagePlayer languagePlayer, @NotNull Player bukkitPlayer) {
+        val entitiesInCurrentWorld = languagePlayer.getTextDisplayEntitiesMap().get(bukkitPlayer.getWorld());
+        if (entitiesInCurrentWorld == null) {
+            return;
+        }
+
+        for (Map.Entry<Integer, String> entry : entitiesInCurrentWorld.entrySet()) {
+            val text = entry.getValue();
+
+            val packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA);
+
+            // Write entity ID
+            packet.getIntegers().writeSafely(0, entry.getKey());
+
+
+            val textComponent = ComponentUtils.deserializeFromJson(text);
+            val result = parser()
+                    .translateComponent(
+                            textComponent,
+                            languagePlayer,
+                            getConfig().getHologramSyntax()
+                    )
+                    .mapToObj(
+                            Function.identity(),
+                            () -> textComponent,
+                            () -> null
+                    );
+
+            final List<WrappedDataValue> dataValues = new ArrayList<>();
+            this.dataValueHandler.getTextDisplayTextDataValue(result).ifPresent(dataValues::add);
+
+            if (dataValues.isEmpty()) {
+                // Don't send anything if there are no changes
+                continue;
+            }
+
+            // Write watchable objects
+            packet.getDataValueCollectionModifier().writeSafely(0, dataValues);
             // Send packet without passing through listeners again
             sendPacket(bukkitPlayer, packet, false);
         }
@@ -1257,6 +1325,25 @@ public class EntitiesPacketHandler extends PacketHandler {
             return Optional.of(dataValue);
         }
 
+        Optional<WrappedDataValue> getTextDisplayTextDataValue(@Nullable Component component) {
+            Object payload;
+            if (component != null) {
+                payload = WrappedComponentUtils.serialize(component).getHandle();
+            } else {
+                payload = WrappedChatComponent.fromText("").getHandle();
+            }
+
+            // Display name has: index 23 and type chat
+            // https://wiki.vg/Entity_metadata#Text_Display
+            return Optional.of(
+                    new WrappedDataValue(
+                            23,
+                            WrappedDataWatcher.Registry.getChatComponentSerializer(false),
+                            payload
+                    )
+            );
+        }
+
         Optional<WrappedDataValue> translatePlayerDisplayNameDataValue(
                 SpigotLanguagePlayer languagePlayer,
                 WrappedDataValue dataValue,
@@ -1307,6 +1394,33 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             val translatedItemStack = ItemStackTranslationUtils.translateItemStack(clonedItemStack, languagePlayer, false);
             return this.getItemStackDataValue(translatedItemStack);
+        }
+
+        Optional<WrappedDataValue> translateTextDisplayTextDataValue(
+                SpigotLanguagePlayer languagePlayer,
+                WrappedDataValue dataValue,
+                Consumer<String> saveToCache) {
+            val value = dataValue.getValue();
+            if (!(value instanceof WrappedChatComponent)) {
+                return Optional.empty();
+            }
+
+            val textJson = ((WrappedChatComponent) value).getJson();
+
+            // Save to cache before translating
+            saveToCache.accept(textJson);
+
+            val textComponent = WrappedComponentUtils.deserialize((WrappedChatComponent) value);
+
+            val result = parser()
+                    .translateComponent(textComponent, languagePlayer, getConfig().getHologramSyntax());
+
+            if (result.isUnchanged()) {
+                // if unchanged, return original watchable object
+                return Optional.of(dataValue);
+            }
+
+            return this.getTextDisplayTextDataValue(result.getResult().orElse(null));
         }
     }
 }
