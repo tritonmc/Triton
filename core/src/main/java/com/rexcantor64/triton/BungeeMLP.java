@@ -121,14 +121,20 @@ public class BungeeMLP extends Triton {
             Object ch = NMSUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");
             Channel channel = (Channel) method.invoke(ch, new Object[0]);
-            int protocolVersion = (int) NMSUtils.getDeclaredField(channel.pipeline().get(MinecraftEncoder.class), "protocolVersion");
+            MinecraftEncoder encoder = channel.pipeline().get(MinecraftEncoder.class);
+            if (encoder == null) {
+                getLogger().logWarning("[PacketInjector] Player %1's pipeline does not have a MinecraftEncoder. Failed to get protocol version. Ignore this if the player was kicked from the server.",
+                        lp.getUUID());
+                return;
+            }
+            int protocolVersion = encoder.getProtocolVersion();
+
             channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
             channel.pipeline()
                     .addAfter(PipelineUtils.PACKET_ENCODER, "triton-custom-encoder", new BungeeListener(lp, protocolVersion));
             channel.pipeline().remove("triton-pre-login-encoder");
         } catch (Exception e) {
-            getLogger().logError("[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
-            e.printStackTrace();
+            getLogger().logError(e, "[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
         }
     }
 
