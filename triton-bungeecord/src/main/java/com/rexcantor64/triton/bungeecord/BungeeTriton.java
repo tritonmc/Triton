@@ -22,7 +22,6 @@ import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
-import net.md_5.bungee.protocol.MinecraftEncoder;
 import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.SingleLineChart;
 
@@ -67,7 +66,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
 
         for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
             BungeeLanguagePlayer lp = getPlayerManager().get(p.getUniqueId());
-            injectPipeline(lp, p);
+            injectPipeline(lp, p, p.getPendingConnection().getVersion());
         }
 
         val commandHandler = new BungeeCommandHandler();
@@ -122,20 +121,19 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         return getLoader().getDescription().getVersion();
     }
 
-    public void injectPipeline(BungeeLanguagePlayer lp, Connection p) {
+    public void injectPipeline(BungeeLanguagePlayer lp, Connection p, int protocolVersion) {
         Triton.get().getLogger().logTrace("Injecting pipeline for player %1", lp);
         try {
             Object ch = ReflectionUtils.getDeclaredField(p, "ch");
             Method method = ch.getClass().getDeclaredMethod("getHandle");
             Channel channel = (Channel) method.invoke(ch, new Object[0]);
-            int protocolVersion = (int) ReflectionUtils.getDeclaredField(channel.pipeline().get(MinecraftEncoder.class), "protocolVersion");
+
             channel.pipeline().addAfter(PipelineUtils.PACKET_DECODER, "triton-custom-decoder", new BungeeDecoder(lp));
             channel.pipeline()
                     .addAfter(PipelineUtils.PACKET_ENCODER, "triton-custom-encoder", new BungeeListener(lp, protocolVersion));
             channel.pipeline().remove("triton-pre-login-encoder");
         } catch (Exception e) {
-            getLogger().logError("[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
-            e.printStackTrace();
+            getLogger().logError(e, "[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
         }
     }
 
