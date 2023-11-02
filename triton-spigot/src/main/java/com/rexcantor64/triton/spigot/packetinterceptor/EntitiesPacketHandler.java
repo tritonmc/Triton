@@ -5,7 +5,14 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
-import com.comphenix.protocol.wrappers.*;
+import com.comphenix.protocol.wrappers.Converters;
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataValue;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
@@ -16,8 +23,6 @@ import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,7 +33,15 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -91,9 +104,22 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
         if (entityType == EntityType.PLAYER) {
-            // Ignore human entities since they're handled separately
-            // This packet should never spawn one either way
-            return;
+            if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
+                // Ignore human entities since they're handled separately
+                // This packet should never spawn one either way
+                return;
+            }
+            // TODO For now, it is only possible to translate NPCs that are saved server side
+            // Fetch entity object using main thread, otherwise we'll get concurrency issues
+            SpigotTriton.asSpigot()
+                    .callSync(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
+                    .ifPresent(entity -> addEntity(
+                                    languagePlayer.getPlayersMap(),
+                                    packet.getPlayer().getWorld(),
+                                    entity.getEntityId(),
+                                    entity
+                            )
+                    );
         }
 
         // Add entity to cache
@@ -164,6 +190,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * translation is enabled for human entities.
      * Due to the complexity of translating human entities, it is only possible to translate
      * those stored server side by the server itself.
+     * This packet was removed in MC 1.20.2
      *
      * @param packet         ProtocolLib's packet event.
      * @param languagePlayer The language player this packet is being sent to.
@@ -633,7 +660,13 @@ public class EntitiesPacketHandler extends PacketHandler {
             val packetAdd = getPlayerInfoAddPacket(humanEntity);
 
             // Spawn the entity again
-            val packetSpawn = createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+            PacketContainer packetSpawn;
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
+                packetSpawn = createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+            } else {
+                // noinspection deprecation
+                packetSpawn = createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+            }
             packetSpawn.getIntegers().writeSafely(0, humanEntity.getEntityId());
             packetSpawn.getUUIDs().writeSafely(0, humanEntity.getUniqueId());
             if (getMcVersion() < 9) {
@@ -652,7 +685,18 @@ public class EntitiesPacketHandler extends PacketHandler {
             packetSpawn.getBytes()
                     .writeSafely(0, (byte) (int) (humanEntity.getLocation().getYaw() * 256.0F / 360.0F))
                     .writeSafely(1, (byte) (int) (humanEntity.getLocation().getPitch() * 256.0F / 360.0F));
-            packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(humanEntity));
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
+                packetSpawn.getBytes().writeSafely(2, (byte) 0);
+                val velocity = humanEntity.getVelocity();
+                packetSpawn.getIntegers()
+                        .writeSafely(1, (int) (Math.max(-3.9d, Math.min(3.9d, velocity.getX())) * 8000.0d))
+                        .writeSafely(2, (int) (Math.max(-3.9d, Math.min(3.9d, velocity.getY())) * 8000.0d))
+                        .writeSafely(3, (int) (Math.max(-3.9d, Math.min(3.9d, velocity.getZ())) * 8000.0d))
+                        .writeSafely(4, 0); // "entity data"
+                packetSpawn.getEntityTypeModifier().writeSafely(0, org.bukkit.entity.EntityType.PLAYER);
+            } else {
+                packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(humanEntity));
+            }
 
             // Even though this is sent in the spawn packet, we still need to send it again for some reason
             val packetLook = createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
