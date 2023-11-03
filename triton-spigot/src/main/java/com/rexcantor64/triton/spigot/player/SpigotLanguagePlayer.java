@@ -51,6 +51,8 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     @Getter
     private final Map<World, Map<Integer, ItemStack>> itemFramesMap = new ConcurrentHashMap<>();
     @Getter
+    private final Map<World, Map<Integer, String>> textDisplayEntitiesMap = new ConcurrentHashMap<>();
+    @Getter
     private final Set<UUID> shownPlayers = new HashSet<>();
     @Getter
     private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
@@ -58,7 +60,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private final Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
 
     @Getter
-    private final Map<SignLocation, NbtCompound> signs = new ConcurrentHashMap<>();
+    private final Map<SignLocation, Sign> signs = new ConcurrentHashMap<>();
     @Deprecated
     @Getter
     private final Map<SignLocation, Component[]> legacySigns = new ConcurrentHashMap<>(); // until 1.19_R1 only
@@ -89,6 +91,10 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public void removeScoreboardTeam(String name) {
         this.teamsMap.remove(name);
+    }
+
+    public void saveSign(SignLocation location, Object tileEntityType, NbtCompound nbtCompound) {
+        this.signs.put(location, new Sign(tileEntityType, nbtCompound));
     }
 
     public Language getLang() {
@@ -273,6 +279,12 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         private String prefixJson;
         private String suffixJson;
         private List<Object> optionData;
+    }
+
+    @Data
+    public static class Sign {
+        private final Object tileEntityType; // NMS class, use Object instead
+        private final NbtCompound compound;
     }
 
 }

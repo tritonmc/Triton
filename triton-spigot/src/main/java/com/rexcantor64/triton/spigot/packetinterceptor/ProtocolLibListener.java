@@ -28,6 +28,7 @@ import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import com.rexcantor64.triton.spigot.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
+import com.rexcantor64.triton.spigot.wrappers.WrappedClientConfiguration;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.SneakyThrows;
@@ -78,7 +79,7 @@ public class ProtocolLibListener implements PacketListener {
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
-    private final AdvancementsPacketHandler advancementsPacketHandler;
+    private final AdvancementsPacketHandler advancementsPacketHandler = AdvancementsPacketHandler.newInstance();
     private final EntitiesPacketHandler entitiesPacketHandler = new EntitiesPacketHandler();
 
     private final SpigotTriton main;
@@ -116,8 +117,6 @@ public class ProtocolLibListener implements PacketListener {
         PLAYER_ACTIVE_CONTAINER_FIELD = Arrays.stream(MinecraftReflection.getEntityHumanClass().getDeclaredFields())
                 .filter(field -> field.getType() == containerClass && !field.getName().equals("defaultContainer")).findAny().orElse(null);
 
-        this.advancementsPacketHandler = getMCVersion() >= 12 ? new AdvancementsPacketHandler() : null;
-
         setupPacketHandlers();
     }
 
@@ -134,7 +133,10 @@ public class ProtocolLibListener implements PacketListener {
         if (main.getMcVersion() >= 19) {
             // New chat packets on 1.19
             packetHandlers.put(PacketType.Play.Server.SYSTEM_CHAT, asAsync(this::handleSystemChat));
-            packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
+            if (!MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
+                // Removed in 1.19.3
+                packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
+            }
         } else {
             // In 1.19+, this packet is signed, so we cannot edit it.
             // It's sent by the player anyway, so there's nothing to translate.
@@ -749,23 +751,27 @@ public class ProtocolLibListener implements PacketListener {
             languagePlayer = main.getPlayerManager().get(packet.getPlayer().getUniqueId());
         } catch (Exception ignore) {
             Triton.get().getLogger()
-                    .logWarning("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
+                    .logTrace("Failed to get SpigotLanguagePlayer because UUID of the player is unknown " +
                             "(possibly because the player hasn't joined yet).");
-            return;
-        }
-        if (packet.getPacketType() != PacketType.Play.Client.SETTINGS) {
             return;
         }
         if (!languagePlayer.isWaitingForClientLocale()) {
             return;
         }
-        Bukkit.getScheduler().runTask(
-                main.getLoader(),
-                () -> languagePlayer.setLang(
-                        main.getLanguageManager()
-                                .getLanguageByLocaleOrDefault(packet.getPacket().getStrings().readSafely(0))
-                )
-        );
+        if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
+            Bukkit.getScheduler().runTask(
+                    main.getLoader(),
+                    () -> languagePlayer.setLang(
+                            main.getLanguageManager()
+                                    .getLanguageByLocaleOrDefault(packet.getPacket().getStrings().readSafely(0))
+                    )
+            );
+        } else if (packet.getPacketType().getProtocol() == PacketType.Protocol.CONFIGURATION) {
+            val clientConfigurations = packet.getPacket().getStructures().withType(WrappedClientConfiguration.getWrappedClass(), WrappedClientConfiguration.CONVERTER);
+            val locale = clientConfigurations.readSafely(0).getLocale();
+            val language = main.getLanguageManager().getLanguageByLocaleOrDefault(locale);
+            Bukkit.getScheduler().runTaskLater(main.getLoader(), () -> languagePlayer.setLang(language), 2L);
+        }
     }
 
     @Override
@@ -788,6 +794,7 @@ public class ProtocolLibListener implements PacketListener {
         return ListeningWhitelist.newBuilder()
                 .gamePhase(GamePhase.PLAYING)
                 .types(PacketType.Play.Client.SETTINGS)
+                .types(PacketType.Configuration.Client.CLIENT_INFORMATION)
                 .mergeOptions(ListenerOptions.ASYNC)
                 .highest()
                 .build();

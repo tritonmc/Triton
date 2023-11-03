@@ -279,7 +279,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     }
 
     public @NotNull Optional<Component[]> getSignComponents(@NotNull Localized locale, @NotNull SignLocation location) {
-        return getSignComponents(locale, location, () -> new Component[4]);
+        return getSignComponents(locale, location, () -> new Component[8]);
     }
 
     public @NotNull Optional<Component[]> getSignComponents(@NotNull Localized locale,
@@ -331,10 +331,10 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     public Component[] formatLines(@NonNull Language language,
                                    @NonNull String[] lines,
                                    @NonNull Supplier<@Nullable Component @NotNull []> defaultLinesSupplier) {
-        val result = new Component[4];
+        val result = new Component[8];
         Component[] defaultLines = null;
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 8; ++i) {
             if (lines.length - 1 < i) {
                 result[i] = Component.empty();
                 continue;

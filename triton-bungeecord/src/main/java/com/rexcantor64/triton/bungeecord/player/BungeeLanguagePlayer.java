@@ -11,6 +11,7 @@ import com.rexcantor64.triton.utils.SocketUtils;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -30,9 +31,9 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     private Language language;
     private BungeeListener listener;
 
-    private String lastTabHeader;
-    private String lastTabFooter;
-    private final HashMap<UUID, String> bossBars = new HashMap<>();
+    private BaseComponent lastTabHeader;
+    private BaseComponent lastTabFooter;
+    private final HashMap<UUID, BaseComponent> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
 
     public BungeeLanguagePlayer(UUID parent) {
@@ -48,20 +49,20 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         load();
     }
 
-    public void setBossbar(UUID uuid, String lastBossBar) {
-        bossBars.put(uuid, lastBossBar);
+    public void setBossbar(UUID uuid, BaseComponent lastBossBar) {
+        bossBars.put(uuid, lastBossBar.duplicate());
     }
 
     public void removeBossbar(UUID uuid) {
         bossBars.remove(uuid);
     }
 
-    public void setLastTabHeader(String lastTabHeader) {
-        this.lastTabHeader = lastTabHeader;
+    public void setLastTabHeader(BaseComponent lastTabHeader) {
+        this.lastTabHeader = lastTabHeader.duplicate();
     }
 
-    public void setLastTabFooter(String lastTabFooter) {
-        this.lastTabFooter = lastTabFooter;
+    public void setLastTabFooter(BaseComponent lastTabFooter) {
+        this.lastTabFooter = lastTabFooter.duplicate();
     }
 
     @Override
@@ -108,7 +109,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null)
             listener.refreshTabHeaderFooter(lastTabHeader, lastTabFooter);
         if (Triton.get().getConfig().isBossbars())
-            for (Map.Entry<UUID, String> entry : bossBars.entrySet())
+            for (Map.Entry<UUID, BaseComponent> entry : bossBars.entrySet())
                 listener.refreshBossbar(entry.getKey(), entry.getValue());
     }
 

@@ -6,6 +6,7 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import com.rexcantor64.triton.velocity.VelocityTriton;
+import com.rexcantor64.triton.velocity.packetinterceptor.VelocityNettyDecoder;
 import com.rexcantor64.triton.velocity.packetinterceptor.VelocityNettyEncoder;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VelocityLanguagePlayer implements LanguagePlayer {
+    @Getter
     private final Player parent;
 
     private Language language;
@@ -40,6 +42,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     private final Map<UUID, String> bossBars = new HashMap<>();
     private final Map<UUID, Component> playerListItemCache = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
+    private String clientLocale;
     private final RefreshFeatures refresher;
 
     public VelocityLanguagePlayer(@NotNull Player parent) {
@@ -87,6 +90,13 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         this.waitingForClientLocale = true;
     }
 
+    public void setClientLocale(String locale) {
+        if (this.isWaitingForClientLocale()) {
+            this.setLang(Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(locale));
+        }
+        this.clientLocale = locale;
+    }
+
     public Language getLang() {
         if (language == null)
             language = Triton.get().getLanguageManager().getMainLanguage();
@@ -121,6 +131,8 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     public void injectNettyPipeline() {
         ConnectedPlayer connectedPlayer = (ConnectedPlayer) this.parent;
         connectedPlayer.getConnection().getChannel().pipeline()
+                .addAfter(Connections.MINECRAFT_DECODER, "triton-custom-decoder", new VelocityNettyDecoder(this));
+        connectedPlayer.getConnection().getChannel().pipeline()
                 .addAfter(Connections.MINECRAFT_ENCODER, "triton-custom-encoder", new VelocityNettyEncoder(this));
     }
 
@@ -129,18 +141,24 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         return this.parent.getUniqueId();
     }
 
-    public Player getParent() {
-        return parent;
-    }
-
     public @NotNull ProtocolVersion getProtocolVersion() {
         return this.getParent().getProtocolVersion();
     }
 
     private void load() {
         this.language = Triton.get().getStorage().getLanguage(this);
-        Triton.get().getStorage()
-                .setLanguage(null, SocketUtils.getIpAddress(getParent().getRemoteAddress()), language);
+        if (this.clientLocale != null && this.isWaitingForClientLocale()) {
+            this.waitingForClientLocale = false;
+            this.language = Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(this.clientLocale);
+            if (getParent() != null) {
+                getParent().sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
+                        .getMessage("success.detected-language", language.getDisplayName())));
+            }
+        }
+        if (getParent() != null) {
+            Triton.get().getStorage()
+                    .setLanguage(null, SocketUtils.getIpAddress(getParent().getRemoteAddress()), language);
+        }
     }
 
     private void save() {

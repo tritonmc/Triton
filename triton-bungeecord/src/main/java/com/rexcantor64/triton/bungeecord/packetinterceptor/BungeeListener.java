@@ -6,14 +6,14 @@ import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.utils.ComponentUtils;
-import com.rexcantor64.triton.utils.ReflectionUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.md_5.bungee.UserConnection;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
@@ -26,7 +26,6 @@ import net.md_5.bungee.protocol.packet.PlayerListItemUpdate;
 import net.md_5.bungee.protocol.packet.Subtitle;
 import net.md_5.bungee.protocol.packet.SystemChat;
 import net.md_5.bungee.protocol.packet.Title;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     private final BungeeLanguagePlayer owner;
     private final int protocolVersion;
 
-    private final HashMap<UUID, String> tabListCache = new HashMap<>();
+    private final HashMap<UUID, BaseComponent> tabListCache = new HashMap<>();
 
     public BungeeListener(BungeeLanguagePlayer owner, int protocolVersion) {
         this.owner = owner;
@@ -65,11 +64,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         try {
             return parser()
                     .translateComponent(
-                            ComponentUtils.deserializeFromJson(item.getDisplayName()),
+                            BaseComponentUtils.deserialize(item.getDisplayName()),
                             owner,
                             config().getTabSyntax()
                     )
-                    .map(ComponentUtils::serializeToJson)
+                    .map(BaseComponentUtils::serializeToSingle)
                     .mapToObj(
                             result -> {
                                 PlayerListItem.Item clonedItem = clonePlayerListItem(item);
@@ -170,11 +169,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(systemChatPacket.getMessage()),
+                        BaseComponentUtils.deserialize(systemChatPacket.getMessage()),
                         owner,
                         type != 2 ? config().getChatSyntax() : config().getActionbarSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(systemChatPacket::setMessage)
                 .isToRemove();
     }
@@ -187,11 +186,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(titlePacket.getText()),
+                        BaseComponentUtils.deserialize(titlePacket.getText()),
                         owner,
                         config().getTitleSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(titlePacket::setText)
                 .isToRemove();
     }
@@ -204,11 +203,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(subtitlePacket.getText()),
+                        BaseComponentUtils.deserialize(subtitlePacket.getText()),
                         owner,
                         config().getTitleSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(subtitlePacket::setText)
                 .isToRemove();
     }
@@ -231,12 +230,12 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(p.getTitle()),
+                        BaseComponentUtils.deserialize(p.getTitle()),
                         owner,
                         config().getBossbarSyntax()
                 )
                 .getResultOrToRemove(Component::empty)
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifPresent(p::setTitle);
     }
 
@@ -247,19 +246,19 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getHeader()),
+                        BaseComponentUtils.deserialize(headerFooterPacket.getHeader()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(headerFooterPacket::setHeader);
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter()),
+                        BaseComponentUtils.deserialize(headerFooterPacket.getFooter()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(headerFooterPacket::setFooter);
     }
 
@@ -267,13 +266,13 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         Kick kickPacket = (Kick) packet;
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(kickPacket.getMessage()),
+                        BaseComponentUtils.deserialize(kickPacket.getMessage()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(kickPacket::setMessage)
-                .ifToRemove(() -> kickPacket.setMessage(ComponentUtils.serializeToJson(Component.empty())));
+                .ifToRemove(() -> kickPacket.setMessage(new TextComponent()));
     }
 
     @Override
@@ -320,12 +319,14 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     }
 
     private void send(DefinedPacket packet) {
-        ((ChannelWrapper) ReflectionUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
+        if (owner.getCurrentConnection() instanceof UserConnection) {
+            ((UserConnection)owner.getCurrentConnection()).sendPacketQueued(packet);
+        }
     }
 
     public void refreshTab() {
         List<PlayerListItem.Item> items = new ArrayList<>();
-        for (Map.Entry<UUID, String> item : tabListCache.entrySet()) {
+        for (Map.Entry<UUID, BaseComponent> item : tabListCache.entrySet()) {
             PlayerListItem.Item i = new PlayerListItem.Item();
             i.setUuid(item.getKey());
             i.setDisplayName(item.getValue());
@@ -344,17 +345,17 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         }
     }
 
-    public void refreshBossbar(UUID uuid, String json) {
+    public void refreshBossbar(UUID uuid, BaseComponent text) {
         // BossBar was only added on MC 1.9
         if (owner.getParent().getPendingConnection().getVersion() < 107) {
             return;
         }
         BossBar p = new BossBar(uuid, 3);
-        p.setTitle(json);
+        p.setTitle(text);
         send(p);
     }
 
-    public void refreshTabHeaderFooter(String header, String footer) {
+    public void refreshTabHeaderFooter(BaseComponent header, BaseComponent footer) {
         send(new PlayerListHeaderFooter(header, footer));
     }
 
