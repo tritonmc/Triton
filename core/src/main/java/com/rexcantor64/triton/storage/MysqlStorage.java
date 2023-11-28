@@ -271,7 +271,10 @@ public class MysqlStorage extends Storage {
                     }
 
                     TWINData twin = item.getTwinData();
-                    if (twin == null) twin = new TWINData();
+                    if (twin == null) {
+                        twin = new TWINData();
+                        item.setTwinData(twin);
+                    }
                     twin.ensureValid();
 
                     translationsStatement.setString(9, twin.getId().toString());
