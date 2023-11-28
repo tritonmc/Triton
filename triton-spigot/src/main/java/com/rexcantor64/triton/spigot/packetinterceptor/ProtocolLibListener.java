@@ -31,6 +31,7 @@ import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.WrappedClientConfiguration;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
+import com.rexcantor64.triton.wrappers.WrappedPlayerChatMessage;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.kyori.adventure.text.Component;
@@ -137,11 +138,10 @@ public class ProtocolLibListener implements PacketListener {
                 // Removed in 1.19.3
                 packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
             }
-        } else {
-            // In 1.19+, this packet is signed, so we cannot edit it.
-            // It's sent by the player anyway, so there's nothing to translate.
-            packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
         }
+        // In 1.19+, this packet is signed, but we can still edit it, since it might contain
+        // formatting from chat plugins.
+        packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, asAsync(this::handleTitle));
@@ -185,22 +185,38 @@ public class ProtocolLibListener implements PacketListener {
     /* PACKET HANDLERS */
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        boolean ab = isActionbar(packet.getPacket());
+        boolean isSigned = MinecraftVersion.WILD_UPDATE.atOrAbove(); // MC 1.19+
+        if (isSigned && !main.getConfig().isSignedChat()) return;
+        // action bars are not sent here on 1.19+ anymore
+        boolean ab = !isSigned && isActionbar(packet.getPacket());
 
         // Don't bother parsing anything else if it's disabled on config
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
+        val chatModifier = packet.getPacket().getChatComponents();
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
         val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        boolean hasPlayerChatMessageRecord = isSigned && !MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove(); // MC 1.19-1.19.2
+        WrappedPlayerChatMessage wrappedPlayerChatMessage = null;
 
         Component message = null;
 
-        if (adventureModifier.readSafely(0) != null) {
+        if (hasPlayerChatMessageRecord) {
+            // The message is wrapped in a PlayerChatMessage record
+            val playerChatModifier = packet.getPacket().getModifier().withType(WrappedPlayerChatMessage.getWrappedClass(), WrappedPlayerChatMessage.CONVERTER);
+            wrappedPlayerChatMessage = playerChatModifier.readSafely(0);
+            if (wrappedPlayerChatMessage != null) {
+                Optional<WrappedChatComponent> msg = wrappedPlayerChatMessage.getMessage();
+                if (msg.isPresent()) {
+                    message = WrappedComponentUtils.deserialize(msg.get());
+                }
+            }
+        } else if (adventureModifier.readSafely(0) != null) {
             message = adventureModifier.readSafely(0);
         } else if (baseComponentModifier.readSafely(0) != null) {
             message = BaseComponentUtils.deserialize(baseComponentModifier.readSafely(0));
         } else {
-            val msg = packet.getPacket().getChatComponents().readSafely(0);
+            val msg = chatModifier.readSafely(0);
             if (msg != null) {
                 message = WrappedComponentUtils.deserialize(msg);
             }
@@ -212,6 +228,7 @@ public class ProtocolLibListener implements PacketListener {
         }
 
         // Translate the message
+        val wrappedPlayerChatMessageFinal = wrappedPlayerChatMessage;
         parser()
                 .translateComponent(
                         message,
@@ -222,6 +239,12 @@ public class ProtocolLibListener implements PacketListener {
                     if (adventureModifier.size() > 0) {
                         // On a Paper or fork, so we can directly set the Adventure Component
                         adventureModifier.writeSafely(0, result);
+                    } else if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // MC 1.19.3+
+                        // While chat is signed, we can still mess around with formatting and prefixes
+                        chatModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
+                    } else if (hasPlayerChatMessageRecord) { // MC 1.19-1.19.2
+                        // While chat is signed, we can still mess around with formatting and prefixes
+                        wrappedPlayerChatMessageFinal.setMessage(Optional.of(WrappedComponentUtils.serialize(result)));
                     } else {
                         BaseComponent[] resultComponent;
                         if (ab && !MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) {
