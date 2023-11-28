@@ -58,6 +58,7 @@ public class MainConfig implements TritonConfig {
     private List<String> commandAliases;
     private String disabledLine;
     private boolean chat;
+    private boolean signedChat;
     private FeatureSyntax chatSyntax;
     private boolean actionbars;
     private FeatureSyntax actionbarSyntax;
@@ -231,6 +232,7 @@ public class MainConfig implements TritonConfig {
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);
+        this.signedChat = chat.getBoolean("signed-enabled", false);
         this.chatSyntax = FeatureSyntax.fromSection(chat);
         this.chatSyntax.interactive = true;
 

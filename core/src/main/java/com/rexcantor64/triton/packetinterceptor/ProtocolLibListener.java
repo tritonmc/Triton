@@ -32,6 +32,7 @@ import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
 import com.rexcantor64.triton.wrappers.WrappedClientConfiguration;
+import com.rexcantor64.triton.wrappers.WrappedPlayerChatMessage;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -135,11 +136,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 // Removed in 1.19.3
                 packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
             }
-        } else {
-            // In 1.19+, this packet is signed, so we cannot edit it.
-            // It's sent by the player anyway, so there's nothing to translate.
-            packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
         }
+        // In 1.19+, this packet is signed, but we can still edit it, since it might contain
+        // formatting from chat plugins.
+        packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
         if (main.getMcVersion() >= 17) {
             // Title packet split on 1.17
             packetHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, asAsync(this::handleTitle));
@@ -183,26 +183,42 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     /* PACKET HANDLERS */
 
     private void handleChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
-        boolean ab = isActionbar(packet.getPacket());
+        boolean isSigned = MinecraftVersion.WILD_UPDATE.atOrAbove(); // MC 1.19+
+        if (isSigned && !main.getConfig().isSignedChat()) return;
+        // action bars are not sent here on 1.19+ anymore
+        boolean ab = !isSigned && isActionbar(packet.getPacket());
 
         // Don't bother parsing anything else if it's disabled on config
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
+        val chatModifier = packet.getPacket().getChatComponents();
         val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
         BaseComponent[] result = null;
+        boolean hasPlayerChatMessageRecord = isSigned && !MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove(); // MC 1.19-1.19.2
 
         // Hot fix for 1.16 Paper builds 472+ (and 1.17+)
         StructureModifier<?> adventureModifier =
                 ADVENTURE_COMPONENT_CLASS == null ? null : packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
+        StructureModifier<WrappedPlayerChatMessage> playerChatModifier = null;
 
-        if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
+        if (hasPlayerChatMessageRecord) {
+            // The message is wrapped in a PlayerChatMessage record
+            playerChatModifier = packet.getPacket().getModifier().withType(WrappedPlayerChatMessage.getWrappedClass(), WrappedPlayerChatMessage.CONVERTER);
+            WrappedPlayerChatMessage playerChatMessage = playerChatModifier.readSafely(0);
+            if (playerChatMessage != null) {
+                Optional<WrappedChatComponent> msg = playerChatMessage.getMessage();
+                if (msg.isPresent()) {
+                    result = ComponentSerializer.parse(msg.get().getJson());
+                }
+            }
+        } else if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
             Object adventureComponent = adventureModifier.readSafely(0);
             result = AdventureComponentWrapper.toMd5Component(adventureComponent);
             adventureModifier.writeSafely(0, null);
         } else if (baseComponentModifier.readSafely(0) != null) {
             result = baseComponentModifier.readSafely(0);
         } else {
-            val msg = packet.getPacket().getChatComponents().readSafely(0);
+            val msg = chatModifier.readSafely(0);
             if (msg != null) result = ComponentSerializer.parse(msg.getJson());
         }
 
@@ -221,7 +237,13 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         }
 
-        if (ab && !MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) {
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // MC 1.19.3+
+            // While chat is signed, we can still mess around with formatting and prefixes
+            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        } else if (hasPlayerChatMessageRecord) { // MC 1.19-1.19.2
+            // While chat is signed, we can still mess around with formatting and prefixes
+            playerChatModifier.readSafely(0).setMessage(Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(result))));
+        } else if (ab && !MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) {
             // The Notchian client does not support true JSON messages on actionbars
             // on 1.10 and below. Therefore, we must convert to a legacy string inside
             // a TextComponent.
