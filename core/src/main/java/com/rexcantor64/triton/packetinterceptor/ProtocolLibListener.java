@@ -19,6 +19,7 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
+import com.google.gson.JsonSyntaxException;
 import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
@@ -277,6 +278,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
         val stringModifier = packet.getPacket().getStrings();
+        val chatModifier = packet.getPacket().getChatComponents();
 
         BaseComponent[] result = null;
 
@@ -288,6 +290,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             Object adventureComponent = adventureModifier.readSafely(0);
             result = AdventureComponentWrapper.toMd5Component(adventureComponent);
             adventureModifier.writeSafely(0, null);
+        } else if (chatModifier.readSafely(0) != null) {
+            try {
+                result = ComponentSerializer.parse(chatModifier.readSafely(0).getJson());
+            } catch (JsonSyntaxException ignore) {
+                // The md_5 chat library can't handle some messages of 1.20.4
+                // https://github.com/SpigotMC/BungeeCord/issues/3578
+                return;
+            }
         } else {
             val msgJson = stringModifier.readSafely(0);
             if (msgJson != null) {
@@ -310,7 +320,11 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         }
 
-        stringModifier.writeSafely(0, ComponentSerializer.toString(result));
+        if (chatModifier.size() > 0) {
+            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        } else {
+            stringModifier.writeSafely(0, ComponentSerializer.toString(result));
+        }
     }
 
     /**
