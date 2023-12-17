@@ -285,6 +285,7 @@ public class ProtocolLibListener implements PacketListener {
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
         val stringModifier = packet.getPacket().getStrings();
+        val chatModifier = packet.getPacket().getChatComponents();
 
         Component message = null;
 
@@ -292,6 +293,8 @@ public class ProtocolLibListener implements PacketListener {
 
         if (adventureModifier.readSafely(0) != null) {
             message = adventureModifier.readSafely(0);
+        } else if (chatModifier.readSafely(0) != null) {
+            message = WrappedComponentUtils.deserialize(chatModifier.readSafely(0));
         } else {
             val msgJson = stringModifier.readSafely(0);
             if (msgJson != null) {
@@ -315,6 +318,9 @@ public class ProtocolLibListener implements PacketListener {
                     if (adventureModifier.size() > 0) {
                         // On a Paper or fork, so we can directly set the Adventure Component
                         adventureModifier.writeSafely(0, result);
+                    } else if (chatModifier.size() > 0) {
+                        // Starting on MC 1.20.3 this packet takes a chat component instead of a json string
+                        chatModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
                     } else {
                         stringModifier.writeSafely(0, ComponentUtils.serializeToJson(result));
                     }
