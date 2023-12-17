@@ -835,9 +835,12 @@ public class ProtocolLibListener implements PacketListener {
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
         val types = new ArrayList<PacketType>();
-        types.add(PacketType.Play.Client.SETTINGS);
-        if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
-            types.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
+        if (this.allowedTypes.contains(HandlerFunction.HandlerType.SYNC)) {
+            // only listen for these packets in the sync handler
+            types.add(PacketType.Play.Client.SETTINGS);
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
+                types.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
+            }
         }
 
         return ListeningWhitelist.newBuilder()
