@@ -3,10 +3,10 @@ package com.rexcantor64.triton.velocity.packetinterceptor.packets;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
-import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -44,16 +44,16 @@ public class BossBarHandler {
 
         val text = bossBarPacket.getName();
         if (text != null && (action == BossBar.ADD || action == BossBar.UPDATE_NAME)) {
-            player.setBossbar(uuid, bossBarPacket.getName());
+            player.setBossbar(uuid, bossBarPacket.getName().getComponent());
 
             parser()
                     .translateComponent(
-                            ComponentUtils.deserializeFromJson(bossBarPacket.getName(), player.getProtocolVersion()),
+                            bossBarPacket.getName().getComponent(),
                             player,
                             getBossBarSyntax()
                     )
                     .getResultOrToRemove(Component::empty)
-                    .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
+                    .map(result -> new ComponentHolder(player.getProtocolVersion(), result))
                     .ifPresent(bossBarPacket::setName);
         }
         return Optional.of(bossBarPacket);

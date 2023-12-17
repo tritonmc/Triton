@@ -7,6 +7,7 @@ import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ChatType;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
 import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChat;
 import net.kyori.adventure.text.Component;
@@ -46,10 +47,11 @@ public class ChatHandler {
 
         return Objects.requireNonNull(
                 parser().translateComponent(
-                                systemChatPacket.getComponent(),
+                                systemChatPacket.getComponent().getComponent(),
                                 player,
                                 actionBar ? getActionBarSyntax() : getChatSyntax()
                         )
+                        .map(result -> new ComponentHolder(player.getProtocolVersion(), result))
                         .mapToObj(
                                 result -> Optional.of(cloneSystemChatWithComponent(systemChatPacket, result)),
                                 () -> Optional.of(systemChatPacket),
@@ -80,7 +82,7 @@ public class ChatHandler {
         );
     }
 
-    private @NotNull SystemChat cloneSystemChatWithComponent(@NotNull SystemChat systemChatPacket, Component newComponent) {
+    private @NotNull SystemChat cloneSystemChatWithComponent(@NotNull SystemChat systemChatPacket, ComponentHolder newComponent) {
         return new SystemChat(newComponent, systemChatPacket.getType());
     }
 
