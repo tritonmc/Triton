@@ -79,6 +79,9 @@ public class ProtocolLibListener implements PacketListener {
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
 
+    private final HandlerFunction ASYNC_PASSTHROUGH = asAsync((_packet, _player) -> {
+    });
+
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
     private final AdvancementsPacketHandler advancementsPacketHandler = AdvancementsPacketHandler.newInstance();
     private final EntitiesPacketHandler entitiesPacketHandler = new EntitiesPacketHandler();
@@ -161,6 +164,12 @@ public class ProtocolLibListener implements PacketListener {
             // It allows unlimited length team prefixes and suffixes
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, asAsync(this::handleScoreboardTeam));
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, asAsync(this::handleScoreboardObjective));
+            // Register the packets below so their order is kept between all scoreboard packets
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, ASYNC_PASSTHROUGH);
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_SCORE, ASYNC_PASSTHROUGH);
+            if (MinecraftVersion.v1_20_4.atOrAbove()) {
+                packetHandlers.put(PacketType.Play.Server.RESET_SCORE, ASYNC_PASSTHROUGH);
+            }
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
