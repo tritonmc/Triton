@@ -75,6 +75,7 @@ public class ProtocolLibListener implements PacketListener {
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private final Class<Component> ADVENTURE_COMPONENT_CLASS = Component.class;
+    private final Optional<Class<?>> NUMBER_FORMAT_CLASS;
     private final Field PLAYER_ACTIVE_CONTAINER_FIELD;
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
@@ -113,6 +114,7 @@ public class ProtocolLibListener implements PacketListener {
                 ReflectionUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
                 NMSUtils.getNMSClass("ContainerPlayer");
         BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? ReflectionUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
+        NUMBER_FORMAT_CLASS = MinecraftReflection.getOptionalNMS("network.chat.numbers.NumberFormat");
 
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
@@ -736,8 +738,11 @@ public class ProtocolLibListener implements PacketListener {
 
         val healthDisplay = packet.getPacket().getModifier().readSafely(2);
         val displayName = chatComponentsModifier.readSafely(0);
+        val numberFormat = NUMBER_FORMAT_CLASS
+                .map(numberFormatClass -> packet.getPacket().getSpecificModifier(numberFormatClass).readSafely(0))
+                .orElse(null);
 
-        languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
+        languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay, numberFormat);
 
         parser()
                 .translateComponent(
@@ -906,6 +911,9 @@ public class ProtocolLibListener implements PacketListener {
             packet.getStrings().writeSafely(0, key);
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getChatJson()));
             packet.getModifier().writeSafely(2, value.getType());
+            NUMBER_FORMAT_CLASS.ifPresent(numberFormatClass ->
+                    packet.getSpecificModifier((Class<Object>) numberFormatClass)
+                            .writeSafely(0, value.getNumberFormat()));
             ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
 
