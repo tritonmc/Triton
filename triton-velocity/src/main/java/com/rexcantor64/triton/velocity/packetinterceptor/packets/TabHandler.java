@@ -4,21 +4,20 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
-import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
 import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
 import com.velocitypowered.proxy.protocol.packet.RemovePlayerInfo;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public class TabHandler {
-
-    private static final String EMPTY_COMPONENT = "{\"translate\":\"\"}";
 
     private MessageParser parser() {
         return Triton.get().getMessageParser();
@@ -37,23 +36,23 @@ public class TabHandler {
             return Optional.of(headerFooterPacket);
         }
 
-        player.setLastTabHeader(headerFooterPacket.getHeader());
-        player.setLastTabFooter(headerFooterPacket.getFooter());
+        player.setLastTabHeader(headerFooterPacket.getHeader().getComponent());
+        player.setLastTabFooter(headerFooterPacket.getFooter().getComponent());
 
-        Optional<String> newHeader = parser().translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getHeader(), player.getProtocolVersion()),
+        Optional<ComponentHolder> newHeader = parser().translateComponent(
+                        headerFooterPacket.getHeader().getComponent(),
                         player,
                         getTabSyntax()
                 )
-                .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
-                .getResultOrToRemove(() -> EMPTY_COMPONENT);
-        Optional<String> newFooter = parser().translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter(), player.getProtocolVersion()),
+                .getResultOrToRemove(Component::empty)
+                .map(result -> new ComponentHolder(player.getProtocolVersion(), result));
+        Optional<ComponentHolder> newFooter = parser().translateComponent(
+                        headerFooterPacket.getFooter().getComponent(),
                         player,
                         getTabSyntax()
                 )
-                .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
-                .getResultOrToRemove(() -> EMPTY_COMPONENT);
+                .getResultOrToRemove(Component::empty)
+                .map(result -> new ComponentHolder(player.getProtocolVersion(), result));
 
         if (newFooter.isPresent() || newHeader.isPresent()) {
             return Optional.of(
@@ -67,6 +66,10 @@ public class TabHandler {
     }
 
     public @NotNull Optional<MinecraftPacket> handlePlayerListItem(@NotNull LegacyPlayerListItem playerListItemPacket, @NotNull VelocityLanguagePlayer player) {
+        if (shouldNotTranslateTab()) {
+            return Optional.of(playerListItemPacket);
+        }
+
         val items = playerListItemPacket.getItems();
         val action = playerListItemPacket.getAction();
 
@@ -102,6 +105,9 @@ public class TabHandler {
     }
 
     public @NotNull Optional<MinecraftPacket> handleUpsertPlayerInfo(@NotNull UpsertPlayerInfo upsertPlayerInfoPacket, @NotNull VelocityLanguagePlayer player) {
+        if (shouldNotTranslateTab()) {
+            return Optional.of(upsertPlayerInfoPacket);
+        }
         if (!upsertPlayerInfoPacket.getActions().contains(UpsertPlayerInfo.Action.UPDATE_DISPLAY_NAME)) {
             return Optional.of(upsertPlayerInfoPacket);
         }
@@ -113,13 +119,13 @@ public class TabHandler {
             }
             parser()
                     .translateComponent(
-                            item.getDisplayName(),
+                            item.getDisplayName().getComponent(),
                             player,
                             getTabSyntax()
                     )
                     .ifChanged(result -> {
-                        player.cachePlayerListItem(uuid, item.getDisplayName());
-                        item.setDisplayName(result);
+                        player.cachePlayerListItem(uuid, item.getDisplayName().getComponent());
+                        item.setDisplayName(new ComponentHolder(player.getProtocolVersion(), result));
                     })
                     .ifUnchanged(() -> player.deleteCachedPlayerListItem(uuid))
                     .ifToRemove(() -> player.deleteCachedPlayerListItem(uuid));
@@ -130,6 +136,9 @@ public class TabHandler {
     }
 
     public @NotNull Optional<MinecraftPacket> handleRemovePlayerInfo(@NotNull RemovePlayerInfo removePlayerInfoPacket, @NotNull VelocityLanguagePlayer player) {
+        if (shouldNotTranslateTab()) {
+            return Optional.of(removePlayerInfoPacket);
+        }
         for (UUID uuid : removePlayerInfoPacket.getProfilesToRemove()) {
             player.deleteCachedPlayerListItem(uuid);
         }

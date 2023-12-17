@@ -6,6 +6,7 @@ import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import com.velocitypowered.proxy.protocol.packet.title.GenericTitlePacket;
 import com.velocitypowered.proxy.protocol.packet.title.LegacyTitlePacket;
 import com.velocitypowered.proxy.protocol.packet.title.TitleActionbarPacket;
@@ -52,11 +53,11 @@ public class TitleHandler {
 
         return Objects.requireNonNull(
                 parser().translateComponent(
-                                ComponentUtils.deserializeFromJson(titlePacket.getComponent(), player.getProtocolVersion()),
+                                titlePacket.getComponent().getComponent(),
                                 player,
                                 isActionBarPacket ? getActionBarSyntax() : getTitleSyntax()
                         )
-                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
+                        .map(result -> new ComponentHolder(player.getProtocolVersion(), result))
                         .mapToObj(
                                 result -> {
                                     titlePacket.setComponent(result);

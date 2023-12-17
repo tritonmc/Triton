@@ -6,6 +6,7 @@ import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +34,12 @@ public class ResourcePackHandler {
         }
 
         parser().translateComponent(
-                        resourcePackRequest.getPrompt(),
+                        resourcePackRequest.getPrompt().getComponent(),
                         player,
                         getResourcePackSyntax()
                 )
                 .getResultOrToRemove(Component::empty)
+                .map(result -> new ComponentHolder(player.getProtocolVersion(), result))
                 .ifPresent(resourcePackRequest::setPrompt);
         return Optional.of(resourcePackRequest);
     }
