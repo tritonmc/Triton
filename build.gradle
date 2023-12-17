@@ -25,6 +25,10 @@ allprojects {
         mavenLocal()
         mavenCentral()
         maven {
+            name 'diogotcRepositorySnapshots'
+            url 'https://repo.diogotc.com/snapshots/'
+        }
+        maven {
             url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
             content {
                 includeGroup 'org.bukkit'
@@ -41,10 +45,6 @@ allprojects {
         maven {
             name 'velocity'
             url 'https://nexus.velocitypowered.com/repository/maven-public/'
-        }
-        maven {
-            name 'diogotcRepositorySnapshots'
-            url 'https://repo.diogotc.com/snapshots/'
         }
     }
 }
