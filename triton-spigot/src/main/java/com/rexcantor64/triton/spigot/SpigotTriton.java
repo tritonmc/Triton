@@ -114,7 +114,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         }
 
         if (getConfig().isBungeecord()) {
-            if (!isSpigotProxyMode()) {
+            if (!isSpigotProxyMode() && !isPaperProxyMode()) {
                 getLogger().logError("DANGER! DANGER! DANGER!");
                 getLogger().logError("Proxy mode is enabled on Triton but disabled on Spigot!");
                 getLogger().logError("A malicious player can run ANY command as the server.");
@@ -298,6 +298,29 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
                 return false;
             }
             return (boolean) bungeeEnabled;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Use reflection to check if this Paper server has velocity modern forwarding enabled on paper-global.yml.
+     * This is used to show a warning if Paper is in proxy mode, but the server is not.
+     *
+     * @return Whether this Spigot server has velocity forwarding enabled on paper-global.yml.
+     */
+    public boolean isPaperProxyMode() {
+        try {
+            Class<?> paperConfigClass = Class.forName("io.papermc.paper.configuration.GlobalConfiguration");
+
+            Object instance = paperConfigClass.getMethod("get").invoke(null);
+            Object proxies = instance.getClass().getField("proxies").get(instance);
+            Object velocity = proxies.getClass().getField("velocity").get(proxies);
+            Object velocityEnabled = velocity.getClass().getField("enabled").get(velocity);
+            if (velocityEnabled == null) {
+                return false;
+            }
+            return (boolean) velocityEnabled;
         } catch (Exception e) {
             return false;
         }
