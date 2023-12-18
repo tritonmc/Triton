@@ -7,6 +7,7 @@ import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.Disconnect;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -33,13 +34,16 @@ public class DisconnectHandler {
 
         return Objects.requireNonNull(
                 parser().translateComponent(
-                                ComponentUtils.deserializeFromJson(disconnectPacket.getReason(), player.getProtocolVersion()),
+                                disconnectPacket.getReason().getComponent(),
                                 player,
                                 getKickSyntax()
                         )
-                        .map(result -> ComponentUtils.serializeToJson(result, player.getProtocolVersion()))
+                        .map(result -> new ComponentHolder(player.getProtocolVersion(), result))
                         .mapToObj(
-                                result -> Optional.of(new Disconnect(result)),
+                                result -> {
+                                    disconnectPacket.setReason(result);
+                                    return Optional.of(disconnectPacket);
+                                },
                                 () -> Optional.of(disconnectPacket),
                                 Optional::empty
                         )

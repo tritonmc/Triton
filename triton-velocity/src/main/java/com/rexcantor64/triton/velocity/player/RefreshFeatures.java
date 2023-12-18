@@ -7,8 +7,10 @@ import com.velocitypowered.proxy.protocol.packet.BossBar;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
 import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 
 import java.util.EnumSet;
 import java.util.UUID;
@@ -29,11 +31,11 @@ public class RefreshFeatures {
         player.getCachedBossBars().forEach(this::refreshBossBar);
     }
 
-    private void refreshBossBar(UUID uuid, String json) {
+    private void refreshBossBar(UUID uuid, Component component) {
         val bossBarPacket = new BossBar();
         bossBarPacket.setUuid(uuid);
         bossBarPacket.setAction(BossBar.UPDATE_NAME);
-        bossBarPacket.setName(json);
+        bossBarPacket.setName(new ComponentHolder(player.getProtocolVersion(), component));
 
         sendPacket(bossBarPacket);
     }
@@ -44,7 +46,10 @@ public class RefreshFeatures {
         if (header == null || footer == null) {
             return;
         }
-        val headerFooterPacket = new HeaderAndFooter(header, footer);
+        val headerFooterPacket = new HeaderAndFooter(
+                new ComponentHolder(player.getProtocolVersion(), header),
+                new ComponentHolder(player.getProtocolVersion(), footer)
+        );
 
         sendPacket(headerFooterPacket);
     }
@@ -56,7 +61,7 @@ public class RefreshFeatures {
                     .stream()
                     .map(entry -> {
                         val playerEntry = new UpsertPlayerInfo.Entry(entry.getKey());
-                        playerEntry.setDisplayName(entry.getValue());
+                        playerEntry.setDisplayName(new ComponentHolder(player.getProtocolVersion(), entry.getValue()));
                         return playerEntry;
                     })
                     .collect(Collectors.toList());

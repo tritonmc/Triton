@@ -35,11 +35,11 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
 
     @Getter(AccessLevel.PACKAGE)
     @Setter(AccessLevel.PUBLIC)
-    private String lastTabHeader;
+    private Component lastTabHeader;
     @Getter(AccessLevel.PACKAGE)
     @Setter(AccessLevel.PUBLIC)
-    private String lastTabFooter;
-    private final Map<UUID, String> bossBars = new HashMap<>();
+    private Component lastTabFooter;
+    private final Map<UUID, Component> bossBars = new HashMap<>();
     private final Map<UUID, Component> playerListItemCache = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
     private String clientLocale;
@@ -56,7 +56,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         return player.map(VelocityLanguagePlayer::new).orElse(null);
     }
 
-    public void setBossbar(UUID uuid, String lastBossBar) {
+    public void setBossbar(UUID uuid, Component lastBossBar) {
         bossBars.put(uuid, lastBossBar);
     }
 
@@ -64,7 +64,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
         bossBars.remove(uuid);
     }
 
-    Map<UUID, String> getCachedBossBars() {
+    Map<UUID, Component> getCachedBossBars() {
         return Collections.unmodifiableMap(bossBars);
     }
 

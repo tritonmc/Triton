@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.spigot;
 
 import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
@@ -114,7 +115,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         }
 
         if (getConfig().isBungeecord()) {
-            if (!isSpigotProxyMode()) {
+            if (!isSpigotProxyMode() && !isPaperProxyMode()) {
                 getLogger().logError("DANGER! DANGER! DANGER!");
                 getLogger().logError("Proxy mode is enabled on Triton but disabled on Spigot!");
                 getLogger().logError("A malicious player can run ANY command as the server.");
@@ -168,7 +169,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     /**
      * Checks if ProtocolLib is enabled and if its version matches
      * the expected version.
-     * Triton requires ProtocolLib 5.1.0 or later.
+     * Triton requires ProtocolLib 5.2.0 or later.
      *
      * @return Whether the plugin should continue loading
      * @since 3.8.2
@@ -185,13 +186,11 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
             return true;
         }
 
-        val version = protocolLib.getDescription().getVersion();
-        val versionParts = version.split("\\.");
-        val majorVersion = Integer.parseInt(versionParts[0]);
-        val minorVersion = Integer.parseInt(versionParts[1]);
-        if (majorVersion < 5 || (majorVersion == 5 && minorVersion < 1)) {
-            // Triton requires ProtocolLib 5.1.0 or later
-            getLogger().logError("ProtocolLib 5.1.0 or later is required! Older versions of ProtocolLib will only partially work, and are therefore not recommended.");
+        try {
+            MinecraftVersion ignore = MinecraftVersion.v1_20_4;
+        } catch (NoSuchFieldError ignore) {
+            // Triton requires ProtocolLib 5.2.0 or later
+            getLogger().logError("ProtocolLib 5.2.0 or later is required! Older versions of ProtocolLib will only partially work or not work at all, and are therefore not recommended.");
             getLogger().logError("If you want to enable the plugin anyway, add `i-know-what-i-am-doing: true` to Triton's config.yml.");
             return false;
         }
@@ -298,6 +297,29 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
                 return false;
             }
             return (boolean) bungeeEnabled;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Use reflection to check if this Paper server has velocity modern forwarding enabled on paper-global.yml.
+     * This is used to show a warning if Paper is in proxy mode, but the server is not.
+     *
+     * @return Whether this Spigot server has velocity forwarding enabled on paper-global.yml.
+     */
+    public boolean isPaperProxyMode() {
+        try {
+            Class<?> paperConfigClass = Class.forName("io.papermc.paper.configuration.GlobalConfiguration");
+
+            Object instance = paperConfigClass.getMethod("get").invoke(null);
+            Object proxies = instance.getClass().getField("proxies").get(instance);
+            Object velocity = proxies.getClass().getField("velocity").get(proxies);
+            Object velocityEnabled = velocity.getClass().getField("enabled").get(velocity);
+            if (velocityEnabled == null) {
+                return false;
+            }
+            return (boolean) velocityEnabled;
         } catch (Exception e) {
             return false;
         }

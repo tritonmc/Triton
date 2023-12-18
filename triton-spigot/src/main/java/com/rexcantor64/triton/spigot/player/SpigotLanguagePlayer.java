@@ -70,10 +70,11 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         load();
     }
 
-    public void setScoreboardObjective(String name, String chatJson, Object type) {
+    public void setScoreboardObjective(String name, String chatJson, Object type, Object numberFormat) {
         ScoreboardObjective objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
         objective.setChatJson(chatJson);
         objective.setType(type);
+        objective.setNumberFormat(numberFormat);
     }
 
     public void removeScoreboardObjective(String name) {
@@ -271,6 +272,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     public static class ScoreboardObjective {
         private String chatJson;
         private Object type;
+        private Object numberFormat;
     }
 
     @Data

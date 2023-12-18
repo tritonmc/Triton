@@ -75,9 +75,13 @@ public class ProtocolLibListener implements PacketListener {
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private StructureModifier<Object> SCOREBOARD_TEAM_METADATA_MODIFIER = null;
     private final Class<Component> ADVENTURE_COMPONENT_CLASS = Component.class;
+    private final Optional<Class<?>> NUMBER_FORMAT_CLASS;
     private final Field PLAYER_ACTIVE_CONTAINER_FIELD;
     private final String MERCHANT_RECIPE_SPECIAL_PRICE_FIELD;
     private final String MERCHANT_RECIPE_DEMAND_FIELD;
+
+    private final HandlerFunction ASYNC_PASSTHROUGH = asAsync((_packet, _player) -> {
+    });
 
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
     private final AdvancementsPacketHandler advancementsPacketHandler = AdvancementsPacketHandler.newInstance();
@@ -110,6 +114,7 @@ public class ProtocolLibListener implements PacketListener {
                 ReflectionUtils.getClass("net.minecraft.world.inventory.ContainerPlayer") :
                 NMSUtils.getNMSClass("ContainerPlayer");
         BOSSBAR_UPDATE_TITLE_ACTION_CLASS = main.getMcVersion() >= 17 ? ReflectionUtils.getClass("net.minecraft.network.protocol.game.PacketPlayOutBoss$e") : null;
+        NUMBER_FORMAT_CLASS = MinecraftReflection.getOptionalNMS("network.chat.numbers.NumberFormat");
 
         MERCHANT_RECIPE_SPECIAL_PRICE_FIELD = getMCVersion() >= 17 ? "g" : "specialPrice";
         MERCHANT_RECIPE_DEMAND_FIELD = getMCVersion() >= 17 ? "h" : "demand";
@@ -161,6 +166,12 @@ public class ProtocolLibListener implements PacketListener {
             // It allows unlimited length team prefixes and suffixes
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_TEAM, asAsync(this::handleScoreboardTeam));
             packetHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, asAsync(this::handleScoreboardObjective));
+            // Register the packets below so their order is kept between all scoreboard packets
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE, ASYNC_PASSTHROUGH);
+            packetHandlers.put(PacketType.Play.Server.SCOREBOARD_SCORE, ASYNC_PASSTHROUGH);
+            if (MinecraftVersion.v1_20_4.atOrAbove()) {
+                packetHandlers.put(PacketType.Play.Server.RESET_SCORE, ASYNC_PASSTHROUGH);
+            }
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
@@ -276,6 +287,7 @@ public class ProtocolLibListener implements PacketListener {
         if ((ab && !main.getConfig().isActionbars()) || (!ab && !main.getConfig().isChat())) return;
 
         val stringModifier = packet.getPacket().getStrings();
+        val chatModifier = packet.getPacket().getChatComponents();
 
         Component message = null;
 
@@ -283,6 +295,8 @@ public class ProtocolLibListener implements PacketListener {
 
         if (adventureModifier.readSafely(0) != null) {
             message = adventureModifier.readSafely(0);
+        } else if (chatModifier.readSafely(0) != null) {
+            message = WrappedComponentUtils.deserialize(chatModifier.readSafely(0));
         } else {
             val msgJson = stringModifier.readSafely(0);
             if (msgJson != null) {
@@ -306,6 +320,9 @@ public class ProtocolLibListener implements PacketListener {
                     if (adventureModifier.size() > 0) {
                         // On a Paper or fork, so we can directly set the Adventure Component
                         adventureModifier.writeSafely(0, result);
+                    } else if (chatModifier.size() > 0) {
+                        // Starting on MC 1.20.3 this packet takes a chat component instead of a json string
+                        chatModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
                     } else {
                         stringModifier.writeSafely(0, ComponentUtils.serializeToJson(result));
                     }
@@ -721,8 +738,11 @@ public class ProtocolLibListener implements PacketListener {
 
         val healthDisplay = packet.getPacket().getModifier().readSafely(2);
         val displayName = chatComponentsModifier.readSafely(0);
+        val numberFormat = NUMBER_FORMAT_CLASS
+                .map(numberFormatClass -> packet.getPacket().getSpecificModifier(numberFormatClass).readSafely(0))
+                .orElse(null);
 
-        languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay);
+        languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), healthDisplay, numberFormat);
 
         parser()
                 .translateComponent(
@@ -815,9 +835,12 @@ public class ProtocolLibListener implements PacketListener {
     @Override
     public ListeningWhitelist getReceivingWhitelist() {
         val types = new ArrayList<PacketType>();
-        types.add(PacketType.Play.Client.SETTINGS);
-        if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
-            types.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
+        if (this.allowedTypes.contains(HandlerFunction.HandlerType.SYNC)) {
+            // only listen for these packets in the sync handler
+            types.add(PacketType.Play.Client.SETTINGS);
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
+                types.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
+            }
         }
 
         return ListeningWhitelist.newBuilder()
@@ -891,6 +914,9 @@ public class ProtocolLibListener implements PacketListener {
             packet.getStrings().writeSafely(0, key);
             packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(value.getChatJson()));
             packet.getModifier().writeSafely(2, value.getType());
+            NUMBER_FORMAT_CLASS.ifPresent(numberFormatClass ->
+                    packet.getSpecificModifier((Class<Object>) numberFormatClass)
+                            .writeSafely(0, value.getNumberFormat()));
             ProtocolLibrary.getProtocolManager().sendServerPacket(bukkitPlayer, packet, true);
         });
 
