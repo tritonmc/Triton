@@ -2,9 +2,9 @@ package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.utils.ModernComponentGetters;
 import lombok.Getter;
 import lombok.val;
-import lombok.var;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
@@ -77,11 +77,15 @@ public class AdvancedComponent {
                         builder.append(uuid.toString());
                         hasHover = true;
                     }
-                    if (comp.getFontRaw() != null) {
-                        builder.append("\uE800")
-                                .append(comp.getFontRaw())
-                                .append("\uE802");
-                        hasFont = true;
+                    try {
+                        if (comp.getFontRaw() != null) {
+                            builder.append("\uE800")
+                                    .append(comp.getFontRaw())
+                                    .append("\uE802");
+                            hasFont = true;
+                        }
+                    } catch (NoSuchMethodError ignore) {
+                        // old versions of Spigot don't have getFontRaw()
                     }
                 }
             }
@@ -102,11 +106,17 @@ public class AdvancedComponent {
                         args.add(fromBaseComponent(false, arg));
                 advancedComponent.setTranslatableArguments(uuid.toString(), args);
             }
-            if (!onlyText && comp instanceof KeybindComponent) {
-                KeybindComponent kc = (KeybindComponent) comp;
-                builder.append("\uE700")
-                        .append(kc.getKeybind())
-                        .append("\uE700");
+            if (!onlyText) {
+                try {
+                    ModernComponentGetters.getKeybind(comp)
+                            .ifPresent(keybind -> {
+                                builder.append("\uE700")
+                                        .append(keybind)
+                                        .append("\uE700");
+                            });
+                } catch (NoClassDefFoundError ignore) {
+                    // old versions of Spigot don't have KeybindComponent
+                }
             }
             if (comp.getExtra() != null) {
                 AdvancedComponent component = fromBaseComponent(onlyText, comp.getExtra()
@@ -277,7 +287,7 @@ public class AdvancedComponent {
                     component = new TextComponent("");
                     ComponentUtils.copyFormatting(previousComponent, component);
                 }
-                KeybindComponent kc = new KeybindComponent(key.toString());
+                BaseComponent kc = ModernComponentGetters.newKeybindComponent(key.toString());
                 ComponentUtils.copyFormatting(component, kc);
                 list.add(kc);
             } else {
