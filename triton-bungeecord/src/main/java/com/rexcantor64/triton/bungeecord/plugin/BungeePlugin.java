@@ -28,7 +28,9 @@ public class BungeePlugin extends Plugin implements PluginLoader {
         libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN.getLibrary());
         libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD.getLibrary());
         libraryManager.loadLibrary(Dependency.ADVENTURE_KEY.getLibrary());
+        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON.getLibrary());
         libraryManager.loadLibrary(Dependency.KYORI_EXAMINATION.getLibrary());
+        libraryManager.loadLibrary(Dependency.KYORI_OPTION.getLibrary());
 
         new BungeeTriton(this).onEnable();
     }

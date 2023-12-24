@@ -10,37 +10,41 @@ public enum Dependency {
     ADVENTURE(
             "net{}kyori",
             "adventure-api",
-            "4.12.0",
-            "vkfxrI917x81BfIwPLk0fPVNpb+iEGVQzJ1vm4weijQ="
+            "4.15.0",
+            "TDRoKSrXCMxo/4+pd4/tKvfbcagSYfeQRmzQM/8BgZQ="
     ),
     ADVENTURE_TEXT_SERIALIZER_GSON(
             "net{}kyori",
             "adventure-text-serializer-gson",
-            "4.12.0",
-            "Ioindur0+rZ+O3cJ+UKjNekSRaltHh9BwaKc5hlcEo0=",
-            relocate("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}serializer{}gson")
+            "4.15.0",
+            "0t/P0pGWrqe0zNNySTUrWmEFbM7ijGXv9KmJ9zfuIDo=",
+            relocate("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}serializer{}gson"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}serializer{}json"),
+            relocate("net{}kyori{}option", "kyori{}option")
     ),
     ADVENTURE_TEXT_SERIALIZER_LEGACY(
             "net{}kyori",
             "adventure-text-serializer-legacy",
-            "4.12.0",
-            "GI688kJH9jLfbwUbfmIgyya0lbJE1nOVaj1JqLQ5YAI=",
+            "4.15.0",
+            "05buwHoYTm1E8/wJBJDZiCzMlinvDhmR51kIhceIDgs=",
             relocate("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}serializer{}legacy")
     ),
     ADVENTURE_TEXT_SERIALIZER_PLAIN(
             "net{}kyori",
             "adventure-text-serializer-plain",
-            "4.12.0",
-            "geOXCwvtvPho9dPV+urFQ6GXO4DgKxvKSEfdwYaa23I=",
+            "4.15.0",
+            "T9uUMFA3ehElOSOfEOcy0tukCyoh8lKDlYooIypz+Ok=",
             relocate("net{}kyori{}adventure{}text{}serializer{}plain", "adventure{}serializer{}plain")
     ),
     ADVENTURE_TEXT_SERIALIZER_BUNGEECORD(
             "net{}kyori",
             "adventure-text-serializer-bungeecord",
-            "4.2.0",
-            "v7CwvYDAPVgkhmi6QR3IP02mILywNnPHNK8lDx13kKI=",
+            "4.3.2",
+            "4bw3bG3HohAAFgFXNc5MzFNNKya/WrgqrHUcUDIFbDk=",
             relocate("net{}kyori{}adventure{}text{}serializer{}bungeecord", "adventure{}serializer{}bungeecord"),
             relocate("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}serializer{}gson"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}serializer{}json"),
+            relocate("net{}kyori{}option", "kyori{}option"),
             relocate("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}serializer{}legacy")
     ),
 
@@ -48,14 +52,29 @@ public enum Dependency {
     ADVENTURE_KEY(
             "net{}kyori",
             "adventure-key",
-            "4.12.0",
-            "vsVR644rA0OShZxU2fgBPO3pdipwl0ctk7yYO3Xl/z8="
+            "4.15.0",
+            "fG80fIMSZFVT941uItSDVVbUNtUBioL6sHxK3uDW/tc="
+    ),
+    ADVENTURE_TEXT_SERIALIZER_JSON(
+            "net{}kyori",
+            "adventure-text-serializer-json",
+            "4.15.0",
+            "IjUGO0PYrqRiXPrCgKHlJ1NmDq0b4rk4Gz544ouMI6Y=",
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}serializer{}json"),
+            relocate("net{}kyori{}option", "kyori{}option")
     ),
     KYORI_EXAMINATION(
             "net{}kyori",
             "examination-api",
             "1.3.0",
             "ySN//ssFQo9u/4YhYkascM4LR7BMCOp8o1Ag/eV/hJI="
+    ),
+    KYORI_OPTION(
+            "net{}kyori",
+            "option",
+            "1.0.0",
+            "K95aei1z+hFmoPFmOiLDr30naP/E/qMxd0w8D2IiXRE=",
+            relocate("net{}kyori{}option", "kyori{}option")
     );
 
     @Getter
