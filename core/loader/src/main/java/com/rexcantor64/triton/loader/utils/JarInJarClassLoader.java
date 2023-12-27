@@ -38,10 +38,10 @@ public class JarInJarClassLoader extends URLClassLoader {
      * @param jarResourcePaths  one or more paths to the jar-in-jar resources within the loader jar
      * @throws LoadingException if something unexpectedly bad happens
      */
-    public JarInJarClassLoader(ClassLoader loaderClassLoader, String... jarResourcePaths) throws LoadingException {
+    public JarInJarClassLoader(ClassLoader loaderClassLoader, List<Relocation> relocations, String... jarResourcePaths) throws LoadingException {
         super(
                 Arrays.stream(jarResourcePaths)
-                        .map(path -> extractJar(loaderClassLoader, path))
+                        .map(path -> extractJar(loaderClassLoader, path, relocations))
                         .toArray(URL[]::new),
                 loaderClassLoader);
     }
@@ -75,6 +75,19 @@ public class JarInJarClassLoader extends URLClassLoader {
      * @return the instantiated bootstrap plugin
      */
     public <T> LoaderBootstrap instantiatePlugin(String bootstrapClass, Class<T> loaderPluginType, T loaderPlugin) throws LoadingException {
+        return this.instantiatePlugin(bootstrapClass, new Class[]{loaderPluginType}, new Object[]{loaderPlugin});
+    }
+
+    /**
+     * Creates a new plugin instance.
+     *
+     * @param bootstrapClass   the name of the bootstrap plugin class
+     * @param loaderPluginType the type of the loader plugin, the only parameter of the bootstrap
+     *                         plugin constructor
+     * @param loaderPlugin     the loader plugin instance
+     * @return the instantiated bootstrap plugin
+     */
+    public LoaderBootstrap instantiatePlugin(String bootstrapClass, Class<?>[] loaderPluginType, Object[] loaderPlugin) throws LoadingException {
         Class<? extends LoaderBootstrap> plugin;
         try {
             plugin = loadClass(bootstrapClass).asSubclass(LoaderBootstrap.class);
@@ -104,7 +117,7 @@ public class JarInJarClassLoader extends URLClassLoader {
      * @param jarResourcePath   the inner jar resource path
      * @return a URL to the extracted file
      */
-    private static URL extractJar(ClassLoader loaderClassLoader, String jarResourcePath) throws LoadingException {
+    private static URL extractJar(ClassLoader loaderClassLoader, String jarResourcePath, List<Relocation> relocations) throws LoadingException {
         // get the jar-in-jar resource
         URL jarInJar = loaderClassLoader.getResource(jarResourcePath);
         if (jarInJar == null) {
@@ -133,16 +146,20 @@ public class JarInJarClassLoader extends URLClassLoader {
             throw new LoadingException("Unable to copy jar-in-jar to temporary path", e);
         }
 
-        try {
-            List<Relocation> relocations = new LinkedList<>();
-            relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
-            new JarRelocator(path.toFile(), pathRelocated.toFile(), relocations).run();
-        } catch (IOException e) {
-            throw new LoadingException("Unable to apply relocations to jar", e);
+        if (!relocations.isEmpty()) {
+            try {
+                new JarRelocator(path.toFile(), pathRelocated.toFile(), relocations).run();
+            } catch (IOException e) {
+                throw new LoadingException("Unable to apply relocations to jar", e);
+            }
         }
 
         try {
-            return pathRelocated.toUri().toURL();
+            if (relocations.isEmpty()) {
+                return path.toUri().toURL();
+            } else {
+                return pathRelocated.toUri().toURL();
+            }
         } catch (MalformedURLException e) {
             throw new LoadingException("Unable to get URL from path", e);
         }

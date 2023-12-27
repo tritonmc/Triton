@@ -23,10 +23,6 @@ public class SpigotPlugin implements PluginLoader, LoaderBootstrap {
     private final JavaPlugin plugin;
 
     @Override
-    public void onLoad() {
-    }
-
-    @Override
     public void onEnable() {
         this.logger = new JavaLogger(this.plugin.getLogger());
         BukkitLibraryManager libraryManager = new BukkitLibraryManager(this.plugin);

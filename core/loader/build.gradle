@@ -1,0 +1,11 @@
+plugins {
+    id 'java-library'
+}
+
+group 'com.rexcantor64.triton'
+
+dependencies {
+    api 'org.ow2.asm:asm-commons:9.2'
+    api 'org.ow2.asm:asm:9.2'
+    api 'me.lucko:jar-relocator:1.7'
+}

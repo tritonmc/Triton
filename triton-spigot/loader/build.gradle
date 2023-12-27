@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'net.minecrell.plugin-yml.bukkit' version '0.5.2'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 String pluginDescription = project.property("pluginDescription")
@@ -14,11 +13,7 @@ apply plugin: 'net.minecrell.plugin-yml.bukkit'
 group 'com.rexcantor64.triton'
 
 dependencies {
-    implementation project(path: ":api")
-    implementation 'org.ow2.asm:asm-commons:9.2'
-    implementation 'org.ow2.asm:asm:9.2'
-    implementation 'me.lucko:jar-relocator:1.7'
-
+    compileOnly project(':core:triton-core-loader')
     compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
 }
 
@@ -79,18 +74,4 @@ bukkit {
             setDefault('OP')
         }
     }
-}
-
-shadowJar {
-    getArchiveBaseName().set(rootProject.name)
-
-    from {
-        project(':triton-spigot').tasks.shadowJar.archiveFile
-    }
-    from {
-        project(':core').tasks.shadowJar.archiveFile
-    }
-
-    relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
-    relocate 'me.lucko.jarrelocator', 'com.rexcantor64.triton.lib.jarrelocator'
 }

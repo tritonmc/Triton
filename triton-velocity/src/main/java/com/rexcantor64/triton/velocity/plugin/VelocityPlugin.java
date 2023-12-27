@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.velocity.plugin;
 
 import com.google.inject.Inject;
+import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.logger.SLF4JLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.Platform;
@@ -16,30 +17,35 @@ import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 
-@Plugin(id = "triton", name = "Triton", url = "https://triton.rexcantor64.com", description =
-        "A plugin that replaces any message on your server, to the receiver's language, in real time!",
-        version = "@version@",
-        authors = {"Rexcantor64"})
-
 @Getter
-public class VelocityPlugin implements PluginLoader {
+public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     private final ProxyServer server;
     private final TritonLogger tritonLogger;
     private final Path dataDirectory;
     private final Metrics.Factory metricsFactory;
 
-    @Inject
-    public VelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Metrics.Factory metricsFactory) {
+    public VelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.tritonLogger = new SLF4JLogger(logger);
         this.dataDirectory = dataDirectory;
-        this.metricsFactory = metricsFactory;
+
+        try {
+            // Because the loader module does not depend on bStats, we have to do this instead
+            Constructor<?> constructor = Metrics.Factory.class.getDeclaredConstructor(ProxyServer.class, Logger.class, Path.class);
+            constructor.setAccessible(true);
+            this.metricsFactory = (Metrics.Factory) constructor.newInstance(server, logger, dataDirectory);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
+            throw new RuntimeException("Failed to initialize Metrics factory", e);
+        }
     }
 
-    @Subscribe
-    public void onEnable(ProxyInitializeEvent event) {
+    @Override
+    public void onEnable() {
         new VelocityTriton(this).onEnable();
     }
 
