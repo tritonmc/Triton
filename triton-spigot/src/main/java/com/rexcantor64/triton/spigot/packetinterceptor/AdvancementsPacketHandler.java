@@ -179,7 +179,7 @@ public class AdvancementsPacketHandler extends PacketHandler {
 
             val advancementDataPlayer = ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD.get(nmsPlayer);
 
-            Bukkit.getScheduler().runTask(getMain().getLoader(), () -> {
+            Bukkit.getScheduler().runTask(getMain().getJavaPlugin(), () -> {
                 // These are the same methods that are called from org.bukkit.craftbukkit.<version>.util.CraftMagicNumbers#loadAdvancement
                 if (getMcVersion() < 16) {
                     // MC 1.12-1.15

@@ -29,7 +29,7 @@ public class TritonPlaceholderHook extends PlaceholderExpansion implements Relat
 
     @Override
     public @NotNull String getVersion() {
-        return triton.getLoader().getDescription().getVersion();
+        return triton.getVersion();
     }
 
     @Override

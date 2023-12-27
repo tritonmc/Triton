@@ -14,27 +14,12 @@ apply plugin: 'net.minecrell.plugin-yml.bukkit'
 group 'com.rexcantor64.triton'
 
 dependencies {
-    compileOnly project(path: ":loader")
-    compileOnly project(path: ":api")
-    compileOnly project(path: ":core")
-    implementation project(path: ":spigot-legacy")
-    implementation project(path: ":v1_13")
+    implementation project(path: ":api")
+    implementation 'org.ow2.asm:asm-commons:9.2'
+    implementation 'org.ow2.asm:asm:9.2'
+    implementation 'me.lucko:jar-relocator:1.7'
 
     compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
-
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.2'
-
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.2.0-SNAPSHOT'
-    compileOnly 'me.clip:placeholderapi:2.11.1'
-
-    // Libraries available on Spigot
-    compileOnly 'org.fusesource.jansi:jansi:2.4.0' // Used for terminal translation
-
-    implementation 'net.byteflux:libby-bukkit:1.3.0'
-
-    implementation 'org.bstats:bstats-bukkit:3.0.0'
 }
 
 bukkit {
@@ -43,7 +28,7 @@ bukkit {
     description = pluginDescription
     website = pluginWebsite
     author = pluginAuthor
-    main = 'com.rexcantor64.triton.spigot.plugin.SpigotPlugin'
+    main = 'com.rexcantor64.triton.loader.SpigotLoader'
     apiVersion = pluginApiVersion
 
     depend = ['ProtocolLib']
@@ -97,18 +82,15 @@ bukkit {
 }
 
 shadowJar {
-    archiveFileName = 'triton-spigot.jarinjar'
+    getArchiveBaseName().set(rootProject.name)
 
-    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
-    //relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
-    relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
-    relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
+    from {
+        project(':triton-spigot').tasks.shadowJar.archiveFile
+    }
+    from {
+        project(':core').tasks.shadowJar.archiveFile
+    }
 
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.minimessage'
-    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.serializer.gson'
-    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.serializer.legacy'
-    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.serializer.plain'
-    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.serializer.bungeecord'
-
-    relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
+    relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
+    relocate 'me.lucko.jarrelocator', 'com.rexcantor64.triton.lib.jarrelocator'
 }

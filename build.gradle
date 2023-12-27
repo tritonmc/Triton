@@ -68,10 +68,10 @@ shadowJar {
     getArchiveBaseName().set(rootProject.name)
     relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
     //relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.shaded.minimessage'
     relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
     relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
 
+    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.minimessage'
     relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.serializer.gson'
     relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.serializer.legacy'
     relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.serializer.plain'
