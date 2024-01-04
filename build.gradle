@@ -57,6 +57,7 @@ subprojects {
 }
 
 dependencies {
+    implementation project(':api')
     implementation project(':core:triton-core-loader')
     implementation project(':triton-spigot:triton-spigot-loader')
     implementation project(':triton-velocity:triton-velocity-loader')
