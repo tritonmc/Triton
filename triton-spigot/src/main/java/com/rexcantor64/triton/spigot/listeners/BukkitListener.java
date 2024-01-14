@@ -32,6 +32,8 @@ public class BukkitListener implements Listener {
                     .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
                     .ifChanged(loginEvent::setKickMessage)
                     .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
+            SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getUniqueId());
         }
     }
 
@@ -43,6 +45,8 @@ public class BukkitListener implements Listener {
                     .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
                     .ifChanged(loginEvent::setKickMessage)
                     .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
+            SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getPlayer().getUniqueId());
         }
     }
 
