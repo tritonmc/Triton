@@ -170,6 +170,9 @@ public class AdvancedComponent {
                     continue;
                 }
                 ChatColor previousColor = ComponentUtils.getColorFromBaseComponent(component);
+                if (previousColor == ChatColor.RESET) {
+                    previousColor = null;
+                }
                 if (builder.length() != 0) {
                     component.setText(builder.toString());
                     builder = new StringBuilder();
