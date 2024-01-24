@@ -8,9 +8,8 @@ import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ChatType;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
-import com.velocitypowered.proxy.protocol.packet.chat.SystemChat;
-import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChat;
-import net.kyori.adventure.text.Component;
+import com.velocitypowered.proxy.protocol.packet.chat.SystemChatPacket;
+import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChatPacket;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -38,7 +37,7 @@ public class ChatHandler {
         return Triton.get().getConfig().getActionbarSyntax();
     }
 
-    public @NotNull Optional<MinecraftPacket> handleSystemChat(@NotNull SystemChat systemChatPacket, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handleSystemChat(@NotNull SystemChatPacket systemChatPacket, @NotNull VelocityLanguagePlayer player) {
         boolean actionBar = systemChatPacket.getType() == ChatType.GAME_INFO;
 
         if ((!actionBar && shouldNotTranslateChat()) || (actionBar && shouldNotTranslateActionBars())) {
@@ -60,7 +59,7 @@ public class ChatHandler {
         );
     }
 
-    public @NotNull Optional<MinecraftPacket> handleLegacyChat(@NotNull LegacyChat legacyChatPacket, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handleLegacyChat(@NotNull LegacyChatPacket legacyChatPacket, @NotNull VelocityLanguagePlayer player) {
         boolean actionBar = legacyChatPacket.getType() == 2; // action bar type is 2
 
         if ((!actionBar && shouldNotTranslateChat()) || (actionBar && shouldNotTranslateActionBars())) {
@@ -82,12 +81,12 @@ public class ChatHandler {
         );
     }
 
-    private @NotNull SystemChat cloneSystemChatWithComponent(@NotNull SystemChat systemChatPacket, ComponentHolder newComponent) {
-        return new SystemChat(newComponent, systemChatPacket.getType());
+    private @NotNull SystemChatPacket cloneSystemChatWithComponent(@NotNull SystemChatPacket systemChatPacket, ComponentHolder newComponent) {
+        return new SystemChatPacket(newComponent, systemChatPacket.getType());
     }
 
-    private @NotNull LegacyChat cloneLegacyChatWithComponent(@NotNull LegacyChat legacyChatPacket, String newMessage) {
-        return new LegacyChat(newMessage, legacyChatPacket.getType(), legacyChatPacket.getSenderUuid());
+    private @NotNull LegacyChatPacket cloneLegacyChatWithComponent(@NotNull LegacyChatPacket legacyChatPacket, String newMessage) {
+        return new LegacyChatPacket(newMessage, legacyChatPacket.getType(), legacyChatPacket.getSenderUuid());
     }
 
 }

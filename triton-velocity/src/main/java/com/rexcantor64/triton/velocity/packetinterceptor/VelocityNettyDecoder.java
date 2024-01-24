@@ -2,7 +2,7 @@ package com.rexcantor64.triton.velocity.packetinterceptor;
 
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.ClientSettings;
+import com.velocitypowered.proxy.protocol.packet.ClientSettingsPacket;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.ReferenceCounted;
@@ -24,8 +24,8 @@ public class VelocityNettyDecoder extends MessageToMessageDecoder<MinecraftPacke
             return;
         }
         // PlayerSettingsChangedEvent is not working on 1.20.2, so we are using packets instead
-        if (packet instanceof ClientSettings) {
-            ClientSettings cs = (ClientSettings) packet;
+        if (packet instanceof ClientSettingsPacket) {
+            ClientSettingsPacket cs = (ClientSettingsPacket) packet;
             player.setClientLocale(cs.getLocale());
         }
         out.add(packet);

@@ -5,7 +5,7 @@ import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.ResourcePackRequest;
+import com.velocitypowered.proxy.protocol.packet.ResourcePackRequestPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ public class ResourcePackHandler {
     }
 
 
-    public @NotNull Optional<MinecraftPacket> handleResourcePackRequest(@NotNull ResourcePackRequest resourcePackRequest, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handleResourcePackRequest(@NotNull ResourcePackRequestPacket resourcePackRequest, @NotNull VelocityLanguagePlayer player) {
         if (shouldNotTranslateResourcePack() || resourcePackRequest.getPrompt() == null) {
             return Optional.of(resourcePackRequest);
         }

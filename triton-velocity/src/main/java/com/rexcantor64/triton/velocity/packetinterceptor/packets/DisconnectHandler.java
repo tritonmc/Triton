@@ -4,9 +4,8 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
-import com.rexcantor64.triton.velocity.utils.ComponentUtils;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.Disconnect;
+import com.velocitypowered.proxy.protocol.packet.DisconnectPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +26,7 @@ public class DisconnectHandler {
         return Triton.get().getConfig().getKickSyntax();
     }
 
-    public @NotNull Optional<MinecraftPacket> handleDisconnect(@NotNull Disconnect disconnectPacket, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handleDisconnect(@NotNull DisconnectPacket disconnectPacket, @NotNull VelocityLanguagePlayer player) {
         if (shouldNotTranslateKick()) {
             return Optional.of(disconnectPacket);
         }
