@@ -22,7 +22,7 @@ public class SetLanguageCommand extends com.rexcantor64.triton.commands.SetLangu
 
         if (event.getArgs().length == 2) {
             val partialName = event.getArgs()[1].toLowerCase(Locale.ROOT);
-            return BungeeTriton.asBungee().getLoader().getProxy().getPlayers().stream()
+            return BungeeTriton.asBungee().getPlugin().getProxy().getPlayers().stream()
                     .map(ProxiedPlayer::getName)
                     .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partialName))
                     .collect(Collectors.toList());

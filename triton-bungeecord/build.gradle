@@ -1,16 +1,12 @@
 plugins {
     id 'java'
-    id 'net.minecrell.plugin-yml.bungee' version '0.5.2'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
-String pluginDescription = project.property("pluginDescription")
-String pluginAuthor = project.property("pluginAuthor")
-String pluginName = project.property("pluginName")
-
-apply plugin: 'net.minecrell.plugin-yml.bungee'
 group 'com.rexcantor64.triton'
 
 dependencies {
+    compileOnly project(':core:triton-core-loader')
     compileOnly project(path: ":api")
     compileOnly project(path: ":core")
 
@@ -24,10 +20,16 @@ dependencies {
     implementation 'org.bstats:bstats-bungeecord:3.0.0'
 }
 
-bungee {
-    name = pluginName
-    version = project.version
-    description = pluginDescription
-    author = pluginAuthor
-    main = 'com.rexcantor64.triton.bungeecord.plugin.BungeePlugin'
+shadowJar {
+    archiveFileName = 'triton-bungeecord.jarinjar'
+
+    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
+
+    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.minimessage'
+    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.serializer.gson'
+    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.serializer.legacy'
+    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.serializer.plain'
+    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.serializer.bungeecord'
+
+    relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
 }
