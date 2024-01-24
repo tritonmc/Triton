@@ -5,7 +5,7 @@ import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.BossBar;
+import com.velocitypowered.proxy.protocol.packet.BossBarPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
@@ -29,7 +29,7 @@ public class BossBarHandler {
     }
 
 
-    public @NotNull Optional<MinecraftPacket> handleBossBar(@NotNull BossBar bossBarPacket, @NotNull VelocityLanguagePlayer player) {
+    public @NotNull Optional<MinecraftPacket> handleBossBar(@NotNull BossBarPacket bossBarPacket, @NotNull VelocityLanguagePlayer player) {
         if (shouldNotTranslateBossBars()) {
             return Optional.of(bossBarPacket);
         }
@@ -37,13 +37,13 @@ public class BossBarHandler {
         val uuid = bossBarPacket.getUuid();
         val action = bossBarPacket.getAction();
 
-        if (action == BossBar.REMOVE) {
+        if (action == BossBarPacket.REMOVE) {
             player.removeBossbar(uuid);
             return Optional.of(bossBarPacket);
         }
 
         val text = bossBarPacket.getName();
-        if (text != null && (action == BossBar.ADD || action == BossBar.UPDATE_NAME)) {
+        if (text != null && (action == BossBarPacket.ADD || action == BossBarPacket.UPDATE_NAME)) {
             player.setBossbar(uuid, bossBarPacket.getName().getComponent());
 
             parser()
