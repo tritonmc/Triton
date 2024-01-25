@@ -712,7 +712,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             if (isHiddenEntity) {
                 // If the entity should not show up in tab, hide it again
                 Bukkit.getScheduler().runTaskLater(
-                        getMain().getLoader(),
+                        getMain().getJavaPlugin(),
                         () -> sendPacket(bukkitPlayer, packetRemove, true),
                         4L
                 );

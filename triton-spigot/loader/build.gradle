@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'net.minecrell.plugin-yml.bukkit' version '0.5.2'
+}
+
+String pluginDescription = project.property("pluginDescription")
+String pluginWebsite = project.property("pluginWebsite")
+String pluginAuthor = project.property("pluginAuthor")
+String pluginApiVersion = project.property("pluginApiVersion")
+String pluginName = project.property("pluginName")
+
+apply plugin: 'net.minecrell.plugin-yml.bukkit'
+group 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly project(':core:triton-core-loader')
+    compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
+}
+
+bukkit {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    website = pluginWebsite
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.loader.SpigotLoader'
+    apiVersion = pluginApiVersion
+
+    depend = ['ProtocolLib']
+    softDepend = ['PlaceholderAPI']
+
+    commands {
+        twin {
+            description = 'Upload and download your config to/from the Triton Web INterface.'
+            usage = '/twin [code]'
+        }
+    }
+
+    permissions {
+        'triton.getflag' {
+            setDefault('OP')
+        }
+        'triton.setlanguage' {
+            setDefault('TRUE')
+        }
+        'triton.setlanguage.others' {
+            setDefault('OP')
+        }
+        'triton.openselector' {
+            setDefault('TRUE')
+        }
+        'triton.reload' {
+            setDefault('OP')
+        }
+        'triton.help' {
+            setDefault('TRUE')
+        }
+        'triton.sign' {
+            setDefault('OP')
+        }
+        'triton.database' {
+            setDefault('OP')
+        }
+        'triton.info' {
+            setDefault('TRUE')
+        }
+        'triton.loglevel' {
+            setDefault('OP')
+        }
+        'twin.upload' {
+            setDefault('OP')
+        }
+        'twin.download' {
+            setDefault('OP')
+        }
+    }
+}

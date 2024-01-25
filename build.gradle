@@ -36,12 +36,17 @@ allprojects {
             name 'velocity'
             url 'https://nexus.velocitypowered.com/repository/maven-public/'
         }
+        maven {
+            // Mirror other people's repositories
+            name 'diogotcRepositoryMirror'
+            url 'https://repo.diogotc.com/mirror/'
+        }
     }
 }
 
 subprojects {
     dependencies {
-        implementation 'org.jetbrains:annotations:23.0.0'
+        compileOnly 'org.jetbrains:annotations:23.0.0'
 
         compileOnly 'org.projectlombok:lombok:1.18.22'
         annotationProcessor 'org.projectlombok:lombok:1.18.22'
@@ -52,18 +57,30 @@ subprojects {
 }
 
 dependencies {
+    implementation project(':api')
+    implementation project(':core:triton-core-loader')
+    implementation project(':triton-spigot:triton-spigot-loader')
+    implementation project(':triton-velocity:triton-velocity-loader')
 
-    implementation project(path: ":core")
-    implementation project(path: ":triton-bungeecord")
-    implementation project(path: ":triton-spigot")
-    implementation project(path: ":triton-velocity")
+    compileOnly project(':core')
+    compileOnly project(':triton-bungeecord')
+    compileOnly project(':triton-spigot')
+    compileOnly project(':triton-velocity')
 }
 
 shadowJar {
     getArchiveBaseName().set(rootProject.name)
-    relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
-    //relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.shaded.minimessage'
-    relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
-    relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
+
+    from {
+        project(':core').tasks.shadowJar.archiveFile
+    }
+    from {
+        project(':triton-spigot').tasks.shadowJar.archiveFile
+    }
+    from {
+        project(':triton-velocity').tasks.shadowJar.archiveFile
+    }
+
+    relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
+    relocate 'me.lucko.jarrelocator', 'com.rexcantor64.triton.lib.jarrelocator'
 }

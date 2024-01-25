@@ -8,6 +8,7 @@ import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.TranslationManager;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import org.bukkit.entity.Player;
@@ -38,7 +39,7 @@ public abstract class PacketHandler {
         return getMain().getTranslationManager();
     }
 
-    protected MessageParser parser() {
+    protected AdventureParser parser() {
         return getMain().getMessageParser();
     }
 

@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+    id 'net.minecrell.plugin-yml.bungee' version '0.5.2'
+}
+
+String pluginDescription = project.property("pluginDescription")
+String pluginAuthor = project.property("pluginAuthor")
+String pluginName = project.property("pluginName")
+
+apply plugin: 'net.minecrell.plugin-yml.bungee'
+group 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly project(':core:triton-core-loader')
+    compileOnly 'net.md-5:bungeecord-api:1.20-R0.2-SNAPSHOT'
+}
+
+bungee {
+    name = pluginName
+    version = project.version
+    description = pluginDescription
+    author = pluginAuthor
+    main = 'com.rexcantor64.triton.bungeecord.plugin.BungeePlugin'
+}

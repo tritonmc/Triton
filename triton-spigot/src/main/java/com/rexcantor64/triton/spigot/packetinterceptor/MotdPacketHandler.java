@@ -9,6 +9,7 @@ import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import lombok.val;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
 public class MotdPacketHandler extends PacketAdapter {
 
     public MotdPacketHandler() {
-        super(SpigotTriton.asSpigot().getLoader(), ListenerPriority.HIGHEST,
+        super(SpigotTriton.asSpigot().getJavaPlugin(), ListenerPriority.HIGHEST,
                 Collections.singleton(PacketType.Status.Server.SERVER_INFO), ListenerOptions.ASYNC);
     }
 
@@ -37,7 +38,7 @@ public class MotdPacketHandler extends PacketAdapter {
      *
      * @see Triton#getMessageParser()
      */
-    private MessageParser parser() {
+    private AdventureParser parser() {
         return Triton.get().getMessageParser();
     }
 
