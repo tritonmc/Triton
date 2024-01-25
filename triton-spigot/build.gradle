@@ -3,12 +3,6 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
-String pluginDescription = project.property("pluginDescription")
-String pluginWebsite = project.property("pluginWebsite")
-String pluginAuthor = project.property("pluginAuthor")
-String pluginApiVersion = project.property("pluginApiVersion")
-String pluginName = project.property("pluginName")
-
 group 'com.rexcantor64.triton'
 
 dependencies {
@@ -40,11 +34,11 @@ shadowJar {
 
     relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
 
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.minimessage'
-    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.serializer.gson'
-    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.serializer.legacy'
-    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.serializer.plain'
-    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.serializer.bungeecord'
+    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.text.minimessage'
+    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.text.serializer.gson'
+    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.text.serializer.legacy'
+    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.text.serializer.plain'
+    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.text.serializer.bungeecord'
 
     relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
 }
