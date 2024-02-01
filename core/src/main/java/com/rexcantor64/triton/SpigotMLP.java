@@ -104,7 +104,7 @@ public class SpigotMLP extends Triton {
         }
 
         if (getConf().isBungeecord()) {
-            if (!isSpigotProxyMode() && !isPaperProxyMode()) {
+            if (!isSpigotProxyMode() && !isPaperProxyMode() && !isLegacyPaperProxyMode()) {
                 getLogger().logError("DANGER! DANGER! DANGER!");
                 getLogger().logError("Proxy mode is enabled on Triton but disabled on Spigot!");
                 getLogger().logError("A malicious player can run ANY command as the server.");
@@ -260,7 +260,7 @@ public class SpigotMLP extends Triton {
 
     /**
      * Use reflection to check if this Spigot server has "bungeecord" mode enabled on spigot.yml.
-     * This is used to show a warning if Spigot is in proxy mode, but the server is not.
+     * This is used to show a warning if Triton is in proxy mode, but the server is not.
      *
      * @return Whether this Spigot server has bungeecord enabled on spigot.yml.
      */
@@ -283,9 +283,9 @@ public class SpigotMLP extends Triton {
 
     /**
      * Use reflection to check if this Paper server has velocity modern forwarding enabled on paper-global.yml.
-     * This is used to show a warning if Paper is in proxy mode, but the server is not.
+     * This is used to show a warning if Triton is in proxy mode, but the server is not.
      *
-     * @return Whether this Spigot server has velocity forwarding enabled on paper-global.yml.
+     * @return Whether this Paper server has velocity forwarding enabled on paper-global.yml.
      */
     public boolean isPaperProxyMode() {
         try {
@@ -295,6 +295,26 @@ public class SpigotMLP extends Triton {
             Object proxies = instance.getClass().getField("proxies").get(instance);
             Object velocity = proxies.getClass().getField("velocity").get(proxies);
             Object velocityEnabled = velocity.getClass().getField("enabled").get(velocity);
+            if (velocityEnabled == null) {
+                return false;
+            }
+            return (boolean) velocityEnabled;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Use reflection to check if this (legacy) Paper server has velocity modern forwarding enabled on paper.yml.
+     * This is used to show a warning if Triton is in proxy mode, but the server is not.
+     *
+     * @return Whether this (legacy) Paper server has velocity forwarding enabled on paper-global.yml.
+     */
+    public boolean isLegacyPaperProxyMode() {
+        try {
+            Class<?> paperConfigClass = Class.forName("com.destroystokyo.paper.PaperConfig");
+
+            Object velocityEnabled = paperConfigClass.getField("velocitySupport").get(null);
             if (velocityEnabled == null) {
                 return false;
             }
