@@ -48,45 +48,43 @@ public class AdvancedComponent {
             boolean hasHover = false;
             boolean hasFont = false;
             builder.append(ComponentUtils.getColorFromBaseComponent(comp).toString());
-            if (comp.hasFormatting()) {
-                if (comp.isBold())
-                    builder.append(ChatColor.BOLD.toString());
-                if (comp.isItalic())
-                    builder.append(ChatColor.ITALIC.toString());
-                if (comp.isUnderlined())
-                    builder.append(ChatColor.UNDERLINE.toString());
-                if (comp.isStrikethrough())
-                    builder.append(ChatColor.STRIKETHROUGH.toString());
-                if (comp.isObfuscated())
-                    builder.append(ChatColor.MAGIC.toString());
-                if (!onlyText) {
-                    if (comp.getClickEvent() != null && !comp.getClickEvent().getValue()
-                            .endsWith("[/" + Triton.get().getConf().getChatSyntax().getLang() + "]")) {
-                        builder.append("\uE400");
-                        builder.append(ComponentUtils.encodeClickAction(comp.getClickEvent().getAction()));
-                        UUID uuid = UUID.randomUUID();
-                        advancedComponent.setComponent(uuid, comp.getClickEvent().getValue());
-                        builder.append(uuid.toString());
-                        hasClick = true;
+            if (comp.isBold())
+                builder.append(ChatColor.BOLD.toString());
+            if (comp.isItalic())
+                builder.append(ChatColor.ITALIC.toString());
+            if (comp.isUnderlined())
+                builder.append(ChatColor.UNDERLINE.toString());
+            if (comp.isStrikethrough())
+                builder.append(ChatColor.STRIKETHROUGH.toString());
+            if (comp.isObfuscated())
+                builder.append(ChatColor.MAGIC.toString());
+            if (!onlyText) {
+                if (comp.getClickEvent() != null && !comp.getClickEvent().getValue()
+                        .endsWith("[/" + Triton.get().getConf().getChatSyntax().getLang() + "]")) {
+                    builder.append("\uE400");
+                    builder.append(ComponentUtils.encodeClickAction(comp.getClickEvent().getAction()));
+                    UUID uuid = UUID.randomUUID();
+                    advancedComponent.setComponent(uuid, comp.getClickEvent().getValue());
+                    builder.append(uuid.toString());
+                    hasClick = true;
+                }
+                if (comp.getHoverEvent() != null) {
+                    builder.append("\uE500");
+                    UUID uuid = UUID.randomUUID();
+                    advancedComponent
+                            .setHover(uuid, comp.getHoverEvent());
+                    builder.append(uuid.toString());
+                    hasHover = true;
+                }
+                try {
+                    if (comp.getFontRaw() != null) {
+                        builder.append("\uE800")
+                                .append(comp.getFontRaw())
+                                .append("\uE802");
+                        hasFont = true;
                     }
-                    if (comp.getHoverEvent() != null) {
-                        builder.append("\uE500");
-                        UUID uuid = UUID.randomUUID();
-                        advancedComponent
-                                .setHover(uuid, comp.getHoverEvent());
-                        builder.append(uuid.toString());
-                        hasHover = true;
-                    }
-                    try {
-                        if (comp.getFontRaw() != null) {
-                            builder.append("\uE800")
-                                    .append(comp.getFontRaw())
-                                    .append("\uE802");
-                            hasFont = true;
-                        }
-                    } catch (NoSuchMethodError ignore) {
-                        // old versions of Spigot don't have getFontRaw()
-                    }
+                } catch (NoSuchMethodError ignore) {
+                    // old versions of Spigot don't have getFontRaw()
                 }
             }
             if (comp instanceof TextComponent)
