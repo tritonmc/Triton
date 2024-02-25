@@ -13,19 +13,17 @@ import lombok.val;
 public class VelocityListener {
 
     @Subscribe
-    public void onServerConnect(ServerConnectedEvent e) {
-        val lp = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
-
-        Triton.asVelocity().getBridgeManager().sendPlayerLanguage(lp, e.getServer());
-
-        if (Triton.get().getConf().isRunLanguageCommandsOnLogin())
-            lp.executeCommands(e.getServer());
-    }
-
-    @Subscribe
     public void afterServerConnect(ServerPostConnectEvent e) {
-        if (e.getPlayer().getCurrentServer().isPresent())
-            Triton.asVelocity().getBridgeManager().executeQueue(e.getPlayer().getCurrentServer().get().getServer());
+        e.getPlayer().getCurrentServer().ifPresent(serverConnection -> {
+            Triton.asVelocity().getBridgeManager().executeQueue(serverConnection.getServer());
+
+            val lp = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
+            Triton.asVelocity().getBridgeManager().sendPlayerLanguage(lp);
+
+            if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {
+                lp.executeCommands(serverConnection.getServer());
+            }
+        });
     }
 
     @Subscribe(order = PostOrder.FIRST)

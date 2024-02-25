@@ -73,13 +73,9 @@ public class VelocityBridgeManager {
     }
 
     public void sendPlayerLanguage(@NonNull VelocityLanguagePlayer lp) {
-        lp.getParent().getCurrentServer().ifPresent(server -> sendPlayerLanguage(lp, server.getServer()));
-    }
-
-    public void sendPlayerLanguage(@NonNull VelocityLanguagePlayer lp, @NonNull RegisteredServer server) {
-        Triton.get().getLogger().logTrace("Sending player %1 language to server %2", lp, server.getServerInfo().getName());
+        Triton.get().getLogger().logTrace("Sending player %1 language to server", lp);
         val out = BridgeSerializer.buildPlayerLanguageData(lp);
-        sendPluginMessage(server, out);
+        sendPluginMessage(lp.getParent(), out);
     }
 
     public void sendExecutableCommand(String command, @NonNull RegisteredServer server) {
@@ -100,7 +96,6 @@ public class VelocityBridgeManager {
             Triton.get().getLogger()
                     .logError(e, "Failed to send config and language items to other servers! Not everything might work " +
                             "as expected");
-            e.printStackTrace();
         }
     }
 
@@ -122,14 +117,21 @@ public class VelocityBridgeManager {
         val out = BridgeSerializer.buildForwardCommandData(commandEvent);
 
         Triton.asVelocity().getLoader().getServer().getPlayer(commandEvent.getSender().getUUID())
-                .flatMap(Player::getCurrentServer)
-                .ifPresent(serverConnection -> sendPluginMessage(serverConnection.getServer(), out));
+                .ifPresent(player -> sendPluginMessage(player, out));
     }
 
     private void sendPluginMessage(@NonNull RegisteredServer info, byte[] data) {
         if (!info.sendPluginMessage(Triton.asVelocity().getBridgeChannelIdentifier(), data)) {
             queue.computeIfAbsent(info, server -> new LinkedList<>()).add(data);
         }
+    }
+
+    private void sendPluginMessage(@NonNull Player player, byte[] data) {
+        player.getCurrentServer().ifPresent(serverConnection -> {
+            if (!serverConnection.sendPluginMessage(Triton.asVelocity().getBridgeChannelIdentifier(), data)) {
+                Triton.get().getLogger().logError("Failed to send plugin message to player %1 (%2)", player.getUsername(), player.getUniqueId());
+            }
+        });
     }
 
     public void executeQueue(@NonNull RegisteredServer server) {
