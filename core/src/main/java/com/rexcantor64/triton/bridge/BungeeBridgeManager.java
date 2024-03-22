@@ -39,7 +39,7 @@ public class BungeeBridgeManager implements Listener {
             val action = in.readByte();
 
             // Player changes language
-            if (action == 0) {
+            if (action == BridgeSerializer.ActionS2P.UPDATE_PLAYER_LANGUAGE.getKey()) {
                 val uuid = UUID.fromString(in.readUTF());
                 val language = in.readUTF();
 
@@ -50,7 +50,7 @@ public class BungeeBridgeManager implements Listener {
             }
 
             // Add or remove a location from a sign group using /triton sign
-            if (action == 1) {
+            if (action == BridgeSerializer.ActionS2P.UPDATE_SIGN_GROUP_MEMBERSHIP.getKey()) {
                 val server = ((Server) e.getSender()).getInfo();
                 SignLocation location = new SignLocation(server.getName(), in.readUTF(), in.readInt(), in.readInt(), in
                         .readInt());

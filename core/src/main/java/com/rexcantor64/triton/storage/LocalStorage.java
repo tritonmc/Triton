@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.Collection;
@@ -59,7 +58,7 @@ public class LocalStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
-        String lang = languageMap.get(lp.getUUID().toString());
+        String lang = languageMap.get(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConf().isAlwaysCheckClientLocale())))

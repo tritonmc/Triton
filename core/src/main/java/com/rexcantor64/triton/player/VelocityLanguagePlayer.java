@@ -10,6 +10,7 @@ import lombok.val;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 public class VelocityLanguagePlayer implements LanguagePlayer {
@@ -113,7 +114,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     public void executeCommands(RegisteredServer overrideServer) {
         val currentServer = getParent().getCurrentServer();
         if (overrideServer == null && !currentServer.isPresent()) return;
-        val server = overrideServer == null ? getParent().getCurrentServer().get().getServer() : overrideServer;
+        val server = overrideServer == null ? currentServer.get().getServer() : overrideServer;
         for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
             val cmdText = cmd.getCmd().replace("%player%", getParent().getUsername())
                     .replace("%uuid%", getParent().getUniqueId().toString());
@@ -132,5 +133,14 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
             else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER)
                 velocity.getCommandManager().executeAsync(getParent(), cmdText);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "VelocityLanguagePlayer{" +
+                "username=" + parent.getUsername() +
+                ", uuid=" + parent.getUniqueId() +
+                ", language=" + Optional.ofNullable(language).map(Language::getName).orElse("null") +
+                '}';
     }
 }

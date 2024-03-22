@@ -3,7 +3,6 @@ package com.rexcantor64.triton.storage;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.rexcantor64.triton.SpigotMLP;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.item.*;
@@ -13,7 +12,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import lombok.var;
 
 import java.lang.reflect.Type;
 import java.sql.*;
@@ -117,7 +115,7 @@ public class MysqlStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[MySQL Storage] Getting language for player %1", lp);
-        String lang = getValueFromStorage(lp.getUUID().toString());
+        String lang = getValueFromStorage(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConf().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConf().isAlwaysCheckClientLocale())))
