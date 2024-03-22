@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -192,5 +193,14 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
                 velocity.getCommandManager().executeAsync(getParent(), cmdText);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "VelocityLanguagePlayer{" +
+                "username=" + parent.getUsername() +
+                ", uuid=" + parent.getUniqueId() +
+                ", language=" + Optional.ofNullable(language).map(Language::getName).orElse("null") +
+                '}';
     }
 }

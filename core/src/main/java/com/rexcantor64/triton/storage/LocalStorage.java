@@ -60,7 +60,7 @@ public class LocalStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
-        String lang = languageMap.get(lp.getUUID().toString());
+        String lang = languageMap.get(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConfig().isAlwaysCheckClientLocale()))) {
