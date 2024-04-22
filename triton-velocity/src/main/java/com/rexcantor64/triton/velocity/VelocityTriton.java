@@ -71,8 +71,9 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     @Override
     public void reload() {
         super.reload();
-        if (bridgeManager != null)
+        if (bridgeManager != null && bridgeChannelIdentifier != null) {
             bridgeManager.sendConfigToEveryone();
+        }
     }
 
     @Override
