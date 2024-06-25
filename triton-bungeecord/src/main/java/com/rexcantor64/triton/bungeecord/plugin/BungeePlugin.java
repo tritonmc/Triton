@@ -4,7 +4,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.dependencies.Dependency;
-import com.rexcantor64.triton.dependencies.Repository;
+import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.JavaLogger;
@@ -15,7 +15,6 @@ import com.rexcantor64.triton.terminal.Log4jInjector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.byteflux.libby.BungeeLibraryManager;
-import net.byteflux.libby.LibraryManager;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.io.InputStream;
@@ -30,26 +29,15 @@ public class BungeePlugin implements PluginLoader, LoaderBootstrap {
     @Getter
     private final Set<LoaderFlag> loaderFlags;
     @Getter
-    private LibraryManager libraryManager;
+    private DependencyManager dependencyManager;
 
     @Override
     public void onEnable() {
         this.logger = new JavaLogger(this.getPlugin().getLogger());
-        this.libraryManager = new BungeeLibraryManager(this.getPlugin());
-        libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
+        this.dependencyManager = new DependencyManager(new BungeeLibraryManager(this.getPlugin()), loaderFlags);
 
-        if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {
-            loadDependency(Dependency.ADVENTURE);
-            loadDependency(Dependency.ADVENTURE_KEY);
-            loadDependency(Dependency.KYORI_EXAMINATION);
-        }
-        loadDependency(Dependency.KYORI_OPTION);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON);
-        loadDependency(Dependency.ADVENTURE_MINI_MESSAGE);
+        this.dependencyManager.init();
+        this.dependencyManager.loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD);
 
         new BungeeTriton(this).onEnable();
     }

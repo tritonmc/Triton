@@ -14,7 +14,6 @@ dependencies {
     compileOnly project(":api")
 
     // Adventure / MiniMessage
-    // TODO check which of these should be compileOnly or implementation
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.15.0'
     compileOnly 'net.kyori:adventure-text-serializer-legacy:4.15.0'
     compileOnly 'net.kyori:adventure-text-serializer-plain:4.15.0'

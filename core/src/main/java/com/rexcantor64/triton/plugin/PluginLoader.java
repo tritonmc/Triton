@@ -1,9 +1,8 @@
 package com.rexcantor64.triton.plugin;
 
-import com.rexcantor64.triton.dependencies.Dependency;
+import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
-import net.byteflux.libby.LibraryManager;
 
 import java.io.InputStream;
 import java.util.Set;
@@ -16,16 +15,8 @@ public interface PluginLoader {
 
     InputStream getResourceAsStream(String fileName);
 
-    LibraryManager getLibraryManager();
+    DependencyManager getDependencyManager();
 
     Set<LoaderFlag> getLoaderFlags();
-
-    default boolean hasLoaderFlag(LoaderFlag flag) {
-        return getLoaderFlags().contains(flag);
-    }
-
-    default void loadDependency(Dependency dependency) {
-        getLibraryManager().loadLibrary(dependency.getLibrary(getLoaderFlags()));
-    };
 
 }
