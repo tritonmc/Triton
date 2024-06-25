@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.spigot.player;
 
+import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.MinecraftKey;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
@@ -10,6 +12,7 @@ import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.storage.LocalStorage;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,8 +26,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +36,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SpigotLanguagePlayer implements LanguagePlayer {
 
     private final UUID uuid;
+    /**
+     * UUID of this player as seen by the proxy; some servers might have different player UUIDs on proxy and servers
+     **/
+    @Getter
+    private UUID proxyUniqueId;
     private Player bukkit;
 
     private Language lang;
@@ -67,6 +75,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
 
     public SpigotLanguagePlayer(UUID p) {
         uuid = p;
+        proxyUniqueId = this.uuid;
         load();
     }
 
@@ -81,21 +90,25 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         this.objectivesMap.remove(name);
     }
 
-    public void setScoreboardTeam(String name, String displayJson, String prefixJson, String suffixJson,
-                                  List<Object> optionData) {
-        ScoreboardTeam team = this.teamsMap.computeIfAbsent(name, k -> new ScoreboardTeam());
-        team.setDisplayJson(displayJson);
-        team.setPrefixJson(prefixJson);
-        team.setSuffixJson(suffixJson);
-        team.setOptionData(optionData);
+    public void setScoreboardTeam(String name, ScoreboardTeam team) {
+        this.teamsMap.put(name, team);
     }
 
     public void removeScoreboardTeam(String name) {
         this.teamsMap.remove(name);
     }
 
-    public void saveSign(SignLocation location, Object tileEntityType, NbtCompound nbtCompound) {
+    public void saveSign(SignLocation location, MinecraftKey tileEntityType, NbtCompound nbtCompound) {
         this.signs.put(location, new Sign(tileEntityType, nbtCompound));
+    }
+
+    public void setProxyUniqueId(UUID proxyUniqueId) {
+        if (Objects.equals(proxyUniqueId, this.proxyUniqueId)) {
+            return;
+        }
+        this.proxyUniqueId = proxyUniqueId;
+        val language = Triton.get().getStorage().getLanguage(this);
+        setLang(language, false);
     }
 
     public Language getLang() {
@@ -126,14 +139,17 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                 Triton.get().getLogger().logError(e, "Failed to send \"language changed\" message.");
             }
         }
+        boolean hasChanged = !Objects.equals(event.getNewLanguage(), this.lang);
         this.lang = event.getNewLanguage();
         this.waitingForClientLocale = false;
-        refreshAll();
-        if (SpigotTriton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
-            save();
-        if (sendToBungee && SpigotTriton.asSpigot().getBridgeManager() != null && Triton.get().getConfig().isBungeecord())
-            SpigotTriton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
-        executeCommands();
+        if (hasChanged) {
+            refreshAll();
+            if (SpigotTriton.asSpigot().getBridgeManager() == null || Triton.get().getStorage() instanceof LocalStorage)
+                save();
+            if (sendToBungee && SpigotTriton.asSpigot().getBridgeManager() != null && Triton.get().getConfig().isBungeecord())
+                SpigotTriton.asSpigot().getBridgeManager().updatePlayerLanguage(this);
+            executeCommands();
+        }
     }
 
     @Override
@@ -221,7 +237,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
                     ip = player.getAddress().getAddress().getHostAddress();
                 }
             }
-            Triton.get().getStorage().setLanguage(uuid, ip, lang);
+            Triton.get().getStorage().setLanguage(this.getStorageUniqueId(), ip, lang);
         });
     }
 
@@ -276,16 +292,22 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     }
 
     @Data
+    @AllArgsConstructor
     public static class ScoreboardTeam {
         private String displayJson;
         private String prefixJson;
         private String suffixJson;
-        private List<Object> optionData;
+
+        // other data (has to be saved for refreshing packet)
+        private String nameTagVisibility;
+        private String collisionRule;
+        private EnumWrappers.ChatFormatting color;
+        private int options;
     }
 
     @Data
     public static class Sign {
-        private final Object tileEntityType; // NMS class, use Object instead
+        private final MinecraftKey tileEntityType;
         private final NbtCompound compound;
     }
 

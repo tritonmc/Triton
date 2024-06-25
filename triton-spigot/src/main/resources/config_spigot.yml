@@ -163,11 +163,14 @@ language-creation:
     syntax-arg: arg
   holograms:
     # Should the plugin check for placeholders in holograms (and/or entity display names)?
-    # Normally the most recent plugins use armor stands to make the holograms, but if they don't, you can change it here.
+    # Normally, the most recent plugins use text displays to make the holograms, but if they don't, you can change it here.
     # Also, you can also translate other's entities name, like villagers. Add their entity type on the list below.
     # Full list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
     types:
       - ARMOR_STAND
+      - GLOW_ITEM_FRAME
+      - ITEM_FRAME
+      - TEXT_DISPLAY
     # When enabled, the list above is ignored and all entities' names are checked and translated.
     allow-all: false
     syntax-lang: lang
@@ -238,6 +241,13 @@ language-creation:
     # There might be some issues with this enabled, disable if you have those issues.
     # Without this enabled, players will have to leave and join the server for the language of custom advancements to be updated.
     experimental-advancements-refresh: false
+  death-screen:
+    # Should the plugin check for placeholders in the death screen (shown when the player dies)?
+    # Only works on 1.9 and above.
+    enabled: true
+    syntax-lang: lang
+    syntax-args: args
+    syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you've set disabled-line to 'disabled.line'):

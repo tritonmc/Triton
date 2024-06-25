@@ -2,6 +2,7 @@ package com.rexcantor64.triton.spigot.packetinterceptor;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.FuzzyReflection;
 import com.comphenix.protocol.reflect.accessors.Accessors;
 import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
@@ -50,24 +51,31 @@ public class AdvancementsPacketHandler extends PacketHandler {
             SERIALIZED_ADVANCEMENT_CLASS = null;
             ADVANCEMENT_DISPLAY_FIELD = null;
         }
-        val advancementDataPlayerClass = MinecraftReflection.getMinecraftClass("server.AdvancementDataPlayer", "AdvancementDataPlayer");
+        val advancementDataPlayerClass = MinecraftReflection.getMinecraftClass("server.PlayerAdvancements", "server.AdvancementDataPlayer", "AdvancementDataPlayer");
         ENTITY_PLAYER_ADVANCEMENT_DATA_PLAYER_FIELD = Accessors.getFieldAccessor(MinecraftReflection.getEntityPlayerClass(), advancementDataPlayerClass, true);
-        ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD = Accessors.getMethodAccessor(advancementDataPlayerClass, "b", MinecraftReflection.getEntityPlayerClass());
+        ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD = Accessors.getMethodAccessor(
+                FuzzyReflection.fromClass(advancementDataPlayerClass)
+                        .getMethodByReturnTypeAndParameters("flushDirty", void.class, MinecraftReflection.getEntityPlayerClass())
+        );
 
-        val advancementDataWorldClass = MinecraftReflection.getMinecraftClass("server.AdvancementDataWorld", "AdvancementDataWorld");
-        CRAFT_SERVER_GET_SERVER_METHOD = Accessors.getMethodAccessor(MinecraftReflection.getCraftBukkitClass("CraftServer"), "getServer");
-        MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD = Accessors.getMethodAccessor(Arrays.stream(MinecraftReflection.getMinecraftServerClass().getMethods())
-                .filter(m -> m.getReturnType() == advancementDataWorldClass).findAny()
-                .orElseThrow(() -> new RuntimeException("Unable to find method getAdvancementData([])")));
+        val advancementDataWorldClass = MinecraftReflection.getMinecraftClass("server.ServerAdvancementManager", "server.AdvancementDataWorld", "AdvancementDataWorld");
+        CRAFT_SERVER_GET_SERVER_METHOD = Accessors.getMethodAccessor(MinecraftReflection.getCraftServer(), "getServer");
+        MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD = Accessors.getMethodAccessor(
+                FuzzyReflection.fromClass(MinecraftReflection.getMinecraftServerClass())
+                        .getMethodByReturnTypeAndParameters("getAdvancements", advancementDataWorldClass)
+        );
 
-        if (getMcVersion() < 16) {
+        if (MinecraftVersion.NETHER_UPDATE.atOrAbove()) { // 1.16+
+            // MC 1.16+
+            // Loading of achievements requires an AdvancementDataWorld method
+            ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD = Accessors.getMethodAccessor(
+                    FuzzyReflection.fromClass(advancementDataPlayerClass)
+                            .getMethodByReturnTypeAndParameters("reload", void.class, advancementDataWorldClass)
+            );
+        } else {
             // MC 1.12-1.15
             // Loading of achievements only needs the method to be called without any parameters
             ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD = Accessors.getMethodAccessor(advancementDataPlayerClass, "b");
-        } else {
-            // MC 1.16+
-            // Loading of achievements requires an AdvancementDataWorld method
-            ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD = Accessors.getMethodAccessor(advancementDataPlayerClass, "a", advancementDataWorldClass);
         }
     }
 
@@ -181,14 +189,14 @@ public class AdvancementsPacketHandler extends PacketHandler {
 
             Bukkit.getScheduler().runTask(getMain().getJavaPlugin(), () -> {
                 // These are the same methods that are called from org.bukkit.craftbukkit.<version>.util.CraftMagicNumbers#loadAdvancement
-                if (getMcVersion() < 16) {
-                    // MC 1.12-1.15
-                    ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD.invoke(advancementDataPlayer);
-                } else {
+                if (MinecraftVersion.NETHER_UPDATE.atOrAbove()) { // 1.16+
                     // MC 1.16+
                     val minecraftServer = CRAFT_SERVER_GET_SERVER_METHOD.invoke(Bukkit.getServer());
                     val advancementDataWorld = MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD.invoke(minecraftServer);
                     ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD.invoke(advancementDataPlayer, advancementDataWorld);
+                } else {
+                    // MC 1.12-1.15
+                    ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD.invoke(advancementDataPlayer);
                 }
                 ADVANCEMENT_DATA_PLAYER_REFRESH_METHOD.invoke(advancementDataPlayer, nmsPlayer);
             });

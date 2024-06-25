@@ -19,8 +19,8 @@ import java.util.Optional;
  */
 public class WrappedAdvancementDisplay extends AbstractWrapper {
 
-    private static Class<?> ADVANCEMENT_DISPLAY = MinecraftReflection.getMinecraftClass("advancements.AdvancementDisplay", "AdvancementDisplay");
-    private static Class<?> ADVANCEMENT_FRAME_TYPE_CLASS = MinecraftReflection.getMinecraftClass("advancements.AdvancementFrameType", "AdvancementFrameType");
+    private static Class<?> ADVANCEMENT_DISPLAY = MinecraftReflection.getMinecraftClass("advancements.DisplayInfo", "advancements.AdvancementDisplay", "AdvancementDisplay");
+    private static Class<?> ADVANCEMENT_FRAME_TYPE_CLASS = MinecraftReflection.getMinecraftClass("advancements.AdvancementType", "advancements.AdvancementFrameType", "AdvancementFrameType");
     private static ConstructorAccessor ADVANCEMENT_DISPLAY_CONSTRUTOR = Accessors.getConstructorAccessor(
             ADVANCEMENT_DISPLAY,
             MinecraftReflection.getItemStackClass(), // icon

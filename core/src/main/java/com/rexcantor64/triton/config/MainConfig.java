@@ -90,6 +90,8 @@ public class MainConfig implements TritonConfig {
     private boolean advancementsRefresh;
     private boolean resourcePackPrompt;
     private FeatureSyntax resourcePackPromptSyntax;
+    private boolean deathScreen;
+    private FeatureSyntax deathScreenSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -292,6 +294,10 @@ public class MainConfig implements TritonConfig {
         Configuration resourcePackPrompt = section.getSection("resource-pack-prompt");
         this.resourcePackPrompt = resourcePackPrompt.getBoolean("enabled", true);
         this.resourcePackPromptSyntax = FeatureSyntax.fromSection(resourcePackPrompt);
+
+        Configuration deathScreen = section.getSection("death-screen");
+        this.deathScreen = deathScreen.getBoolean("enabled", true);
+        this.deathScreenSyntax = FeatureSyntax.fromSection(deathScreen);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)

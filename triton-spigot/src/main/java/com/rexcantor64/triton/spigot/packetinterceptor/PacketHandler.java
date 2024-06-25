@@ -3,7 +3,6 @@ package com.rexcantor64.triton.spigot.packetinterceptor;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.utility.MinecraftVersion;
 import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageManager;
@@ -41,14 +40,6 @@ public abstract class PacketHandler {
 
     protected AdventureParser parser() {
         return getMain().getMessageParser();
-    }
-
-    /**
-     * @deprecated Use {@link MinecraftVersion#atOrAbove()} instead.
-     */
-    @Deprecated
-    protected int getMcVersion() {
-        return getMain().getMcVersion();
     }
 
     /**

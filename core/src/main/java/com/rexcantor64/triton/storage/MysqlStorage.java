@@ -128,7 +128,7 @@ public class MysqlStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[MySQL Storage] Getting language for player %1", lp);
-        String lang = getValueFromStorage(lp.getUUID().toString());
+        String lang = getValueFromStorage(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConfig().isAlwaysCheckClientLocale())))

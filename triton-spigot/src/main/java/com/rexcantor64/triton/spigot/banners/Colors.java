@@ -1,11 +1,8 @@
 package com.rexcantor64.triton.spigot.banners;
 
-import com.rexcantor64.triton.spigot.SpigotTriton;
-
 public enum Colors {
     BLACK("BLACK", 'a'), RED("RED", 'b'), GREEN("GREEN", 'c'), BROWN("BROWN", 'd'), BLUE(
-            "BLUE", 'e'), PURPLE("PURPLE", 'f'), CYAN("CYAN", 'g'), GRAY(SpigotTriton.asSpigot()
-            .getMcVersion() <= 12 ? "SILVER" : "LIGHT_GRAY",
+            "BLUE", 'e'), PURPLE("PURPLE", 'f'), CYAN("CYAN", 'g'), GRAY("LIGHT_GRAY",
             'h'), DARK_GRAY("GRAY", 'i'), PINK("PINK", 'j'), LIME("LIME", 'k'), YELLOW(
             "YELLOW", 'l'), LIGHT_BLUE("LIGHT_BLUE", 'm'), MAGENTA("MAGENTA",
             'n'), ORANGE("ORANGE", 'o'), WHITE("WHITE", 'p');

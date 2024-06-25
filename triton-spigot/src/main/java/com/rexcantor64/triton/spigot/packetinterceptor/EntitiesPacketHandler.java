@@ -54,19 +54,26 @@ public class EntitiesPacketHandler extends PacketHandler {
 
     private final DataWatcherHandler dataWatcherHandler;
     private final DataValueHandler dataValueHandler;
+    private final int textDisplaysTextIndex;
 
     public EntitiesPacketHandler() {
-        if (getMcVersion() < 9) {
-            // MC 1.8
-            this.dataWatcherHandler = new DataWatcherHandler1_8();
-        } else if (getMcVersion() < 13) {
+        if (MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // 1.13+
+            // MC 1.13+
+            this.dataWatcherHandler = new DataWatcherHandler1_13();
+        } else if (MinecraftVersion.COMBAT_UPDATE.atOrAbove()) { // 1.9+
             // MC 1.9 to 1.12
             this.dataWatcherHandler = new DataWatcherHandler1_9();
         } else {
-            // MC 1.13+
-            this.dataWatcherHandler = new DataWatcherHandler1_13();
+            // MC 1.8
+            this.dataWatcherHandler = new DataWatcherHandler1_8();
         }
         this.dataValueHandler = new DataValueHandler();
+
+        if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
+            textDisplaysTextIndex = 23;
+        } else {
+            textDisplaysTextIndex = 22;
+        }
     }
 
     /**
@@ -89,10 +96,10 @@ public class EntitiesPacketHandler extends PacketHandler {
 
         // Try to get the entity type
         EntityType entityType;
-        if (getMcVersion() >= 14) {
+        if (MinecraftVersion.VILLAGE_UPDATE.atOrAbove()) { // 1.14+
             // On MC 1.14+, the entity type is present on the packet
             entityType = EntityType.fromBukkit(packet.getPacket().getEntityTypeModifier().readSafely(0));
-        } else if (getMcVersion() >= 9) {
+        } else if (MinecraftVersion.COMBAT_UPDATE.atOrAbove()) { // 1.9+
             // On MC 1.9 to 1.13, we need to convert the entity type ID to an actual entity type object
             entityType = EntityTypeUtils.getEntityTypeByObjectId(packet.getPacket().getIntegers().readSafely(6));
         } else {
@@ -152,7 +159,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         // Add entity to cache
         addEntity(languagePlayer.getEntitiesMap(), packet.getPlayer().getWorld(), entityId, Optional.empty());
 
-        if (getMcVersion() >= 15) {
+        if (MinecraftVersion.BEE_UPDATE.atOrAbove()) { // 1.15+
             // DataWatcher is not sent on 1.15 anymore in this packet
             return;
         }
@@ -269,10 +276,11 @@ public class EntitiesPacketHandler extends PacketHandler {
                 if (!skipHideCustomName.get()) {
                     newWatchableObjects.add(oldObject);
                 }
-            } else if (oldObject.getIndex() == 8 && getMcVersion() >= 13) {
+            } else if (oldObject.getIndex() == 8 && MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // 1.13+
                 // Index 8 is "Item" of type "Slot"
                 // https://wiki.vg/Entity_metadata#Entity
                 // Used to translate items inside (glowing) item frames
+                // Introduced in MC 1.13
                 newWatchableObjects.add(
                         this.dataWatcherHandler.translateItemFrameItems(
                                 languagePlayer,
@@ -364,8 +372,8 @@ public class EntitiesPacketHandler extends PacketHandler {
                                 )
                         ).orElse(oldObject)
                 );
-            } else if (oldObject.getIndex() == 23) {
-                // Index 23 is "Text" of type "Chat"
+            } else if (oldObject.getIndex() == textDisplaysTextIndex) {
+                // Index 22/23 is "Text" of type "Chat"
                 // https://wiki.vg/Entity_metadata#Text_Display
                 // Used to translate text display entities
                 newWatchableObjects.add(
@@ -669,24 +677,25 @@ public class EntitiesPacketHandler extends PacketHandler {
             }
             packetSpawn.getIntegers().writeSafely(0, humanEntity.getEntityId());
             packetSpawn.getUUIDs().writeSafely(0, humanEntity.getUniqueId());
-            if (getMcVersion() < 9) {
-                // On MC 1.8, location is defined as an integer and multiplied by 32
-                packetSpawn.getIntegers()
-                        .writeSafely(1, (int) Math.floor(humanEntity.getLocation().getX() * 32.00D))
-                        .writeSafely(2, (int) Math.floor(humanEntity.getLocation().getY() * 32.00D))
-                        .writeSafely(3, (int) Math.floor(humanEntity.getLocation().getZ() * 32.00D));
-            } else {
+            if (MinecraftVersion.COMBAT_UPDATE.atOrAbove()) { // 1.9+
                 // On MC 1.9+, location is defined as a double
                 packetSpawn.getDoubles()
                         .writeSafely(0, humanEntity.getLocation().getX())
                         .writeSafely(1, humanEntity.getLocation().getY())
                         .writeSafely(2, humanEntity.getLocation().getZ());
+            } else {
+                // On MC 1.8, location is defined as an integer and multiplied by 32
+                packetSpawn.getIntegers()
+                        .writeSafely(1, (int) Math.floor(humanEntity.getLocation().getX() * 32.00D))
+                        .writeSafely(2, (int) Math.floor(humanEntity.getLocation().getY() * 32.00D))
+                        .writeSafely(3, (int) Math.floor(humanEntity.getLocation().getZ() * 32.00D));
             }
             packetSpawn.getBytes()
-                    .writeSafely(0, (byte) (int) (humanEntity.getLocation().getYaw() * 256.0F / 360.0F))
-                    .writeSafely(1, (byte) (int) (humanEntity.getLocation().getPitch() * 256.0F / 360.0F));
+                    .writeSafely(0, (byte) Math.floor(humanEntity.getLocation().getPitch() * 256.0F / 360.0F))
+                    .writeSafely(1, (byte) Math.floor(humanEntity.getLocation().getYaw() * 256.0F / 360.0F));
             if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
-                packetSpawn.getBytes().writeSafely(2, (byte) 0);
+                // not exactly accurate, but the bukkit API does not provide access to the head yaw
+                packetSpawn.getBytes().writeSafely(2, (byte) Math.floor(humanEntity.getLocation().getYaw() * 256.0F / 360.0F));
                 val velocity = humanEntity.getVelocity();
                 packetSpawn.getIntegers()
                         .writeSafely(1, (int) (Math.max(-3.9d, Math.min(3.9d, velocity.getX())) * 8000.0d))
@@ -698,17 +707,21 @@ public class EntitiesPacketHandler extends PacketHandler {
                 packetSpawn.getDataWatcherModifier().writeSafely(0, WrappedDataWatcher.getEntityWatcher(humanEntity));
             }
 
-            // Even though this is sent in the spawn packet, we still need to send it again for some reason
-            val packetLook = createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
-            packetLook.getIntegers().writeSafely(0, humanEntity.getEntityId());
-            packetLook.getBytes().writeSafely(0, (byte) (int) (humanEntity.getLocation().getYaw() * 256.0F / 360.0F));
-
             val isHiddenEntity = !languagePlayer.getShownPlayers().contains(humanEntity.getUniqueId());
             sendPacket(bukkitPlayer, packetRemove, true);
             sendPacket(bukkitPlayer, packetDestroy, true);
             sendPacket(bukkitPlayer, packetAdd, true);
             sendPacket(bukkitPlayer, packetSpawn, true);
-            sendPacket(bukkitPlayer, packetLook, true);
+
+            if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
+                // Even though this is sent in the spawn packet, we still need to send it again for some reason
+                val packetLook = createPacket(PacketType.Play.Server.ENTITY_HEAD_ROTATION);
+                packetLook.getIntegers().writeSafely(0, humanEntity.getEntityId());
+                packetLook.getBytes().writeSafely(0, (byte) (int) (humanEntity.getLocation().getYaw() * 256.0F / 360.0F));
+
+                sendPacket(bukkitPlayer, packetLook, true);
+            }
+
             if (isHiddenEntity) {
                 // If the entity should not show up in tab, hide it again
                 Bukkit.getScheduler().runTaskLater(
@@ -955,7 +968,7 @@ public class EntitiesPacketHandler extends PacketHandler {
     @Override
     public void registerPacketTypes(Map<PacketType, HandlerFunction> registry) {
         registry.put(PacketType.Play.Server.SPAWN_ENTITY, asSync(this::handleSpawnEntity));
-        if (getMcVersion() < 19) {
+        if (!MinecraftVersion.WILD_UPDATE.atOrAbove()) {
             // 1.19 removed this packet
             registry.put(PacketType.Play.Server.SPAWN_ENTITY_LIVING, asSync(this::handleSpawnEntityLiving));
         }
@@ -1377,11 +1390,11 @@ public class EntitiesPacketHandler extends PacketHandler {
                 payload = WrappedChatComponent.fromText("").getHandle();
             }
 
-            // Display name has: index 23 and type chat
+            // Display name has: index 22/23 and type chat
             // https://wiki.vg/Entity_metadata#Text_Display
             return Optional.of(
                     new WrappedDataValue(
-                            23,
+                            textDisplaysTextIndex,
                             WrappedDataWatcher.Registry.getChatComponentSerializer(false),
                             payload
                     )
