@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -82,12 +81,11 @@ public class JarInJarClassLoader extends URLClassLoader {
      * Creates a new plugin instance.
      *
      * @param bootstrapClass   the name of the bootstrap plugin class
-     * @param loaderPluginType the type of the loader plugin, the only parameter of the bootstrap
-     *                         plugin constructor
-     * @param loaderPlugin     the loader plugin instance
+     * @param constructorTypes the types of the constructor of the bootstrap plugin class
+     * @param constructorArgs  the values to pass to the constructor
      * @return the instantiated bootstrap plugin
      */
-    public LoaderBootstrap instantiatePlugin(String bootstrapClass, Class<?>[] loaderPluginType, Object[] loaderPlugin) throws LoadingException {
+    public LoaderBootstrap instantiatePlugin(String bootstrapClass, Class<?>[] constructorTypes, Object[] constructorArgs) throws LoadingException {
         Class<? extends LoaderBootstrap> plugin;
         try {
             plugin = loadClass(bootstrapClass).asSubclass(LoaderBootstrap.class);
@@ -97,13 +95,13 @@ public class JarInJarClassLoader extends URLClassLoader {
 
         Constructor<? extends LoaderBootstrap> constructor;
         try {
-            constructor = plugin.getConstructor(loaderPluginType);
+            constructor = plugin.getConstructor(constructorTypes);
         } catch (ReflectiveOperationException e) {
             throw new LoadingException("Unable to get bootstrap constructor", e);
         }
 
         try {
-            return constructor.newInstance(loaderPlugin);
+            return constructor.newInstance(constructorArgs);
         } catch (ReflectiveOperationException e) {
             throw new LoadingException("Unable to create bootstrap plugin instance", e);
         }

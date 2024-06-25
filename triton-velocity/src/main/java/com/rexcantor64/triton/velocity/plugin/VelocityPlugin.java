@@ -1,18 +1,19 @@
 package com.rexcantor64.triton.velocity.plugin;
 
-import com.google.inject.Inject;
+import com.rexcantor64.triton.dependencies.Dependency;
+import com.rexcantor64.triton.dependencies.Repository;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
+import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.SLF4JLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.velocity.VelocityTriton;
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
-import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
+import net.byteflux.libby.LibraryManager;
+import net.byteflux.libby.VelocityLibraryManager;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
@@ -20,18 +21,28 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.Set;
 
 @Getter
 public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
+    @Getter
+    private final Object plugin;
     private final ProxyServer server;
     private final TritonLogger tritonLogger;
     private final Path dataDirectory;
     private final Metrics.Factory metricsFactory;
+    @Getter
+    private final Set<LoaderFlag> loaderFlags;
+    @Getter
+    private final LibraryManager libraryManager;
 
-    public VelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public VelocityPlugin(Object loader, ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Set<LoaderFlag> loaderFlags) {
+        this.plugin = loader;
         this.server = server;
         this.tritonLogger = new SLF4JLogger(logger);
         this.dataDirectory = dataDirectory;
+        this.loaderFlags = loaderFlags;
+        this.libraryManager = new VelocityLibraryManager<>(logger, dataDirectory, server.getPluginManager(), loader);
 
         try {
             // Because the loader module does not depend on bStats, we have to do this instead
@@ -46,6 +57,20 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
 
     @Override
     public void onEnable() {
+        libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
+
+        if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {
+            loadDependency(Dependency.ADVENTURE);
+            loadDependency(Dependency.ADVENTURE_KEY);
+            loadDependency(Dependency.KYORI_EXAMINATION);
+        }
+        loadDependency(Dependency.KYORI_OPTION);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON);
+        loadDependency(Dependency.ADVENTURE_MINI_MESSAGE);
+
         new VelocityTriton(this).onEnable();
     }
 

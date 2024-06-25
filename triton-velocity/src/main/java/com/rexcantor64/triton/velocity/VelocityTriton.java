@@ -41,22 +41,26 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
         return (VelocityPlugin) this.loader;
     }
 
+    public Object getPlugin() {
+        return getLoader().getPlugin();
+    }
+
     @Override
     public void onEnable() {
         instance = this;
         super.onEnable();
 
         // bStats
-        Metrics metrics = getLoader().getMetricsFactory().make(getLoader(), 16222);
+        Metrics metrics = getLoader().getMetricsFactory().make(getPlugin(), 16222);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
                 () -> this.getTranslationManager().getTranslationCount()));
 
-        val eventManager = getLoader().getServer().getEventManager();
-        eventManager.register(getLoader(), new VelocityListener());
-        eventManager.register(getLoader(), bridgeManager);
+        val eventManager = getVelocity().getEventManager();
+        eventManager.register(getPlugin(), new VelocityListener());
+        eventManager.register(getPlugin(), bridgeManager);
 
         this.bridgeChannelIdentifier = MinecraftChannelIdentifier.create("triton", "main");
-        getLoader().getServer().getChannelRegistrar().register(this.bridgeChannelIdentifier);
+        getVelocity().getChannelRegistrar().register(this.bridgeChannelIdentifier);
 
         if (getStorage() instanceof LocalStorage)
             bridgeManager.sendConfigToEveryone();
@@ -80,7 +84,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConfig().getConfigAutoRefresh() <= 0) return;
-        configRefreshTask = getLoader().getServer().getScheduler().buildTask(getLoader(), this::reload)
+        configRefreshTask = getVelocity().getScheduler().buildTask(getPlugin(), this::reload)
                 .delay(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
     }
 
@@ -96,7 +100,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
 
     @Override
     public void runAsync(Runnable runnable) {
-        getLoader().getServer().getScheduler().buildTask(getLoader(), runnable).schedule();
+        getVelocity().getScheduler().buildTask(getPlugin(), runnable).schedule();
     }
 
     public ProxyServer getVelocity() {

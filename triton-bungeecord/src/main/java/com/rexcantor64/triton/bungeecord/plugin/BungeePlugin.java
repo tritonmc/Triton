@@ -4,7 +4,9 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.dependencies.Dependency;
+import com.rexcantor64.triton.dependencies.Repository;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
+import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.JavaLogger;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.Platform;
@@ -13,9 +15,11 @@ import com.rexcantor64.triton.terminal.Log4jInjector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.byteflux.libby.BungeeLibraryManager;
+import net.byteflux.libby.LibraryManager;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.io.InputStream;
+import java.util.Set;
 import java.util.logging.Level;
 
 @RequiredArgsConstructor
@@ -23,21 +27,29 @@ public class BungeePlugin implements PluginLoader, LoaderBootstrap {
     private TritonLogger logger;
     @Getter
     private final Plugin plugin;
+    @Getter
+    private final Set<LoaderFlag> loaderFlags;
+    @Getter
+    private LibraryManager libraryManager;
 
     @Override
     public void onEnable() {
         this.logger = new JavaLogger(this.getPlugin().getLogger());
-        BungeeLibraryManager libraryManager = new BungeeLibraryManager(this.getPlugin());
-        libraryManager.addRepository("https://repo.diogotc.com/mirror/");
-        libraryManager.loadLibrary(Dependency.ADVENTURE.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_KEY.getLibrary());
-        libraryManager.loadLibrary(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON.getLibrary());
-        libraryManager.loadLibrary(Dependency.KYORI_EXAMINATION.getLibrary());
-        libraryManager.loadLibrary(Dependency.KYORI_OPTION.getLibrary());
+        this.libraryManager = new BungeeLibraryManager(this.getPlugin());
+        libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
+
+        if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {
+            loadDependency(Dependency.ADVENTURE);
+            loadDependency(Dependency.ADVENTURE_KEY);
+            loadDependency(Dependency.KYORI_EXAMINATION);
+        }
+        loadDependency(Dependency.KYORI_OPTION);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD);
+        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON);
+        loadDependency(Dependency.ADVENTURE_MINI_MESSAGE);
 
         new BungeeTriton(this).onEnable();
     }
@@ -77,7 +89,7 @@ public class BungeePlugin implements PluginLoader, LoaderBootstrap {
 
     @Override
     public InputStream getResourceAsStream(String fileName) {
-        return this.getPlugin().getResourceAsStream(fileName);
+        return getClass().getClassLoader().getResourceAsStream(fileName);
     }
 
 }

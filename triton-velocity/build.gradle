@@ -19,6 +19,8 @@ dependencies {
     // FIXME in the future change this to dynamic download and loading
     implementation 'mysql:mysql-connector-java:8.0.30'
 
+    implementation 'net.byteflux:libby-velocity:1.3.0'
+
     implementation 'org.bstats:bstats-velocity:3.0.0'
 }
 

@@ -59,6 +59,7 @@ subprojects {
 dependencies {
     implementation project(':api')
     implementation project(':core:triton-core-loader')
+    implementation project(':triton-bungeecord:triton-bungeecord-loader')
     implementation project(':triton-spigot:triton-spigot-loader')
     implementation project(':triton-velocity:triton-velocity-loader')
 
@@ -73,6 +74,9 @@ shadowJar {
 
     from {
         project(':core').tasks.shadowJar.archiveFile
+    }
+    from {
+        project(':triton-bungeecord').tasks.shadowJar.archiveFile
     }
     from {
         project(':triton-spigot').tasks.shadowJar.archiveFile
