@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class TranslationManager implements com.rexcantor64.triton.api.language.TranslationManager {
 
-    private static final String MINIMESSAGE_TYPE_TAG = "[minimsg]";
+    private static final String LEGACY_TYPE_TAG = "[legacy]";
     private static final String JSON_TYPE_TAG = "[triton_json]";
 
     private final Triton<?, ?> triton;
@@ -269,12 +269,12 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
 
     private @NotNull Component handleTranslationType(@NotNull String message, @NotNull Language language) {
         // TODO make minimsg the default (?)
-        if (message.startsWith(MINIMESSAGE_TYPE_TAG)) {
-            return getMiniMessageInstanceForLanguage(language).deserialize(message.substring(MINIMESSAGE_TYPE_TAG.length()));
+        if (message.startsWith(LEGACY_TYPE_TAG)) {
+            return LegacyComponentSerializer.legacyAmpersand().deserialize(message.substring(LEGACY_TYPE_TAG.length()));
         } else if (message.startsWith(JSON_TYPE_TAG)) {
             return GsonComponentSerializer.gson().deserialize(message.substring(JSON_TYPE_TAG.length()));
         } else {
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+            return getMiniMessageInstanceForLanguage(language).deserialize(message);
         }
     }
 

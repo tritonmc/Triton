@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 
 public class ComponentUtils {
 
-    public final static char SECTION_CHAR = '§';
+    public final static char SECTION_CHAR = '\u00A7';
 
     /**
      * Deserialize a JSON string representing a {@link Component}.
