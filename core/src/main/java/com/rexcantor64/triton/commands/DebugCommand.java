@@ -33,15 +33,13 @@ public class DebugCommand implements Command {
             args = Arrays.copyOfRange(args, 1, args.length);
         } else if (sender.getUUID() != null && event.getPlatform().isProxy()) {
             if (args.length < 1) {
-                // TODO get from messages.yml
-                sendMessage(event, "You must provide a target platform: " + getSubcommandList(TargetPlatform.values()));
+                sendMessage(event, "debug.target-platform.missing", getSubcommandList(TargetPlatform.values()));
                 return;
             }
 
             val targetPlatform = getSubcommandFromName(TargetPlatform.values(), args[0]);
             if (!targetPlatform.isPresent()) {
-                // TODO get from messages.yml
-                sendMessage(event, "Invalid target platform. Available: " + getSubcommandList(Subcommand.values()));
+                sendMessage(event, "debug.target-platform.invalid", args[0], getSubcommandList(TargetPlatform.values()));
                 return;
             }
 
@@ -56,15 +54,13 @@ public class DebugCommand implements Command {
         event = event.toBuilder().args(args).build();
 
         if (args.length < 1) {
-            // TODO get from messages.yml
-            sendMessage(event, "You must provide a subcommand: " + getSubcommandList(Subcommand.values()));
+            sendMessage(event, "debug.subcommand.missing", getSubcommandList(Subcommand.values()));
             return;
         }
 
         val subcommand = getSubcommandFromName(Subcommand.values(), args[0]);
         if (!subcommand.isPresent()) {
-            // TODO get from messages.yml
-            sendMessage(event, "Invalid subcommand. Available: " + getSubcommandList(Subcommand.values()));
+            sendMessage(event, "debug.subcommand.invalid", args[0], getSubcommandList(Subcommand.values()));
             return;
         }
 
@@ -84,77 +80,82 @@ public class DebugCommand implements Command {
         val args = event.getArgs();
 
         if (args.length < 2) {
-            // TODO get from messages.yml
-            sendMessage(event, "You must provide a dump subcommand: " + getSubcommandList(DumpSubcommand.values()));
+            sendMessage(event, "debug.dump.action.missing", getSubcommandList(DumpAction.values()));
             return;
         }
 
-        val subcommand = getSubcommandFromName(DumpSubcommand.values(), args[1]);
-        if (!subcommand.isPresent()) {
-            // TODO get from messages.yml
-            sendMessage(event, "Invalid dump subcommand. Available: " + getSubcommandList(DumpSubcommand.values()));
+        val action = getSubcommandFromName(DumpAction.values(), args[1]);
+        if (!action.isPresent()) {
+            sendMessage(event, "debug.dump.action.invalid", args[1], getSubcommandList(DumpAction.values()));
             return;
         }
 
         val dumpManager = Triton.get().getDumpManager();
-        switch (subcommand.get()) {
+        switch (action.get()) {
             case ADD:
             case REMOVE:
                 if (args.length < 3) {
-                    // TODO get from messages.yml
-                    sendMessage(event, "You must provide a player, 'me' or 'all'");
+                    sendMessage(event, "debug.dump.player.missing");
                     return;
                 }
                 val playerStr = args[2];
                 List<FeatureSyntax> types = new ArrayList<>();
+                List<String> typeNames = new ArrayList<>();
                 if (args.length >= 4) {
                     for (int i = 3; i < args.length; ++i) {
-                        val type = dumpManager.getAvailableTypes().get(args[i]);
+                        val typeName = args[i].toLowerCase();
+                        val type = dumpManager.getAvailableTypes().get(typeName);
                         if (type == null) {
-                            // TODO get from messages.yml
-                            sendMessage(event, "Type " + args[i] + " not found");
+                            String allTypes = String.join(", ", dumpManager.getAvailableTypes().keySet());
+                            sendMessage(event, "debug.dump.type.not-found", args[i], allTypes);
                             return;
                         }
                         types.add(type);
+                        typeNames.add(typeName);
                     }
                 } else {
                     types.addAll(dumpManager.getAvailableTypes().values());
+                    typeNames.addAll(dumpManager.getAvailableTypes().keySet());
                 }
 
+                val typeNamesStr = String.join(", ", typeNames);
+
                 if (playerStr.equalsIgnoreCase("all")) {
-                    if (subcommand.get() == DumpSubcommand.ADD) {
+                    if (action.get() == DumpAction.ADD) {
                         dumpManager.enableForEveryone(types);
+                        sendMessage(event, "debug.dump.success.add.all", typeNamesStr);
                     } else {
                         dumpManager.disableForEveryone(types);
+                        sendMessage(event, "debug.dump.success.remove.all", typeNamesStr);
                     }
                 } else {
                     UUID player;
                     if (playerStr.equalsIgnoreCase("me")) {
                         if (sender.getUUID() == null) {
-                            sendMessage(event, "Only players can use 'me'");
+                            sendMessage(event, "debug.dump.player.me-not-player");
                             return;
                         }
                         player = sender.getUUID();
                     } else {
                         val uuid = Triton.get().getPlayerUUIDFromString(playerStr);
                         if (uuid == null) {
-                            // TODO get from messages.yml
-                            sendMessage(event, "Can't find player " + playerStr);
+                            sendMessage(event, "debug.dump.player.not-found", playerStr);
+                            return;
                         }
                         player = uuid;
                     }
-                    if (subcommand.get() == DumpSubcommand.ADD) {
+                    if (action.get() == DumpAction.ADD) {
                         dumpManager.enableForPlayer(player, types);
+                        sendMessage(event, "debug.dump.success.add.player", typeNamesStr, player);
                     } else {
                         dumpManager.disableForPlayer(player, types);
+                        sendMessage(event, "debug.dump.success.remove.player", typeNamesStr, player);
                     }
                 }
-                // TODO get from messages.yml
-                sendMessage(event, "Success");
                 break;
             case CLEAR:
                 dumpManager.disable();
-                sendMessage(event, "Disabled dumping for everyone");
+                sendMessage(event, "debug.dump.clear");
                 break;
         }
     }
@@ -164,8 +165,7 @@ public class DebugCommand implements Command {
         val args = event.getArgs();
 
         if (args.length < 2) {
-            // TODO get from messages.yml
-            sendMessage(event, "You must provide a dump name");
+            sendMessage(event, "debug.load.dump-file.missing");
             return;
         }
 
@@ -174,18 +174,22 @@ public class DebugCommand implements Command {
         int startLine = 0;
         int endLine = Integer.MAX_VALUE;
 
-        try {
-            if (args.length >= 3) {
+        if (args.length >= 3) {
+            try {
                 startLine = Integer.parseInt(args[2]);
                 endLine = startLine + 1;
+            } catch (NumberFormatException e) {
+                sendMessage(event, "debug.load.line-number.invalid", args[2]);
+                return;
             }
-            if (args.length >= 4) {
+        }
+        if (args.length >= 4) {
+            try {
                 endLine = Integer.parseInt(args[3]);
+            } catch (NumberFormatException e) {
+                sendMessage(event, "debug.load.line-number.invalid", args[3]);
+                return;
             }
-        } catch (NumberFormatException e) {
-            // TODO get from messages.yml
-            sendMessage(event, "Invalid number");
-            return;
         }
 
         try {
@@ -195,15 +199,12 @@ public class DebugCommand implements Command {
                 sender.sendMessage(message);
             }
 
-            // TODO get from messages.yml
-            sendMessage(event, "Sent " + messages.size() + " messages!");
+            sendMessage(event, "debug.load.success.sent", messages.size());
         } catch (IOException e) {
-            // TODO get from messages.yml
-            sendMessage(event, "Failed to open dump file: " + e.getMessage());
+            sendMessage(event, "debug.load.dump-file.not-found", dumpName, e.getMessage());
             Triton.get().getLogger().logError(e, "Failed to open dump file");
         } catch (JsonParseException e) {
-            // TODO get from messages.yml
-            sendMessage(event, "Invalid message JSON " + e.getMessage());
+            sendMessage(event, "debug.load.dump-file.invalid-json", e.getMessage());
             Triton.get().getLogger().logError(e, "Failed to parse message JSON while loading dump");
         }
     }
@@ -238,9 +239,9 @@ public class DebugCommand implements Command {
         switch (subcommand.get()) {
             case DUMP:
                 if (args.length == 2) {
-                    return autocompleteEnum(args[1], DumpSubcommand.values());
+                    return autocompleteEnum(args[1], DumpAction.values());
                 }
-                val dumpSubcommand = getSubcommandFromName(DumpSubcommand.values(), args[1]);
+                val dumpSubcommand = getSubcommandFromName(DumpAction.values(), args[1]);
                 if (!dumpSubcommand.isPresent()) {
                     return Collections.emptyList();
                 }
@@ -255,14 +256,11 @@ public class DebugCommand implements Command {
                                     .collect(Collectors.toList());
                         }
 
-                        if (args.length == 4) {
-                            val argLower = args[3].toLowerCase();
-                            return Triton.get().getDumpManager().getAvailableTypes().keySet().stream()
-                                    .map(String::toLowerCase)
-                                    .filter(value -> value.startsWith(argLower))
-                                    .collect(Collectors.toList());
-                        }
-                        break;
+                        val argLower = args[args.length - 1].toLowerCase();
+                        return Triton.get().getDumpManager().getAvailableTypes().keySet().stream()
+                                .map(String::toLowerCase)
+                                .filter(value -> value.startsWith(argLower))
+                                .collect(Collectors.toList());
                     case CLEAR:
                         break;
                 }
@@ -286,11 +284,16 @@ public class DebugCommand implements Command {
     /**
      * Wrapper to include platform in the message sent
      *
-     * @param event   The command event being handled
-     * @param message The message to send
+     * @param event The command event being handled
+     * @param code  The code of the message to send
+     * @param args  The arguments of the message
      */
-    private void sendMessage(CommandEvent event, String message) {
-        event.getSender().sendMessage("[Triton @ " + event.getPlatform() + "] " + message);
+    private void sendMessage(CommandEvent event, String code, Object... args) {
+        event.getSender().sendMessageFormatted(
+                "debug.prefix",
+                event.getPlatform(),
+                Triton.get().getMessagesConfig().getMessage(code, args)
+        );
     }
 
     private enum TargetPlatform {
@@ -303,7 +306,7 @@ public class DebugCommand implements Command {
         LOAD
     }
 
-    private enum DumpSubcommand {
+    private enum DumpAction {
         ADD,
         REMOVE,
         CLEAR

@@ -32,6 +32,7 @@ command:
   database: "Uploads/downloads translations to/from a database"
   info: "Shows information about the plugin (version, author, storage, etc)"
   loglevel: "See or change Triton's log level temporarily"
+  debug: "Debugging tools (use upon request from the developer)"
 success:
   getflag: "&bYou received the &7%1&b flag!"
   selector: "&bYour language has been changed to &7%1"
@@ -65,6 +66,42 @@ other:
   selector-gui-currentpage: "&bPage &3%1&b of &3%2"
   selected: "&bCurrently selected"
   database-loading: "&bPerforming operation..."
+debug:
+  prefix: "&b[Triton @ &l%1&b] &r%2"
+  target-platform:
+    missing: "&cYou must provide one of the following target platforms: &4%1"
+    invalid: "&cInvalid target platform '&4%1&c'. Available platforms: &4%2"
+  subcommand:
+    missing: "&cYou must provide one of the following subcommands: &4%1"
+    invalid: "&cInvalid subcommand '&4%1&c'. Available subcommands: &4%2"
+  dump:
+    action:
+      missing: "&cYou must provide one of the following actions for dump: &4%1"
+      invalid: "&cInvalid action '&4%1&c'. Available actions for dump: &4%2"
+    player:
+      missing: "&cYou must provide a player name, a UUID, 'me' or 'all'"
+      me-not-player: "&cOnly players can use 'me'"
+      not-found: "&cPlayer '&4%1&c' could not be found"
+    type:
+      not-found: "&cType '&4%1&c' not found. Available types: &4%2"
+    success:
+      add:
+        player: "&aEnabled dumping (&6%1&a) for player with UUID &6%2"
+        all: "&aEnabled dumping (&6%1&a) for all players"
+      remove:
+        player: "&aDisabled dumping (&6%1&a) for player with UUID &6%2"
+        all: "&aDisabled dumping (&6%1&a) for all players"
+    clear: "&aDisabled dumping for everyone"
+  load:
+    dump-file:
+      missing: "&cYou must provide a dump name (name of file under plugins/Triton/dumps)"
+      not-found: "&cCannot open dump file '&4%1&c': &4%2"
+      invalid-json: "&cFailed to parse message JSON in dump file: &4%1"
+    line-number:
+      invalid: "&cProvided line number '&4%1&c' is not a valid number"
+    success:
+      sent: '&aSend &6%1&a message(s)!'
+
 info-command:
   - "&8-------[ &b&lTriton&8 ]-------"
   - "&bVersion: &7%1"
