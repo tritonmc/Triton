@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DebugCommand implements Command {
 
@@ -39,7 +41,7 @@ public class DebugCommand implements Command {
             val targetPlatform = getSubcommandFromName(TargetPlatform.values(), args[0]);
             if (!targetPlatform.isPresent()) {
                 // TODO get from messages.yml
-                sendMessage(event,"Invalid target platform. Available: " + getSubcommandList(Subcommand.values()));
+                sendMessage(event, "Invalid target platform. Available: " + getSubcommandList(Subcommand.values()));
                 return;
             }
 
@@ -55,7 +57,7 @@ public class DebugCommand implements Command {
 
         if (args.length < 1) {
             // TODO get from messages.yml
-            sendMessage(event,"You must provide a subcommand: " + getSubcommandList(Subcommand.values()));
+            sendMessage(event, "You must provide a subcommand: " + getSubcommandList(Subcommand.values()));
             return;
         }
 
@@ -110,7 +112,7 @@ public class DebugCommand implements Command {
                         val type = dumpManager.getAvailableTypes().get(args[i]);
                         if (type == null) {
                             // TODO get from messages.yml
-                            sendMessage(event,"Type " + args[i] + " not found");
+                            sendMessage(event, "Type " + args[i] + " not found");
                             return;
                         }
                         types.add(type);
@@ -208,9 +210,77 @@ public class DebugCommand implements Command {
 
     @Override
     public List<String> handleTabCompletion(CommandEvent event) throws NoPermissionException {
-        event.getSender().assertPermission("triton.debug");
+        val sender = event.getSender();
+        String[] args = event.getArgs();
+
+        sender.assertPermission("triton.debug");
+
+        if (args.length == 0) {
+            return Collections.emptyList();
+        }
+
+        if (sender.getUUID() != null && event.getPlatform().isProxy()) {
+            if (args.length == 1) {
+                return autocompleteEnum(args[0], TargetPlatform.values());
+            }
+            args = Arrays.copyOfRange(args, 1, args.length);
+        }
+
+        if (args.length == 1) {
+            return autocompleteEnum(args[0], Subcommand.values());
+        }
+
+        val subcommand = getSubcommandFromName(Subcommand.values(), args[0]);
+        if (!subcommand.isPresent()) {
+            return Collections.emptyList();
+        }
+
+        switch (subcommand.get()) {
+            case DUMP:
+                if (args.length == 2) {
+                    return autocompleteEnum(args[1], DumpSubcommand.values());
+                }
+                val dumpSubcommand = getSubcommandFromName(DumpSubcommand.values(), args[1]);
+                if (!dumpSubcommand.isPresent()) {
+                    return Collections.emptyList();
+                }
+
+                switch (dumpSubcommand.get()) {
+                    case ADD:
+                    case REMOVE:
+                        if (args.length == 3) {
+                            val argLower = args[2].toLowerCase();
+                            return Stream.of("all", "me")
+                                    .filter(value -> value.startsWith(argLower))
+                                    .collect(Collectors.toList());
+                        }
+
+                        if (args.length == 4) {
+                            val argLower = args[3].toLowerCase();
+                            return Triton.get().getDumpManager().getAvailableTypes().keySet().stream()
+                                    .map(String::toLowerCase)
+                                    .filter(value -> value.startsWith(argLower))
+                                    .collect(Collectors.toList());
+                        }
+                        break;
+                    case CLEAR:
+                        break;
+                }
+                break;
+            case LOAD:
+                break;
+        }
 
         return Collections.emptyList();
+    }
+
+    private <T extends Enum<T>> List<String> autocompleteEnum(String arg, T[] enumValues) {
+        val argLower = arg.toLowerCase();
+        return Arrays.stream(enumValues)
+                .map(Enum::name)
+                .map(String::toLowerCase)
+                .filter(value -> value.startsWith(argLower))
+                .collect(Collectors.toList());
     }
 
     /**
