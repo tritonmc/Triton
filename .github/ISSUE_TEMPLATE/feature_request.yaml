@@ -1,6 +1,6 @@
 name: Feature Request
 description: Do you have an idea for a new feature? This is where you should request it!
-labels: ["feature"]
+labels: ["type:feature", "triage"]
 assignees:
   - diogotcorreia
 body:

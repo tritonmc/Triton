@@ -3,12 +3,14 @@ package com.rexcantor64.triton.velocity.player;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.packet.BossBar;
-import com.velocitypowered.proxy.protocol.packet.HeaderAndFooter;
-import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItem;
-import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
+import com.velocitypowered.proxy.protocol.packet.BossBarPacket;
+import com.velocitypowered.proxy.protocol.packet.HeaderAndFooterPacket;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItemPacket;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 
 import java.util.EnumSet;
 import java.util.UUID;
@@ -29,11 +31,11 @@ public class RefreshFeatures {
         player.getCachedBossBars().forEach(this::refreshBossBar);
     }
 
-    private void refreshBossBar(UUID uuid, String json) {
-        val bossBarPacket = new BossBar();
+    private void refreshBossBar(UUID uuid, Component component) {
+        val bossBarPacket = new BossBarPacket();
         bossBarPacket.setUuid(uuid);
-        bossBarPacket.setAction(BossBar.UPDATE_NAME);
-        bossBarPacket.setName(json);
+        bossBarPacket.setAction(BossBarPacket.UPDATE_NAME);
+        bossBarPacket.setName(new ComponentHolder(player.getProtocolVersion(), component));
 
         sendPacket(bossBarPacket);
     }
@@ -44,7 +46,10 @@ public class RefreshFeatures {
         if (header == null || footer == null) {
             return;
         }
-        val headerFooterPacket = new HeaderAndFooter(header, footer);
+        val headerFooterPacket = new HeaderAndFooterPacket(
+                new ComponentHolder(player.getProtocolVersion(), header),
+                new ComponentHolder(player.getProtocolVersion(), footer)
+        );
 
         sendPacket(headerFooterPacket);
     }
@@ -55,21 +60,21 @@ public class RefreshFeatures {
                     .entrySet()
                     .stream()
                     .map(entry -> {
-                        val playerEntry = new UpsertPlayerInfo.Entry(entry.getKey());
-                        playerEntry.setDisplayName(entry.getValue());
+                        val playerEntry = new UpsertPlayerInfoPacket.Entry(entry.getKey());
+                        playerEntry.setDisplayName(new ComponentHolder(player.getProtocolVersion(), entry.getValue()));
                         return playerEntry;
                     })
                     .collect(Collectors.toList());
-            val playerListItemsPacket = new UpsertPlayerInfo(EnumSet.of(UpsertPlayerInfo.Action.UPDATE_DISPLAY_NAME), items);
+            val playerListItemsPacket = new UpsertPlayerInfoPacket(EnumSet.of(UpsertPlayerInfoPacket.Action.UPDATE_DISPLAY_NAME), items);
 
             sendPacket(playerListItemsPacket);
         } else {
             val items = player.getCachedPlayerListItems()
                     .entrySet()
                     .stream()
-                    .map(entry -> new LegacyPlayerListItem.Item(entry.getKey()).setDisplayName(entry.getValue()))
+                    .map(entry -> new LegacyPlayerListItemPacket.Item(entry.getKey()).setDisplayName(entry.getValue()))
                     .collect(Collectors.toList());
-            val playerListItemsPacket = new LegacyPlayerListItem(LegacyPlayerListItem.UPDATE_DISPLAY_NAME, items);
+            val playerListItemsPacket = new LegacyPlayerListItemPacket(LegacyPlayerListItemPacket.UPDATE_DISPLAY_NAME, items);
 
             sendPacket(playerListItemsPacket);
         }

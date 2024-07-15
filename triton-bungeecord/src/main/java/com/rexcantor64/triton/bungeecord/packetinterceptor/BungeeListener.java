@@ -1,27 +1,35 @@
 package com.rexcantor64.triton.bungeecord.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.utils.ComponentUtils;
-import com.rexcantor64.triton.utils.ReflectionUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.val;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.netty.ChannelWrapper;
+import net.md_5.bungee.UserConnection;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.protocol.DefinedPacket;
+import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
 import net.md_5.bungee.protocol.packet.Chat;
 import net.md_5.bungee.protocol.packet.Kick;
 import net.md_5.bungee.protocol.packet.PlayerListHeaderFooter;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
+import net.md_5.bungee.protocol.packet.PlayerListItemRemove;
+import net.md_5.bungee.protocol.packet.PlayerListItemUpdate;
 import net.md_5.bungee.protocol.packet.Subtitle;
 import net.md_5.bungee.protocol.packet.SystemChat;
 import net.md_5.bungee.protocol.packet.Title;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,20 +38,57 @@ import java.util.UUID;
 public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     private final BungeeLanguagePlayer owner;
+    private final int protocolVersion;
 
-    private final HashMap<UUID, String> tabListCache = new HashMap<>();
+    private final HashMap<UUID, BaseComponent> tabListCache = new HashMap<>();
 
-    public BungeeListener(BungeeLanguagePlayer owner) {
+    public BungeeListener(BungeeLanguagePlayer owner, int protocolVersion) {
         this.owner = owner;
+        this.protocolVersion = protocolVersion;
         owner.setListener(this);
     }
 
-    private MessageParser parser() {
+    private AdventureParser parser() {
         return Triton.get().getMessageParser();
     }
 
     private MainConfig config() {
         return Triton.get().getConfig();
+    }
+
+    private PlayerListItem.Item translatePlayerListItem(PlayerListItem.Item item) {
+        if (item.getDisplayName() == null) {
+            tabListCache.remove(item.getUuid());
+            return item;
+        }
+        try {
+            return parser()
+                    .translateComponent(
+                            BaseComponentUtils.deserialize(item.getDisplayName()),
+                            owner,
+                            config().getTabSyntax()
+                    )
+                    .map(BaseComponentUtils::serializeToSingle)
+                    .mapToObj(
+                            result -> {
+                                PlayerListItem.Item clonedItem = clonePlayerListItem(item);
+                                tabListCache.put(clonedItem.getUuid(), clonedItem.getDisplayName());
+                                clonedItem.setDisplayName(result);
+                                return clonedItem;
+                            },
+                            () -> {
+                                tabListCache.remove(item.getUuid());
+                                return item;
+                            },
+                            () -> {
+                                tabListCache.remove(item.getUuid());
+                                return item;
+                            }
+                    );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return item;
+        }
     }
 
     private void handlePlayerListItem(DefinedPacket packet) {
@@ -52,39 +97,32 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         for (PlayerListItem.Item item : p.getItems()) {
             if (p.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME || p
                     .getAction() == PlayerListItem.Action.ADD_PLAYER) {
-                if (item.getDisplayName() != null) {
-                    try {
-                        val translationResult = parser()
-                                .translateComponent(
-                                        ComponentUtils.deserializeFromJson(item.getDisplayName()),
-                                        owner,
-                                        config().getTabSyntax()
-                                )
-                                .map(ComponentUtils::serializeToJson)
-                                .ifChanged(result -> {
-                                    PlayerListItem.Item clonedItem = clonePlayerListItem(item);
-                                    tabListCache.put(clonedItem.getUuid(), clonedItem.getDisplayName());
-                                    clonedItem.setDisplayName(result);
-                                    items.add(clonedItem);
-                                })
-                                .ifUnchanged(() -> tabListCache.remove(item.getUuid()))
-                                .ifToRemove(() -> tabListCache.remove(item.getUuid()));
-                        if (translationResult.isChanged()) {
-                            // avoid adding the item to the accumulator again
-                            continue;
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    tabListCache.remove(item.getUuid());
-                }
+                items.add(translatePlayerListItem(item));
+                continue;
             } else if (p.getAction() == PlayerListItem.Action.REMOVE_PLAYER) {
                 tabListCache.remove(item.getUuid());
             }
             items.add(item);
         }
         p.setItems(items.toArray(new PlayerListItem.Item[0]));
+    }
+
+    private void handlePlayerListItemUpdate(DefinedPacket packet) {
+        PlayerListItemUpdate playerListItemUpdatePacket = (PlayerListItemUpdate) packet;
+        if (!playerListItemUpdatePacket.getActions().contains(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME)) {
+            return;
+        }
+        val items = Arrays.stream(playerListItemUpdatePacket.getItems())
+                .map(this::translatePlayerListItem)
+                .toArray(PlayerListItem.Item[]::new);
+        playerListItemUpdatePacket.setItems(items);
+    }
+
+    private void handlePlayerListItemRemove(DefinedPacket packet) {
+        PlayerListItemRemove playerListItemRemovePacket = (PlayerListItemRemove) packet;
+        for (UUID uuid : playerListItemRemovePacket.getUuids()) {
+            tabListCache.remove(uuid);
+        }
     }
 
     private boolean handleChat(DefinedPacket packet) {
@@ -100,7 +138,18 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                         owner,
                         type != 2 ? config().getChatSyntax() : config().getActionbarSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(result -> {
+                    if (type == 2 && protocolVersion <= ProtocolConstants.MINECRAFT_1_10) {
+                        // The Notchian client does not support true JSON messages on actionbars
+                        // on 1.10 and below. Therefore, we must convert to a legacy string inside
+                        // a TextComponent.
+                        return ComponentSerializer.toString(new TextComponent(
+                                ComponentSerializer.toString(BaseComponentUtils.serialize(result))
+                        ));
+                    } else {
+                        return ComponentUtils.serializeToJson(result);
+                    }
+                })
                 .ifChanged(chatPacket::setMessage)
                 .isToRemove();
     }
@@ -120,11 +169,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(systemChatPacket.getMessage()),
+                        BaseComponentUtils.deserialize(systemChatPacket.getMessage()),
                         owner,
                         type != 2 ? config().getChatSyntax() : config().getActionbarSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(systemChatPacket::setMessage)
                 .isToRemove();
     }
@@ -137,11 +186,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(titlePacket.getText()),
+                        BaseComponentUtils.deserialize(titlePacket.getText()),
                         owner,
                         config().getTitleSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(titlePacket::setText)
                 .isToRemove();
     }
@@ -154,11 +203,11 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         return !parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(subtitlePacket.getText()),
+                        BaseComponentUtils.deserialize(subtitlePacket.getText()),
                         owner,
                         config().getTitleSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(subtitlePacket::setText)
                 .isToRemove();
     }
@@ -181,12 +230,12 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(p.getTitle()),
+                        BaseComponentUtils.deserialize(p.getTitle()),
                         owner,
                         config().getBossbarSyntax()
                 )
                 .getResultOrToRemove(Component::empty)
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifPresent(p::setTitle);
     }
 
@@ -197,19 +246,19 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getHeader()),
+                        BaseComponentUtils.deserialize(headerFooterPacket.getHeader()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(headerFooterPacket::setHeader);
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(headerFooterPacket.getFooter()),
+                        BaseComponentUtils.deserialize(headerFooterPacket.getFooter()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(headerFooterPacket::setFooter);
     }
 
@@ -217,13 +266,13 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         Kick kickPacket = (Kick) packet;
         parser()
                 .translateComponent(
-                        ComponentUtils.deserializeFromJson(kickPacket.getMessage()),
+                        BaseComponentUtils.deserialize(kickPacket.getMessage()),
                         owner,
                         config().getTabSyntax()
                 )
-                .map(ComponentUtils::serializeToJson)
+                .map(BaseComponentUtils::serializeToSingle)
                 .ifChanged(kickPacket::setMessage)
-                .ifToRemove(() -> kickPacket.setMessage(ComponentUtils.serializeToJson(Component.empty())));
+                .ifToRemove(() -> kickPacket.setMessage(new TextComponent()));
     }
 
     @Override
@@ -232,6 +281,10 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         try {
             if (Triton.get().getConfig().isTab() && packet instanceof PlayerListItem) {
                 handlePlayerListItem(packet);
+            } else if (Triton.get().getConfig().isTab() && packet instanceof PlayerListItemUpdate) {
+                handlePlayerListItemUpdate(packet);
+            } else if (Triton.get().getConfig().isTab() && packet instanceof PlayerListItemRemove) {
+                handlePlayerListItemRemove(packet);
             } else if (packet instanceof Chat) {
                 if (!handleChat(packet)) {
                     out.add(false);
@@ -266,45 +319,63 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
     }
 
     private void send(DefinedPacket packet) {
-        ((ChannelWrapper) ReflectionUtils.getDeclaredField(owner.getCurrentConnection(), "ch")).write(packet);
+        if (owner.getCurrentConnection() instanceof UserConnection) {
+            ((UserConnection)owner.getCurrentConnection()).sendPacketQueued(packet);
+        }
     }
 
     public void refreshTab() {
         List<PlayerListItem.Item> items = new ArrayList<>();
-        for (Map.Entry<UUID, String> item : tabListCache.entrySet()) {
+        for (Map.Entry<UUID, BaseComponent> item : tabListCache.entrySet()) {
             PlayerListItem.Item i = new PlayerListItem.Item();
             i.setUuid(item.getKey());
             i.setDisplayName(item.getValue());
             items.add(i);
         }
-        PlayerListItem packet = new PlayerListItem();
-        packet.setAction(PlayerListItem.Action.UPDATE_DISPLAY_NAME);
-        packet.setItems(items.toArray(new PlayerListItem.Item[0]));
-        send(packet);
+        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_19_3) {
+            PlayerListItemUpdate packet = new PlayerListItemUpdate();
+            packet.setActions(EnumSet.of(PlayerListItemUpdate.Action.UPDATE_DISPLAY_NAME));
+            packet.setItems(items.toArray(new PlayerListItem.Item[0]));
+            send(packet);
+        } else {
+            PlayerListItem packet = new PlayerListItem();
+            packet.setAction(PlayerListItem.Action.UPDATE_DISPLAY_NAME);
+            packet.setItems(items.toArray(new PlayerListItem.Item[0]));
+            send(packet);
+        }
     }
 
-    public void refreshBossbar(UUID uuid, String json) {
+    public void refreshBossbar(UUID uuid, BaseComponent text) {
         // BossBar was only added on MC 1.9
         if (owner.getParent().getPendingConnection().getVersion() < 107) {
             return;
         }
         BossBar p = new BossBar(uuid, 3);
-        p.setTitle(json);
+        p.setTitle(text);
         send(p);
     }
 
-    public void refreshTabHeaderFooter(String header, String footer) {
+    public void refreshTabHeaderFooter(BaseComponent header, BaseComponent footer) {
         send(new PlayerListHeaderFooter(header, footer));
     }
 
     private PlayerListItem.Item clonePlayerListItem(PlayerListItem.Item item) {
         PlayerListItem.Item item1 = new PlayerListItem.Item();
         item1.setUuid(item.getUuid());
-        item1.setDisplayName(item.getDisplayName());
-        item1.setGamemode(item.getGamemode());
-        item1.setProperties(item.getProperties());
-        item1.setPing(item.getPing());
+
         item1.setUsername(item.getUsername());
+        item1.setProperties(item.getProperties());
+
+        item1.setChatSessionId(item.getChatSessionId());
+        item1.setPublicKey(item.getPublicKey());
+
+        item1.setListed(item.getListed());
+
+        item1.setGamemode(item.getGamemode());
+
+        item1.setPing(item.getPing());
+
+        item1.setDisplayName(item.getDisplayName());
         return item1;
     }
 

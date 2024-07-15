@@ -9,6 +9,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -31,6 +32,8 @@ public class BukkitListener implements Listener {
                     .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
                     .ifChanged(loginEvent::setKickMessage)
                     .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
+            SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getUniqueId());
         }
     }
 
@@ -42,6 +45,8 @@ public class BukkitListener implements Listener {
                     .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
                     .ifChanged(loginEvent::setKickMessage)
                     .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
+            SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getPlayer().getUniqueId());
         }
     }
 
@@ -60,6 +65,13 @@ public class BukkitListener implements Listener {
             msg = msg.substring(0, index[0] + 1 + i) + '\u200b' + msg.substring(index[0] + 1 + i);
         }
         e.setMessage(msg);
+    }
+
+    @EventHandler
+    public void onChangeWorld(PlayerChangedWorldEvent e) {
+        val languagePlayer = SpigotTriton.asSpigot().getPlayerManager().get(e.getPlayer().getUniqueId());
+
+        languagePlayer.onWorldChange();
     }
 
 }

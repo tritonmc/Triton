@@ -24,14 +24,25 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
 
     @EventHandler
     public void onPluginMessage(PluginMessageEvent e) {
-        if (!e.getTag().equals("triton:main") || e.isCancelled()) return;
+        if (!e.getTag().equals("triton:main") || e.isCancelled()) {
+            return;
+        }
+
+        // Avoid propagating messages from player to server
+        // and ignore message if it doesn't come from a server.
+        // Fixes security advisory GHSA-8vj5-jccf-q25r (CVE-2023-30859).
+        e.setCancelled(true);
+        if (!(e.getSender() instanceof Server)) {
+            return;
+        }
+
         val in = new DataInputStream(new ByteArrayInputStream(e.getData()));
 
         try {
             val action = in.readByte();
 
             // Player changes language
-            if (action == 0) {
+            if (action == BridgeSerializer.ActionS2P.UPDATE_PLAYER_LANGUAGE.getKey()) {
                 val uuid = UUID.fromString(in.readUTF());
                 val language = in.readUTF();
 
@@ -42,7 +53,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
             }
 
             // Add or remove a location from a sign group using /triton sign
-            if (action == 1) {
+            if (action == BridgeSerializer.ActionS2P.UPDATE_SIGN_GROUP_MEMBERSHIP.getKey()) {
                 val server = ((Server) e.getSender()).getInfo();
                 SignLocation location = new SignLocation(server.getName(), in.readUTF(), in.readInt(), in.readInt(), in
                         .readInt());

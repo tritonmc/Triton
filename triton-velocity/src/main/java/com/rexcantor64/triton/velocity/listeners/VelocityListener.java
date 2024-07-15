@@ -9,8 +9,6 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
-import com.velocitypowered.api.event.player.PlayerSettingsChangedEvent;
-import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.server.ServerPing;
@@ -45,19 +43,17 @@ public class VelocityListener {
     }
 
     @Subscribe
-    public void onServerConnect(ServerConnectedEvent e) {
-        val lp = VelocityTriton.asVelocity().getPlayerManager().get(e.getPlayer().getUniqueId());
-
-        VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(lp, e.getServer());
-
-        if (Triton.get().getConfig().isRunLanguageCommandsOnLogin())
-            lp.executeCommands(e.getServer());
-    }
-
-    @Subscribe
     public void afterServerConnect(ServerPostConnectEvent e) {
-        if (e.getPlayer().getCurrentServer().isPresent())
-            VelocityTriton.asVelocity().getBridgeManager().executeQueue(e.getPlayer().getCurrentServer().get().getServer());
+        e.getPlayer().getCurrentServer().ifPresent(serverConnection -> {
+            VelocityTriton.asVelocity().getBridgeManager().executeQueue(serverConnection.getServer());
+
+            val lp = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
+            VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(lp);
+
+            if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {
+                lp.executeCommands(serverConnection.getServer());
+            }
+        });
     }
 
     @Subscribe(order = PostOrder.FIRST)
@@ -66,14 +62,6 @@ public class VelocityListener {
         val lp = new VelocityLanguagePlayer(player);
         VelocityTriton.asVelocity().getPlayerManager().registerPlayer(lp);
         lp.injectNettyPipeline();
-    }
-
-    @Subscribe
-    public void onPlayerSettingsUpdate(PlayerSettingsChangedEvent event) {
-        val lp = Triton.get().getPlayerManager().get(event.getPlayer().getUniqueId());
-        if (lp.isWaitingForClientLocale()) {
-            lp.setLang(Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(event.getPlayerSettings().getLocale().toString()));
-        }
     }
 
     @Subscribe(order = PostOrder.LAST)

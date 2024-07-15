@@ -2,11 +2,11 @@ package com.rexcantor64.triton.bungeecord.packetinterceptor;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
-import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.packet.Kick;
 
@@ -31,13 +31,13 @@ public class PreLoginBungeeEncoder extends MessageToMessageEncoder<DefinedPacket
 
                 Triton.get().getMessageParser()
                         .translateComponent(
-                                ComponentUtils.deserializeFromJson(kickPacket.getMessage()),
+                                BaseComponentUtils.deserialize(kickPacket.getMessage()),
                                 this.lang,
                                 Triton.get().getConfig().getKickSyntax()
                         )
-                        .map(ComponentUtils::serializeToJson)
+                        .map(BaseComponentUtils::serializeToSingle)
                         .ifChanged(kickPacket::setMessage)
-                        .ifToRemove(() -> kickPacket.setMessage(ComponentUtils.serializeToJson(Component.empty())));
+                        .ifToRemove(() -> kickPacket.setMessage(new TextComponent()));
             }
         } catch (Exception | Error e) {
             e.printStackTrace();

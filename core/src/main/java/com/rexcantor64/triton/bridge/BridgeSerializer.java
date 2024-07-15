@@ -8,26 +8,69 @@ import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.player.LanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Actions:
- * 0 -> send storage and config
- * 1 -> send player language
- * 2 -> send command to be ran as console
- * 3 -> tell server to re-fetch translations from database
- * 4 -> forward Triton command as player
- */
 @SuppressWarnings("UnstableApiUsage") // Guava's ByteStreams is marked with @Beta
 public class BridgeSerializer {
 
+    /**
+     * Actions from proxy to server
+     */
+    @RequiredArgsConstructor
+    @Getter
+    public enum ActionP2S {
+        /**
+         * Send storage and config
+         **/
+        SEND_STORAGE_AND_CONFIG(0),
+        /**
+         * Send a player's language
+         **/
+        SEND_PLAYER_LANGUAGE(1),
+        /**
+         * Send command to be run as console
+         **/
+        SEND_COMMAND_AS_CONSOLE(2),
+        /**
+         * Signal server to re-fetch translations from database
+         **/
+        SIGNAL_REFRESH_FROM_DB(3),
+        /**
+         * Forward a Triton command to be run as the player themselves
+         **/
+        FORWARD_TRITON_COMMAND(4),
+        ;
+
+        private final int key;
+    }
+
+    /**
+     * Actions from server to proxy
+     */
+    @RequiredArgsConstructor
+    @Getter
+    public enum ActionS2P {
+        /**
+         * Update player's language
+         **/
+        UPDATE_PLAYER_LANGUAGE(0),
+        /**
+         * Add or remove a sign (location) from a sign group
+         **/
+        UPDATE_SIGN_GROUP_MEMBERSHIP(1),
+        ;
+
+        private final int key;
+    }
+
     public static byte[] getLanguageDataOutput() {
         val languageOut = ByteStreams.newDataOutput();
-        // Action 0 (send config)
         languageOut.writeUTF(Triton.get().getLanguageManager().getMainLanguage().getName());
         val languageList = Triton.get().getLanguageManager().getAllLanguages();
         languageOut.writeShort(languageList.size());
@@ -53,8 +96,7 @@ public class BridgeSerializer {
             // If not using local storage, each server should fetch the translations for themselves
             if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                 val refreshSignalOut = ByteStreams.newDataOutput();
-                // Action 3 (tell server to re-fetch from database storage)
-                refreshSignalOut.writeByte(3);
+                refreshSignalOut.writeByte(ActionP2S.SIGNAL_REFRESH_FROM_DB.getKey());
                 outList.add(refreshSignalOut.toByteArray());
                 return outList;
             }
@@ -67,7 +109,7 @@ public class BridgeSerializer {
                 for (val item : collection.getItems()) {
                     if (languageItemsOut.toByteArray().length > 29000) {
                         val out = ByteStreams.newDataOutput();
-                        out.writeByte(0);
+                        out.writeByte(ActionP2S.SEND_STORAGE_AND_CONFIG.getKey());
                         if (outList.size() == 0) {
                             out.writeBoolean(true);
                             out.write(languageOut);
@@ -144,7 +186,7 @@ public class BridgeSerializer {
                     size++;
                 }
             val out = ByteStreams.newDataOutput();
-            out.writeByte(0);
+            out.writeByte(ActionP2S.SEND_STORAGE_AND_CONFIG.getKey());
             val firstSend = outList.size() == 0;
             out.writeBoolean(firstSend);
             if (firstSend)
@@ -162,8 +204,7 @@ public class BridgeSerializer {
 
     public static byte[] buildPlayerLanguageData(LanguagePlayer lp) {
         val out = ByteStreams.newDataOutput();
-        // Action 1
-        out.writeByte(1);
+        out.writeByte(ActionP2S.SEND_PLAYER_LANGUAGE.getKey());
         val uuid = lp.getUUID();
         out.writeLong(uuid.getMostSignificantBits());
         out.writeLong(uuid.getLeastSignificantBits());
@@ -173,16 +214,14 @@ public class BridgeSerializer {
 
     public static byte[] buildExecutableCommandData(String command) {
         val out = ByteStreams.newDataOutput();
-        // Action 2
-        out.writeByte(2);
+        out.writeByte(ActionP2S.SEND_COMMAND_AS_CONSOLE.getKey());
         out.writeUTF(command);
         return out.toByteArray();
     }
 
     public static byte[] buildForwardCommandData(CommandEvent commandEvent) {
         val out = ByteStreams.newDataOutput();
-        // Action 4
-        out.writeByte(4);
+        out.writeByte(ActionP2S.FORWARD_TRITON_COMMAND.getKey());
 
         val uuid = commandEvent.getSender().getUUID();
         out.writeLong(uuid.getMostSignificantBits());

@@ -1,21 +1,35 @@
 package com.rexcantor64.triton.spigot.banners;
 
-import com.rexcantor64.triton.spigot.SpigotTriton;
+import lombok.Getter;
+import org.bukkit.DyeColor;
 
+import java.util.Arrays;
+
+@Getter
 public enum Colors {
-    BLACK("BLACK", 'a'), RED("RED", 'b'), GREEN("GREEN", 'c'), BROWN("BROWN", 'd'), BLUE(
-            "BLUE", 'e'), PURPLE("PURPLE", 'f'), CYAN("CYAN", 'g'), GRAY(SpigotTriton.asSpigot()
-            .getMcVersion() <= 12 ? "SILVER" : "LIGHT_GRAY",
-            'h'), DARK_GRAY("GRAY", 'i'), PINK("PINK", 'j'), LIME("LIME", 'k'), YELLOW(
-            "YELLOW", 'l'), LIGHT_BLUE("LIGHT_BLUE", 'm'), MAGENTA("MAGENTA",
-            'n'), ORANGE("ORANGE", 'o'), WHITE("WHITE", 'p');
+    BLACK('a', "BLACK"),
+    RED('b', "RED"),
+    GREEN('c', "GREEN"),
+    BROWN('d', "BROWN"),
+    BLUE('e', "BLUE"),
+    PURPLE('f', "PURPLE"),
+    CYAN('g', "CYAN"),
+    GRAY('h', "LIGHT_GRAY", "SILVER"),
+    DARK_GRAY('i', "GRAY"),
+    PINK('j', "PINK"),
+    LIME('k', "LIME"),
+    YELLOW('l', "YELLOW"),
+    LIGHT_BLUE('m', "LIGHT_BLUE"),
+    MAGENTA('n', "MAGENTA"),
+    ORANGE('o', "ORANGE"),
+    WHITE('p', "WHITE");
 
-    private final String color;
     private final char code;
+    private final String[] colorAliases; // some colors have been renamed throughout Spigot versions
 
-    Colors(String color, char code) {
-        this.color = color;
+    Colors(char code, String... colorAliases) {
         this.code = code;
+        this.colorAliases = colorAliases;
     }
 
     public static Colors getByCode(char code) {
@@ -25,12 +39,14 @@ public enum Colors {
         return null;
     }
 
-    public char getCode() {
-        return code;
-    }
-
-    public String getColor() {
-        return color;
+    public DyeColor toDyeColor() {
+        for (String alias : this.colorAliases) {
+            try {
+                return DyeColor.valueOf(alias);
+            } catch (IllegalArgumentException ignore) {
+            }
+        }
+        throw new IllegalArgumentException("Cannot find corresponding dye color to " + Arrays.toString(this.colorAliases));
     }
 
 }

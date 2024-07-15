@@ -22,6 +22,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.Storage;
 import com.rexcantor64.triton.utils.FileUtils;
+import com.rexcantor64.triton.utils.TritonAPIUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
 import lombok.val;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -87,6 +89,9 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     }
 
     protected void onEnable() {
+        instance = this;
+        TritonAPIUtils.register(instance);
+
         translationsFolder = new File(getDataFolder(), "translations");
 
         logger = loader.getTritonLogger();
@@ -116,8 +121,9 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     }
 
     public void refreshPlayers() {
-        for (LanguagePlayer lp : playerManager.getAll())
-            lp.refreshAll();
+        playerManager.getAll().stream()
+                .filter(Objects::nonNull)
+                .forEach(LanguagePlayer::refreshAll);
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {

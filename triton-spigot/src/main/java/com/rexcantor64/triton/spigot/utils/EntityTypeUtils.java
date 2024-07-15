@@ -1,9 +1,9 @@
 package com.rexcantor64.triton.spigot.utils;
 
 import com.comphenix.protocol.utility.MinecraftReflection;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
-import com.rexcantor64.triton.spigot.SpigotTriton;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
@@ -27,7 +27,7 @@ public class EntityTypeUtils {
 
     private static EntityType getEntityTypeByIdNoCache(int id) {
         try {
-            if (SpigotTriton.asSpigot().getMcVersion() >= 13) {
+            if (MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // 1.13+
                 calculateEntityRegistrySet();
 
                 Object type = registryGetTypeByNumericIdMethod.invoke(entityTypeRegistry, id);
@@ -55,6 +55,7 @@ public class EntityTypeUtils {
         Class<?> iRegistry = MinecraftReflection.getIRegistry();
         Class<?> minecraftKeyClass = MinecraftReflection.getMinecraftKeyClass();
         Class<?> registryBlocksClass = MinecraftReflection.getMinecraftClass("core.RegistryBlocks", "RegistryBlocks");
+        Class<?> entityTypesClass = MinecraftReflection.getEntityTypes();
 
         Object entityTypeRegistry = Arrays.stream(iRegistry.getFields())
                 .filter(field -> {
@@ -62,7 +63,9 @@ public class EntityTypeUtils {
                     if (field.getType().equals(registryBlocksClass) || field.getType().equals(iRegistry)) {
                         ParameterizedType type = (ParameterizedType) field.getGenericType();
                         Type[] actualTypes = type.getActualTypeArguments();
-                        return actualTypes.length == 1 && actualTypes[0].getTypeName().endsWith(".EntityTypes<?>");
+                        if (actualTypes.length == 1 && actualTypes[0] instanceof ParameterizedType) {
+                            return ((ParameterizedType) actualTypes[0]).getRawType().equals(entityTypesClass);
+                        }
                     }
                     return false;
                 })

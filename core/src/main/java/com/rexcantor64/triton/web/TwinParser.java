@@ -41,6 +41,7 @@ public class TwinParser {
         // Delete
         collections.values().forEach(collection -> collection.setItems(collection.getItems().stream()
                 .filter(item -> {
+                    if (item.getTwinData() == null || item.getTwinData().getId() == null) return true;
                     if (!deleted.contains(item.getTwinData().getId().toString())) return true;
                     deletedList.add(item);
                     return false;
@@ -73,6 +74,7 @@ public class TwinParser {
 
         collections.forEach((colName, collection) -> collection.setItems(collection.getItems().stream()
                 .map(item -> {
+                    if (item.getTwinData() == null || item.getTwinData().getId() == null) return item;
                     val changes = modified.getAsJsonArray(item.getTwinData().getId().toString());
                     if (changes == null) return item; // No changes -> keep the item
 

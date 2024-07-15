@@ -1,57 +1,58 @@
 package com.rexcantor64.triton.spigot.banners;
 
+import lombok.Getter;
+import org.bukkit.block.banner.PatternType;
+
+import java.util.Arrays;
+
+@Getter
 public enum Patterns {
-    BASE("BASE", 'a'), BL("SQUARE_BOTTOM_LEFT", 'b'), BO("BORDER", 'c'), BR(
-            "SQUARE_BOTTOM_RIGHT",
-            'd'), BRI("BRICKS", 'e'), BS("STRIPE_BOTTOM", 'f'), BT("TRIANGLE_BOTTOM",
-            'g'), BTS("TRIANGLES_BOTTOM", 'h'), CBO("CURLY_BORDER", 'i'), CR(
-            "CROSS",
-            'j'), CRE("CREEPER", 'k'), CS("STRIPE_CENTER", 'l'), DLS(
-            "STRIPE_DOWNLEFT",
-            'm'), DRS("STRIPE_DOWNRIGHT", 'n'), FLO("FLOWER", 'o'), GRA(
-            "GRADIENT",
-            'p'), HH("HALF_HORIZONTAL", 'q'), LD("DIAGONAL_LEFT",
-            'r'), LS("STRIPE_LEFT", 's'), MC(
-            "CIRCLE_MIDDLE",
-            't'), MOJ("MOJANG", 'u'), MR(
-            "RHOMBUS_MIDDLE",
-            'v'), MS("STRIPE_MIDDLE", 'w'), RD(
-            "DIAGONAL_RIGHT",
-            'x'), RS("STRIPE_RIGHT", 'y'), SC(
-            "STRAIGHT_CROSS",
-            'z'), SKU("SKULL",
-            'A'), SS(
-            "STRIPE_SMALL",
-            'B'), TL(
-            "SQUARE_TOP_LEFT",
-            'C'), TR(
-            "SQUARE_TOP_RIGHT",
-            'D'), TS(
-            "STRIPE_TOP",
-            'E'), TT(
-            "TRIANGLE_TOP",
-            'F'), TTS(
-            "TRIANGLES_TOP",
-            'G'), VH(
-            "HALF_VERTICAL",
-            'H'), LUD(
-            "DIAGONAL_LEFT_MIRROR",
-            'I'), RUD(
-            "DIAGONAL_RIGHT_MIRROR",
-            'J'), GRU(
-            "GRADIENT_UP",
-            'K'), HHB(
-            "HALF_HORIZONTAL_MIRROR",
-            'L'), VHR(
-            "HALF_VERTICAL_MIRROR",
-            'M');
+    BASE('a', "BASE"),
+    BL('b', "SQUARE_BOTTOM_LEFT"),
+    BO('c', "BORDER"),
+    BR('d', "SQUARE_BOTTOM_RIGHT"),
+    BRI('e', "BRICKS"),
+    BS('f', "STRIPE_BOTTOM"),
+    BT('g', "TRIANGLE_BOTTOM"),
+    BTS('h', "TRIANGLES_BOTTOM"),
+    CBO('i', "CURLY_BORDER"),
+    CR('j', "CROSS"),
+    CRE('k', "CREEPER"),
+    CS('l', "STRIPE_CENTER"),
+    DLS('m', "STRIPE_DOWNLEFT"),
+    DRS('n', "STRIPE_DOWNRIGHT"),
+    FLO('o', "FLOWER"),
+    GRA('p', "GRADIENT"),
+    HH('q', "HALF_HORIZONTAL"),
+    LD('r', "DIAGONAL_LEFT"),
+    LS('s', "STRIPE_LEFT"),
+    MC('t', "CIRCLE", "CIRCLE_MIDDLE"),
+    MOJ('u', "MOJANG"),
+    MR('v', "RHOMBUS", "RHOMBUS_MIDDLE"),
+    MS('w', "STRIPE_MIDDLE"),
+    RD('x', "DIAGONAL_RIGHT"),
+    RS('y', "STRIPE_RIGHT"),
+    SC('z', "STRAIGHT_CROSS"),
+    SKU('A', "SKULL"),
+    SS('B', "SMALL_STRIPES", "STRIPE_SMALL"),
+    TL('C', "SQUARE_TOP_LEFT"),
+    TR('D', "SQUARE_TOP_RIGHT"),
+    TS('E', "STRIPE_TOP"),
+    TT('F', "TRIANGLE_TOP"),
+    TTS('G', "TRIANGLES_TOP"),
+    VH('H', "HALF_VERTICAL"),
+    LUD('I', "DIAGONAL_UP_LEFT", "DIAGONAL_LEFT_MIRROR"),
+    RUD('J', "DIAGONAL_UP_RIGHT", "DIAGONAL_RIGHT_MIRROR"),
+    GRU('K', "GRADIENT_UP"),
+    HHB('L', "HALF_HORIZONTAL_BOTTOM", "HALF_HORIZONTAL_MIRROR"),
+    VHR('M', "HALF_VERTICAL_RIGHT", "HALF_VERTICAL_MIRROR");
 
-    private final String type;
     private final char code;
+    private final String[] typeAliases;
 
-    Patterns(String type, char code) {
-        this.type = type;
+    Patterns(char code, String... typeAliases) {
         this.code = code;
+        this.typeAliases = typeAliases;
     }
 
     public static Patterns getByCode(char code) {
@@ -61,12 +62,14 @@ public enum Patterns {
         return null;
     }
 
-    public char getCode() {
-        return code;
-    }
-
-    public String getType() {
-        return type;
+    public PatternType toPatternType() {
+        for (String alias : this.typeAliases) {
+            try {
+                return PatternType.valueOf(alias);
+            } catch (IllegalArgumentException ignore) {
+            }
+        }
+        throw new IllegalArgumentException("Cannot find corresponding pattern type to " + Arrays.toString(this.typeAliases));
     }
 
 }

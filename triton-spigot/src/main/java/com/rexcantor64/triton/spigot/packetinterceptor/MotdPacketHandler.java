@@ -5,17 +5,23 @@ import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,7 +29,7 @@ import java.util.stream.Stream;
 public class MotdPacketHandler extends PacketAdapter {
 
     public MotdPacketHandler() {
-        super(SpigotTriton.asSpigot().getLoader(), ListenerPriority.HIGHEST,
+        super(SpigotTriton.asSpigot().getJavaPlugin(), ListenerPriority.HIGHEST,
                 Collections.singleton(PacketType.Status.Server.SERVER_INFO), ListenerOptions.ASYNC);
     }
 
@@ -32,7 +38,7 @@ public class MotdPacketHandler extends PacketAdapter {
      *
      * @see Triton#getMessageParser()
      */
-    private MessageParser parser() {
+    private AdventureParser parser() {
         return Triton.get().getMessageParser();
     }
 
@@ -50,9 +56,12 @@ public class MotdPacketHandler extends PacketAdapter {
      * @param event ProtocolLib's packet event
      */
     private void handleServerInfo(PacketEvent event) {
-        val lang = Triton.get().getStorage().getLanguageFromIp(
-                Objects.requireNonNull(event.getPlayer().getAddress()).getAddress().getHostAddress()
-        );
+        val ipAddr = getPlayerIpAddress(event.getPlayer());
+        if (!ipAddr.isPresent()) {
+            Triton.get().getLogger().logWarning("Failed to get IP address for player, could not translate MOTD");
+            return;
+        }
+        val lang = Triton.get().getStorage().getLanguageFromIp(ipAddr.get());
         val syntax = Triton.get().getConfig().getMotdSyntax();
 
         val serverPing = event.getPacket().getServerPings().readSafely(0);
@@ -94,6 +103,12 @@ public class MotdPacketHandler extends PacketAdapter {
                 .map(WrappedComponentUtils::serialize)
                 .ifChanged(serverPing::setMotD)
                 .ifToRemove(() -> serverPing.setMotD(WrappedComponentUtils.serialize(Component.empty())));
+
+        if (MinecraftVersion.FEATURE_PREVIEW_2.atOrAbove()) {
+            // Starting in 1.19.4, the ServerPing object is immutable and therefore needs to be
+            // updated manually.
+            event.getPacket().getServerPings().writeSafely(0, serverPing);
+        }
     }
 
     @Override
@@ -105,5 +120,12 @@ public class MotdPacketHandler extends PacketAdapter {
         if (packet.getPacketType() == PacketType.Status.Server.SERVER_INFO && isMotdEnabled()) {
             handleServerInfo(packet);
         }
+    }
+
+    public Optional<String> getPlayerIpAddress(Player player) {
+        return Optional.ofNullable(player)
+                .map(Player::getAddress)
+                .map(InetSocketAddress::getAddress)
+                .map(InetAddress::getHostAddress);
     }
 }

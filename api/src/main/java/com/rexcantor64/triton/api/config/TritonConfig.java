@@ -200,6 +200,12 @@ public interface TritonConfig {
     boolean isAdvancements();
 
     /**
+     * @return The value of "language-creation.death-screen.enabled" in the config.
+     * @since 3.10.0
+     */
+    boolean isDeathScreen();
+
+    /**
      * @return The value of "language-creation.terminal" in the config.
      * @since 2.6.0
      */
@@ -322,5 +328,11 @@ public interface TritonConfig {
      * .advancements" in the config.
      */
     FeatureSyntax getAdvancementsSyntax();
+
+    /**
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .death-screen" in the config.
+     */
+    FeatureSyntax getDeathScreenSyntax();
 
 }

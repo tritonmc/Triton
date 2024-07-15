@@ -43,12 +43,12 @@ public class BungeeListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onLogin(LoginEvent event) {
         if (event.isCancelled()) return;
-        Plugin plugin = BungeeTriton.asBungee().getLoader();
+        Plugin plugin = BungeeTriton.asBungee().getPlugin();
         event.registerIntent(plugin);
         BungeeTriton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
             BungeeTriton.asBungee().getPlayerManager().registerPlayer(lp);
-            BungeeTriton.asBungee().injectPipeline(lp, event.getConnection());
+            BungeeTriton.asBungee().injectPipeline(lp, event.getConnection(), event.getConnection().getVersion());
             event.completeIntent(plugin);
         });
     }
@@ -75,7 +75,7 @@ public class BungeeListener implements Listener {
 
     @EventHandler(priority = 127)
     public void onMotd(ProxyPingEvent event) {
-        Plugin plugin = BungeeTriton.asBungee().getLoader();
+        Plugin plugin = BungeeTriton.asBungee().getPlugin();
 
         if (!Triton.get().getConfig().isMotd())
             return;

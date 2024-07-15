@@ -128,7 +128,7 @@ public class MysqlStorage extends Storage {
     @Override
     public Language getLanguage(LanguagePlayer lp) {
         Triton.get().getLogger().logTrace("[MySQL Storage] Getting language for player %1", lp);
-        String lang = getValueFromStorage(lp.getUUID().toString());
+        String lang = getValueFromStorage(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
                 (lang == null
                         || (Triton.get().getConfig().isAlwaysCheckClientLocale())))
@@ -284,7 +284,10 @@ public class MysqlStorage extends Storage {
                     }
 
                     TWINData twin = item.getTwinData();
-                    if (twin == null) twin = new TWINData();
+                    if (twin == null) {
+                        twin = new TWINData();
+                        item.setTwinData(twin);
+                    }
                     twin.ensureValid();
 
                     translationsStatement.setString(9, twin.getId().toString());

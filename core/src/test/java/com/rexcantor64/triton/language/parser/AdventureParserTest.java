@@ -536,8 +536,12 @@ public class AdventureParserTest {
                                                         Component.text("Rexcantor64")
                                                                 .color(NamedTextColor.LIGHT_PURPLE),
                                                         Component.text()
-                                                                .content(" ")
+                                                                .content("")
                                                                 .color(NamedTextColor.BLUE)
+                                                                .append(
+                                                                        Component.text(" ")
+                                                                                .color(NamedTextColor.LIGHT_PURPLE)
+                                                                )
                                                                 .append(
                                                                         Component.text("is a very cool guy")
                                                                                 .color(NamedTextColor.GREEN)
@@ -953,7 +957,7 @@ public class AdventureParserTest {
                         )
                         .asComponent(),
                 Component.text()
-                        .color(NamedTextColor.GREEN)
+                        .color(TextColor.color(0x123456))
                         .asComponent(),
         };
 
@@ -1056,8 +1060,8 @@ public class AdventureParserTest {
                         .content("Lorem ipsum ")
                         .color(NamedTextColor.GREEN)
                         .asComponent(),
-                Component.empty(),
-                Component.empty(),
+                Component.text().color(NamedTextColor.GREEN).asComponent(),
+                Component.text().color(NamedTextColor.GREEN).asComponent(),
                 Component.text()
                         .color(NamedTextColor.GREEN)
                         .append(
@@ -1075,8 +1079,8 @@ public class AdventureParserTest {
                                 Component.keybind("ALT")
                         )
                         .asComponent(),
-                Component.empty(),
-                Component.empty(),
+                Component.text().color(NamedTextColor.GREEN).asComponent(),
+                Component.text().color(NamedTextColor.GREEN).asComponent(),
                 Component.text()
                         .color(NamedTextColor.GREEN)
                         .append(

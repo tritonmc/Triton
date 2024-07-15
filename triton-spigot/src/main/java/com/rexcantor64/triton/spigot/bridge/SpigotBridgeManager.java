@@ -7,11 +7,16 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bridge.BridgeManager;
+import com.rexcantor64.triton.bridge.BridgeSerializer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
+import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.language.item.Collection;
+import com.rexcantor64.triton.language.item.LanguageItem;
+import com.rexcantor64.triton.language.item.LanguageSign;
+import com.rexcantor64.triton.language.item.LanguageText;
+import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.commands.handler.SpigotSender;
-import com.rexcantor64.triton.language.Language;
-import com.rexcantor64.triton.language.item.*;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.val;
@@ -38,15 +43,17 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
     private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Override
-    public void onPluginMessageReceived(String channel, @NotNull Player player, byte[] bytes) {
-        if (!channel.equals("triton:main")) return;
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] bytes) {
+        if (!channel.equals("triton:main")) {
+            return;
+        }
 
         val start = System.currentTimeMillis();
 
         val in = new DataInputStream(new ByteArrayInputStream(bytes));
         try {
             val action = in.readByte();
-            if (action == 0) {
+            if (action == BridgeSerializer.ActionP2S.SEND_STORAGE_AND_CONFIG.getKey()) {
                 if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                     Triton.get().getLogger()
                             .logWarning("You're using BungeeCord with a local storage option, but this server is " +
@@ -160,18 +167,21 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                 } finally {
                     Triton.get().getLanguageManager().setup();
                     Triton.get().getTranslationManager().setup();
-                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
+                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getJavaPlugin(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 }
-            } else if (action == 1) {
+            } else if (action == BridgeSerializer.ActionP2S.SEND_PLAYER_LANGUAGE.getKey()) {
                 val uuid = new UUID(in.readLong(), in.readLong());
+
                 val lang = Triton.get().getLanguageManager().getLanguageByNameOrDefault(in.readUTF());
-                Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(),
-                        () -> ((SpigotLanguagePlayer) Triton.get().getPlayerManager().get(uuid)).setLang(lang, false)
-                        , 10L);
-            } else if (action == 2) {
+                val languagePlayer = (SpigotLanguagePlayer) SpigotTriton.asSpigot().getPlayerManager().get(player.getUniqueId());
+                languagePlayer.setProxyUniqueId(uuid);
+                Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getJavaPlugin(),
+                        () -> languagePlayer.setLang(lang, false),
+                        10L);
+            } else if (action == BridgeSerializer.ActionP2S.SEND_COMMAND_AS_CONSOLE.getKey()) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), in.readUTF());
-            } else if (action == 3) {
+            } else if (action == BridgeSerializer.ActionP2S.SIGNAL_REFRESH_FROM_DB.getKey()) {
                 val storage = Triton.get().getStorage();
                 if (storage instanceof LocalStorage) {
                     Triton.get().getLogger()
@@ -188,12 +198,12 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
 
                     Triton.get().getLanguageManager().setup();
                     Triton.get().getTranslationManager().setup();
-                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getLoader(), () -> Triton.get()
+                    Bukkit.getScheduler().runTaskLater(SpigotTriton.asSpigot().getJavaPlugin(), () -> Triton.get()
                             .refreshPlayers(), 10L);
                 });
-            } else if (action == 4) {
-                val uuid = new UUID(in.readLong(), in.readLong());
-                val p = Bukkit.getPlayer(uuid);
+            } else if (action == BridgeSerializer.ActionP2S.FORWARD_TRITON_COMMAND.getKey()) {
+                @Deprecated
+                val uuid = new UUID(in.readLong(), in.readLong()); // TODO remove in v4
 
                 val subCommand = in.readBoolean() ? in.readUTF() : null;
                 val args = new String[in.readShort()];
@@ -201,10 +211,10 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                     args[i] = in.readUTF();
 
                 Triton.get().getLogger().logTrace("Received forwarded command '%1' with args %2 for player %3",
-                        subCommand, Arrays.toString(args), uuid);
+                        subCommand, Arrays.toString(args), player.getUniqueId());
 
                 val commandEvent = new CommandEvent(
-                        new SpigotSender(p),
+                        new SpigotSender(player),
                         subCommand,
                         args,
                         "triton"
@@ -218,19 +228,17 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
 
     public void updatePlayerLanguage(SpigotLanguagePlayer lp) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        // Action (0): updatePlayerLanguage
-        out.writeByte(0);
-        out.writeUTF(lp.getUUID().toString());
+        out.writeByte(BridgeSerializer.ActionS2P.UPDATE_PLAYER_LANGUAGE.getKey());
+        out.writeUTF(lp.getProxyUniqueId().toString());
         out.writeUTF(lp.getLang().getName());
         lp.toBukkit().ifPresent(player ->
-                player.sendPluginMessage(SpigotTriton.asSpigot().getLoader(), "triton:main", out.toByteArray())
+                player.sendPluginMessage(SpigotTriton.asSpigot().getJavaPlugin(), "triton:main", out.toByteArray())
         );
     }
 
     public void updateSign(String world, int x, int y, int z, String key, Player p) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        // Action (1): sign management
-        out.writeByte(1);
+        out.writeByte(BridgeSerializer.ActionS2P.UPDATE_SIGN_GROUP_MEMBERSHIP.getKey());
         out.writeUTF(world);
         out.writeInt(x);
         out.writeInt(y);
@@ -238,7 +246,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
         out.writeBoolean(key != null); // Set (true) or Remove (false)
         if (key != null) // Set only
             out.writeUTF(key);
-        p.sendPluginMessage(SpigotTriton.asSpigot().getLoader(), "triton:main", out.toByteArray());
+        p.sendPluginMessage(SpigotTriton.asSpigot().getJavaPlugin(), "triton:main", out.toByteArray());
     }
 
     @Override

@@ -40,7 +40,6 @@ public class TwinManager {
             .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
             .create();
     private static final int TWIN_VERSION = 6;
-    private static final String BASE_URL = "https://twin.rexcantor64.com";
     private final Triton<?, ?> main;
 
     public @NotNull HttpResponse upload(@Nullable List<String> allowedCollections, @Nullable List<String> allowedLanguages) throws NotOnProxyException {
@@ -123,7 +122,7 @@ public class TwinManager {
             }
 
             val encodedData = data.toString();
-            val u = new URL(BASE_URL + "/api/v1/upload");
+            val u = new URL(getBaseUrl() + "/api/v1/upload");
             val conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
@@ -166,7 +165,7 @@ public class TwinManager {
             throw new NotOnProxyException();
         }
         try {
-            URL u = new URL(BASE_URL + "/api/v1/get/" + id);
+            URL u = new URL(getBaseUrl() + "/api/v1/get/" + id);
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("GET");
@@ -200,7 +199,7 @@ public class TwinManager {
     }
 
     public static String getBaseUrl() {
-        return BASE_URL;
+        return Triton.get().getConfig().getTwinInstance();
     }
 
     @RequiredArgsConstructor

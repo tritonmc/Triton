@@ -6,10 +6,6 @@ import java.util.UUID;
 
 public interface LanguagePlayer extends com.rexcantor64.triton.api.players.LanguagePlayer {
 
-    void setBossbar(UUID uuid, String lastBossBar);
-
-    void removeBossbar(UUID uuid);
-
     boolean isWaitingForClientLocale();
 
     void waitForClientLocale();
@@ -17,5 +13,12 @@ public interface LanguagePlayer extends com.rexcantor64.triton.api.players.Langu
     @Override
     default Language getLanguage() {
         return this.getLang();
+    }
+
+    /**
+     * @return the UUID that is to be used for storage-related operations
+     */
+    default UUID getStorageUniqueId() {
+        return this.getUUID();
     }
 }

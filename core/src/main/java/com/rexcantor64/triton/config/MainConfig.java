@@ -58,6 +58,7 @@ public class MainConfig implements TritonConfig {
     private List<String> commandAliases;
     private String disabledLine;
     private boolean chat;
+    private boolean signedChat;
     private FeatureSyntax chatSyntax;
     private boolean actionbars;
     private FeatureSyntax actionbarSyntax;
@@ -89,6 +90,8 @@ public class MainConfig implements TritonConfig {
     private boolean advancementsRefresh;
     private boolean resourcePackPrompt;
     private FeatureSyntax resourcePackPromptSyntax;
+    private boolean deathScreen;
+    private FeatureSyntax deathScreenSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -115,6 +118,7 @@ public class MainConfig implements TritonConfig {
     private long databaseMysqlPoolConnTimeout;
     private Map<String, String> databaseMysqlPoolProperties;
     private boolean iKnowWhatIAmDoing;
+    private String twinInstance;
 
     public MainConfig(Triton<?, ?> main) {
         this.main = main;
@@ -182,6 +186,7 @@ public class MainConfig implements TritonConfig {
         setupLanguageCreation(languageCreation);
 
         this.iKnowWhatIAmDoing = section.getBoolean("i-know-what-i-am-doing", false);
+        this.twinInstance = section.getString("twin-instance", "https://twin.rexcantor64.com");
     }
 
     public void setup() {
@@ -233,6 +238,7 @@ public class MainConfig implements TritonConfig {
 
         Configuration chat = section.getSection("chat");
         this.chat = chat.getBoolean("enabled", true);
+        this.signedChat = chat.getBoolean("signed-enabled", true);
         this.chatSyntax = FeatureSyntax.fromSection(chat);
         this.chatSyntax.interactive = true;
 
@@ -290,6 +296,10 @@ public class MainConfig implements TritonConfig {
         Configuration resourcePackPrompt = section.getSection("resource-pack-prompt");
         this.resourcePackPrompt = resourcePackPrompt.getBoolean("enabled", true);
         this.resourcePackPromptSyntax = FeatureSyntax.fromSection(resourcePackPrompt);
+
+        Configuration deathScreen = section.getSection("death-screen");
+        this.deathScreen = deathScreen.getBoolean("enabled", true);
+        this.deathScreenSyntax = FeatureSyntax.fromSection(deathScreen);
 
         List<String> hologramList = holograms.getStringList("types");
         for (String hologram : hologramList)
