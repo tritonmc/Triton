@@ -2,17 +2,26 @@ package com.rexcantor64.triton.commands.handler;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.plugin.Platform;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.StringJoiner;
 
 @Data
+@Builder(toBuilder = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class CommandEvent {
     private final Sender sender;
     private final String subCommand;
     private final String[] args;
     private final String label;
+    /**
+     * Whether this event was forwarded from a proxy
+     */
+    private final boolean forwarded;
 
     /**
      * Join the sub command with the arguments,

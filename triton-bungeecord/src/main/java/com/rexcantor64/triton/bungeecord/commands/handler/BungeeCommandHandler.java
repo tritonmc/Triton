@@ -33,7 +33,8 @@ public class BungeeCommandHandler extends CommandHandler {
                 new BungeeSender(sender),
                 subCommand,
                 subArgs,
-                label
+                label,
+                false
         );
     }
 }

@@ -31,7 +31,7 @@ public class SpigotCommandHandler extends CommandHandler implements CommandExecu
         val subCommand = strings.length >= 1 ? strings[0] : null;
         val args = strings.length >= 2 ? Arrays.copyOfRange(strings, 1, strings.length) : new String[0];
         super.handleCommand(
-                new CommandEvent(new SpigotSender(commandSender), subCommand, args, s)
+                new CommandEvent(new SpigotSender(commandSender), subCommand, args, s, false)
         );
         return true;
     }
@@ -41,7 +41,7 @@ public class SpigotCommandHandler extends CommandHandler implements CommandExecu
         val subCommand = strings.length >= 1 ? strings[0] : null;
         val args = strings.length >= 2 ? Arrays.copyOfRange(strings, 1, strings.length) : new String[0];
         return super.handleTabCompletion(
-                new CommandEvent(new SpigotSender(commandSender), subCommand, args, s)
+                new CommandEvent(new SpigotSender(commandSender), subCommand, args, s, false)
         );
     }
 }

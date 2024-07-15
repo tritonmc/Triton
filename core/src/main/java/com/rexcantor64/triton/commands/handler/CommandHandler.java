@@ -38,7 +38,8 @@ public abstract class CommandHandler {
                     event.getSubCommand() == null ?
                             new String[0] :
                             mergeSubcommandWithArgs(event.getSubCommand(), event.getArgs()),
-                    "twin"
+                    "twin",
+                    false
             );
         }
 

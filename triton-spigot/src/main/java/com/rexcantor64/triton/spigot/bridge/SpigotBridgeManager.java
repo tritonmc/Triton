@@ -217,7 +217,8 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                         new SpigotSender(player),
                         subCommand,
                         args,
-                        "triton"
+                        "triton",
+                        true
                 );
                 SpigotTriton.asSpigot().getCommandHandler().handleCommand(commandEvent);
             }

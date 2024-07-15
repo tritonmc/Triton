@@ -12,6 +12,7 @@ import lombok.val;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -23,20 +24,45 @@ public class DebugCommand implements Command {
         val sender = event.getSender();
         sender.assertPermission("triton.debug");
 
-        // FIXME handle proxies
+        String[] args = event.getArgs();
 
-        val args = event.getArgs();
+        if (event.isForwarded()) {
+            // shift arguments for remaining code
+            args = Arrays.copyOfRange(args, 1, args.length);
+        } else if (sender.getUUID() != null && event.getPlatform().isProxy()) {
+            if (args.length < 1) {
+                // TODO get from messages.yml
+                sendMessage(event, "You must provide a target platform: " + getSubcommandList(TargetPlatform.values()));
+                return;
+            }
+
+            val targetPlatform = getSubcommandFromName(TargetPlatform.values(), args[0]);
+            if (!targetPlatform.isPresent()) {
+                // TODO get from messages.yml
+                sendMessage(event,"Invalid target platform. Available: " + getSubcommandList(Subcommand.values()));
+                return;
+            }
+
+            if (targetPlatform.get() == TargetPlatform.SERVER) {
+                Triton.get().getBridgeManager().forwardCommand(event);
+                return;
+            }
+
+            // shift arguments for remaining code
+            args = Arrays.copyOfRange(args, 1, args.length);
+        }
+        event = event.toBuilder().args(args).build();
 
         if (args.length < 1) {
             // TODO get from messages.yml
-            sender.sendMessage("You must provide a subcommand: " + getSubcommandList(Subcommand.values()));
+            sendMessage(event,"You must provide a subcommand: " + getSubcommandList(Subcommand.values()));
             return;
         }
 
         val subcommand = getSubcommandFromName(Subcommand.values(), args[0]);
         if (!subcommand.isPresent()) {
             // TODO get from messages.yml
-            sender.sendMessage("Invalid subcommand. Available: " + getSubcommandList(Subcommand.values()));
+            sendMessage(event, "Invalid subcommand. Available: " + getSubcommandList(Subcommand.values()));
             return;
         }
 
@@ -57,14 +83,14 @@ public class DebugCommand implements Command {
 
         if (args.length < 2) {
             // TODO get from messages.yml
-            sender.sendMessage("You must provide a dump subcommand: " + getSubcommandList(DumpSubcommand.values()));
+            sendMessage(event, "You must provide a dump subcommand: " + getSubcommandList(DumpSubcommand.values()));
             return;
         }
 
         val subcommand = getSubcommandFromName(DumpSubcommand.values(), args[1]);
         if (!subcommand.isPresent()) {
             // TODO get from messages.yml
-            sender.sendMessage("Invalid dump subcommand. Available: " + getSubcommandList(DumpSubcommand.values()));
+            sendMessage(event, "Invalid dump subcommand. Available: " + getSubcommandList(DumpSubcommand.values()));
             return;
         }
 
@@ -74,7 +100,7 @@ public class DebugCommand implements Command {
             case REMOVE:
                 if (args.length < 3) {
                     // TODO get from messages.yml
-                    sender.sendMessage("You must provide a player, 'me' or 'all'");
+                    sendMessage(event, "You must provide a player, 'me' or 'all'");
                     return;
                 }
                 val playerStr = args[2];
@@ -84,7 +110,7 @@ public class DebugCommand implements Command {
                         val type = dumpManager.getAvailableTypes().get(args[i]);
                         if (type == null) {
                             // TODO get from messages.yml
-                            sender.sendMessage("Type " + args[i] + " not found");
+                            sendMessage(event,"Type " + args[i] + " not found");
                             return;
                         }
                         types.add(type);
@@ -103,7 +129,7 @@ public class DebugCommand implements Command {
                     UUID player;
                     if (playerStr.equalsIgnoreCase("me")) {
                         if (sender.getUUID() == null) {
-                            sender.sendMessage("Only players can use 'me'");
+                            sendMessage(event, "Only players can use 'me'");
                             return;
                         }
                         player = sender.getUUID();
@@ -111,7 +137,7 @@ public class DebugCommand implements Command {
                         val uuid = Triton.get().getPlayerUUIDFromString(playerStr);
                         if (uuid == null) {
                             // TODO get from messages.yml
-                            sender.sendMessage("Can't find player " + playerStr);
+                            sendMessage(event, "Can't find player " + playerStr);
                         }
                         player = uuid;
                     }
@@ -122,11 +148,11 @@ public class DebugCommand implements Command {
                     }
                 }
                 // TODO get from messages.yml
-                sender.sendMessage("Success");
+                sendMessage(event, "Success");
                 break;
             case CLEAR:
                 dumpManager.disable();
-                sender.sendMessage("Disabled dumping for everyone");
+                sendMessage(event, "Disabled dumping for everyone");
                 break;
         }
     }
@@ -137,7 +163,7 @@ public class DebugCommand implements Command {
 
         if (args.length < 2) {
             // TODO get from messages.yml
-            sender.sendMessage("You must provide a dump name");
+            sendMessage(event, "You must provide a dump name");
             return;
         }
 
@@ -156,7 +182,7 @@ public class DebugCommand implements Command {
             }
         } catch (NumberFormatException e) {
             // TODO get from messages.yml
-            sender.sendMessage("Invalid number");
+            sendMessage(event, "Invalid number");
             return;
         }
 
@@ -168,15 +194,15 @@ public class DebugCommand implements Command {
             }
 
             // TODO get from messages.yml
-            sender.sendMessage("Sent " + messages.size() + " messages!");
+            sendMessage(event, "Sent " + messages.size() + " messages!");
         } catch (IOException e) {
             // TODO get from messages.yml
-            sender.sendMessage("Failed to open dump file: " + e.getMessage());
-            e.printStackTrace();
+            sendMessage(event, "Failed to open dump file: " + e.getMessage());
+            Triton.get().getLogger().logError(e, "Failed to open dump file");
         } catch (JsonParseException e) {
             // TODO get from messages.yml
-            sender.sendMessage("Invalid message JSON " + e.getMessage());
-            e.printStackTrace();
+            sendMessage(event, "Invalid message JSON " + e.getMessage());
+            Triton.get().getLogger().logError(e, "Failed to parse message JSON while loading dump");
         }
     }
 
@@ -185,6 +211,21 @@ public class DebugCommand implements Command {
         event.getSender().assertPermission("triton.debug");
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Wrapper to include platform in the message sent
+     *
+     * @param event   The command event being handled
+     * @param message The message to send
+     */
+    private void sendMessage(CommandEvent event, String message) {
+        event.getSender().sendMessage("[Triton @ " + event.getPlatform() + "] " + message);
+    }
+
+    private enum TargetPlatform {
+        SERVER,
+        PROXY,
     }
 
     private enum Subcommand {

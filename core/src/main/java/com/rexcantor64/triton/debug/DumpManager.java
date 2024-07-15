@@ -15,11 +15,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,19 +31,22 @@ public class DumpManager {
 
     private static final UUID ALL_UUID = new UUID(0L, 0L);
     private static final String DUMP_FOLDER_NAME = "dumps";
-    private static final String DUMP_NAME_TEMPLATE = "dump_%d_%d_%d.txt";
+    private static final String DUMP_NAME_TEMPLATE = "dump-%s.txt";
     @Getter
     private final HashMap<String, FeatureSyntax> availableTypes = new HashMap<>();
     @Getter
     private final Map<UUID, Collection<FeatureSyntax>> filter = new HashMap<>();
+    // Helper to avoid querying the map unnecessarily
+    private boolean enabled = false;
 
     public DumpManager() {
         val config = Triton.get().getConfig();
-        availableTypes.put("chat", config.getChatSyntax());
         availableTypes.put("actionbar", config.getActionbarSyntax());
-        availableTypes.put("bossbar", config.getBossbarSyntax());
-        availableTypes.put("gui", config.getGuiSyntax());
         availableTypes.put("advancements", config.getAdvancementsSyntax());
+        availableTypes.put("bossbar", config.getBossbarSyntax());
+        availableTypes.put("chat", config.getChatSyntax());
+        availableTypes.put("deathscreen", config.getDeathScreenSyntax());
+        availableTypes.put("gui", config.getGuiSyntax());
         availableTypes.put("hologram", config.getHologramSyntax());
         availableTypes.put("items", config.getItemsSyntax());
         availableTypes.put("kick", config.getKickSyntax());
@@ -85,6 +87,7 @@ public class DumpManager {
             oldTypes.addAll(newTypes);
             return oldTypes;
         });
+        enabled = true;
     }
 
     /**
@@ -94,6 +97,7 @@ public class DumpManager {
      */
     public void disable() {
         filter.clear();
+        enabled = false;
     }
 
     /**
@@ -124,7 +128,7 @@ public class DumpManager {
                 return;
             }
             currentSettings.removeAll(enabledTypes);
-            if (currentSettings.size() == 0) {
+            if (currentSettings.isEmpty()) {
                 filter.remove(uuid);
             }
         }
@@ -141,6 +145,10 @@ public class DumpManager {
      * @since 4.0.0
      */
     private boolean shouldDump(Localized localized, FeatureSyntax type) {
+        if (!enabled) {
+            // Quickly determine that dumping is disabled without querying the Map
+            return false;
+        }
         if (localized instanceof LanguagePlayer) {
             val uuid = ((LanguagePlayer) localized).getUUID();
             val playerSettings = filter.get(uuid);
@@ -160,12 +168,9 @@ public class DumpManager {
     }
 
     private String getDumpName() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        return String.format(DUMP_NAME_TEMPLATE, year, month, day);
+        return String.format(DUMP_NAME_TEMPLATE, date);
     }
 
     public void dump(Component message, Localized localized, FeatureSyntax type) {
@@ -179,7 +184,7 @@ public class DumpManager {
 
         File dumpFolderFile = dumpFolderPath.toFile();
         if (!dumpFolderFile.isDirectory() && !dumpFolderFile.mkdirs()) {
-            Triton.get().getLogger().logError("Failed to create \"dumps\" folder!");
+            Triton.get().getLogger().logError("Failed to create \"%1\" folder!", dumpFolderPath.toAbsolutePath().toString());
             return;
         }
 
