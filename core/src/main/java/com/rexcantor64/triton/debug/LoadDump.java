@@ -35,6 +35,11 @@ public class LoadDump {
         Path dumpFolderPath = tritonFolderPath.resolve(DUMP_FOLDER_NAME);
         Path dumpPath = dumpFolderPath.resolve(dumpName);
 
+        if (!dumpPath.toAbsolutePath().normalize().startsWith(dumpFolderPath.toAbsolutePath().normalize())) {
+            // path traversal attack
+            throw new IOException("Tried to access file outside dump folder");
+        }
+
         File dumpFile = dumpPath.toFile();
 
         @Cleanup
