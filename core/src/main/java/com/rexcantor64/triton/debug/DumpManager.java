@@ -173,6 +173,17 @@ public class DumpManager {
         return String.format(DUMP_NAME_TEMPLATE, date);
     }
 
+    /**
+     * Attempt to dump a message. The message will only be dumped if dumping is
+     * enabled for the given player and message type. This method will immediately
+     * write to the dump file.
+     *
+     * @param message   The message to dump.
+     * @param localized The locale representing a player. If it is a {@link Localized},
+     *                  player-specific settings apply, otherwise whether to dump will
+     *                  be decided by global configurations.
+     * @param type      The type of the message.
+     */
     public void dump(Component message, Localized localized, FeatureSyntax type) {
         if (!shouldDump(localized, type)) {
             return;
