@@ -179,6 +179,8 @@ public class ProtocolLibListener implements PacketListener {
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
+        // Nothing to translate, but register listener to ensure order in async mode
+        packetHandlers.put(PacketType.Play.Server.OPEN_BOOK, asAsync(this::handleNop));
         if (MinecraftVersion.CAVES_CLIFFS_2.atOrAbove()) { // 1.18+
             // While the villager merchant interface redesign was on 1.14, the Bukkit API only has all fields on 1.18
             packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, asAsync(this::handleMerchantItems));
@@ -795,6 +797,14 @@ public class ProtocolLibListener implements PacketListener {
                 .getResultOrToRemove(Component::empty)
                 .map(WrappedComponentUtils::serialize)
                 .ifPresent(result -> chatComponentsModifier.writeSafely(0, result));
+    }
+
+    /**
+     * No-operation function, used to simply register a packet listener in order to ensure certain packets
+     * are sent in order when using async mode.
+     */
+    private void handleNop(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // nop
     }
 
     /* PROTOCOL LIB */
