@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.rexcantor64.triton.loader.utils.CommonLoader;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
+import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Dependency;
@@ -23,6 +24,8 @@ import java.nio.file.Path;
         version = "@version@",
         authors = {"Rexcantor64"},
         dependencies = {
+                // Soft-depend on packet events: use bundled version, but allow using one available in the server
+                @Dependency(id = "packetevents", optional = true), // https://github.com/retrooper/packetevents
                 // List of plugins that interfere with Triton in event listeners.
                 // If Triton loads after, its listeners are fired after in events with the same priority,
                 // which is what we want since Triton benefits from having the final saying in the event.
@@ -50,6 +53,7 @@ public class VelocityLoader {
                 .constructorValue(logger)
                 .constructorValue(container)
                 .constructorValue(dataDirectory)
+                .flag(LoaderFlag.VENDOR_PACKET_EVENTS) // TODO: allow using server's packet events
                 .build()
                 .loadPlugin();
     }

@@ -116,6 +116,33 @@ public enum Dependency {
             "1.0.0",
             "K95aei1z+hFmoPFmOiLDr30naP/E/qMxd0w8D2IiXRE=",
             relocate("net{}kyori{}option", "kyori{}option")
+    ),
+
+    // PacketEvents
+    PACKET_EVENTS_API(
+            "com{}github{}retrooper",
+            "packetevents-api",
+            "2.6.0",
+            "CdIZKtdDgdpw0uQR/tJOsAfZF66/oRRT0JMqSXCLAWs=",
+            relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
+            // TODO relocate adventure (?)
+    ),
+    PACKET_EVENTS_NETTY_COMMON(
+            "com{}github{}retrooper",
+            "packetevents-netty-common",
+            "2.6.0",
+            "IzZVaD5pI267Q2baymTiFtB9E8119YkhkPZeLXCJLTc=",
+            relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
+    ),
+    PACKET_EVENTS_VELOCITY(
+            "com{}github{}retrooper",
+            "packetevents-velocity",
+            "2.6.0",
+            "93wEevRi6xSrz+mGVMaHO7sLfsH4AAISsmxNigSU4RA=",
+            relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
     );
 
     @Getter

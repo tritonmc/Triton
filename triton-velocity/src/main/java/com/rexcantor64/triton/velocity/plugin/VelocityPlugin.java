@@ -28,6 +28,8 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     @Getter
     private final Object plugin;
     private final ProxyServer server;
+    @Getter
+    private final Logger velocityLogger;
     private final TritonLogger tritonLogger;
     @Getter
     private final PluginContainer pluginContainer;
@@ -41,6 +43,7 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     public VelocityPlugin(Object loader, ProxyServer server, Logger logger, @Named("triton") PluginContainer container, @DataDirectory Path dataDirectory, Set<LoaderFlag> loaderFlags) {
         this.plugin = loader;
         this.server = server;
+        this.velocityLogger = logger;
         this.tritonLogger = new SLF4JLogger(logger);
         this.pluginContainer = container;
         this.dataDirectory = dataDirectory;

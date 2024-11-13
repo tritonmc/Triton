@@ -37,6 +37,11 @@ public class CommonLoader {
             }
         }
 
+        if (flags.contains(LoaderFlag.VENDOR_PACKET_EVENTS)) {
+            relocations.add(new Relocation("com/github/retrooper/packetevents", "com/rexcantor64/triton/lib/packetevents/api"));
+            relocations.add(new Relocation("io/github/retrooper/packetevents", "com/rexcantor64/triton/lib/packetevents/impl"));
+        }
+
         @SuppressWarnings("resource")
         JarInJarClassLoader loader = new JarInJarClassLoader(getClass().getClassLoader(), relocations, CORE_JAR_NAME, jarInJarName);
 

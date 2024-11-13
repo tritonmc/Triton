@@ -7,6 +7,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
 import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
 import com.rexcantor64.triton.velocity.listeners.VelocityListener;
+import com.rexcantor64.triton.velocity.packetinterceptor.VelocityPacketEventsManager;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -78,6 +79,11 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
         if (bridgeManager != null && bridgeChannelIdentifier != null) {
             bridgeManager.sendConfigToEveryone();
         }
+    }
+
+    @Override
+    protected void initPacketEventsManager() {
+        this.packetEventsManager = new VelocityPacketEventsManager();
     }
 
     @Override
