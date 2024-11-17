@@ -6,11 +6,13 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
+import com.rexcantor64.triton.player.LanguagePlayer;
 import lombok.val;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -23,7 +25,7 @@ import java.util.function.Consumer;
  */
 public class PacketEventsListener implements PacketListener {
 
-    private Map<PacketTypeCommon, Consumer<PacketSendEvent>> receiveHandlers = Collections.emptyMap();
+    private Map<PacketTypeCommon, BiConsumer<PacketSendEvent, LanguagePlayer>> receiveHandlers = Collections.emptyMap();
 
     /**
      * Setup handlers according to what is enabled on config.
@@ -31,11 +33,12 @@ public class PacketEventsListener implements PacketListener {
      * @since 4.0.0
      */
     public void setupHandlers() {
+        val parser = Triton.get().getMessageParser();
         val config = Triton.get().getConfig();
-        val updatedHandlers = new HashMap<PacketTypeCommon, Consumer<PacketSendEvent>>();
+        val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, LanguagePlayer>>();
 
         if (config.isScoreboards()) {
-            val scoreboardHandler = new ScoreboardPacketHandler();
+            val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
         }
 
@@ -45,11 +48,11 @@ public class PacketEventsListener implements PacketListener {
     @Override
     public void onPacketSend(PacketSendEvent event) {
         val type = event.getPacketType();
-        System.out.println("type = " + type);
 
         val handler = receiveHandlers.get(type);
         if (handler != null) {
-            handler.accept(event);
+            val languagePlayer = Triton.get().getPlayerManager().get(event.getUser().getUUID());
+            handler.accept(event, languagePlayer);
         }
     }
 }
