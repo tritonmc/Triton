@@ -750,7 +750,15 @@ public class ProtocolLibListener implements PacketListener {
         val chatComponentsModifier = packet.getPacket().getChatComponents();
 
         val displayName = chatComponentsModifier.readSafely(0);
-        val renderType = packet.getPacket().getRenderTypes().readSafely(0);
+        EnumWrappers.RenderType renderType;
+        try {
+            renderType = packet.getPacket().getRenderTypes().readSafely(0);
+        } catch (IllegalArgumentException e) {
+            // When plugins also using ProtocolLib don't set this field, it will be null and ProtocolLib will
+            // fail to convert it to the enum value.
+            // Fallback to INTEGER since that's th default anyway.
+            renderType = EnumWrappers.RenderType.INTEGER;
+        }
         WrappedNumberFormat numberFormat = null;
         if (WrappedNumberFormat.isSupported()) {
             if (MinecraftVersion.v1_20_5.atOrAbove()) {
