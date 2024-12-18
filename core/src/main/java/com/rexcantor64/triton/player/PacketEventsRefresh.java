@@ -2,15 +2,20 @@ package com.rexcantor64.triton.player;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective.RenderType;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class PacketEventsRefresh {
     private final Map<String, ScoreBoardTeamInfo> teamsMap = new ConcurrentHashMap<>();
+    private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
 
     private final TritonLanguagePlayer<?> languagePlayer;
 
@@ -45,6 +51,33 @@ public class PacketEventsRefresh {
     }
 
     /**
+     * Stores info of an objective for later (i.e., to refresh text when language is changed).
+     *
+     * @param objectiveName The name of the objective the info belongs to.
+     * @param displayName   The untranslated display name of the team.
+     * @param renderType    The last render type sent with the packet.
+     * @param scoreFormat   The last score format sent with the packet.
+     * @since 4.0.0
+     */
+    public void saveScoreboardObjective(@NotNull String objectiveName,
+                                        @NotNull Component displayName,
+                                        @Nullable RenderType renderType,
+                                        @Nullable ScoreFormat scoreFormat) {
+        val info = new ScoreboardObjective(displayName, renderType, scoreFormat);
+        objectivesMap.put(objectiveName, info);
+    }
+
+    /**
+     * Forget info about the given objective.
+     *
+     * @param objectiveName The name of the objective to forget.
+     * @since 4.0.0
+     */
+    public void discardScoreboardObjective(String objectiveName) {
+        objectivesMap.remove(objectiveName);
+    }
+
+    /**
      * Refresh all active features of a player.
      *
      * @since 4.0.0
@@ -60,7 +93,9 @@ public class PacketEventsRefresh {
         val cfg = Triton.get().getConfig();
 
         if (cfg.isScoreboards()) {
-            updateScoreboardTeams(user, cfg.getScoreboardSyntax(), parser);
+            val syntax = cfg.getScoreboardSyntax();
+            updateScoreboardTeams(user, syntax, parser);
+            updateScoreboardObjectives(user, syntax, parser);
         }
     }
 
@@ -105,5 +140,37 @@ public class PacketEventsRefresh {
             val packet = new WrapperPlayServerTeams(entry.getKey(), WrapperPlayServerTeams.TeamMode.UPDATE, infoCopy);
             user.sendPacketSilently(packet);
         }
+    }
+
+    private void updateScoreboardObjectives(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+        for (val entry : objectivesMap.entrySet()) {
+            val info = entry.getValue();
+
+            val packet = new WrapperPlayServerScoreboardObjective(
+                    entry.getKey(),
+                    WrapperPlayServerScoreboardObjective.ObjectiveMode.UPDATE,
+                    info.getDisplayName(),
+                    info.getRenderType(),
+                    info.getScoreFormat()
+            );
+
+            parser.translateComponent(
+                            packet.getDisplayName(),
+                            languagePlayer,
+                            syntax
+                    )
+                    .getResultOrToRemove(Component::empty)
+                    .ifPresent(packet::setDisplayName);
+
+            user.sendPacketSilently(packet);
+        }
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    private static class ScoreboardObjective {
+        private final Component displayName;
+        private final RenderType renderType;
+        private final ScoreFormat scoreFormat;
     }
 }

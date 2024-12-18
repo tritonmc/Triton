@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.packetinterceptor.handlers;
 
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.AdventureParser;
@@ -93,6 +94,44 @@ public class ScoreboardPacketHandler {
             languagePlayer.getPacketEventsRefresh().saveScoreboardTeam(teams.getTeamName(), teamInfoCopy);
         } else {
             languagePlayer.getPacketEventsRefresh().discardScoreboardTeam(teams.getTeamName());
+        }
+    }
+
+    public void onObjectivePacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        val packet = new WrapperPlayServerScoreboardObjective(event);
+
+        val action = packet.getMode();
+        if (action == WrapperPlayServerScoreboardObjective.ObjectiveMode.REMOVE) {
+            languagePlayer.getPacketEventsRefresh().discardScoreboardObjective(packet.getName());
+        }
+
+        if (action != WrapperPlayServerScoreboardObjective.ObjectiveMode.CREATE && action != WrapperPlayServerScoreboardObjective.ObjectiveMode.UPDATE) {
+            // we are only interested in new/update actions
+            return;
+        }
+
+        val originalDisplayName = packet.getDisplayName();
+
+        parser.translateComponent(
+                        originalDisplayName,
+                        languagePlayer,
+                        syntax
+                )
+                .getResultOrToRemove(Component::empty)
+                .ifPresent(result -> {
+                    packet.setDisplayName(result);
+                    event.markForReEncode(true);
+                });
+
+        if (event.needsReEncode()) {
+            languagePlayer.getPacketEventsRefresh().saveScoreboardObjective(
+                    packet.getName(),
+                    originalDisplayName,
+                    packet.getRenderType(),
+                    packet.getScoreFormat()
+            );
+        } else {
+            languagePlayer.getPacketEventsRefresh().discardScoreboardObjective(packet.getName());
         }
     }
 

@@ -39,6 +39,7 @@ public class PacketEventsListener implements PacketListener {
         if (config.isScoreboards()) {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
+            updatedHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, scoreboardHandler::onObjectivePacket);
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
