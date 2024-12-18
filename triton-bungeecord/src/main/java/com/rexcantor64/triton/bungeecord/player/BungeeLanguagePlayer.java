@@ -6,7 +6,7 @@ import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.language.ExecutableCommand;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;
@@ -17,12 +17,14 @@ import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.protocol.packet.Chat;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-public class BungeeLanguagePlayer implements LanguagePlayer {
+public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
 
     private final UUID uuid;
     private Connection currentConnection;
@@ -37,6 +39,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     private boolean waitingForClientLocale = false;
 
     public BungeeLanguagePlayer(UUID parent) {
+        super();
         this.uuid = parent;
         this.parent = BungeeCord.getInstance().getPlayer(parent);
         this.currentConnection = this.parent;
@@ -47,6 +50,11 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
         this.uuid = uuid;
         this.currentConnection = connection;
         load();
+    }
+
+    @Override
+    public @NotNull Optional<ProxiedPlayer> getPlatformPlayer() {
+        return Optional.of(this.parent);
     }
 
     public void setBossbar(UUID uuid, BaseComponent lastBossBar) {
@@ -104,6 +112,7 @@ public class BungeeLanguagePlayer implements LanguagePlayer {
     }
 
     public void refreshAll() {
+        super.refreshAll();
         if (listener == null) return;
         listener.refreshTab();
         if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null)

@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.AdventureParser;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
@@ -21,12 +21,12 @@ public class ScoreboardPacketHandler {
         this.syntax = config.getScoreboardSyntax();
     }
 
-    public void onTeamsPacket(@NotNull PacketSendEvent event, @NotNull LanguagePlayer languagePlayer) {
+    public void onTeamsPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         WrapperPlayServerTeams teams = new WrapperPlayServerTeams(event);
 
         val action = teams.getTeamMode();
         if (action == WrapperPlayServerTeams.TeamMode.REMOVE) {
-            // TODO remove from cache
+            languagePlayer.getPacketEventsRefresh().discardScoreboardTeam(teams.getTeamName());
         }
 
         if (action != WrapperPlayServerTeams.TeamMode.CREATE && action != WrapperPlayServerTeams.TeamMode.UPDATE) {
@@ -41,9 +41,13 @@ public class ScoreboardPacketHandler {
         }
         val info = infoOpt.get();
 
+        val originalDisplayName = info.getDisplayName();
+        val originalPrefix = info.getPrefix();
+        val originalSuffix = info.getSuffix();
+
         // display name
         parser.translateComponent(
-                        info.getDisplayName(),
+                        originalDisplayName,
                         languagePlayer,
                         syntax
                 )
@@ -54,7 +58,7 @@ public class ScoreboardPacketHandler {
                 });
         // prefix
         parser.translateComponent(
-                        info.getPrefix(),
+                        originalPrefix,
                         languagePlayer,
                         syntax
                 )
@@ -65,7 +69,7 @@ public class ScoreboardPacketHandler {
                 });
         // suffix
         parser.translateComponent(
-                        info.getSuffix(),
+                        originalSuffix,
                         languagePlayer,
                         syntax
                 )
@@ -76,9 +80,19 @@ public class ScoreboardPacketHandler {
                 });
 
         if (event.needsReEncode()) {
-            // TODO save data to cache
+            val teamInfoCopy = new WrapperPlayServerTeams.ScoreBoardTeamInfo(
+                    originalDisplayName,
+                    originalPrefix,
+                    originalSuffix,
+                    info.getTagVisibility(),
+                    info.getCollisionRule(),
+                    info.getColor(),
+                    info.getOptionData()
+            );
+
+            languagePlayer.getPacketEventsRefresh().saveScoreboardTeam(teams.getTeamName(), teamInfoCopy);
         } else {
-            // TODO remove team from cache if exists
+            languagePlayer.getPacketEventsRefresh().discardScoreboardTeam(teams.getTeamName());
         }
     }
 

@@ -10,7 +10,7 @@ import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
@@ -58,7 +58,7 @@ public class LocalStorage extends Storage {
     }
 
     @Override
-    public Language getLanguage(LanguagePlayer lp) {
+    public Language getLanguage(TritonLanguagePlayer<?> lp) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
         String lang = languageMap.get(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&

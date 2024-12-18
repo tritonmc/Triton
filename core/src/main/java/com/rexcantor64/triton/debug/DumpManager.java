@@ -3,7 +3,7 @@ package com.rexcantor64.triton.debug;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.val;
@@ -70,7 +70,7 @@ public class DumpManager {
     /**
      * Enable message dumping for messages of certain types (chat, action bars, etc.)
      * sent to a given player.
-     * Some messages that are not translated using the {@link com.rexcantor64.triton.player.LanguagePlayer}
+     * Some messages that are not translated using the {@link TritonLanguagePlayer}
      * instance might not be correctly identified.
      * <p>
      * If the message dumping is already enabled for the player, current
@@ -149,8 +149,8 @@ public class DumpManager {
             // Quickly determine that dumping is disabled without querying the Map
             return false;
         }
-        if (localized instanceof LanguagePlayer) {
-            val uuid = ((LanguagePlayer) localized).getUUID();
+        if (localized instanceof TritonLanguagePlayer) {
+            val uuid = ((TritonLanguagePlayer<?>) localized).getUUID();
             val playerSettings = filter.get(uuid);
             if (playerSettings != null) {
                 // Use referential equality instead of object equality, since we want to compare if the

@@ -5,7 +5,7 @@ import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
@@ -26,7 +26,7 @@ public abstract class Storage {
 
     public abstract Language getLanguageFromIp(String ip);
 
-    public abstract Language getLanguage(LanguagePlayer lp);
+    public abstract Language getLanguage(TritonLanguagePlayer<?> lp);
 
     public abstract void setLanguage(@Nullable UUID uuid, @Nullable String ip, @NotNull Language newLanguage);
 

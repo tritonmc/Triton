@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-public class PlayerManager<T extends LanguagePlayer> implements com.rexcantor64.triton.api.players.PlayerManager {
+public class PlayerManager<T extends TritonLanguagePlayer<?>> implements com.rexcantor64.triton.api.players.PlayerManager {
 
     private final Map<UUID, T> players = new ConcurrentHashMap<>();
 

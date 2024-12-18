@@ -6,7 +6,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Getter;
 import lombok.NonNull;
@@ -202,7 +202,7 @@ public class BridgeSerializer {
         return outList;
     }
 
-    public static byte[] buildPlayerLanguageData(LanguagePlayer lp) {
+    public static byte[] buildPlayerLanguageData(TritonLanguagePlayer<?> lp) {
         val out = ByteStreams.newDataOutput();
         out.writeByte(ActionP2S.SEND_PLAYER_LANGUAGE.getKey());
         val uuid = lp.getUUID();

@@ -17,7 +17,7 @@ import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.packetinterceptor.PacketEventsManager;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -39,7 +39,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
     protected static Triton<?, ?> instance;
@@ -163,7 +163,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     public void refreshPlayers() {
         playerManager.getAll().stream()
                 .filter(Objects::nonNull)
-                .forEach(LanguagePlayer::refreshAll);
+                .forEach(TritonLanguagePlayer::refreshAll);
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {

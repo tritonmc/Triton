@@ -9,7 +9,7 @@ import com.rexcantor64.triton.api.events.PlayerChangeLanguageSpigotEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
 import com.rexcantor64.triton.storage.LocalStorage;
@@ -25,6 +25,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -35,7 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpigotLanguagePlayer implements LanguagePlayer {
+public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
 
     private final UUID uuid;
     /**
@@ -76,6 +77,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
     private final Map<SignLocation, Component[]> legacySigns = new ConcurrentHashMap<>(); // until 1.19_R1 only
 
     public SpigotLanguagePlayer(UUID p) {
+        super();
         uuid = p;
         proxyUniqueId = this.uuid;
         load();
@@ -172,6 +174,7 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
      * for the given player, that is, packets are sent to ensure they're updated with the player's language.
      */
     public void refreshAll() {
+        super.refreshAll();
         Triton.get().runAsync(() -> toBukkit().ifPresent(player -> {
             refreshEntities();
             refreshSigns();
@@ -258,6 +261,11 @@ public class SpigotLanguagePlayer implements LanguagePlayer {
         if (bukkit == null)
             bukkit = Bukkit.getPlayer(uuid);
         return Optional.ofNullable(bukkit);
+    }
+
+    @Override
+    public @NotNull Optional<Player> getPlatformPlayer() {
+        return toBukkit();
     }
 
     @Override

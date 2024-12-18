@@ -6,14 +6,13 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.val;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Main entrypoint for intercepting packets with PacketEvents.
@@ -25,7 +24,7 @@ import java.util.function.Consumer;
  */
 public class PacketEventsListener implements PacketListener {
 
-    private Map<PacketTypeCommon, BiConsumer<PacketSendEvent, LanguagePlayer>> receiveHandlers = Collections.emptyMap();
+    private Map<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>> receiveHandlers = Collections.emptyMap();
 
     /**
      * Setup handlers according to what is enabled on config.
@@ -35,7 +34,7 @@ public class PacketEventsListener implements PacketListener {
     public void setupHandlers() {
         val parser = Triton.get().getMessageParser();
         val config = Triton.get().getConfig();
-        val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, LanguagePlayer>>();
+        val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>>();
 
         if (config.isScoreboards()) {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);

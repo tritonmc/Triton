@@ -3,7 +3,7 @@ package com.rexcantor64.triton.velocity.player;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.language.ExecutableCommand;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
 import com.rexcantor64.triton.velocity.VelocityTriton;
 import com.rexcantor64.triton.velocity.packetinterceptor.VelocityNettyEncoder;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class VelocityLanguagePlayer implements LanguagePlayer {
+public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
     @Getter
     private final Player parent;
 
@@ -46,6 +46,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     private final RefreshFeatures refresher;
 
     public VelocityLanguagePlayer(@NotNull Player parent) {
+        super();
         this.parent = parent;
         this.refresher = new RefreshFeatures(this);
         Triton.get().runAsync(this::load);
@@ -54,6 +55,11 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     public static VelocityLanguagePlayer fromUUID(UUID uuid) {
         val player = VelocityTriton.asVelocity().getLoader().getServer().getPlayer(uuid);
         return player.map(VelocityLanguagePlayer::new).orElse(null);
+    }
+
+    @Override
+    public @NotNull Optional<Player> getPlatformPlayer() {
+        return Optional.of(this.parent);
     }
 
     public void setBossbar(UUID uuid, Component lastBossBar) {
@@ -129,6 +135,7 @@ public class VelocityLanguagePlayer implements LanguagePlayer {
     }
 
     public void refreshAll() {
+        super.refreshAll();
         this.refresher.refreshAll();
     }
 
