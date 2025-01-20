@@ -43,7 +43,14 @@ public class LocalStorage extends Storage {
         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
         if (playersFile.isFile()) {
             try {
-                this.languageMap = gson.fromJson(FileUtils.getReaderFromFile(playersFile), HASH_MAP_TYPE);
+                ConcurrentHashMap<String, String> map = gson.fromJson(FileUtils.getReaderFromFile(playersFile), HASH_MAP_TYPE);
+                if (map == null) {
+                    // can happen if file is empty
+                    // https://github.com/tritonmc/Triton/issues/433
+                    this.languageMap.clear();
+                } else {
+                    this.languageMap = map;
+                }
             } catch (JsonParseException e) {
                 Triton.get().getLogger().logError(e, "Failed load players.json. JSON is not valid.");
             }
