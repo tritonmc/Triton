@@ -376,6 +376,9 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         item1.setPing(item.getPing());
 
         item1.setDisplayName(item.getDisplayName());
+
+        item1.setListOrder(item.getListOrder());
+        item1.setShowHat(item.getShowHat());
         return item1;
     }
 
