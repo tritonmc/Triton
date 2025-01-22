@@ -21,7 +21,7 @@ dependencies {
     compileOnly 'net.kyori:adventure-text-serializer-legacy:4.17.0'
     compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.4'
 
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.3.0-SNAPSHOT'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.6'
 
     // Libraries available on Spigot

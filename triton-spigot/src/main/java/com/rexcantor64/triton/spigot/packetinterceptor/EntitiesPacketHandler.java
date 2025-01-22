@@ -486,7 +486,43 @@ public class EntitiesPacketHandler extends PacketHandler {
                                 () -> null
                         );
             }
-            dataListNew.add(new PlayerInfoData(data.getProfileId(), data.getLatency(), data.isListed(), data.getGameMode(), newGP, msg, data.getProfileKeyData()));
+            if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+                try {
+                    dataListNew.add(new PlayerInfoData(
+                            data.getProfileId(),
+                            data.getLatency(),
+                            data.isListed(),
+                            data.getGameMode(),
+                            newGP,
+                            msg,
+                            data.isShowHat(),
+                            data.getListOrder(),
+                            data.getRemoteChatSessionData()
+                    ));
+                } catch (NoSuchMethodError ignore) {
+                    // Fallback until https://github.com/dmulloy2/ProtocolLib/pull/3347 gets merged.
+                    // Also allows for older servers to keep using ProtocolLib 5.3.0
+                    dataListNew.add(new PlayerInfoData(
+                            data.getProfileId(),
+                            data.getLatency(),
+                            data.isListed(),
+                            data.getGameMode(),
+                            newGP,
+                            msg,
+                            data.getRemoteChatSessionData()
+                    ));
+                }
+            } else {
+                dataListNew.add(new PlayerInfoData(
+                        data.getProfileId(),
+                        data.getLatency(),
+                        data.isListed(),
+                        data.getGameMode(),
+                        newGP,
+                        msg,
+                        data.getProfileKeyData()
+                ));
+            }
         }
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
             packet.getPacket().getPlayerInfoDataLists().writeSafely(1, dataListNew);
