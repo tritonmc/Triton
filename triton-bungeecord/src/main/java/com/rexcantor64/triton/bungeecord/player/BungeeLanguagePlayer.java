@@ -129,10 +129,10 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         PlayerChangeLanguageBungeeEvent event = new PlayerChangeLanguageBungeeEvent(this, this.language, language);
         BungeeCord.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
+        this.language = event.getNewLanguage();
         if (this.waitingForClientLocale && getParent() != null)
             parent.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                     .getMessage("success.detected-language", language.getDisplayName()))));
-        this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
 
         if (sendToSpigot && getParent() != null)
