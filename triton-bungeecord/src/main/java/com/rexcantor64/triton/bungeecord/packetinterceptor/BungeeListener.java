@@ -15,6 +15,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.protocol.DefinedPacket;
+import net.md_5.bungee.protocol.Either;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
 import net.md_5.bungee.protocol.packet.Chat;
@@ -23,8 +24,10 @@ import net.md_5.bungee.protocol.packet.PlayerListHeaderFooter;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.PlayerListItemRemove;
 import net.md_5.bungee.protocol.packet.PlayerListItemUpdate;
+import net.md_5.bungee.protocol.packet.ScoreboardObjective;
 import net.md_5.bungee.protocol.packet.Subtitle;
 import net.md_5.bungee.protocol.packet.SystemChat;
+import net.md_5.bungee.protocol.packet.Team;
 import net.md_5.bungee.protocol.packet.Title;
 
 import java.util.ArrayList;
@@ -275,6 +278,119 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 .ifToRemove(() -> kickPacket.setMessage(new TextComponent()));
     }
 
+    private void handleScoreboardObjective(DefinedPacket packet) {
+        ScoreboardObjective objectivePacket = (ScoreboardObjective) packet;
+        byte action = objectivePacket.getAction();
+        if (action == 1) { // REMOVE action
+            owner.removeScoreboardObjective(objectivePacket.getName());
+        }
+        if (action != 0 && action != 2) { // CREATE/UPDATE actions
+            // we are only interested in create/update actions
+            return;
+        }
+        val originalDisplayName = objectivePacket.getValue().getRight();
+        if (originalDisplayName == null) {
+            // The packet contains String instead of BaseComponent, meaning it's pre-1.13.
+            // Do not translate (not supported)!
+            return;
+        }
+        parser()
+                .translateComponent(
+                        BaseComponentUtils.deserialize(originalDisplayName),
+                        owner,
+                        config().getScoreboardSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(BaseComponentUtils::serializeToSingle)
+                .map(Either::<String, BaseComponent>right)
+                .ifPresent(objectivePacket::setValue);
+
+        boolean changed = objectivePacket.getValue().getRight() != originalDisplayName;
+
+        if (changed) {
+            owner.setScoreboardObjective(
+                    objectivePacket.getName(),
+                    originalDisplayName.duplicate(),
+                    objectivePacket.getType(),
+                    objectivePacket.getNumberFormat()
+            );
+        } else {
+            owner.removeScoreboardObjective(objectivePacket.getName());
+        }
+    }
+
+    private void handleScoreboardTeam(DefinedPacket packet) {
+        Team teamPacket = (Team) packet;
+        byte action = teamPacket.getMode();
+        if (action == 1) { // REMOVE action
+            owner.removeScoreboardTeam(teamPacket.getName());
+        }
+        if (action != 0 && action != 2) { // CREATE/UPDATE actions
+            // we are only interested in create/update actions
+            return;
+        }
+        val displayName = teamPacket.getDisplayName().getRight();
+        val prefix = teamPacket.getPrefix().getRight();
+        val suffix = teamPacket.getSuffix().getRight();
+        if (displayName == null || prefix == null || suffix == null) {
+            // The packet contains String instead of BaseComponent, meaning it's pre-1.13.
+            // Do not translate (not supported)!
+            return;
+        }
+
+        // display name
+        parser()
+                .translateComponent(
+                        BaseComponentUtils.deserialize(displayName),
+                        owner,
+                        config().getScoreboardSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(BaseComponentUtils::serializeToSingle)
+                .map(Either::<String, BaseComponent>right)
+                .ifPresent(teamPacket::setDisplayName);
+        // prefix
+        parser()
+                .translateComponent(
+                        BaseComponentUtils.deserialize(prefix),
+                        owner,
+                        config().getScoreboardSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(BaseComponentUtils::serializeToSingle)
+                .map(Either::<String, BaseComponent>right)
+                .ifPresent(teamPacket::setPrefix);
+        // suffix
+        parser()
+                .translateComponent(
+                        BaseComponentUtils.deserialize(suffix),
+                        owner,
+                        config().getScoreboardSyntax()
+                )
+                .getResultOrToRemove(Component::empty)
+                .map(BaseComponentUtils::serializeToSingle)
+                .map(Either::<String, BaseComponent>right)
+                .ifPresent(teamPacket::setSuffix);
+
+        boolean changed = teamPacket.getDisplayName().getRight() != displayName
+                || teamPacket.getPrefix().getRight() != prefix
+                || teamPacket.getSuffix().getRight() != suffix;
+
+        if (changed) {
+            owner.setScoreboardTeam(teamPacket.getName(), new BungeeLanguagePlayer.ScoreboardTeam(
+                    displayName,
+                    prefix,
+                    suffix,
+                    teamPacket.getNameTagVisibility(),
+                    teamPacket.getCollisionRule(),
+                    teamPacket.getColor(),
+                    teamPacket.getFriendlyFire()
+            ));
+        } else {
+            owner.removeScoreboardTeam(teamPacket.getName());
+        }
+    }
+
     @Override
     protected void encode(ChannelHandlerContext ctx, DefinedPacket packet,
                           List<Object> out) {
@@ -311,6 +427,10 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
                 handlePlayerListHeaderFooter(packet);
             } else if (Triton.get().getConfig().isKick() && packet instanceof Kick) {
                 handleKick(packet);
+            } else if (Triton.get().getConfig().isScoreboards() && packet instanceof ScoreboardObjective) {
+                handleScoreboardObjective(packet);
+            } else if (Triton.get().getConfig().isScoreboards() && packet instanceof Team) {
+                handleScoreboardTeam(packet);
             }
         } catch (Exception | Error e) {
             e.printStackTrace();
@@ -320,7 +440,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     private void send(DefinedPacket packet) {
         if (owner.getCurrentConnection() instanceof UserConnection) {
-            ((UserConnection)owner.getCurrentConnection()).sendPacketQueued(packet);
+            ((UserConnection) owner.getCurrentConnection()).sendPacketQueued(packet);
         }
     }
 
@@ -357,6 +477,30 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
 
     public void refreshTabHeaderFooter(BaseComponent header, BaseComponent footer) {
         send(new PlayerListHeaderFooter(header, footer));
+    }
+
+    public void refreshScoreboardObjective(String name, BungeeLanguagePlayer.ScoreboardObjective objective) {
+        ScoreboardObjective packet = new ScoreboardObjective();
+        packet.setAction((byte) 2); // UPDATE
+        packet.setName(name);
+        packet.setValue(Either.right(objective.getDisplayName()));
+        packet.setType(objective.getType());
+        packet.setNumberFormat(objective.getNumberFormat());
+        send(packet);
+    }
+
+    public void refreshScoreboardTeam(String name, BungeeLanguagePlayer.ScoreboardTeam team) {
+        Team packet = new Team();
+        packet.setMode((byte) 2); // UPDATE
+        packet.setName(name);
+        packet.setDisplayName(Either.right(team.getDisplayName()));
+        packet.setPrefix(Either.right(team.getPrefix()));
+        packet.setSuffix(Either.right(team.getSuffix()));
+        packet.setNameTagVisibility(team.getNameTagVisibility());
+        packet.setCollisionRule(team.getCollisionRule());
+        packet.setColor(team.getColor());
+        packet.setFriendlyFire(team.getOptions());
+        send(packet);
     }
 
     private PlayerListItem.Item clonePlayerListItem(PlayerListItem.Item item) {

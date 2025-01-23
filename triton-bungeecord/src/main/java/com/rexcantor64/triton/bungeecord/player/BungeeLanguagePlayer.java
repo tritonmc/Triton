@@ -8,6 +8,9 @@ import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
@@ -16,13 +19,17 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
+import net.md_5.bungee.protocol.NumberFormat;
 import net.md_5.bungee.protocol.packet.Chat;
+import net.md_5.bungee.protocol.packet.ScoreboardObjective.HealthDisplay;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
 
@@ -37,6 +44,11 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
     private BaseComponent lastTabFooter;
     private final HashMap<UUID, BaseComponent> bossBars = new HashMap<>();
     private boolean waitingForClientLocale = false;
+
+    @Getter
+    private Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
+    @Getter
+    private Map<String, ScoreboardTeam> teamsMap = new ConcurrentHashMap<>();
 
     public BungeeLanguagePlayer(UUID parent) {
         super();
@@ -71,6 +83,25 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
 
     public void setLastTabFooter(BaseComponent lastTabFooter) {
         this.lastTabFooter = lastTabFooter.duplicate();
+    }
+
+    public void setScoreboardObjective(String name, BaseComponent displayName, HealthDisplay type, @Nullable NumberFormat numberFormat) {
+        ScoreboardObjective objective = this.objectivesMap.computeIfAbsent(name, k -> new ScoreboardObjective());
+        objective.setDisplayName(displayName);
+        objective.setType(type);
+        objective.setNumberFormat(numberFormat);
+    }
+
+    public void removeScoreboardObjective(String name) {
+        this.objectivesMap.remove(name);
+    }
+
+    public void setScoreboardTeam(String name, ScoreboardTeam team) {
+        this.teamsMap.put(name, team);
+    }
+
+    public void removeScoreboardTeam(String name) {
+        this.teamsMap.remove(name);
     }
 
     @Override
@@ -120,6 +151,14 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         if (Triton.get().getConfig().isBossbars())
             for (Map.Entry<UUID, BaseComponent> entry : bossBars.entrySet())
                 listener.refreshBossbar(entry.getKey(), entry.getValue());
+        if (Triton.get().getConfig().isScoreboards()) {
+            for (Map.Entry<String, ScoreboardObjective> entry : objectivesMap.entrySet()) {
+                listener.refreshScoreboardObjective(entry.getKey(), entry.getValue());
+            }
+            for (Map.Entry<String, ScoreboardTeam> entry : teamsMap.entrySet()) {
+                listener.refreshScoreboardTeam(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     @Override
@@ -183,6 +222,28 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(parent, cmdText);
             }
         }
+    }
+
+    @Data
+    public static class ScoreboardObjective {
+        private BaseComponent displayName;
+        private HealthDisplay type;
+        @Nullable
+        private NumberFormat numberFormat;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ScoreboardTeam {
+        private BaseComponent displayName;
+        private BaseComponent prefix;
+        private BaseComponent suffix;
+
+        // other data (has to be saved for refreshing packet)
+        private String nameTagVisibility;
+        private String collisionRule;
+        private int color;
+        private byte options;
     }
 
     @Override
