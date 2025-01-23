@@ -11,7 +11,7 @@ import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.item.TWINData;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Cleanup;
@@ -126,7 +126,7 @@ public class MysqlStorage extends Storage {
     }
 
     @Override
-    public Language getLanguage(LanguagePlayer lp) {
+    public Language getLanguage(TritonLanguagePlayer<?> lp) {
         Triton.get().getLogger().logTrace("[MySQL Storage] Getting language for player %1", lp);
         String lang = getValueFromStorage(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&

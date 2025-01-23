@@ -9,6 +9,7 @@ import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
+import com.velocitypowered.api.event.player.PlayerSettingsChangedEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.network.ProtocolVersion;
@@ -68,6 +69,12 @@ public class VelocityListener {
         val lp = new VelocityLanguagePlayer(player);
         VelocityTriton.asVelocity().getPlayerManager().registerPlayer(lp);
         lp.injectNettyPipeline();
+    }
+
+    @Subscribe
+    public void onPlayerSettingsUpdate(PlayerSettingsChangedEvent event) {
+        val lp = VelocityTriton.asVelocity().getPlayerManager().get(event.getPlayer().getUniqueId());
+        lp.setClientLocale(event.getPlayerSettings().getLocale().toString());
     }
 
     @Subscribe(order = PostOrder.LAST)

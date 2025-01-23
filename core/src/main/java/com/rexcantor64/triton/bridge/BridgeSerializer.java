@@ -6,7 +6,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.Getter;
 import lombok.NonNull;
@@ -107,10 +107,11 @@ public class BridgeSerializer {
             ByteArrayDataOutput languageItemsOut = ByteStreams.newDataOutput();
             for (val collection : Triton.get().getStorage().getCollections().values())
                 for (val item : collection.getItems()) {
-                    if (languageItemsOut.toByteArray().length > 29000) {
+                    // Max array size is 32767, leave out a buffer
+                    if (languageItemsOut.toByteArray().length > 25000) {
                         val out = ByteStreams.newDataOutput();
                         out.writeByte(ActionP2S.SEND_STORAGE_AND_CONFIG.getKey());
-                        if (outList.size() == 0) {
+                        if (outList.isEmpty()) {
                             out.writeBoolean(true);
                             out.write(languageOut);
                         } else {
@@ -187,7 +188,7 @@ public class BridgeSerializer {
                 }
             val out = ByteStreams.newDataOutput();
             out.writeByte(ActionP2S.SEND_STORAGE_AND_CONFIG.getKey());
-            val firstSend = outList.size() == 0;
+            val firstSend = outList.isEmpty();
             out.writeBoolean(firstSend);
             if (firstSend)
                 out.write(languageOut);
@@ -202,7 +203,7 @@ public class BridgeSerializer {
         return outList;
     }
 
-    public static byte[] buildPlayerLanguageData(LanguagePlayer lp) {
+    public static byte[] buildPlayerLanguageData(TritonLanguagePlayer<?> lp) {
         val out = ByteStreams.newDataOutput();
         out.writeByte(ActionP2S.SEND_PLAYER_LANGUAGE.getKey());
         val uuid = lp.getUUID();

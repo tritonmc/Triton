@@ -9,12 +9,15 @@ import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.config.interfaces.ConfigurationProvider;
 import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.debug.DumpManager;
+import com.rexcantor64.triton.dependencies.Dependency;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.TranslationManager;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.packetinterceptor.PacketEventsManager;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -26,6 +29,7 @@ import com.rexcantor64.triton.utils.TritonAPIUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.InputStreamReader;
@@ -35,7 +39,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
     protected static Triton<?, ?> instance;
@@ -58,6 +62,7 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
     private Storage storage;
     private TritonLogger logger;
     private DumpManager dumpManager;
+    protected @Nullable PacketEventsManager packetEventsManager;
 
     protected Triton(PlayerManager<P> playerManager, B bridgeManager) {
         this.playerManager = playerManager;
@@ -106,6 +111,29 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         reload();
 
         twinManager = new TwinManager(this);
+
+        if (config.isUsePacketEvents()) {
+            val dependencyManager = Triton.get().getLoader().getDependencyManager();
+            val isPacketEventsVendored = dependencyManager.hasLoaderFlag(LoaderFlag.VENDOR_PACKET_EVENTS);
+            if (isPacketEventsVendored) {
+                // load packet events dependency (netty and platform related modules are loaded later)
+                dependencyManager.loadDependency(Dependency.PACKET_EVENTS_API);
+            }
+            this.initPacketEventsManager();
+        }
+
+        if (this.packetEventsManager != null) {
+            // TODO: when spigot is supported, onLoad needs to be called earlier
+            this.packetEventsManager.onLoad();
+            this.packetEventsManager.onEnable();
+        }
+    }
+
+    protected void onDisable() {
+        // TODO: this should be called at some point
+        if (this.packetEventsManager != null) {
+            this.packetEventsManager.onDisable();
+        }
     }
 
     public void reload() {
@@ -117,13 +145,25 @@ public abstract class Triton<P extends LanguagePlayer, B extends BridgeManager> 
         setupStorage();
         languageManager.setup();
         translationManager.setup();
+        if (this.packetEventsManager != null) {
+            this.packetEventsManager.onReload();
+        }
         startConfigRefreshTask();
     }
+
+    /**
+     * Initialize the platform's {@link PacketEventsManager} by setting the
+     * {@link Triton#packetEventsManager} variable.
+     * A platform is allowed to not do anything in case PacketEvents is not supported (yet).
+     *
+     * @since 4.0.0
+     */
+    protected abstract void initPacketEventsManager();
 
     public void refreshPlayers() {
         playerManager.getAll().stream()
                 .filter(Objects::nonNull)
-                .forEach(LanguagePlayer::refreshAll);
+                .forEach(TritonLanguagePlayer::refreshAll);
     }
 
     public Configuration loadYAML(String fileName, String internalFileName) {

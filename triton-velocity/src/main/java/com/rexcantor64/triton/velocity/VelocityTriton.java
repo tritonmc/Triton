@@ -7,6 +7,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.velocity.bridge.VelocityBridgeManager;
 import com.rexcantor64.triton.velocity.commands.handler.VelocityCommandHandler;
 import com.rexcantor64.triton.velocity.listeners.VelocityListener;
+import com.rexcantor64.triton.velocity.packetinterceptor.VelocityPacketEventsManager;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -14,6 +15,7 @@ import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.val;
 import org.bstats.charts.SingleLineChart;
 import org.bstats.velocity.Metrics;
@@ -80,6 +82,11 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     }
 
     @Override
+    protected void initPacketEventsManager() {
+        this.packetEventsManager = new VelocityPacketEventsManager();
+    }
+
+    @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConfig().getConfigAutoRefresh() <= 0) return;
@@ -93,8 +100,8 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     }
 
     @Override
-    public String getVersion() {
-        return "@version@";
+    public @NonNull String getVersion() {
+        return getLoader().getPluginContainer().getDescription().getVersion().orElse("unknown");
     }
 
     @Override

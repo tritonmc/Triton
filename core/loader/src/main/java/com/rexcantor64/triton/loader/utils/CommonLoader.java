@@ -24,8 +24,22 @@ public class CommonLoader {
 
     public LoaderBootstrap loadPlugin() {
         List<Relocation> relocations = new ArrayList<>();
-        if (flags.contains(LoaderFlag.RELOCATE_ADVENTURE)) {
-            relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
+        if (flags.contains(LoaderFlag.SHADE_ADVENTURE)) {
+            if (flags.contains(LoaderFlag.RELOCATE_ADVENTURE)) {
+                relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
+            } else {
+                // relocate only specific adventure libraries (instead of everything)
+                relocations.add(new Relocation("net/kyori/adventure/text/minimessage", "com/rexcantor64/triton/lib/adventure/text/minimessage"));
+                relocations.add(new Relocation("net/kyori/adventure/text/serializer/gson", "com/rexcantor64/triton/lib/adventure/text/serializer/gson"));
+                relocations.add(new Relocation("net/kyori/adventure/text/serializer/legacy", "com/rexcantor64/triton/lib/adventure/text/serializer/legacy"));
+                relocations.add(new Relocation("net/kyori/adventure/text/serializer/plain", "com/rexcantor64/triton/lib/adventure/text/serializer/plain"));
+                relocations.add(new Relocation("net/kyori/adventure/text/serializer/bungeecord", "com/rexcantor64/triton/lib/adventure/text/serializer/bungeecord"));
+            }
+        }
+
+        if (flags.contains(LoaderFlag.VENDOR_PACKET_EVENTS)) {
+            relocations.add(new Relocation("com/github/retrooper/packetevents", "com/rexcantor64/triton/lib/packetevents/api"));
+            relocations.add(new Relocation("io/github/retrooper/packetevents", "com/rexcantor64/triton/lib/packetevents/impl"));
         }
 
         @SuppressWarnings("resource")

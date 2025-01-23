@@ -31,17 +31,19 @@ public class DependencyManager {
         libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
         libraryManager.addMavenCentral();
 
-        if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {
-            loadDependency(Dependency.ADVENTURE);
-            loadDependency(Dependency.ADVENTURE_KEY);
-            loadDependency(Dependency.KYORI_EXAMINATION_API);
-            loadDependency(Dependency.KYORI_EXAMINATION_STRING);
+        if (hasLoaderFlag(LoaderFlag.SHADE_ADVENTURE)) {
+            if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {
+                loadDependency(Dependency.ADVENTURE);
+                loadDependency(Dependency.ADVENTURE_KEY);
+                loadDependency(Dependency.KYORI_EXAMINATION_API);
+                loadDependency(Dependency.KYORI_EXAMINATION_STRING);
+            }
+            loadDependency(Dependency.KYORI_OPTION);
+            loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON);
+            loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON);
+            loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY);
+            loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN);
+            loadDependency(Dependency.ADVENTURE_MINI_MESSAGE);
         }
-        loadDependency(Dependency.KYORI_OPTION);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_GSON);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_JSON);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_LEGACY);
-        loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_PLAIN);
-        loadDependency(Dependency.ADVENTURE_MINI_MESSAGE);
     }
 }

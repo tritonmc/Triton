@@ -17,6 +17,7 @@ public class BungeeLoader extends Plugin {
                 .bootstrapClassName(BOOTSTRAP_CLASS)
                 .constructorType(Plugin.class)
                 .constructorValue(this)
+                .flag(LoaderFlag.SHADE_ADVENTURE)
                 .flag(LoaderFlag.RELOCATE_ADVENTURE)
                 .build()
                 .loadPlugin();

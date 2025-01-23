@@ -14,7 +14,7 @@ import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.rexcantor64.triton.api.wrappers.EntityType;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.EntityTypeUtils;
@@ -486,7 +486,43 @@ public class EntitiesPacketHandler extends PacketHandler {
                                 () -> null
                         );
             }
-            dataListNew.add(new PlayerInfoData(data.getProfileId(), data.getLatency(), data.isListed(), data.getGameMode(), newGP, msg, data.getProfileKeyData()));
+            if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
+                try {
+                    dataListNew.add(new PlayerInfoData(
+                            data.getProfileId(),
+                            data.getLatency(),
+                            data.isListed(),
+                            data.getGameMode(),
+                            newGP,
+                            msg,
+                            data.isShowHat(),
+                            data.getListOrder(),
+                            data.getRemoteChatSessionData()
+                    ));
+                } catch (NoSuchMethodError ignore) {
+                    // Fallback until https://github.com/dmulloy2/ProtocolLib/pull/3347 gets merged.
+                    // Also allows for older servers to keep using ProtocolLib 5.3.0
+                    dataListNew.add(new PlayerInfoData(
+                            data.getProfileId(),
+                            data.getLatency(),
+                            data.isListed(),
+                            data.getGameMode(),
+                            newGP,
+                            msg,
+                            data.getRemoteChatSessionData()
+                    ));
+                }
+            } else {
+                dataListNew.add(new PlayerInfoData(
+                        data.getProfileId(),
+                        data.getLatency(),
+                        data.isListed(),
+                        data.getGameMode(),
+                        newGP,
+                        msg,
+                        data.getProfileKeyData()
+                ));
+            }
         }
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
             packet.getPacket().getPlayerInfoDataLists().writeSafely(1, dataListNew);
@@ -951,7 +987,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * @return The translated legacy text, truncated to 16 characters.
      */
     @Contract("_, null -> null")
-    private @Nullable String translateAndTruncate(LanguagePlayer languagePlayer, @Nullable String string) {
+    private @Nullable String translateAndTruncate(TritonLanguagePlayer<?> languagePlayer, @Nullable String string) {
         if (string == null) {
             return null;
         }

@@ -14,10 +14,10 @@ dependencies {
     compileOnly project(":api")
 
     // Adventure / MiniMessage
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-plain:4.15.0'
-    compileOnly('net.kyori:adventure-text-minimessage:4.15.0') {
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.18.0'
+    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.18.0'
+    compileOnly 'net.kyori:adventure-text-serializer-plain:4.18.0'
+    compileOnly('net.kyori:adventure-text-minimessage:4.18.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
@@ -30,6 +30,8 @@ dependencies {
 
     compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
     compileOnly 'org.yaml:snakeyaml:2.0'
+
+    compileOnly 'com.github.retrooper:packetevents-api:2.7.0'
 
     implementation 'org.slf4j:slf4j-nop:1.7.36'
     implementation 'com.zaxxer:HikariCP:4.0.3'
@@ -46,10 +48,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
-    testImplementation 'net.kyori:adventure-api:4.15.0'
-    testImplementation 'net.kyori:adventure-text-serializer-gson:4.15.0'
-    testImplementation 'net.kyori:adventure-text-serializer-legacy:4.15.0'
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.15.0'
+    testImplementation 'net.kyori:adventure-api:4.18.0'
+    testImplementation 'net.kyori:adventure-text-serializer-gson:4.18.0'
+    testImplementation 'net.kyori:adventure-text-serializer-legacy:4.18.0'
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.18.0'
 }
 
 shadowJar {
@@ -59,12 +61,6 @@ shadowJar {
     //relocate 'org.slf4j', 'com.rexcantor64.shaded.slf4j'
     relocate 'com.tananaev.jsonpatch', 'com.rexcantor64.shaded.jsonpatch'
     relocate 'com.zaxxer.hikari', 'com.rexcantor64.shaded.hikari'
-
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.text.minimessage'
-    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.text.serializer.gson'
-    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.text.serializer.legacy'
-    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.text.serializer.plain'
-    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.text.serializer.bungeecord'
 
     relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
 }

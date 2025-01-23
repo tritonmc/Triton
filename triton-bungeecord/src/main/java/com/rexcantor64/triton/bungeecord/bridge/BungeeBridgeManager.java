@@ -7,7 +7,7 @@ import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.NonNull;
 import lombok.val;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -106,7 +106,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
         sendPlayerLanguage(lp, lp.getParent().getServer());
     }
 
-    public void sendPlayerLanguage(@NonNull LanguagePlayer lp, @NonNull Server server) {
+    public void sendPlayerLanguage(@NonNull TritonLanguagePlayer<?> lp, @NonNull Server server) {
         Triton.get().getLogger().logTrace("Sending player %1 language to server %2", lp, server.getInfo().getName());
         val out = BridgeSerializer.buildPlayerLanguageData(lp);
         server.sendData("triton:main", out);

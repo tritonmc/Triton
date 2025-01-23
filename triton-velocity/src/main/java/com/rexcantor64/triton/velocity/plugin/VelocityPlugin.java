@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.velocity.plugin;
 
+import com.google.inject.name.Named;
 import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
@@ -8,6 +9,7 @@ import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.velocity.VelocityTriton;
+import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
@@ -26,7 +28,11 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     @Getter
     private final Object plugin;
     private final ProxyServer server;
+    @Getter
+    private final Logger velocityLogger;
     private final TritonLogger tritonLogger;
+    @Getter
+    private final PluginContainer pluginContainer;
     private final Path dataDirectory;
     private final Metrics.Factory metricsFactory;
     @Getter
@@ -34,10 +40,12 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     @Getter
     private final DependencyManager dependencyManager;
 
-    public VelocityPlugin(Object loader, ProxyServer server, Logger logger, @DataDirectory Path dataDirectory, Set<LoaderFlag> loaderFlags) {
+    public VelocityPlugin(Object loader, ProxyServer server, Logger logger, @Named("triton") PluginContainer container, @DataDirectory Path dataDirectory, Set<LoaderFlag> loaderFlags) {
         this.plugin = loader;
         this.server = server;
+        this.velocityLogger = logger;
         this.tritonLogger = new SLF4JLogger(logger);
+        this.pluginContainer = container;
         this.dataDirectory = dataDirectory;
         this.loaderFlags = loaderFlags;
         this.dependencyManager = new DependencyManager(new VelocityLibraryManager<>(logger, dataDirectory, server.getPluginManager(), loader), loaderFlags);

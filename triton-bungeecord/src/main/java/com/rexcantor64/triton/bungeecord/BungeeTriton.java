@@ -108,6 +108,11 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
     }
 
     @Override
+    protected void initPacketEventsManager() {
+        // TODO: triton does not support packetevents on this platform yet
+    }
+
+    @Override
     protected void startConfigRefreshTask() {
         if (configRefreshTask != null) configRefreshTask.cancel();
         if (getConfig().getConfigAutoRefresh() <= 0) return;

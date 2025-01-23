@@ -17,19 +17,19 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
 
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.15.0'
-    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.2'
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.18.0'
+    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.18.0'
+    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.4'
 
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.3.0-SNAPSHOT'
-    compileOnly 'me.clip:placeholderapi:2.11.1'
+    compileOnly 'com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.6'
 
     // Libraries available on Spigot
     compileOnly 'org.fusesource.jansi:jansi:2.4.0' // Used for terminal translation
 
     implementation 'net.byteflux:libby-bukkit:1.3.0'
 
-    implementation 'org.bstats:bstats-bukkit:3.0.0'
+    implementation 'org.bstats:bstats-bukkit:3.1.0'
 
     // Test dependencies
     testImplementation project(":api")
@@ -44,12 +44,6 @@ shadowJar {
     archiveFileName = 'triton-spigot.jarinjar'
 
     relocate 'org.bstats', 'com.rexcantor64.triton.metrics'
-
-    relocate 'net.kyori.adventure.text.minimessage', 'com.rexcantor64.triton.lib.adventure.text.minimessage'
-    relocate 'net.kyori.adventure.text.serializer.gson', 'com.rexcantor64.triton.lib.adventure.text.serializer.gson'
-    relocate 'net.kyori.adventure.text.serializer.legacy', 'com.rexcantor64.triton.lib.adventure.text.serializer.legacy'
-    relocate 'net.kyori.adventure.text.serializer.plain', 'com.rexcantor64.triton.lib.adventure.text.serializer.plain'
-    relocate 'net.kyori.adventure.text.serializer.bungeecord', 'com.rexcantor64.triton.lib.adventure.text.serializer.bungeecord'
 
     relocate 'net.byteflux.libby', 'com.rexcantor64.triton.lib.libby'
 }

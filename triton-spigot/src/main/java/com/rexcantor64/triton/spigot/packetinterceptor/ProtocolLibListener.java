@@ -34,6 +34,7 @@ import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.WrappedClientConfiguration;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.wrappers.WrappedPlayerChatMessage;
+import lombok.Getter;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -84,6 +85,11 @@ public class ProtocolLibListener implements PacketListener {
     private final List<HandlerFunction.HandlerType> allowedTypes;
     private final Map<PacketType, HandlerFunction> packetHandlers = new HashMap<>();
     private final AtomicBoolean firstRun = new AtomicBoolean(true);
+
+    @Getter
+    private ListeningWhitelist sendingWhitelist;
+    @Getter
+    private ListeningWhitelist receivingWhitelist;
 
     public ProtocolLibListener(SpigotTriton main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
@@ -173,6 +179,8 @@ public class ProtocolLibListener implements PacketListener {
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
+        // Nothing to translate, but register listener to ensure order in async mode
+        packetHandlers.put(PacketType.Play.Server.OPEN_BOOK, asAsync(this::handleNop));
         if (MinecraftVersion.CAVES_CLIFFS_2.atOrAbove()) { // 1.18+
             // While the villager merchant interface redesign was on 1.14, the Bukkit API only has all fields on 1.18
             packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, asAsync(this::handleMerchantItems));
@@ -185,6 +193,38 @@ public class ProtocolLibListener implements PacketListener {
         bossBarPacketHandler.registerPacketTypes(packetHandlers);
         entitiesPacketHandler.registerPacketTypes(packetHandlers);
         signPacketHandler.registerPacketTypes(packetHandlers);
+
+        setupListenerWhitelists();
+    }
+
+    private void setupListenerWhitelists() {
+        val sendingTypes = packetHandlers.entrySet().stream()
+                .filter(entry -> this.allowedTypes.contains(entry.getValue().getHandlerType()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        sendingWhitelist = ListeningWhitelist.newBuilder()
+                .gamePhase(GamePhase.PLAYING)
+                .types(sendingTypes)
+                .mergeOptions(ListenerOptions.ASYNC)
+                .highest()
+                .build();
+
+        val receivingTypes = new ArrayList<PacketType>();
+        if (this.allowedTypes.contains(HandlerFunction.HandlerType.SYNC)) {
+            // only listen for these packets in the sync handler
+            receivingTypes.add(PacketType.Play.Client.SETTINGS);
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
+                receivingTypes.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
+            }
+        }
+
+        receivingWhitelist = ListeningWhitelist.newBuilder()
+                .gamePhase(GamePhase.PLAYING)
+                .types(receivingTypes)
+                .mergeOptions(ListenerOptions.ASYNC)
+                .highest()
+                .build();
     }
 
     /* PACKET HANDLERS */
@@ -710,7 +750,15 @@ public class ProtocolLibListener implements PacketListener {
         val chatComponentsModifier = packet.getPacket().getChatComponents();
 
         val displayName = chatComponentsModifier.readSafely(0);
-        val renderType = packet.getPacket().getRenderTypes().readSafely(0);
+        EnumWrappers.RenderType renderType;
+        try {
+            renderType = packet.getPacket().getRenderTypes().readSafely(0);
+        } catch (IllegalArgumentException e) {
+            // When plugins also using ProtocolLib don't set this field, it will be null and ProtocolLib will
+            // fail to convert it to the enum value.
+            // Fallback to INTEGER since that's th default anyway.
+            renderType = EnumWrappers.RenderType.INTEGER;
+        }
         WrappedNumberFormat numberFormat = null;
         if (WrappedNumberFormat.isSupported()) {
             if (MinecraftVersion.v1_20_5.atOrAbove()) {
@@ -757,6 +805,14 @@ public class ProtocolLibListener implements PacketListener {
                 .getResultOrToRemove(Component::empty)
                 .map(WrappedComponentUtils::serialize)
                 .ifPresent(result -> chatComponentsModifier.writeSafely(0, result));
+    }
+
+    /**
+     * No-operation function, used to simply register a packet listener in order to ensure certain packets
+     * are sent in order when using async mode.
+     */
+    private void handleNop(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // nop
     }
 
     /* PROTOCOL LIB */
@@ -819,40 +875,6 @@ public class ProtocolLibListener implements PacketListener {
             val language = main.getLanguageManager().getLanguageByLocaleOrDefault(locale);
             Bukkit.getScheduler().runTaskLater(main.getJavaPlugin(), () -> languagePlayer.setLang(language), 2L);
         }
-    }
-
-    @Override
-    public ListeningWhitelist getSendingWhitelist() {
-        val types = packetHandlers.entrySet().stream()
-                .filter(entry -> this.allowedTypes.contains(entry.getValue().getHandlerType()))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        return ListeningWhitelist.newBuilder()
-                .gamePhase(GamePhase.PLAYING)
-                .types(types)
-                .mergeOptions(ListenerOptions.ASYNC)
-                .highest()
-                .build();
-    }
-
-    @Override
-    public ListeningWhitelist getReceivingWhitelist() {
-        val types = new ArrayList<PacketType>();
-        if (this.allowedTypes.contains(HandlerFunction.HandlerType.SYNC)) {
-            // only listen for these packets in the sync handler
-            types.add(PacketType.Play.Client.SETTINGS);
-            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // MC 1.20.2
-                types.add(PacketType.Configuration.Client.CLIENT_INFORMATION);
-            }
-        }
-
-        return ListeningWhitelist.newBuilder()
-                .gamePhase(GamePhase.PLAYING)
-                .types(types)
-                .mergeOptions(ListenerOptions.ASYNC)
-                .highest()
-                .build();
     }
 
     /* REFRESH */

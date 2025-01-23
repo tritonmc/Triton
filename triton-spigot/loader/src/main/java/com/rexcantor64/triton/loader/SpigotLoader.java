@@ -17,7 +17,8 @@ public class SpigotLoader extends JavaPlugin {
                 .jarInJarName(PLATFORM_JAR_NAME)
                 .bootstrapClassName(BOOTSTRAP_CLASS)
                 .constructorType(JavaPlugin.class)
-                .constructorValue(this);
+                .constructorValue(this)
+                .flag(LoaderFlag.SHADE_ADVENTURE);
 
         if (shouldRelocateAdventure()) {
             builder.flag(LoaderFlag.RELOCATE_ADVENTURE);

@@ -168,6 +168,11 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     }
 
     @Override
+    protected void initPacketEventsManager() {
+        // TODO: triton does not support packetevents on this platform yet
+    }
+
+    @Override
     protected void startConfigRefreshTask() {
         if (refreshTaskId != -1) Bukkit.getScheduler().cancelTask(refreshTaskId);
         if (getConfig().getConfigAutoRefresh() <= 0) return;

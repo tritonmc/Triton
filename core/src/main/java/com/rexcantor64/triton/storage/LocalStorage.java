@@ -10,7 +10,7 @@ import com.rexcantor64.triton.language.item.Collection;
 import com.rexcantor64.triton.language.item.LanguageItem;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.language.item.serializers.CollectionSerializer;
-import com.rexcantor64.triton.player.LanguagePlayer;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.FileUtils;
 import lombok.Cleanup;
 import lombok.val;
@@ -43,7 +43,14 @@ public class LocalStorage extends Storage {
         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
         if (playersFile.isFile()) {
             try {
-                this.languageMap = gson.fromJson(FileUtils.getReaderFromFile(playersFile), HASH_MAP_TYPE);
+                ConcurrentHashMap<String, String> map = gson.fromJson(FileUtils.getReaderFromFile(playersFile), HASH_MAP_TYPE);
+                if (map == null) {
+                    // can happen if file is empty
+                    // https://github.com/tritonmc/Triton/issues/433
+                    this.languageMap.clear();
+                } else {
+                    this.languageMap = map;
+                }
             } catch (JsonParseException e) {
                 Triton.get().getLogger().logError(e, "Failed load players.json. JSON is not valid.");
             }
@@ -58,7 +65,7 @@ public class LocalStorage extends Storage {
     }
 
     @Override
-    public Language getLanguage(LanguagePlayer lp) {
+    public Language getLanguage(TritonLanguagePlayer<?> lp) {
         Triton.get().getLogger().logTrace("[Local Storage] Getting language for player %1", lp);
         String lang = languageMap.get(lp.getStorageUniqueId().toString());
         if ((Triton.isProxy() || !Triton.get().getConfig().isBungeecord()) &&
