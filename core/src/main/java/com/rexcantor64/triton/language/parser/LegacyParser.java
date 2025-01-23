@@ -20,6 +20,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -67,6 +68,7 @@ public class LegacyParser implements MessageParser {
     private static final char SECTION_CHAR = '§';
     private static final char HEX_PREFIX = '#';
     private static final char HEX_CODE = 'x';
+    private static final char SHADOW_COLOR_CODE = 's';
     private static final String VALID_COLOR_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
     private static final Pattern FORMATTING_STRIP_PATTERN = Pattern.compile(
             CLICK_DELIM + "\\d[\\w-]{36}|" + HOVER_DELIM + "[\\w-]{36}|" + CLICK_END_DELIM + "|" + HOVER_END_DELIM
@@ -361,6 +363,13 @@ public class LegacyParser implements MessageParser {
                         val color = text.substring(i + 1, i + 13);
                         format = TextColor.fromHexString(HEX_PREFIX + color.replace(String.valueOf(SECTION_CHAR), ""));
                         i += 12;
+                    } else if (lowercaseChar == SHADOW_COLOR_CODE && i + 9 < text.length()) {
+                        @Subst("#ffffffff") val color = text.substring(i + 1, i + 10);
+                        val shadowColor = ShadowColor.fromHexString(color);
+                        currentStyle = currentStyle.shadowColor(shadowColor);
+                        componentBuilder.style(currentStyle);
+                        i += 9;
+                        continue;
                     } else {
                         format = CharacterAndFormat.defaults().stream()
                                 .filter(characterAndFormat -> characterAndFormat.character() == lowercaseChar)
@@ -550,6 +559,13 @@ public class LegacyParser implements MessageParser {
                     this.stringBuilder.append(formatToString(Reset.INSTANCE));
                 } else {
                     this.stringBuilder.append(formatToString(color));
+                }
+
+                @Nullable val shadowColor = style.shadowColor();
+                if (shadowColor != null) {
+                    this.stringBuilder.append(SECTION_CHAR).append('s');
+                    // format: #RRGGBBAA
+                    this.stringBuilder.append(shadowColor.asHexString());
                 }
 
                 style.decorations().entrySet().stream()
