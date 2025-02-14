@@ -1,0 +1,38 @@
+package com.rexcantor64.triton.packetinterceptor.handlers;
+
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDisconnect;
+import com.rexcantor64.triton.config.MainConfig;
+import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
+import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
+
+@RequiredArgsConstructor
+public class DisconnectPacketHandler {
+
+    private final @NotNull AdventureParser parser;
+    private final @NotNull MainConfig.FeatureSyntax syntax;
+
+    public DisconnectPacketHandler(@NotNull AdventureParser parser, @NotNull MainConfig config) {
+        this.parser = parser;
+        this.syntax = config.getKickSyntax();
+    }
+
+    public void onDisconnectPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        val packet = new WrapperPlayServerDisconnect(event);
+
+        parser.translateComponent(
+                        packet.getReason(),
+                        languagePlayer,
+                        syntax
+                )
+                .getResultOrToRemove(Component::empty)
+                .ifPresent(result -> {
+                    packet.setReason(result);
+                    event.markForReEncode(true);
+                });
+    }
+}
