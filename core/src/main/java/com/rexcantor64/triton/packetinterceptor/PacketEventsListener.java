@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.TitlePacketHandler;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.val;
 
@@ -40,6 +41,14 @@ public class PacketEventsListener implements PacketListener {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
             updatedHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, scoreboardHandler::onObjectivePacket);
+        }
+        if (config.isTitles() || config.isActionbars()) {
+            val titleHandler = new TitlePacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.TITLE, titleHandler::onTitlePacket);
+            if (config.isTitles()) {
+                updatedHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, titleHandler::onSetTitleTextPacket);
+                updatedHandlers.put(PacketType.Play.Server.SET_TITLE_SUBTITLE, titleHandler::onSetTitleSubtitlePacket);
+            }
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
