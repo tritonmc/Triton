@@ -55,6 +55,9 @@ public class VelocityListener {
             if (lp.getProtocolVersion().compareTo(ProtocolVersion.MINECRAFT_1_20_3) > 0) {
                 // On 1.20.6 and above, the notchian client crashes if a bossbar that does not exist client-side is updated
                 lp.clearCachedBossbars();
+                if (Triton.get().getConfig().isUsePacketEvents()) {
+                    lp.getPacketEventsRefresh().discardAllBossBars();
+                }
             }
 
             if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {

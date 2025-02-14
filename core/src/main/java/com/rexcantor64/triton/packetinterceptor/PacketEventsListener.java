@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
@@ -45,6 +46,10 @@ public class PacketEventsListener implements PacketListener {
         if (config.isActionbars()) {
             val actionBarHandler = new ActionBarPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.ACTION_BAR, actionBarHandler::onActionBarPacket);
+        }
+        if (config.isBossbars()) {
+            val bossBarHandler = new BossBarPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.BOSS_BAR, bossBarHandler::onBossBarPacket);
         }
         if (config.isChat() || config.isActionbars()) {
             val chatHandler = new ChatPacketHandler(parser, config);

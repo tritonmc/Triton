@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
@@ -30,12 +31,43 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class PacketEventsRefresh {
+    private final Map<UUID, Component> bossBarMap = new ConcurrentHashMap<>();
     private final Map<String, ScoreBoardTeamInfo> teamsMap = new ConcurrentHashMap<>();
     private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     private @Nullable PacketEventsRefresh.PlayerListHeaderFooter playerListHeaderFooter;
     private final Map<UUID, Component> playerInfoMap = new ConcurrentHashMap<>();
 
     private final TritonLanguagePlayer<?> languagePlayer;
+
+    /**
+     * Stores text of boss bar for later (i.e., to refresh text when language is changed).
+     *
+     * @param uuid The UUID of the boss bar.
+     * @param text The text of the boss bar.
+     * @since 4.0.0
+     */
+    public void saveBossBar(@NotNull UUID uuid, @NotNull Component text) {
+        this.bossBarMap.put(uuid, text);
+    }
+
+    /**
+     * Forget info about the given boss bar.
+     *
+     * @param uuid The UUID of the player.
+     * @since 4.0.0
+     */
+    public void discardBossBar(@NotNull UUID uuid) {
+        this.bossBarMap.remove(uuid);
+    }
+
+    /**
+     * Forget about all boss bars.
+     *
+     * @since 4.0.0
+     */
+    public void discardAllBossBars() {
+        this.bossBarMap.clear();
+    }
 
     /**
      * Stores info of a team for later (i.e., to refresh text when language is changed).
@@ -143,6 +175,10 @@ public class PacketEventsRefresh {
         val parser = Triton.get().getMessageParser();
         val cfg = Triton.get().getConfig();
 
+        if (cfg.isBossbars()) {
+            val syntax = cfg.getBossbarSyntax();
+            updateBossBars(user, syntax, parser);
+        }
         if (cfg.isScoreboards()) {
             val syntax = cfg.getScoreboardSyntax();
             updateScoreboardTeams(user, syntax, parser);
@@ -152,6 +188,21 @@ public class PacketEventsRefresh {
             val syntax = cfg.getTabSyntax();
             updatePlayerListHeaderFooter(user, syntax, parser);
             updatePlayerList(user, syntax, parser);
+        }
+    }
+
+    private void updateBossBars(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+        for (val entry : bossBarMap.entrySet()) {
+            val packet = new WrapperPlayServerBossBar(entry.getKey(), WrapperPlayServerBossBar.Action.UPDATE_TITLE);
+            parser.translateComponent(
+                            entry.getValue(),
+                            languagePlayer,
+                            syntax
+                    )
+                    .ifUnchanged(() -> packet.setTitle(Component.empty())) // unreachable
+                    .getResultOrToRemove(Component::empty)
+                    .ifPresent(packet::setTitle);
+            user.sendPacketSilently(packet);
         }
     }
 
