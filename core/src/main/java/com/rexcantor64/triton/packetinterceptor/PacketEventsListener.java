@@ -8,6 +8,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TabPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TitlePacketHandler;
@@ -53,6 +54,10 @@ public class PacketEventsListener implements PacketListener {
         if (config.isKick()) {
             val disconnectHandler = new DisconnectPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.DISCONNECT, disconnectHandler::onDisconnectPacket);
+        }
+        if (config.isResourcePackPrompt()) {
+            val resourcePackHandler = new ResourcePackPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.RESOURCE_PACK_SEND, resourcePackHandler::onResourcePackSendPacket);
         }
         if (config.isScoreboards()) {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
