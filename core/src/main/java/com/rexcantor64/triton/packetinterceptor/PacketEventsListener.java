@@ -5,6 +5,8 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TitlePacketHandler;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
@@ -37,6 +39,15 @@ public class PacketEventsListener implements PacketListener {
         val config = Triton.get().getConfig();
         val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>>();
 
+        if (config.isActionbars()) {
+            val actionBarHandler = new ActionBarPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.ACTION_BAR, actionBarHandler::onActionBarPacket);
+        }
+        if (config.isChat() || config.isActionbars()) {
+            val chatHandler = new ChatPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.CHAT_MESSAGE, chatHandler::onChatMessagePacket);
+            updatedHandlers.put(PacketType.Play.Server.SYSTEM_CHAT_MESSAGE, chatHandler::onSystemChatMessagePacket);
+        }
         if (config.isScoreboards()) {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
