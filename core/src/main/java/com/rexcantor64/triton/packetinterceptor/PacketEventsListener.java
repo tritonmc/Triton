@@ -8,6 +8,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.TabPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TitlePacketHandler;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.val;
@@ -52,6 +53,13 @@ public class PacketEventsListener implements PacketListener {
             val scoreboardHandler = new ScoreboardPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
             updatedHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, scoreboardHandler::onObjectivePacket);
+        }
+        if (config.isTab()) {
+            val tabHandler = new TabPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_AND_FOOTER, tabHandler::onPlayerListHeaderAndFooterPacket);
+            updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO, tabHandler::onPlayerInfoPacket);
+            updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO_UPDATE, tabHandler::onPlayerInfoUpdatePacket);
+            updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO_REMOVE, tabHandler::onPlayerInfoRemovePacket);
         }
         if (config.isTitles() || config.isActionbars()) {
             val titleHandler = new TitlePacketHandler(parser, config);
