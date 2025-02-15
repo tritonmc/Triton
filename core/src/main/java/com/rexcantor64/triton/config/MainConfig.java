@@ -54,6 +54,7 @@ public class MainConfig implements TritonConfig {
     private int logLevel;
     private boolean bungeecord;
     private int configAutoRefresh;
+    @ToString.Exclude
     private String twinToken;
     private List<String> commandAliases;
     private String disabledLine;
