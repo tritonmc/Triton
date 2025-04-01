@@ -24,7 +24,6 @@ import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
@@ -144,6 +143,10 @@ public class ProtocolLibListener implements PacketListener {
                 // Removed in 1.19.3
                 packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
             }
+        }
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
+            // New chat packet in 1.19.3
+            packetHandlers.put(PacketType.Play.Server.DISGUISED_CHAT, asAsync(this::handleDisguisedChat));
         }
         // In 1.19+, this packet is signed, but we can still edit it, since it might contain
         // formatting from chat plugins.
@@ -416,6 +419,32 @@ public class ProtocolLibListener implements PacketListener {
                     chatComponentsModifier.writeSafely(0, null);
 
                 });
+    }
+
+    /**
+     * Handle a disguised chat outbound packet, added in Minecraft 1.19.3.
+     * This is the same as the signed chat packet, but not signed (for /msg and friends).
+     *
+     * @param packet         ProtocolLib's packet event
+     * @param languagePlayer The language player this packet is being sent to
+     * @since 3.12.0
+     */
+    private void handleDisguisedChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // Don't bother parsing anything else if it's disabled on config
+        if (!main.getConfig().isChat()) return;
+
+        val chatModifier = packet.getPacket().getChatComponents();
+        val msg = chatModifier.readSafely(0);
+
+        parser()
+                .translateComponent(
+                        WrappedComponentUtils.deserialize(msg),
+                        languagePlayer,
+                        main.getConfig().getChatSyntax()
+                )
+                .map(WrappedComponentUtils::serialize)
+                .ifChanged(result -> chatModifier.writeSafely(0, result))
+                .ifToRemove(() -> packet.setCancelled(true));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
