@@ -143,6 +143,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 packetHandlers.put(PacketType.Play.Server.CHAT_PREVIEW, asAsync(this::handleChatPreview));
             }
         }
+        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
+            // New chat packet in 1.19.3
+            packetHandlers.put(PacketType.Play.Server.DISGUISED_CHAT, asAsync(this::handleDisguisedChat));
+        }
         // In 1.19+, this packet is signed, but we can still edit it, since it might contain
         // formatting from chat plugins.
         packetHandlers.put(PacketType.Play.Server.CHAT, asAsync(this::handleChat));
@@ -410,6 +414,38 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         chatComponentsModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+    }
+
+    /**
+     * Handle a disguised chat outbound packet, added in Minecraft 1.19.3.
+     * This is the same as the signed chat packet, but not signed (for /msg and friends).
+     *
+     * @param packet         ProtocolLib's packet event
+     * @param languagePlayer The language player this packet is being sent to
+     * @since 3.12.0
+     */
+    private void handleDisguisedChat(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // Don't bother parsing anything else if it's disabled on config
+        if (!main.getConfig().isChat()) return;
+
+        val chatModifier = packet.getPacket().getChatComponents();
+
+        BaseComponent[] result = ComponentSerializer.parse(chatModifier.readSafely(0).getJson());
+
+        // Translate the message
+        result = main.getLanguageParser().parseComponent(
+                languagePlayer,
+                main.getConf().getChatSyntax(),
+                result
+        );
+
+        // Handle disabled line
+        if (result == null) {
+            packet.setCancelled(true);
+            return;
+        }
+
+        chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
