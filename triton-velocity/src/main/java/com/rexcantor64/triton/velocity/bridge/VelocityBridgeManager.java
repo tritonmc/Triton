@@ -80,9 +80,11 @@ public class VelocityBridgeManager implements BridgeManager {
     }
 
     public void sendPlayerLanguage(@NonNull VelocityLanguagePlayer lp) {
-        Triton.get().getLogger().logTrace("Sending player %1 language to server", lp);
-        val out = BridgeSerializer.buildPlayerLanguageData(lp);
-        sendPluginMessage(lp.getParent(), out);
+        lp.getPlatformPlayer().ifPresent(player -> {
+            Triton.get().getLogger().logTrace("Sending player %1 language to server", lp);
+            val out = BridgeSerializer.buildPlayerLanguageData(lp);
+            sendPluginMessage(player, out);
+        });
     }
 
     public void sendExecutableCommand(String command, @NonNull RegisteredServer server) {

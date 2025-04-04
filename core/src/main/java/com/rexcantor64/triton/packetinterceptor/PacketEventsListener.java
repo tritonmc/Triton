@@ -2,6 +2,7 @@ package com.rexcantor64.triton.packetinterceptor;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
@@ -96,6 +97,15 @@ public class PacketEventsListener implements PacketListener {
         if (handler != null) {
             val languagePlayer = Triton.get().getPlayerManager().get(event.getUser().getUUID());
             handler.accept(event, languagePlayer);
+        }
+    }
+
+    @Override
+    public void onUserDisconnect(UserDisconnectEvent event) {
+        // force language player to be unregistered
+        val uuid = event.getUser().getUUID();
+        if (uuid != null) {
+            Triton.get().getPlayerManager().unregisterPlayer(uuid);
         }
     }
 }

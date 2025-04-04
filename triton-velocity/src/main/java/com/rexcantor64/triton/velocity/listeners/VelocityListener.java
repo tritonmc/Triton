@@ -69,8 +69,8 @@ public class VelocityListener {
     @Subscribe(order = PostOrder.FIRST)
     public void onPlayerLogin(LoginEvent e) {
         val player = e.getPlayer();
-        val lp = new VelocityLanguagePlayer(player);
-        VelocityTriton.asVelocity().getPlayerManager().registerPlayer(lp);
+        val lp = VelocityTriton.asVelocity().getPlayerManager().get(player.getUniqueId());
+        lp.setParent(player);
         lp.injectNettyPipeline();
     }
 

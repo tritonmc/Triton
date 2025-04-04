@@ -31,7 +31,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     private ScheduledTask configRefreshTask;
 
     public VelocityTriton(PluginLoader loader) {
-        super(new PlayerManager<>(VelocityLanguagePlayer::fromUUID), new VelocityBridgeManager());
+        super(new PlayerManager<>(VelocityLanguagePlayer::new), new VelocityBridgeManager());
         super.loader = loader;
     }
 

@@ -81,7 +81,8 @@ public class RefreshFeatures {
     }
 
     private void sendPacket(MinecraftPacket packet) {
-        ((ConnectedPlayer) player.getParent()).getConnection().write(packet);
+        player.getPlatformPlayer()
+                .ifPresent(parent -> ((ConnectedPlayer) parent).getConnection().write(packet));
     }
 
 }

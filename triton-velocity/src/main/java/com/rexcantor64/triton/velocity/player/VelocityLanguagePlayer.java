@@ -19,17 +19,22 @@ import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
-    @Getter
-    private final Player parent;
+    @NotNull
+    private final UUID uuid;
+    @Nullable
+    @Setter
+    private Player parent;
 
     private Language language;
 
@@ -45,21 +50,21 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
     private String clientLocale;
     private final RefreshFeatures refresher;
 
-    public VelocityLanguagePlayer(@NotNull Player parent) {
+    public VelocityLanguagePlayer(@NotNull UUID uuid) {
         super();
-        this.parent = parent;
+        Objects.requireNonNull(uuid, "cannot build VelocityLanguagePlayer from null UUID");
+        this.uuid = uuid;
         this.refresher = new RefreshFeatures(this);
         Triton.get().runAsync(this::load);
     }
 
-    public static VelocityLanguagePlayer fromUUID(UUID uuid) {
-        val player = VelocityTriton.asVelocity().getLoader().getServer().getPlayer(uuid);
-        return player.map(VelocityLanguagePlayer::new).orElse(null);
-    }
-
     @Override
     public @NotNull Optional<Player> getPlatformPlayer() {
-        return Optional.of(this.parent);
+        if (this.parent == null) {
+            return VelocityTriton.asVelocity().getLoader().getServer().getPlayer(this.uuid);
+        } else {
+            return Optional.of(this.parent);
+        }
     }
 
     public void setBossbar(UUID uuid, Component lastBossBar) {
@@ -119,14 +124,18 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
 
     public void setLang(Language language, boolean sendToSpigot) {
         // TODO fire Triton's API change language event
-        if (this.waitingForClientLocale && getParent() != null)
-            parent.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
-                    .getMessage("success.detected-language", language.getDisplayName())));
+        val player = getPlatformPlayer();
+        if (this.waitingForClientLocale) {
+            player.ifPresent(parent -> parent.sendMessage(
+                    LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
+                            .getMessage("success.detected-language", language.getDisplayName()))));
+
+        }
         this.language = language;
         this.waitingForClientLocale = false;
 
-        if (sendToSpigot && getParent() != null) {
-            VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(this);
+        if (sendToSpigot) {
+            player.ifPresent(p -> VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(this));
         }
 
         save();
@@ -146,50 +155,59 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
             Triton.get().getLogger().logDebug("Skipped injecting into netty pipeline for player %1 because PacketEvents is in use", getUUID());
             return;
         }
-        ConnectedPlayer connectedPlayer = (ConnectedPlayer) this.parent;
-        connectedPlayer.getConnection().getChannel().pipeline()
-                .addAfter(Connections.MINECRAFT_ENCODER, "triton-custom-encoder", new VelocityNettyEncoder(this));
+        val player = this.getPlatformPlayer();
+        player.ifPresent(parent -> {
+            ConnectedPlayer connectedPlayer = (ConnectedPlayer) parent;
+            connectedPlayer.getConnection().getChannel().pipeline()
+                    .addAfter(Connections.MINECRAFT_ENCODER, "triton-custom-encoder", new VelocityNettyEncoder(this));
+        });
     }
 
     @Override
     public UUID getUUID() {
-        return this.parent.getUniqueId();
+        return this.uuid;
     }
 
     public @NotNull ProtocolVersion getProtocolVersion() {
-        return this.getParent().getProtocolVersion();
+        return this.getPlatformPlayer().map(Player::getProtocolVersion).orElse(ProtocolVersion.UNKNOWN);
     }
 
     private void load() {
+        val player = getPlatformPlayer();
         this.language = Triton.get().getStorage().getLanguage(this);
         if (this.clientLocale != null && this.isWaitingForClientLocale()) {
             this.waitingForClientLocale = false;
             this.language = Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(this.clientLocale);
-            if (getParent() != null) {
-                getParent().sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
-                        .getMessage("success.detected-language", language.getDisplayName())));
-            }
+            player.ifPresent(parent -> parent.sendMessage(
+                    LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
+                            .getMessage("success.detected-language", language.getDisplayName()))));
         }
-        if (getParent() != null) {
-            Triton.get().getStorage()
-                    .setLanguage(null, SocketUtils.getIpAddress(getParent().getRemoteAddress()), language);
-        }
+        player.ifPresent(parent -> Triton.get().getStorage()
+                .setLanguage(null, SocketUtils.getIpAddress(parent.getRemoteAddress()), language));
     }
 
     private void save() {
         Triton.get().runAsync(() -> {
-            val ip = SocketUtils.getIpAddress(getParent().getRemoteAddress());
-            Triton.get().getStorage().setLanguage(getParent().getUniqueId(), ip, language);
+            val ip = getPlatformPlayer()
+                    .map(player -> SocketUtils.getIpAddress(player.getRemoteAddress()))
+                    .orElse(null);
+            Triton.get().getStorage().setLanguage(getUUID(), ip, language);
         });
     }
 
     public void executeCommands(RegisteredServer overrideServer) {
-        val currentServer = getParent().getCurrentServer();
+        val playerOpt = getPlatformPlayer();
+        if (!playerOpt.isPresent()) {
+            return;
+        }
+        val player = playerOpt.get();
+
+        val currentServer = player.getCurrentServer();
         if (overrideServer == null && !currentServer.isPresent()) return;
         val server = overrideServer == null ? currentServer.get().getServer() : overrideServer;
         for (val cmd : ((com.rexcantor64.triton.language.Language) language).getCmds()) {
-            val cmdText = cmd.getCmd().replace("%player%", getParent().getUsername())
-                    .replace("%uuid%", getParent().getUniqueId().toString());
+            val cmdText = cmd.getCmd().replace("%player%", player.getUsername())
+                    .replace("%uuid%", player.getUniqueId().toString());
 
             if (!cmd.isUniversal() && !cmd.getServers().contains(server.getServerInfo().getName())) {
                 continue;
@@ -200,11 +218,11 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
             if (cmd.getType() == ExecutableCommand.Type.SERVER) {
                 VelocityTriton.asVelocity().getBridgeManager().sendExecutableCommand(cmdText, server);
             } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
-                getParent().spoofChatInput("/" + cmdText);
+                player.spoofChatInput("/" + cmdText);
             } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE) {
                 velocity.getCommandManager().executeAsync(velocity.getConsoleCommandSource(), cmdText);
             } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER) {
-                velocity.getCommandManager().executeAsync(getParent(), cmdText);
+                velocity.getCommandManager().executeAsync(player, cmdText);
             }
         }
     }
@@ -212,8 +230,7 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
     @Override
     public String toString() {
         return "VelocityLanguagePlayer{" +
-                "username=" + parent.getUsername() +
-                ", uuid=" + parent.getUniqueId() +
+                "uuid=" + this.getUUID() +
                 ", language=" + Optional.ofNullable(language).map(Language::getName).orElse("null") +
                 '}';
     }
