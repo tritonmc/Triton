@@ -3,7 +3,7 @@ package com.rexcantor64.triton.packetinterceptor.handlers;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -13,10 +13,10 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class BossBarPacketHandler {
 
-    private final @NotNull AdventureParser parser;
+    private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax syntax;
 
-    public BossBarPacketHandler(@NotNull AdventureParser parser, @NotNull MainConfig config) {
+    public BossBarPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.parser = parser;
         this.syntax = config.getBossbarSyntax();
     }

@@ -3,11 +3,11 @@ package com.rexcantor64.triton.spigot.packetinterceptor;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
-import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.TranslationManager;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import org.bukkit.entity.Player;
@@ -38,7 +38,7 @@ public abstract class PacketHandler {
         return getMain().getTranslationManager();
     }
 
-    protected AdventureParser parser() {
+    protected MessageParser parser() {
         return getMain().getMessageParser();
     }
 

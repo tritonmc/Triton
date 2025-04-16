@@ -3,7 +3,6 @@ package com.rexcantor64.triton.language.parser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ParserUtils;
 import lombok.AccessLevel;
@@ -53,7 +52,7 @@ import static com.rexcantor64.triton.language.TranslationManager.MINIMESSAGE_TYP
  *
  * @since 4.0.0
  */
-public class LegacyParser implements MessageParser {
+public class LegacyParser extends MessageParser {
     private static final char CLICK_DELIM = '\uE400';
     private static final char CLICK_END_DELIM = CLICK_DELIM + 1;
     private static final char HOVER_DELIM = '\uE500';
@@ -143,7 +142,7 @@ public class LegacyParser implements MessageParser {
         val indexes = ParserUtils.getPatternIndexArray(text, configuration.getFeatureSyntax().getLang());
 
         if (indexes.isEmpty()) {
-            // TODO handle non text components
+            // TODO handle non text components (e.g., hover, translatable)
             return TranslationResult.unchanged();
         }
 
@@ -169,7 +168,7 @@ public class LegacyParser implements MessageParser {
         builder.append(text, lastCharacter, text.length());
         component.setText(builder.toString());
 
-        // TODO handle non text components
+        // TODO handle non text components (e.g., hover, translatable)
 
         return TranslationResult.changed(component);
     }
@@ -233,6 +232,20 @@ public class LegacyParser implements MessageParser {
             comp.importFromComponent(argument);
         }
         return comp;
+    }
+
+    /**
+     * Lossy attempt at stitching together the given components.
+     * Only used by API access and not by the plugin itself.
+     * <p>
+     * See {@link MessageParser#replaceArguments(Component, List)}
+     */
+    @Override
+    public @NotNull Component replaceArguments(@NotNull Component component, @NotNull List<@NotNull Component> arguments) {
+        val comp = new SerializedComponent(component);
+        val args = arguments.stream().map(SerializedComponent::new).toArray(SerializedComponent[]::new);
+        val result = replaceArguments(comp, args);
+        return result.toComponent();
     }
 
     private @NotNull SerializedComponent handleTranslationType(@NotNull String message, @NotNull Localized language) {

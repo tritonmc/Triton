@@ -13,6 +13,7 @@ import com.rexcantor64.triton.dependencies.Dependency;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.TranslationManager;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
@@ -55,7 +56,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
     @Deprecated
     private final LanguageParser languageParser = new LegacyLanguageParser();
     private TranslationManager translationManager;
-    private final AdventureParser messageParser = new AdventureParser();
+    private final MessageParser messageParser = new AdventureParser();
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;

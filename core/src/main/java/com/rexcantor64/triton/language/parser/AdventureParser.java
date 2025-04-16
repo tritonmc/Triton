@@ -3,7 +3,7 @@ package com.rexcantor64.triton.language.parser;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
-import com.rexcantor64.triton.api.language.MessageParser;
+import com.rexcantor64.triton.utils.ComponentSplitter;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ParserUtils;
 import com.rexcantor64.triton.utils.StringUtils;
@@ -16,7 +16,6 @@ import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.Contract;
@@ -25,7 +24,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -42,15 +40,8 @@ import java.util.stream.Collectors;
  *
  * @since 4.0.0
  */
-public class AdventureParser implements MessageParser {
+public class AdventureParser extends MessageParser {
 
-    private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
-            .mapper(TextComponent.class, TextComponent::content)
-            .unknownMapper(comp -> "?")
-            .build();
-    private final static PlainTextComponentSerializer PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder()
-            .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
-            .build();
 
     /**
      * @see MessageParser#translateString(String, Localized, FeatureSyntax)
@@ -104,11 +95,11 @@ public class AdventureParser implements MessageParser {
      */
     @VisibleForTesting
     TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull TranslationConfiguration<Component> configuration) {
-        String plainText = componentToString(component);
+        String plainText = ComponentUtils.componentToString(component);
 
         if (ComponentUtils.hasLegacyFormatting(plainText)) {
             component = ComponentUtils.unflattenLegacyFormatting(component);
-            plainText = componentToString(component);
+            plainText = ComponentUtils.componentToString(component);
         }
 
         val indexes = ParserUtils.getPatternIndexArray(plainText, configuration.getFeatureSyntax().getLang());
@@ -122,7 +113,7 @@ public class AdventureParser implements MessageParser {
                 .sorted()
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        List<Component> splitComponents = splitComponent(component, indexesToSplitAt);
+        List<Component> splitComponents = ComponentSplitter.splitComponent(component, indexesToSplitAt);
         List<Component> acc = new LinkedList<>();
 
         // Splits are cyclic: 0 is normal text, 1 is the placeholder start,
@@ -170,14 +161,14 @@ public class AdventureParser implements MessageParser {
         Style defaultStyle = getStyleOfFirstCharacterOrEmpty(placeholder);
         placeholder = stripStyleOfFirstCharacter(placeholder);
 
-        String placeholderStr = componentToString(placeholder);
+        String placeholderStr = ComponentUtils.componentToString(placeholder);
         val indexes = ParserUtils.getPatternIndexArray(placeholderStr, configuration.getFeatureSyntax().getArg());
         Queue<Integer> indexesToSplitAt = indexes.stream()
                 .flatMap(Arrays::stream)
                 .sorted()
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        List<Component> splitComponents = splitComponent(placeholder, indexesToSplitAt);
+        List<Component> splitComponents = ComponentSplitter.splitComponent(placeholder, indexesToSplitAt);
         String key = "";
         List<Component> arguments = new LinkedList<>();
 
@@ -385,29 +376,13 @@ public class AdventureParser implements MessageParser {
     }
 
     /**
-     * Serializes a Component as a string, replacing
-     * non-text components with a '?' (question mark) character.
-     *
-     * @param component The component to serialize.
-     * @return The serialization result.
-     * @since 4.0.0
+     * See {@link MessageParser#replaceArguments(Component, List)}
      */
-    public String componentToString(Component component) {
-        return PLAIN_TEXT_SERIALIZER.serialize(component);
-    }
-
-    /**
-     * Given a Component with "%1", "%2", etc., replace these with the given arguments.
-     *
-     * @param component The component with % placeholders.
-     * @param arguments The list of arguments available to use as replacements.
-     * @return The component with % placeholders replaced with arguments.
-     * @since 4.0.0
-     */
-    public Component replaceArguments(Component component, List<Component> arguments) {
+    @Override
+    public @NotNull Component replaceArguments(@NotNull Component component, @NotNull List<@NotNull Component> arguments) {
         PriorityQueue<PriorityPair<Component>> replacementMap = new PriorityQueue<>(Comparator.comparing(PriorityPair::getPriority));
         Queue<Integer> indexesToSplitAt = new LinkedList<>();
-        String plainText = componentToString(component);
+        String plainText = ComponentUtils.componentToString(component);
 
         boolean trackingNumber = false;
         int startIndex = 0;
@@ -448,7 +423,7 @@ public class AdventureParser implements MessageParser {
             return component;
         }
 
-        List<Component> splitComponents = splitComponent(component, indexesToSplitAt);
+        List<Component> splitComponents = ComponentSplitter.splitComponent(component, indexesToSplitAt);
         List<Component> acc = new LinkedList<>();
 
         // Even indexes hold text, odd indexes should be discarded and replaced with arguments
@@ -467,187 +442,6 @@ public class AdventureParser implements MessageParser {
         }
 
         return Component.join(JoinConfiguration.noSeparators(), acc);
-    }
-
-    /**
-     * Given a list of Components, splits them by text index, preserving style and hierarchy.
-     * Non-text components (e.g. TranslatableComponent, KeybindComponent, etc.) are assumed to have a size of 1.
-     *
-     * @param component The Component to split
-     * @param indexes   The indexes to split at
-     * @return A list of the split Component lists
-     * @since 4.0.0
-     */
-    public List<Component> splitComponent(Component component, Queue<Integer> indexes) {
-        return splitComponent(Collections.singletonList(component), new SplitState(indexes));
-    }
-
-    /**
-     * @see AdventureParser#splitComponent(Component, Queue)
-     */
-    private List<Component> splitComponent(List<Component> comps, SplitState state) {
-        List<Component> split = new LinkedList<>();
-        List<Component> acc = new LinkedList<>();
-        for (Component comp : comps) {
-            if (!(comp instanceof TextComponent)) {
-                while (state.checkAndConsumeSplitOfNonTextComponent()) {
-                    acc.add(Component.empty());
-                    acc = flushAccumulator(acc, split);
-                }
-                state.advanceBy(1); // non-text components always have length 1
-                int beforeIndex = state.atIndex();
-                acc = handleChildren(comp, comp.children(), acc, split, state);
-
-                while (beforeIndex == state.atIndex() && state.checkAndConsumeSplitOfNonTextComponent()) {
-                    acc = flushAccumulator(acc, split);
-                    acc.add(Component.empty());
-                }
-
-                continue;
-            }
-            TextComponent textComponent = (TextComponent) comp;
-            String[] textSplit = state.splitString(textComponent.content());
-            for (int i = 0; i < textSplit.length; ++i) {
-                Component newSplit = convertEmptyComponent(Component.text()
-                        .content(textSplit[i])
-                        .mergeStyle(textComponent)
-                        .build());
-                if (i == textSplit.length - 1) {
-                    // the last split keeps the extras
-                    acc = handleChildren(newSplit, textComponent.children(), acc, split, state);
-                } else {
-                    acc.add(newSplit);
-                    acc = flushAccumulator(acc, split);
-                }
-            }
-        }
-
-        flushAccumulator(acc, split);
-        return split;
-    }
-
-    /**
-     * Utility function to flush a Component accumulator.
-     *
-     * @param accumulator The accumulator to flush
-     * @param splits      The result list to flush to
-     * @return An empty LinkedList, as a new accumulator
-     * @since 4.0.0
-     */
-    private List<Component> flushAccumulator(List<Component> accumulator, List<Component> splits) {
-        if (accumulator.isEmpty()) {
-            return accumulator;
-        }
-
-        if (accumulator.size() == 1) {
-            splits.add(accumulator.get(0));
-        } else {
-            // wrap component list with empty component
-            splits.add(Component.textOfChildren(accumulator.toArray(new Component[0])));
-        }
-        return new LinkedList<>();
-    }
-
-    /**
-     * Utility function to handle splitting the children of a parent component.
-     * Since components are immutable, this also adds the parent component to the accumulator.
-     *
-     * @param parent      The target component to place the children on
-     * @param children    The children of the original component
-     * @param accumulator The accumulator of the split process
-     * @param splits      The split list of the split process
-     * @param state       The state of the split process
-     * @return The new accumulator
-     * @since 4.0.0
-     */
-    private List<Component> handleChildren(Component parent, List<Component> children, List<Component> accumulator, List<Component> splits, SplitState state) {
-        if (children.isEmpty()) {
-            accumulator.add(parent);
-            return accumulator;
-        }
-
-        List<Component> extraSplit = splitComponent(children, state);
-        for (int j = 0; j < extraSplit.size(); ++j) {
-            if (j == 0) {
-                // add the first split to the parent element
-                parent = parent.children(Collections.singletonList(extraSplit.get(j)));
-                accumulator.add(convertEmptyComponent(parent));
-            } else {
-                // flush accumulator before adding new sibling
-                accumulator = flushAccumulator(accumulator, splits);
-                Component extraWrapper = extraSplit.get(j);
-                extraWrapper = extraWrapper.applyFallbackStyle(parent.style());
-                accumulator.add(extraWrapper);
-            }
-        }
-        return accumulator;
-    }
-
-    /**
-     * Adventure has an issue where some components might not become empty
-     * components, even though they should be. This is a fix for that, while
-     * it doesn't get fixed upstream.
-     * <a href="https://github.com/KyoriPowered/adventure/issues/807">Related GitHub Issue</a>
-     *
-     * @param component The component to check
-     * @return The same component or an empty component
-     * @since 4.0.0
-     */
-    private Component convertEmptyComponent(Component component) {
-        if (component instanceof TextComponent) {
-            TextComponent textComponent = (TextComponent) component;
-            if (textComponent.content().isEmpty() && textComponent.children().isEmpty() && textComponent.style()
-                    .isEmpty()) {
-                return Component.empty();
-            }
-        }
-        return component;
-    }
-
-    /**
-     * Holds the state for a component split action
-     * (i.e. a call to {@link AdventureParser#splitComponent(Component, Queue)}).
-     *
-     * @since 4.0.0
-     */
-    @RequiredArgsConstructor
-    private static class SplitState {
-        final Queue<Integer> splitIndexes;
-        int index;
-
-        void advanceBy(int size) {
-            this.index += size;
-        }
-
-        /**
-         * @return true if there is a split at the beginning of this (non text) component
-         */
-        boolean checkAndConsumeSplitOfNonTextComponent() {
-            if (!splitIndexes.isEmpty() && splitIndexes.peek() == atIndex()) {
-                splitIndexes.remove();
-                return true;
-            }
-            return false;
-        }
-
-        int atIndex() {
-            return this.index;
-        }
-
-        String[] splitString(String str) {
-            int lastIndex = 0;
-            List<String> fragments = new ArrayList<>();
-
-            while (!splitIndexes.isEmpty() && splitIndexes.peek() <= atIndex() + str.length()) {
-                int i = splitIndexes.poll();
-                fragments.add(str.substring(lastIndex, i - atIndex()));
-                lastIndex = i - this.index;
-            }
-            fragments.add(str.substring(lastIndex));
-            advanceBy(str.length());
-
-            return fragments.toArray(new String[0]);
-        }
     }
 
     /**

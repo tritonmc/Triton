@@ -5,7 +5,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSe
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetTitleText;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTitle;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -15,13 +15,13 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class TitlePacketHandler {
 
-    private final @NotNull AdventureParser parser;
+    private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax titleSyntax;
     private final @NotNull MainConfig.FeatureSyntax actionbarSyntax;
     private final boolean translateTitles;
     private final boolean translateActionbars;
 
-    public TitlePacketHandler(@NotNull AdventureParser parser, @NotNull MainConfig config) {
+    public TitlePacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.parser = parser;
         this.titleSyntax = config.getTitleSyntax();
         this.actionbarSyntax = config.getActionbarSyntax();

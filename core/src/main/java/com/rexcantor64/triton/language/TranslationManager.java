@@ -397,6 +397,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
      * @see com.rexcantor64.triton.language.parser.AdventureParser#replaceArguments(Component, List)
      */
     private Component replaceArguments(Component component, Component... args) {
+        // Note: When LegacyParser is in use, this can result in a lossy conversion
+        // For that reason, LegacyParser uses getTextString directly
         return triton.getMessageParser().replaceArguments(component, Arrays.asList(args));
     }
 

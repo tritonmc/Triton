@@ -2,6 +2,7 @@ package com.rexcantor64.triton.spigot.listeners;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.utils.ParserUtils;
 import lombok.val;
@@ -16,7 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class BukkitListener implements Listener {
 
-    private AdventureParser parser() {
+    private MessageParser parser() {
         return Triton.get().getMessageParser();
     }
 

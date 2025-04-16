@@ -25,6 +25,7 @@ import com.comphenix.protocol.wrappers.nbt.NbtFactory;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
@@ -131,7 +132,7 @@ public class ProtocolLibListener implements PacketListener {
         return main.getJavaPlugin();
     }
 
-    private AdventureParser parser() {
+    private MessageParser parser() {
         return main.getMessageParser();
     }
 

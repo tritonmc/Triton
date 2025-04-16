@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -18,10 +18,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TabPacketHandler {
 
-    private final @NotNull AdventureParser parser;
+    private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax syntax;
 
-    public TabPacketHandler(@NotNull AdventureParser parser, @NotNull MainConfig config) {
+    public TabPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.parser = parser;
         this.syntax = config.getTabSyntax();
     }
