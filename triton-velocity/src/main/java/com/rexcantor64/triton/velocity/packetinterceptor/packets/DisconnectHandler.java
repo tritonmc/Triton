@@ -44,8 +44,10 @@ public class DisconnectHandler {
                         .map(result -> {
                             // During the Login phase, this packet is supposed to send JSON text even on 1.20.3+ (instead of NBT data)
                             // https://github.com/PaperMC/Velocity/blob/be678840de9c927c9e17bcea06ed7aedcea77d1e/proxy/src/main/java/com/velocitypowered/proxy/protocol/packet/DisconnectPacket.java#L81-L82
-                            val connectedPlayer = (ConnectedPlayer) player.getParent();
-                            val isLoginPhase = connectedPlayer.getConnection().getState() == StateRegistry.LOGIN;
+                            val connectedPlayer = player.getPlatformPlayer().map(p -> (ConnectedPlayer) p);
+                            val isLoginPhase = connectedPlayer
+                                    .map(p -> p.getConnection().getState() == StateRegistry.LOGIN)
+                                    .orElse(true);
                             return new ComponentHolder(
                                     isLoginPhase ? ProtocolVersion.MINECRAFT_1_20_2 : player.getProtocolVersion(),
                                     result

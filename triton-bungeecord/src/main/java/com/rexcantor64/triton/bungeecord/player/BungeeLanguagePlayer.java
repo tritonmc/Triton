@@ -22,6 +22,7 @@ import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.protocol.NumberFormat;
 import net.md_5.bungee.protocol.packet.Chat;
 import net.md_5.bungee.protocol.packet.ScoreboardObjective.HealthDisplay;
+import net.md_5.bungee.protocol.packet.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,10 +129,10 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         PlayerChangeLanguageBungeeEvent event = new PlayerChangeLanguageBungeeEvent(this, this.language, language);
         BungeeCord.getInstance().getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
+        this.language = event.getNewLanguage();
         if (this.waitingForClientLocale && getParent() != null)
             parent.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
                     .getMessage("success.detected-language", language.getDisplayName()))));
-        this.language = event.getNewLanguage();
         this.waitingForClientLocale = false;
 
         if (sendToSpigot && getParent() != null)
@@ -240,8 +241,8 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         private BaseComponent suffix;
 
         // other data (has to be saved for refreshing packet)
-        private String nameTagVisibility;
-        private String collisionRule;
+        private Team.NameTagVisibility nameTagVisibility;
+        private Team.CollisionRule collisionRule;
         private int color;
         private byte options;
     }

@@ -31,12 +31,15 @@ public class SpigotLoader extends JavaPlugin {
         // TODO manual override
 
         try {
-            // Class only available on adventure 4.15.0+
-            Class.forName("net.kyori.adventure.resource.ResourcePackCallback");
+            // Method only available on adventure 4.18.0+
+            // Required for minimessage to work
+            // We have to check the method because other plugins might add the ShadowColor class even though it's not used
+            Class<?> styleClass = Class.forName("net.kyori.adventure.text.format.StyleGetter");
+            styleClass.getDeclaredMethod("shadowColor");
 
             // A modern version of adventure is already present
             return false;
-        } catch (ClassNotFoundException ignore) {
+        } catch (ClassNotFoundException | NoSuchMethodException ignore) {
             // Adventure is not present or an outdated version is present
             return true;
         }

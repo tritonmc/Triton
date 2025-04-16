@@ -420,17 +420,15 @@ public class ProtocolLibListener implements PacketListener {
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (!main.getConfig().isActionbars()) return;
 
-        val baseComponentModifier = packet.getPacket().getSpecificModifier(BASE_COMPONENT_ARRAY_CLASS);
+        val componentModifier = packet.getPacket().getChatComponents();
         val adventureModifier = packet.getPacket().getSpecificModifier(ADVENTURE_COMPONENT_CLASS);
 
         Component message = null;
 
         if (adventureModifier.readSafely(0) != null) {
             message = adventureModifier.readSafely(0);
-        } else if (baseComponentModifier.readSafely(0) != null) {
-            message = BaseComponentUtils.deserialize(baseComponentModifier.readSafely(0));
         } else {
-            val msg = packet.getPacket().getChatComponents().readSafely(0);
+            val msg = componentModifier.readSafely(0);
             if (msg != null) {
                 message = WrappedComponentUtils.deserialize(msg);
             }
@@ -453,7 +451,7 @@ public class ProtocolLibListener implements PacketListener {
                         // We're on a Paper or fork, so we can directly set the Adventure Component
                         adventureModifier.writeSafely(0, result);
                     } else {
-                        baseComponentModifier.writeSafely(0, BaseComponentUtils.serialize(result));
+                        componentModifier.writeSafely(0, WrappedComponentUtils.serialize(result));
                     }
                 })
                 .ifToRemove(() -> packet.setCancelled(true));
