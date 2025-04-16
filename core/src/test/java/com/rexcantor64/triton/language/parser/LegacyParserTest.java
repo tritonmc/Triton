@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -232,6 +233,124 @@ public class LegacyParserTest {
                                 .color(NamedTextColor.GREEN)
                 )
                 .build();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersOnlyInTranslatableComponentArguments() {
+        Component comp = Component.translatable(
+                "translatable.key",
+                Component.text("[lang]without.formatting[/lang]")
+        );
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.translatable(
+                "translatable.key",
+                Component.text()
+                        .append(Component.text("This is text without formatting"))
+        );
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersInTranslatableComponentArguments() {
+        Component comp = Component.text()
+                .content("Text ")
+                .append(
+                        Component.translatable(
+                                "translatable.key",
+                                Component.text("[lang]without.formatting[/lang]")
+                        ),
+                        Component.text("[lang]without.formatting[/lang] more text")
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("Text ")
+                                .append(
+                                        Component.translatable(
+                                                "translatable.key",
+                                                Component.text()
+                                                        .append(Component.text("This is text without formatting"))
+                                        )
+                                ),
+                        Component.text("This is text without formatting more text")
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersInShowTextHoverAction() {
+        // TODO: make test pass
+        Component comp = Component.text()
+                .content("some text")
+                .hoverEvent(HoverEvent.showText(Component.text("[lang]without.formatting[/lang]")))
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showText(
+                                Component.text()
+                                        .append(Component.text("This is text without formatting"))
+                        )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPlaceholdersInShowEntityHoverAction() {
+        // TODO: make test pass
+        Component comp = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showEntity(
+                                Key.key("creeper"),
+                                new UUID(0, 0),
+                                Component.text("[lang]without.formatting[/lang]")
+                        )
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .content("some text")
+                .hoverEvent(
+                        HoverEvent.showEntity(
+                                Key.key("creeper"),
+                                new UUID(0, 0),
+                                Component.text()
+                                        .append(Component.text("This is text without formatting"))
+                                        .asComponent()
+                        )
+                )
+                .asComponent();
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
         assertNotNull(result.getResultRaw());
