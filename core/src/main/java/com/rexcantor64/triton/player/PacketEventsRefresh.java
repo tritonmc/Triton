@@ -16,6 +16,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -191,7 +192,7 @@ public class PacketEventsRefresh {
         }
     }
 
-    private void updateBossBars(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+    private void updateBossBars(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         for (val entry : bossBarMap.entrySet()) {
             val packet = new WrapperPlayServerBossBar(entry.getKey(), WrapperPlayServerBossBar.Action.UPDATE_TITLE);
             parser.translateComponent(
@@ -206,7 +207,7 @@ public class PacketEventsRefresh {
         }
     }
 
-    private void updateScoreboardTeams(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+    private void updateScoreboardTeams(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         for (val entry : teamsMap.entrySet()) {
             val info = entry.getValue();
             val infoCopy = new ScoreBoardTeamInfo(
@@ -249,7 +250,7 @@ public class PacketEventsRefresh {
         }
     }
 
-    private void updateScoreboardObjectives(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+    private void updateScoreboardObjectives(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         for (val entry : objectivesMap.entrySet()) {
             val info = entry.getValue();
 
@@ -273,7 +274,7 @@ public class PacketEventsRefresh {
         }
     }
 
-    private void updatePlayerListHeaderFooter(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+    private void updatePlayerListHeaderFooter(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         if (this.playerListHeaderFooter == null) {
             return;
         }
@@ -301,7 +302,7 @@ public class PacketEventsRefresh {
         user.sendPacketSilently(packet);
     }
 
-    private void updatePlayerList(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull AdventureParser parser) {
+    private void updatePlayerList(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         if (user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19_3)) {
             val packet = new WrapperPlayServerPlayerInfoUpdate(
                     EnumSet.of(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_DISPLAY_NAME),

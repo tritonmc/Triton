@@ -27,7 +27,7 @@ public interface MessageParser {
      * @return The result of the translation
      * @since 4.0.0
      */
-    @NotNull TranslationResult<String> translateString(String text, Localized language, FeatureSyntax syntax);
+    @NotNull TranslationResult<String> translateString(@NotNull String text, @NotNull Localized language, @NotNull FeatureSyntax syntax);
 
     /**
      * Find and replace Triton placeholders in a Component.
@@ -46,6 +46,6 @@ public interface MessageParser {
      * @return The result of the translation
      * @since 4.0.0
      */
-    @NotNull TranslationResult<Component> translateComponent(Component component, Localized language, FeatureSyntax syntax);
+    @NotNull TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull Localized language, @NotNull FeatureSyntax syntax);
 
 }

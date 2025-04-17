@@ -1,6 +1,5 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -15,13 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ComponentUtilsTest {
 
-    private final AdventureParser parser = new AdventureParser();
-
     @Test
     public void testSplitByNewLineWithoutExtras() {
         Component component = Component.text("First line\nSecond line").color(NamedTextColor.BLUE);
 
-        val result = ComponentUtils.splitByNewLine(component, parser);
+        val result = ComponentUtils.splitByNewLine(component);
 
         Component[] expected = new Component[]{
                 Component.text("First line").color(NamedTextColor.BLUE),
@@ -53,7 +50,7 @@ public class ComponentUtilsTest {
                 )
                 .asComponent();
 
-        val result = ComponentUtils.splitByNewLine(component, parser);
+        val result = ComponentUtils.splitByNewLine(component);
 
         ComponentLike[] expected = new ComponentLike[]{
                 Component.text()
@@ -106,7 +103,7 @@ public class ComponentUtilsTest {
                 )
                 .asComponent();
 
-        val result = ComponentUtils.splitByNewLine(component, parser);
+        val result = ComponentUtils.splitByNewLine(component);
 
         ComponentLike[] expected = new ComponentLike[]{
                 Component.text()

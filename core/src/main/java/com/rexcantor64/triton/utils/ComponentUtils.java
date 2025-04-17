@@ -1,22 +1,23 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,6 +29,16 @@ public class ComponentUtils {
             .hexColors()
             .useUnusualXRepeatedCharacterHexFormat()
             .build();
+
+    private final static ComponentFlattener TEXT_ONLY_COMPONENT_FLATTENER = ComponentFlattener.builder()
+            .mapper(TextComponent.class, TextComponent::content)
+            .unknownMapper(comp -> "?")
+            .build();
+    private final static PlainTextComponentSerializer PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder()
+            .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
+            .build();
+
+    private static final Pattern URL_REGEX = Pattern.compile("^(?:(https?)://)?([-\\w_.]{2,}\\.[a-z]{2,})(/\\S*)?$");
 
     /**
      * Deserialize a JSON string representing a {@link Component}.
@@ -72,19 +83,25 @@ public class ComponentUtils {
     }
 
     /**
+     * Serializes a {@link Component} as a string, replacing
+     * non-text components with a '?' (question mark) character.
+     *
+     * @param component The component to serialize.
+     * @return The serialization result.
+     * @since 4.0.0
+     */
+    public static String componentToString(Component component) {
+        return PLAIN_TEXT_SERIALIZER.serialize(component);
+    }
+
+    /**
      * Given a {@link Component}, splits it by new lines, preserving style and hierarchy.
      *
      * @param component The {@link Component} to split by new lines (\n).
      * @return A list of the split {@link Component Components}.
      */
     public static List<Component> splitByNewLine(Component component) {
-        val parser = Triton.get().getMessageParser();
-        return splitByNewLine(component, parser);
-    }
-
-    @VisibleForTesting
-    static List<Component> splitByNewLine(Component component, AdventureParser parser) {
-        String plainText = parser.componentToString(component);
+        String plainText = componentToString(component);
         Queue<Integer> indexesToSplitAt = IntStream.range(0, plainText.length())
                 .filter(i -> plainText.charAt(i) == '\n')
                 .flatMap(i -> IntStream.of(i, i + 1))
@@ -92,11 +109,11 @@ public class ComponentUtils {
                 .boxed()
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        if (indexesToSplitAt.size() == 0) {
+        if (indexesToSplitAt.isEmpty()) {
             return Collections.singletonList(component);
         }
 
-        List<Component> splitComponents = parser.splitComponent(component, indexesToSplitAt);
+        List<Component> splitComponents = ComponentSplitter.splitComponent(component, indexesToSplitAt);
 
         // Splits are cyclic: 0 is normal text, 1 is the '\n' character
         return IntStream.range(0, splitComponents.size())
@@ -180,6 +197,11 @@ public class ComponentUtils {
             return component.children(newChildren);
         }
         return component;
+    }
+
+    public static boolean isValidClickEvent(ClickEvent clickEvent) {
+        return clickEvent.action() != ClickEvent.Action.OPEN_URL
+                || URL_REGEX.matcher(clickEvent.value()).find();
     }
 
 }

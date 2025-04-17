@@ -5,7 +5,7 @@ import com.github.retrooper.packetevents.protocol.chat.ChatTypes;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -15,13 +15,13 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class ChatPacketHandler {
 
-    private final @NotNull AdventureParser parser;
+    private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax chatSyntax;
     private final @NotNull MainConfig.FeatureSyntax actionbarSyntax;
     private final boolean translateChat;
     private final boolean translateActionbars;
 
-    public ChatPacketHandler(@NotNull AdventureParser parser, @NotNull MainConfig config) {
+    public ChatPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.parser = parser;
         this.chatSyntax = config.getChatSyntax();
         this.actionbarSyntax = config.getActionbarSyntax();

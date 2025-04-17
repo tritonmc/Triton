@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class TranslationManager implements com.rexcantor64.triton.api.language.TranslationManager {
 
-    private static final String MINIMESSAGE_TYPE_TAG = "[minimsg]";
-    private static final String JSON_TYPE_TAG = "[triton_json]";
+    public static final String MINIMESSAGE_TYPE_TAG = "[minimsg]";
+    public static final String JSON_TYPE_TAG = "[triton_json]";
 
     private final Triton<?, ?> triton;
 
@@ -59,6 +59,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     @Getter
     private int signTranslationCount = 0;
 
+    @Getter
     private Component translationNotFoundComponent = Component.empty();
 
     private final Map<Language, MiniMessage> miniMessageInstances = new HashMap<>();
@@ -204,7 +205,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
      * @return The instance for the given language.
      * @since 4.0.0
      */
-    private @NotNull MiniMessage getMiniMessageInstanceForLanguage(@NotNull Language language) {
+    public @NotNull MiniMessage getMiniMessageInstanceForLanguage(@NotNull Language language) {
         return Streams.concat(
                         Stream.of(language),
                         language.getFallbackLanguages()
@@ -396,6 +397,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
      * @see com.rexcantor64.triton.language.parser.AdventureParser#replaceArguments(Component, List)
      */
     private Component replaceArguments(Component component, Component... args) {
+        // Note: When LegacyParser is in use, this can result in a lossy conversion
+        // For that reason, LegacyParser uses getTextString directly
         return triton.getMessageParser().replaceArguments(component, Arrays.asList(args));
     }
 

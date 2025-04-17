@@ -5,6 +5,7 @@ import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -51,7 +52,7 @@ public class BungeeListener extends MessageToMessageEncoder<DefinedPacket> {
         owner.setListener(this);
     }
 
-    private AdventureParser parser() {
+    private MessageParser parser() {
         return Triton.get().getMessageParser();
     }
 

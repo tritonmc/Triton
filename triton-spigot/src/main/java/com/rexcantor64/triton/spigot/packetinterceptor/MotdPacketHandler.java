@@ -8,8 +8,8 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.language.MessageParser;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import lombok.val;
@@ -38,7 +38,7 @@ public class MotdPacketHandler extends PacketAdapter {
      *
      * @see Triton#getMessageParser()
      */
-    private AdventureParser parser() {
+    private MessageParser parser() {
         return Triton.get().getMessageParser();
     }
 

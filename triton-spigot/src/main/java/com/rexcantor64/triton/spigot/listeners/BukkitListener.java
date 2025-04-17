@@ -2,7 +2,9 @@ package com.rexcantor64.triton.spigot.listeners;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
+import com.rexcantor64.triton.utils.ParserUtils;
 import lombok.val;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,7 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class BukkitListener implements Listener {
 
-    private AdventureParser parser() {
+    private MessageParser parser() {
         return Triton.get().getMessageParser();
     }
 
@@ -57,7 +59,7 @@ public class BukkitListener implements Listener {
         }
 
         String msg = e.getMessage();
-        val indexes = parser().getPatternIndexArray(msg, Triton.get().getConfig().getChatSyntax().getLang());
+        val indexes = ParserUtils.getPatternIndexArray(msg, Triton.get().getConfig().getChatSyntax().getLang());
         for (int i = 0; i < indexes.size(); ++i) {
             val index = indexes.get(i);
             // add a zero width space to prevent the parser from finding this placeholder
