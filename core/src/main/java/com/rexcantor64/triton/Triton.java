@@ -13,6 +13,7 @@ import com.rexcantor64.triton.dependencies.Dependency;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.TranslationManager;
 import com.rexcantor64.triton.language.parser.AdventureParser;
+import com.rexcantor64.triton.language.parser.LegacyParser;
 import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
@@ -56,7 +57,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
     @Deprecated
     private final LanguageParser languageParser = new LegacyLanguageParser();
     private TranslationManager translationManager;
-    private final MessageParser messageParser = new AdventureParser();
+    private MessageParser messageParser;
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;
@@ -142,6 +143,11 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         config.setup();
         dumpManager = new DumpManager();
         logger.setLogLevel(config.getLogLevel());
+        if (config.getParser().equalsIgnoreCase("legacy")) {
+            messageParser = new LegacyParser();
+        } else {
+            messageParser = new AdventureParser();
+        }
         messagesConfig.setup();
         setupStorage();
         languageManager.setup();

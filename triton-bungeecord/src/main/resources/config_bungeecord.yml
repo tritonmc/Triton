@@ -119,6 +119,13 @@ storage:
 # Changing this REQUIRES a server restart.
 experimental-use-packetevents: false
 
+# Parser to use when translating messages.
+# If you change this, styles might not be applied correctly to your translations and surrounding text.
+# Available values:
+# - adventure (recommended; default since Triton v4)
+# - legacy (default for Triton v3 and older)
+message-parser: "adventure"
+
 # Here you can enable and disable certain features of the plugin.
 # Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.

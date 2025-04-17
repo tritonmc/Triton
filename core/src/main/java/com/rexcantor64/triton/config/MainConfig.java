@@ -57,6 +57,7 @@ public class MainConfig implements TritonConfig {
     @ToString.Exclude
     private String twinToken;
     private List<String> commandAliases;
+    private String parser = "adventure";
     private String disabledLine;
     private boolean chat;
     private boolean signedChat;
@@ -185,6 +186,7 @@ public class MainConfig implements TritonConfig {
         this.configAutoRefresh = section.getInt("config-auto-refresh-interval", -1);
         this.asyncProtocolLib = section.getBoolean("experimental-async-protocol-lib", false);
         this.usePacketEvents = section.getBoolean("experimental-use-packetevents", false);
+        this.parser = section.getString("message-parser", "adventure");
         Configuration languageCreation = section.getSection("language-creation");
         setupLanguageCreation(languageCreation);
 
