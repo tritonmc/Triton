@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.language.parser;
 
+import com.rexcantor64.triton.api.config.FeatureSyntax;
+import com.rexcantor64.triton.api.language.Localized;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,5 +18,19 @@ public abstract class MessageParser implements com.rexcantor64.triton.api.langua
      * @since 4.0.0
      */
     public abstract @NotNull Component replaceArguments(@NotNull Component component, @NotNull List<@NotNull Component> arguments);
+
+    /**
+     * See {@link com.rexcantor64.triton.api.language.MessageParser#translateString(String, Localized, FeatureSyntax)}
+     */
+    // Method has to be redeclared so that it doesn't break with jar-in-jar relocation
+    @Override
+    public abstract @NotNull TranslationResult<String> translateString(@NotNull String text, @NotNull Localized language, @NotNull FeatureSyntax syntax);
+
+    /**
+     * See {@link com.rexcantor64.triton.api.language.MessageParser#translateComponent(Component, Localized, FeatureSyntax)}
+     */
+    // Method has to be redeclared so that it doesn't break with jar-in-jar relocation
+    @Override
+    public abstract @NotNull TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull Localized language, @NotNull FeatureSyntax syntax);
 
 }
