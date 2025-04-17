@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.KeybindComponent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -120,12 +122,12 @@ public class LegacyParser extends MessageParser {
                         .orElseGet(() -> {
                             val notFoundComponent = new SerializedComponent(Triton.get().getTranslationManager().getTranslationNotFoundComponent());
                             val argsConcatenation = Arrays.stream(arguments).map(SerializedComponent::getText).collect(Collectors.joining(", "));
-                            val argsContatenationComp = new SerializedComponent("[" + argsConcatenation + "]");
+                            val argsConcatenationComp = new SerializedComponent("[" + argsConcatenation + "]");
                             for (SerializedComponent argument : arguments) {
-                                argsContatenationComp.importFromComponent(argument);
+                                argsConcatenationComp.importFromComponent(argument);
                             }
 
-                            return replaceArguments(notFoundComponent, new SerializedComponent(key), argsContatenationComp);
+                            return replaceArguments(notFoundComponent, new SerializedComponent(key), argsConcatenationComp);
                         })
         );
 
@@ -142,8 +144,7 @@ public class LegacyParser extends MessageParser {
         val indexes = ParserUtils.getPatternIndexArray(text, configuration.getFeatureSyntax().getLang());
 
         if (indexes.isEmpty()) {
-            // TODO handle non text components (e.g., hover, translatable)
-            return TranslationResult.unchanged();
+            return handleNonContentText(component, configuration);
         }
 
         val builder = new StringBuilder();
@@ -168,7 +169,9 @@ public class LegacyParser extends MessageParser {
         builder.append(text, lastCharacter, text.length());
         component.setText(builder.toString());
 
-        // TODO handle non text components (e.g., hover, translatable)
+        component = handleNonContentText(component, configuration)
+                .getResult()
+                .orElse(component);
 
         return TranslationResult.changed(component);
     }
@@ -211,6 +214,91 @@ public class LegacyParser extends MessageParser {
         }
 
         return Optional.of(translationResult.getResult().orElse(result));
+    }
+
+    /**
+     * Searches the given component's hover events and TranslatableComponent's arguments
+     * for Triton placeholders, replacing them with the respective translations.
+     * <p>
+     * If a "disabled line" is present on a hover component, the hover component is discarded.
+     * If a "disabled line" is present on a TranslatableComponent argument, that argument is set to empty.
+     *
+     * @param component     The component to search in.
+     * @param configuration The translation configuration to use.
+     * @return The given component with the placeholders replaced, wrapped in a TranslationResult.
+     * @since 4.0.0
+     */
+    @SuppressWarnings("unchecked")
+    private TranslationResult<SerializedComponent> handleNonContentText(
+            SerializedComponent component,
+            TranslationConfiguration<SerializedComponent> configuration
+    ) {
+        boolean changed = false;
+        for (val entry : component.hoverEvents.entrySet()) {
+            HoverEvent<?> hoverEvent = entry.getValue();
+            if (hoverEvent != null) {
+                if (hoverEvent.action() == HoverEvent.Action.SHOW_TEXT) {
+                    HoverEvent<Component> textHoverEvent = (HoverEvent<Component>) hoverEvent;
+                    Component value = textHoverEvent.value();
+                    TranslationResult<Component> result = translateComponent(new SerializedComponent(value), configuration)
+                            .map(SerializedComponent::toComponent);
+                    if (result.isToRemove()) {
+                        changed = true;
+                        entry.setValue(null);
+                    }
+                    if (result.getResult().isPresent()) {
+                        changed = true;
+                        entry.setValue(textHoverEvent.value(result.getResult().get()));
+                    }
+                } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ENTITY) {
+                    HoverEvent<HoverEvent.ShowEntity> entityHoverEvent = (HoverEvent<HoverEvent.ShowEntity>) hoverEvent;
+                    HoverEvent.ShowEntity value = entityHoverEvent.value();
+                    if (value.name() != null) {
+                        TranslationResult<Component> result = translateComponent(new SerializedComponent(value.name()), configuration)
+                                .map(SerializedComponent::toComponent);
+                        if (result.isToRemove()) {
+                            changed = true;
+                            entry.setValue(null);
+                        }
+                        if (result.getResult().isPresent()) {
+                            changed = true;
+                            entry.setValue(entityHoverEvent.value(value.name(result.getResult().get())));
+                        }
+                    }
+                } else if (hoverEvent.action() == HoverEvent.Action.SHOW_ITEM) {
+                    // TODO maybe use this library https://github.com/Eisenwave/eisen-nbt
+                }
+            }
+        }
+
+        for (val entry : component.translatableComponents.entrySet()) {
+            TranslatableComponent translatableComponent = entry.getValue();
+            AtomicBoolean argumentsChanged = new AtomicBoolean(false);
+            List<TranslationArgument> translatedArguments = new ArrayList<>(translatableComponent.arguments().size());
+            for (TranslationArgument argument : translatableComponent.arguments()) {
+                if (argument.value() instanceof Component) {
+                    Component argumentComp = (Component) argument.value();
+                    translateComponent(new SerializedComponent(argumentComp), configuration)
+                            .map(SerializedComponent::toComponent)
+                            .ifChanged(newArgument -> {
+                                argumentsChanged.set(true);
+                                translatedArguments.add(TranslationArgument.component(newArgument));
+                            })
+                            .ifUnchanged(() -> translatedArguments.add(argument))
+                            .ifToRemove(() -> translatedArguments.add(TranslationArgument.component(Component.empty())));
+                }
+            }
+
+            if (argumentsChanged.get()) {
+                changed = true;
+                entry.setValue(translatableComponent.arguments(translatedArguments));
+            }
+        }
+
+        if (!changed) {
+            return TranslationResult.unchanged();
+        }
+        return TranslationResult.changed(component);
     }
 
     public @NotNull String replaceArguments(@NotNull String text, @Nullable String @NotNull [] arguments) {
@@ -324,7 +412,7 @@ public class LegacyParser extends MessageParser {
         @Getter
         private final HashMap<UUID, ClickEvent> clickEvents = new HashMap<>();
         @Getter
-        private final HashMap<UUID, HoverEvent<?>> hoverEvents = new HashMap<>();
+        private final HashMap<UUID, @Nullable HoverEvent<?>> hoverEvents = new HashMap<>();
         @Getter
         @Setter(AccessLevel.PRIVATE)
         private String text;
@@ -425,7 +513,7 @@ public class LegacyParser extends MessageParser {
                     // handle styles/events based on delimiter found
                     switch (c) {
                         case CLICK_DELIM:
-                            // action code is still present for compability only, but not used
+                            // action code is still present for compatibility only, but not used
                             val clickUuid = UUID.fromString(text.substring(i + 2, i + 2 + 36));
                             val click = this.clickEvents.get(clickUuid);
                             componentBuilder.clickEvent(click);
@@ -522,7 +610,7 @@ public class LegacyParser extends MessageParser {
         }
 
         /**
-         * Import non-text parts (click, hover, translatable) from the given commponent
+         * Import non-text parts (click, hover, translatable) from the given component
          * into this component.
          * Useful for merging components while preserving their non-text parts.
          *

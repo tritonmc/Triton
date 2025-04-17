@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -255,20 +256,23 @@ public class AdventureParser extends MessageParser {
         if (component instanceof TranslatableComponent) {
             TranslatableComponent translatableComponent = (TranslatableComponent) component;
             AtomicBoolean argumentsChanged = new AtomicBoolean(false);
-            List<Component> translatedArguments = new ArrayList<>(translatableComponent.args().size());
-            for (Component argument : translatableComponent.args()) {
-                translateComponent(argument, configuration)
-                        .ifChanged(newArgument -> {
-                            argumentsChanged.set(true);
-                            translatedArguments.add(newArgument);
-                        })
-                        .ifUnchanged(() -> translatedArguments.add(argument))
-                        .ifToRemove(() -> translatedArguments.add(Component.empty()));
+            List<TranslationArgument> translatedArguments = new ArrayList<>(translatableComponent.arguments().size());
+            for (TranslationArgument argument : translatableComponent.arguments()) {
+                if (argument.value() instanceof Component) {
+                    Component argumentComp = (Component) argument.value();
+                    translateComponent(argumentComp, configuration)
+                            .ifChanged(newArgument -> {
+                                argumentsChanged.set(true);
+                                translatedArguments.add(TranslationArgument.component(newArgument));
+                            })
+                            .ifUnchanged(() -> translatedArguments.add(argument))
+                            .ifToRemove(() -> translatedArguments.add(TranslationArgument.component(Component.empty())));
+                }
             }
 
             if (argumentsChanged.get()) {
                 changed = true;
-                component = translatableComponent.args(translatedArguments);
+                component = translatableComponent.arguments(translatedArguments);
             }
         }
 

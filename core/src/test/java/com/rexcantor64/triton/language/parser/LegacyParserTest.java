@@ -251,8 +251,7 @@ public class LegacyParserTest {
 
         Component expected = Component.translatable(
                 "translatable.key",
-                Component.text()
-                        .append(Component.text("This is text without formatting"))
+                Component.text("This is text without formatting")
         );
 
         assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
@@ -283,8 +282,7 @@ public class LegacyParserTest {
                                 .append(
                                         Component.translatable(
                                                 "translatable.key",
-                                                Component.text()
-                                                        .append(Component.text("This is text without formatting"))
+                                                Component.text("This is text without formatting")
                                         )
                                 ),
                         Component.text("This is text without formatting more text")
@@ -298,7 +296,6 @@ public class LegacyParserTest {
 
     @Test
     public void testParseComponentWithPlaceholdersInShowTextHoverAction() {
-        // TODO: make test pass
         Component comp = Component.text()
                 .content("some text")
                 .hoverEvent(HoverEvent.showText(Component.text("[lang]without.formatting[/lang]")))
@@ -311,8 +308,7 @@ public class LegacyParserTest {
                 .content("some text")
                 .hoverEvent(
                         HoverEvent.showText(
-                                Component.text()
-                                        .append(Component.text("This is text without formatting"))
+                                Component.text("This is text without formatting")
                         )
                 )
                 .asComponent();
@@ -324,7 +320,6 @@ public class LegacyParserTest {
 
     @Test
     public void testParseComponentWithPlaceholdersInShowEntityHoverAction() {
-        // TODO: make test pass
         Component comp = Component.text()
                 .content("some text")
                 .hoverEvent(
@@ -345,9 +340,7 @@ public class LegacyParserTest {
                         HoverEvent.showEntity(
                                 Key.key("creeper"),
                                 new UUID(0, 0),
-                                Component.text()
-                                        .append(Component.text("This is text without formatting"))
-                                        .asComponent()
+                                Component.text("This is text without formatting")
                         )
                 )
                 .asComponent();
