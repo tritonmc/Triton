@@ -240,6 +240,42 @@ public class LegacyParserTest {
     }
 
     @Test
+    public void testParseComponentWhileRetainingCorrectStylesWithLinkBug() {
+        // server adds invalid link to text
+        Component comp = Component.text()
+                .append(
+                        Component.text("[lang]")
+                                .color(NamedTextColor.DARK_RED),
+                        Component.text("with.placeholder.colors[arg]5[/arg][/lang]?")
+                                .clickEvent(ClickEvent.openUrl("http://with.placeholder.colors[arg]5[/arg][/lang]?"))
+                                .color(NamedTextColor.DARK_RED),
+                        // while this question mark is a separate component, this test aims to emulate the case where
+                        // it isn't supposed to be a style boundary, so it is expected that it will inherit the color
+                        // from the translation
+                        Component.text("?").color(NamedTextColor.DARK_RED)
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text()
+                                .content("5 ")
+                                .color(NamedTextColor.LIGHT_PURPLE),
+                        Component.text()
+                                .content("is a very cool guy??")
+                                .color(NamedTextColor.GREEN)
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
     public void testParseComponentWithPlaceholdersOnlyInTranslatableComponentArguments() {
         Component comp = Component.translatable(
                 "translatable.key",

@@ -638,6 +638,11 @@ public class LegacyParser extends MessageParser {
             private final StringBuilder stringBuilder = new StringBuilder();
             private Style[] stack = new Style[8];
             private int topIndex = -1;
+            // Spigot has a bug where it automatically creates click events for some invalid URL-like strings,
+            // which results in it considering, for example `[lang]example.lorem.ipsum[/lang]` as a link to `example.lorem.ipsum[/lang]`.
+            // This is just wrong and should be ignored, so we use this variable to keep track when a style containing such
+            // links is found, so that we can avoid adding color tags on the next sibling, if styles match.
+            private Style linkBugStyle = null;
 
             @Override
             public void component(@NotNull String text) {
@@ -655,26 +660,29 @@ public class LegacyParser extends MessageParser {
                 }
                 this.stack[i] = style;
 
-                @Nullable val color = style.color();
-                if (color == null) {
-                    this.stringBuilder.append(formatToString(Reset.INSTANCE));
-                } else {
-                    this.stringBuilder.append(formatToString(color));
-                }
+                // See comment on linkBugStyle
+                if (!this.stack[i].equals(this.linkBugStyle)) {
+                    @Nullable val color = style.color();
+                    if (color == null) {
+                        this.stringBuilder.append(formatToString(Reset.INSTANCE));
+                    } else {
+                        this.stringBuilder.append(formatToString(color));
+                    }
 
-                @Nullable val shadowColor = style.shadowColor();
-                if (shadowColor != null) {
-                    this.stringBuilder.append(SECTION_CHAR).append('s');
-                    // format: #RRGGBBAA
-                    this.stringBuilder.append(shadowColor.asHexString());
-                }
+                    @Nullable val shadowColor = style.shadowColor();
+                    if (shadowColor != null) {
+                        this.stringBuilder.append(SECTION_CHAR).append('s');
+                        // format: #RRGGBBAA
+                        this.stringBuilder.append(shadowColor.asHexString());
+                    }
 
-                style.decorations().entrySet().stream()
-                        .filter(entry -> entry.getValue() == TextDecoration.State.TRUE)
-                        .forEach(entry -> this.stringBuilder.append(formatToString(entry.getKey())));
+                    style.decorations().entrySet().stream()
+                            .filter(entry -> entry.getValue() == TextDecoration.State.TRUE)
+                            .forEach(entry -> this.stringBuilder.append(formatToString(entry.getKey())));
+                }
 
                 @Nullable val clickEvent = style.clickEvent();
-                if (clickEvent != null && (i == 0 || !clickEvent.equals(this.stack[i - 1].clickEvent()))) {
+                if (clickEvent != null && (i == 0 || !clickEvent.equals(this.stack[i - 1].clickEvent())) && ComponentUtils.isValidClickEvent(clickEvent)) {
                     val uuid = UUID.randomUUID();
                     SerializedComponent.this.clickEvents.put(uuid, clickEvent);
 
@@ -705,11 +713,17 @@ public class LegacyParser extends MessageParser {
 
             @Override
             public void popStyle(@NotNull Style style) {
+                this.linkBugStyle = null;
                 val i = this.topIndex--;
 
                 @Nullable val clickEvent = style.clickEvent();
                 if (clickEvent != null && (i == 0 || !clickEvent.equals(this.stack[i - 1].clickEvent()))) {
-                    this.stringBuilder.append(CLICK_END_DELIM);
+                    // See comment on linkBugStyle
+                    if (ComponentUtils.isValidClickEvent(clickEvent)) {
+                        this.stringBuilder.append(CLICK_END_DELIM);
+                    } else {
+                        this.linkBugStyle = this.stack[i].clickEvent(null);
+                    }
                 }
 
                 @Nullable val hoverEvent = style.hoverEvent();

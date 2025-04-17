@@ -1,10 +1,9 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -12,13 +11,13 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,6 +37,8 @@ public class ComponentUtils {
     private final static PlainTextComponentSerializer PLAIN_TEXT_SERIALIZER = PlainTextComponentSerializer.builder()
             .flattener(TEXT_ONLY_COMPONENT_FLATTENER)
             .build();
+
+    private static final Pattern URL_REGEX = Pattern.compile("^(?:(https?)://)?([-\\w_.]{2,}\\.[a-z]{2,})(/\\S*)?$");
 
     /**
      * Deserialize a JSON string representing a {@link Component}.
@@ -196,6 +197,11 @@ public class ComponentUtils {
             return component.children(newChildren);
         }
         return component;
+    }
+
+    public static boolean isValidClickEvent(ClickEvent clickEvent) {
+        return clickEvent.action() != ClickEvent.Action.OPEN_URL
+                || URL_REGEX.matcher(clickEvent.value()).find();
     }
 
 }
