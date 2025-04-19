@@ -11,6 +11,7 @@ import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DeathScreenPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.EntityPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.GuiPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
@@ -95,6 +96,15 @@ public class PacketEventsListener implements PacketListener {
         if (config.isGuis()) {
             val guiHandler = new GuiPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.OPEN_WINDOW, guiHandler::onOpenWindowPacket);
+        }
+        if (config.isHologramsAll() || !config.getHolograms().isEmpty()) {
+            val entityHandler = new EntityPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.SPAWN_ENTITY, entityHandler::onSpawnEntityPacket);
+            updatedHandlers.put(PacketType.Play.Server.SPAWN_LIVING_ENTITY, entityHandler::onSpawnLivingEntityPacket);
+            updatedHandlers.put(PacketType.Play.Server.SPAWN_PLAYER, entityHandler::onSpawnPlayerPacket);
+            updatedHandlers.put(PacketType.Play.Server.DESTROY_ENTITIES, entityHandler::onDestroyEntitiesPacket);
+            updatedHandlers.put(PacketType.Play.Server.ENTITY_METADATA, entityHandler::onEntityMetadataPacket);
+            // TODO what about player info packets?
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
