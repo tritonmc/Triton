@@ -9,6 +9,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.DeathScreenPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
@@ -79,11 +80,16 @@ public class PacketEventsListener implements PacketListener {
         }
         if (config.isTitles() || config.isActionbars()) {
             val titleHandler = new TitlePacketHandler(parser, config);
-            updatedHandlers.put(PacketType.Play.Server.TITLE, titleHandler::onTitlePacket);
+            updatedHandlers.put(PacketType.Play.Server.TITLE, titleHandler::onTitlePacket); // this packet also handles actionbar
             if (config.isTitles()) {
                 updatedHandlers.put(PacketType.Play.Server.SET_TITLE_TEXT, titleHandler::onSetTitleTextPacket);
                 updatedHandlers.put(PacketType.Play.Server.SET_TITLE_SUBTITLE, titleHandler::onSetTitleSubtitlePacket);
             }
+        }
+        if (config.isDeathScreen()) {
+            val deathScreenHandler = new DeathScreenPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.COMBAT_EVENT, deathScreenHandler::onCombatEventPacket);
+            updatedHandlers.put(PacketType.Play.Server.DEATH_COMBAT_EVENT, deathScreenHandler::onDeathCombatEventPacket);
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
