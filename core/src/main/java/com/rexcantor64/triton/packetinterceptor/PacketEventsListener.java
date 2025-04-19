@@ -11,6 +11,7 @@ import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DeathScreenPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.GuiPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TabPacketHandler;
@@ -90,6 +91,10 @@ public class PacketEventsListener implements PacketListener {
             val deathScreenHandler = new DeathScreenPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.COMBAT_EVENT, deathScreenHandler::onCombatEventPacket);
             updatedHandlers.put(PacketType.Play.Server.DEATH_COMBAT_EVENT, deathScreenHandler::onDeathCombatEventPacket);
+        }
+        if (config.isGuis()) {
+            val guiHandler = new GuiPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.OPEN_WINDOW, guiHandler::onOpenWindowPacket);
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
