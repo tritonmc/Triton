@@ -686,8 +686,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                     .displayName(displayName)
                     .prefix(prefix)
                     .suffix(suffix)
-                    .nametagVisibility(team.getNameTagVisibility())
-                    .collisionRule(team.getCollisionRule())
+                    .nametagVisibility((EnumWrappers.TeamVisibility) team.getNameTagVisibility())
+                    .collisionRule((EnumWrappers.TeamCollisionRule) team.getCollisionRule())
                     .color(team.getColor())
                     .options(team.getOptions())
                     .build();
@@ -911,8 +911,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                         .displayName(WrappedChatComponent.fromJson(value.getDisplayJson()))
                         .prefix(WrappedChatComponent.fromJson(value.getPrefixJson()))
                         .suffix(WrappedChatComponent.fromJson(value.getSuffixJson()))
-                        .nametagVisibility(value.getNameTagVisibility())
-                        .collisionRule(value.getCollisionRule())
+                        .nametagVisibility((EnumWrappers.TeamVisibility) value.getNameTagVisibility())
+                        .collisionRule((EnumWrappers.TeamCollisionRule) value.getCollisionRule())
                         .color(value.getColor())
                         .options(value.getOptions())
                         .build();
@@ -923,8 +923,8 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
                 packet.getChatComponents().writeSafely(1, WrappedChatComponent.fromJson(value.getPrefixJson()));
                 packet.getChatComponents().writeSafely(2, WrappedChatComponent.fromJson(value.getSuffixJson()));
 
-                packet.getStrings().writeSafely(1, value.getNameTagVisibility());
-                packet.getStrings().writeSafely(2, value.getCollisionRule());
+                packet.getStrings().writeSafely(1, (String) value.getNameTagVisibility());
+                packet.getStrings().writeSafely(2, (String) value.getCollisionRule());
                 packet.getChatFormattings().writeSafely(0, value.getColor());
                 packet.getIntegers().writeSafely(1, value.getOptions());
             }
