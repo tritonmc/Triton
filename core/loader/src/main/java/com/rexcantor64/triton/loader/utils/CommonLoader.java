@@ -2,12 +2,19 @@ package com.rexcantor64.triton.loader.utils;
 
 import lombok.Builder;
 import lombok.Singular;
+import lombok.val;
 import me.lucko.jarrelocator.Relocation;
+import org.jetbrains.annotations.Contract;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Builder
 public class CommonLoader {
@@ -16,7 +23,7 @@ public class CommonLoader {
     private final String jarInJarName;
     private final String bootstrapClassName;
     @Singular
-    private final Set<LoaderFlag> flags;
+    private Set<LoaderFlag> flags;
     @Singular
     private final List<Class<?>> constructorTypes;
     @Singular
@@ -50,5 +57,52 @@ public class CommonLoader {
         Object[] constructorValues = this.constructorValues.toArray(new Object[this.constructorValues.size() + 1]);
         constructorValues[constructorValues.length - 1] = Collections.unmodifiableSet(this.flags);
         return loader.instantiatePlugin(bootstrapClassName, constructorTypes, constructorValues);
+    }
+
+    /**
+     * Override loader flags with configuration in loader.conf.
+     * Server administrators are encouraged to not override loader flags, since it can cause Triton
+     * to not work correctly.
+     *
+     * @param pluginDirectory The configuration directory for Triton, where to look for loader.conf.
+     * @return This instance of {@link CommonLoader}.
+     * @since 4.0.0
+     */
+    @Contract("_ -> this")
+    public CommonLoader loadUserLoaderFlags(Path pluginDirectory) {
+        val loaderConfig = pluginDirectory.resolve("loader.conf");
+        if (!loaderConfig.toFile().isFile()) {
+            return this;
+        }
+        val newFlags = new HashSet<>(this.flags);
+        try (Stream<String> stream = Files.lines(loaderConfig)) {
+            stream
+                    .map(String::trim)
+                    .filter(s -> !s.startsWith("#"))
+                    .map(String::toUpperCase)
+                    .forEach(s -> {
+                        val invert = s.startsWith("!");
+                        if (invert) {
+                            s = s.substring(1);
+                        }
+                        try {
+                            val flag = LoaderFlag.valueOf(s);
+                            if (invert) {
+                                newFlags.remove(flag);
+                                System.out.println("Forcefully disabled loader flag '" + s + "'");
+                            } else {
+                                newFlags.add(flag);
+                                System.out.println("Forcefully enabled loader flag '" + s + "'");
+                            }
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Loader flag '" + s + "' does not exist, ignored");
+                        }
+                    });
+        } catch (IOException e) {
+            System.out.println("Failed to load user flags from loader.conf");
+            e.printStackTrace();
+        }
+        this.flags = Collections.unmodifiableSet(newFlags);
+        return this;
     }
 }

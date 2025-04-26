@@ -24,7 +24,10 @@ public class SpigotLoader extends JavaPlugin {
             builder.flag(LoaderFlag.RELOCATE_ADVENTURE);
         }
 
-        this.plugin = builder.build().loadPlugin();
+        this.plugin = builder
+                .build()
+                .loadUserLoaderFlags(this.getDataFolder().toPath())
+                .loadPlugin();
     }
 
     private boolean shouldRelocateAdventure() {

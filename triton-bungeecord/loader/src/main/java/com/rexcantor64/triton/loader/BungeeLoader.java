@@ -20,6 +20,7 @@ public class BungeeLoader extends Plugin {
                 .flag(LoaderFlag.SHADE_ADVENTURE)
                 .flag(LoaderFlag.RELOCATE_ADVENTURE)
                 .build()
+                .loadUserLoaderFlags(this.getDataFolder().toPath())
                 .loadPlugin();
     }
 

@@ -53,8 +53,9 @@ public class VelocityLoader {
                 .constructorValue(logger)
                 .constructorValue(container)
                 .constructorValue(dataDirectory)
-                .flag(LoaderFlag.VENDOR_PACKET_EVENTS) // TODO: allow using server's packet events
+                .flag(LoaderFlag.VENDOR_PACKET_EVENTS)
                 .build()
+                .loadUserLoaderFlags(dataDirectory)
                 .loadPlugin();
     }
 
