@@ -310,8 +310,8 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
         private String suffixJson;
 
         // other data (has to be saved for refreshing packet)
-        private String nameTagVisibility;
-        private String collisionRule;
+        private Object nameTagVisibility; // object since type has changed on ProtocolLib #743
+        private Object collisionRule; // object since type has changed on ProtocolLib #743
         private EnumWrappers.ChatFormatting color;
         private int options;
     }
