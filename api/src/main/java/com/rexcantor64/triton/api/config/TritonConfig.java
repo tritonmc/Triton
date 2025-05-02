@@ -3,6 +3,8 @@ package com.rexcantor64.triton.api.config;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Represents the config.yml
@@ -108,8 +110,29 @@ public interface TritonConfig {
      *
      * @return The value of "language-creation.holograms.types" in the config.
      * @since 1.0.0
+     * @deprecated Starting with Triton v4.0.0, use {@link TritonConfig#getAllowedEntityTypes()} instead.
      */
-    List<EntityType> getHolograms();
+    default List<EntityType> getHolograms() {
+        return this.getAllowedEntityTypes().stream()
+                .map(type -> {
+                    try {
+                        return EntityType.valueOf(type);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get the unfiltered list of entity types that should be translated, as defined in the config.
+     * This may include invalid entity types.
+     *
+     * @return The value of "language-creation.holograms.types" in the config.
+     * @since 4.0.0
+     */
+    List<String> getAllowedEntityTypes();
 
     /**
      * Spigot only
@@ -269,8 +292,6 @@ public interface TritonConfig {
     FeatureSyntax getScoreboardSyntax();
 
     /**
-     * Spigot only
-     *
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
      * .holograms" in the config.
      * @since 1.0.0

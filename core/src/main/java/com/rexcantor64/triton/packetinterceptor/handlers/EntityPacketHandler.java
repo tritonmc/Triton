@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
@@ -19,8 +20,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class EntityPacketHandler {
@@ -34,13 +38,25 @@ public class EntityPacketHandler {
         this.parser = parser;
         this.syntax = config.getHologramSyntax();
         this.allowAll = config.isHologramsAll();
-        this.allowedEntities = new ArrayList<>(); // TODO
+        this.allowedEntities = config.getAllowedEntityTypes().stream()
+                .map(type -> {
+                    String normalisedType = type;
+                    if (!type.contains(":")) {
+                        normalisedType = "minecraft:" + type.toLowerCase(Locale.ROOT);
+                    }
+                    val entityType = EntityTypes.getByName(normalisedType);
+                    if (entityType == null) {
+                        Triton.get().getLogger().logWarning("Could not find entity type '%1', ignoring", type);
+                    }
+                    return entityType;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public void onSpawnEntityPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnEntity(event);
 
-        // TODO check type
         val isAllowed = this.allowAll || this.allowedEntities.contains(packet.getEntityType());
         if (isAllowed) {
             languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());
@@ -50,7 +66,6 @@ public class EntityPacketHandler {
     public void onSpawnLivingEntityPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnLivingEntity(event);
 
-        // TODO check type
         val isAllowed = this.allowAll || this.allowedEntities.contains(packet.getEntityType());
         if (isAllowed) {
             languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());
@@ -60,7 +75,6 @@ public class EntityPacketHandler {
     public void onSpawnPlayerPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnPlayer(event);
 
-        // TODO check type
         val isAllowed = this.allowAll || this.allowedEntities.contains(EntityTypes.PLAYER);
         if (isAllowed) {
             languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());

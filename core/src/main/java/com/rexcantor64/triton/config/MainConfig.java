@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.TritonConfig;
-import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.utils.YAMLUtils;
@@ -68,7 +67,7 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax titleSyntax;
     private boolean guis;
     private FeatureSyntax guiSyntax;
-    private List<EntityType> holograms = new ArrayList<>();
+    private List<String> allowedEntityTypes = new ArrayList<>();
     private boolean hologramsAll;
     private FeatureSyntax hologramSyntax;
     private boolean kick;
@@ -260,6 +259,7 @@ public class MainConfig implements TritonConfig {
         this.guiSyntax = FeatureSyntax.fromSection(guis);
 
         Configuration holograms = section.getSection("holograms");
+        this.allowedEntityTypes = holograms.getStringList("types");
         this.hologramsAll = holograms.getBoolean("allow-all", false);
         this.hologramSyntax = FeatureSyntax.fromSection(holograms);
 
@@ -306,17 +306,6 @@ public class MainConfig implements TritonConfig {
         this.deathScreen = deathScreen.getBoolean("enabled", true);
         this.deathScreenSyntax = FeatureSyntax.fromSection(deathScreen);
 
-        List<String> hologramList = holograms.getStringList("types");
-        for (String hologram : hologramList)
-            try {
-                this.holograms.add(EntityType.valueOf(hologram.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                main.getLogger()
-                        .logWarning("Failed to register hologram type %1 because it's not a valid entity type! " +
-                                        "Please check your spelling and if you can't fix it, please contact the " +
-                                        "developer!",
-                                hologram);
-            }
     }
 
     @Override

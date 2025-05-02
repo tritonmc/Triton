@@ -1,5 +1,9 @@
 package com.rexcantor64.triton.api.wrappers;
 
+/**
+ * @deprecated Not used internally anymore, please use
+ */
+@Deprecated
 public enum EntityType {
 
     DROPPED_ITEM,
