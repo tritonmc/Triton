@@ -105,6 +105,7 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.DESTROY_ENTITIES, entityHandler::onDestroyEntitiesPacket);
             updatedHandlers.put(PacketType.Play.Server.ENTITY_METADATA, entityHandler::onEntityMetadataPacket);
             // TODO what about player info packets?
+            // TODO clear cache when changing world/server (JOIN_GAME packet?)
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);

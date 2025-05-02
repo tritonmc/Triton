@@ -3,6 +3,7 @@ package com.rexcantor64.triton.packetinterceptor.handlers;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
@@ -39,63 +40,87 @@ public class EntityPacketHandler {
     public void onSpawnEntityPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnEntity(event);
 
-        // TODO add to cache
+        // TODO check type
+        val isAllowed = this.allowAll || this.allowedEntities.contains(packet.getEntityType());
+        if (isAllowed) {
+            languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());
+        }
     }
 
     public void onSpawnLivingEntityPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnLivingEntity(event);
 
-        // TODO add to cache
+        // TODO check type
+        val isAllowed = this.allowAll || this.allowedEntities.contains(packet.getEntityType());
+        if (isAllowed) {
+            languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());
+        }
     }
 
     public void onSpawnPlayerPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSpawnPlayer(event);
 
-        // TODO add to cache
+        // TODO check type
+        val isAllowed = this.allowAll || this.allowedEntities.contains(EntityTypes.PLAYER);
+        if (isAllowed) {
+            languagePlayer.getPacketEventsRefresh().saveEntity(packet.getEntityId());
+        }
     }
 
     public void onDestroyEntitiesPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerDestroyEntities(event);
 
-        // TODO remove from cache
+        for (int id : packet.getEntityIds()) {
+            languagePlayer.getPacketEventsRefresh().discardEntity(id);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void onEntityMetadataPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerEntityMetadata(event);
 
+        val entityCacheOpt = languagePlayer.getPacketEventsRefresh().getEntity(packet.getEntityId());
+        if (!entityCacheOpt.isPresent()) {
+            // If it's not cached, it means we don't want to translate it
+            return;
+        }
+        val entityCache = entityCacheOpt.get();
+
         val metadata = packet.getEntityMetadata();
         val hideCustomName = new AtomicBoolean();
         for (EntityData data : metadata) {
             val index = data.getIndex();
-            val type = data.getType().getName();
             val value = data.getValue();
             if (index == 2) {
                 // Index 2 is "Custom Name" of type "OptChat"
                 // https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Entity_metadata#Entity
                 val customName = (Optional<Component>) value;
-                customName.ifPresent(
-                        name -> parser.translateComponent(
-                                        name,
-                                        languagePlayer,
-                                        syntax
-                                )
-                                .ifChanged(result -> {
-                                    // TODO cache
-                                    data.setValue(Optional.ofNullable(result));
-                                    event.markForReEncode(true);
-                                })
-                                .ifToRemove(() -> {
-                                    // TODO cache
-                                    data.setValue(Optional.empty());
-                                    hideCustomName.set(true);
-                                    event.markForReEncode(true);
-                                })
-                        // TODO delete cache unchanged?
-                );
+                if (customName.isPresent()) {
+                    val name = customName.get();
+                    parser.translateComponent(
+                                    name,
+                                    languagePlayer,
+                                    syntax
+                            )
+                            .ifChanged(result -> {
+                                entityCache.setDisplayName(name);
+                                data.setValue(Optional.ofNullable(result));
+                                event.markForReEncode(true);
+                            })
+                            .ifToRemove(() -> {
+                                entityCache.setDisplayName(name);
+                                data.setValue(Optional.empty());
+                                hideCustomName.set(true);
+                                event.markForReEncode(true);
+                            })
+                            .ifUnchanged(() -> entityCache.setDisplayName(null));
+                } else {
+                    entityCache.setDisplayName(null);
+                }
             } else if (index == 3) {
                 // Index 3 is "Is custom name visible" of type "Boolean"
                 // https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Entity_metadata#Entity
+                entityCache.setShowDisplayName((boolean) data.getValue());
                 if (hideCustomName.get()) {
                     data.setValue(false);
                 }
@@ -104,7 +129,7 @@ public class EntityPacketHandler {
                 // https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Entity_metadata#Entity
                 // Used to translate items inside (glowing) item frames
                 // TODO
-            } else if ((index == 22 || index == 23) && type.equals("component")) {
+            } else if ((index == 22 || index == 23) && value instanceof Component) {
                 // Index 22/23 is "Text" of type "Chat"
                 // https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Entity_metadata#Text_Display
                 // Used to translate text display entities
@@ -114,13 +139,13 @@ public class EntityPacketHandler {
                                 languagePlayer,
                                 syntax
                         )
+                        .ifUnchanged(() -> entityCache.setTextDisplayContent(null))
                         .getResultOrToRemove(Component::empty)
                         .ifPresent(result -> {
-                            // TODO cache
+                            entityCache.setTextDisplayContent(text);
                             data.setValue(result);
                             event.markForReEncode(true);
                         });
-                // TODO delete cache unchanged?
             }
         }
     }

@@ -1,11 +1,14 @@
 package com.rexcantor64.triton.player;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
@@ -15,19 +18,22 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.language.parser.MessageParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -37,6 +43,7 @@ public class PacketEventsRefresh {
     private final Map<String, ScoreboardObjective> objectivesMap = new ConcurrentHashMap<>();
     private @Nullable PacketEventsRefresh.PlayerListHeaderFooter playerListHeaderFooter;
     private final Map<UUID, Component> playerInfoMap = new ConcurrentHashMap<>();
+    private final Map<Integer, Entity> entityMap = new ConcurrentHashMap<>();
 
     private final TritonLanguagePlayer<?> languagePlayer;
 
@@ -162,6 +169,39 @@ public class PacketEventsRefresh {
     }
 
     /**
+     * Store info about an entity, even if there is nothing to translate at the moment.
+     * This signals that this entity is of a type that should be translated.
+     *
+     * @param id The ID of the entity (from the perspective of the player).
+     * @since 4.0.0
+     */
+    public void saveEntity(int id) {
+        this.entityMap.put(id, new Entity());
+    }
+
+    /**
+     * Get info about entity given its ID.
+     * The entity only exists if it is of a type that should be translated.
+     *
+     * @param id The ID of the entity (from the perspective of the player).
+     * @return The entity, if it exists and should be translated. Otherwise, the Optional is empty.
+     * @since 4.0.0
+     */
+    public @NotNull Optional<Entity> getEntity(int id) {
+        return Optional.ofNullable(this.entityMap.get(id));
+    }
+
+    /**
+     * Forget an entity, presumably because it has been despawned.
+     *
+     * @param id The ID of the entity (from the perspective of the player).
+     * @since 4.0.0
+     */
+    public void discardEntity(int id) {
+        this.entityMap.remove(id);
+    }
+
+    /**
      * Refresh all active features of a player.
      *
      * @since 4.0.0
@@ -189,6 +229,10 @@ public class PacketEventsRefresh {
             val syntax = cfg.getTabSyntax();
             updatePlayerListHeaderFooter(user, syntax, parser);
             updatePlayerList(user, syntax, parser);
+        }
+        if (cfg.isHologramsAll() || !cfg.getHolograms().isEmpty()) {
+            val syntax = cfg.getHologramSyntax();
+            updateEntities(user, syntax, parser);
         }
     }
 
@@ -342,6 +386,50 @@ public class PacketEventsRefresh {
         }
     }
 
+    private void updateEntities(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
+        for (val entry : entityMap.entrySet()) {
+            val entity = entry.getValue();
+            val entityData = new ArrayList<EntityData>();
+            val displayName = entity.getDisplayName();
+            if (displayName != null) {
+                val showCustomName = new AtomicBoolean(entity.isShowDisplayName());
+                val result = parser.translateComponent(
+                                displayName,
+                                languagePlayer,
+                                syntax
+                        )
+                        .mapToObj(
+                                Optional::ofNullable,
+                                () -> {
+                                    showCustomName.set(false);
+                                    return Optional.empty();
+                                },
+                                () -> Optional.of(displayName)
+                        );
+                entityData.add(new EntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, result));
+                entityData.add(new EntityData(3, EntityDataTypes.BOOLEAN, showCustomName.get()));
+            }
+            val textDisplayContent = entity.getTextDisplayContent();
+            if (textDisplayContent != null) {
+                val result = parser.translateComponent(
+                                textDisplayContent,
+                                languagePlayer,
+                                syntax
+                        )
+                        .getResultOrToRemove(Component::empty)
+                        .orElse(textDisplayContent);
+                val id = user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2) ? 23 : 22;
+                entityData.add(new EntityData(id, EntityDataTypes.ADV_COMPONENT, result));
+            }
+
+            if (entityData.isEmpty()) {
+                continue;
+            }
+            val packet = new WrapperPlayServerEntityMetadata(entry.getKey(), entityData);
+            user.sendPacketSilently(packet);
+        }
+    }
+
     @RequiredArgsConstructor
     @Getter
     private static class ScoreboardObjective {
@@ -355,5 +443,19 @@ public class PacketEventsRefresh {
     private static class PlayerListHeaderFooter {
         private final @NotNull Component header;
         private final @NotNull Component footer;
+    }
+
+    /**
+     * Stores data about an entity that can be used to refresh when the language of a player changes.
+     *
+     * @since 4.0.0
+     */
+    @RequiredArgsConstructor
+    @Getter
+    @Setter
+    public static class Entity {
+        private @Nullable Component displayName;
+        private boolean showDisplayName;
+        private @Nullable Component textDisplayContent;
     }
 }
