@@ -20,6 +20,7 @@ public abstract class PacketEventsManager {
 
     private final @NonNull PacketEventsListener packetEventsListener = new PacketEventsListener();
 
+    @SuppressWarnings("UnstableApiUsage")
     public void onLoad() {
         val dependencyManager = Triton.get().getLoader().getDependencyManager();
         val isPacketEventsVendored = dependencyManager.hasLoaderFlag(LoaderFlag.VENDOR_PACKET_EVENTS);
@@ -34,8 +35,10 @@ public abstract class PacketEventsManager {
         PacketEvents.getAPI().load();
         if (isPacketEventsVendored) {
             // Don't check for PacketEvents updates if it's vendored (the user can't do anything)
-            // noinspection UnstableApiUsage
             PacketEvents.getAPI().getSettings().checkForUpdates(false);
+            // Disable re-encoding by default for performance, Triton correctly marks packets as needing re-encoding when anything is changed.
+            // We can't do this when not vendored, since it might affect other plugins.
+            PacketEvents.getAPI().getSettings().reEncodeByDefault(false);
         }
         PacketEvents.getAPI().getEventManager().registerListener(this.packetEventsListener, PacketListenerPriority.HIGHEST);
     }
