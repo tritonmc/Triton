@@ -3,17 +3,27 @@ package com.rexcantor64.triton.player;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import com.github.retrooper.packetevents.protocol.player.GameMode;
+import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective.RenderType;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo;
 import com.rexcantor64.triton.Triton;
@@ -24,16 +34,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -44,6 +57,8 @@ public class PacketEventsRefresh {
     private @Nullable PacketEventsRefresh.PlayerListHeaderFooter playerListHeaderFooter;
     private final Map<UUID, Component> playerInfoMap = new ConcurrentHashMap<>();
     private final Map<Integer, Entity> entityMap = new ConcurrentHashMap<>();
+    private final Map<UUID, Player> tentativePlayerMap = new ConcurrentHashMap<>();
+    private final Map<Integer, Player> spawnedPlayerMap = new ConcurrentHashMap<>();
 
     private final TritonLanguagePlayer<?> languagePlayer;
 
@@ -202,6 +217,78 @@ public class PacketEventsRefresh {
     }
 
     /**
+     * Save a player that has been registered (through the player info packet), but hasn't been spawned yet.
+     * Only players whose names contain placeholders (e.g., NPCs) should be stored.
+     *
+     * @param uuid The UUID of the player entity.
+     * @param name The original name of the player entity.
+     * @return The newly-created instance of the player state.
+     * @since 4.0.0
+     */
+    @Contract("_, _ -> new")
+    public @NotNull Player saveTentativePlayer(@NotNull UUID uuid, @NotNull String name) {
+        val player = new Player(uuid, name);
+        this.tentativePlayerMap.put(uuid, player);
+        return player;
+    }
+
+    /**
+     * Get a player state from their UUID. Keep in mind this is likely not a real player, but an NPC.
+     *
+     * @param uuid The UUID of the player entity.
+     * @return The player state matching the given UUID, if it exists.
+     * @since 4.0.0
+     */
+    public @NotNull Optional<Player> getTentativePlayer(@NotNull UUID uuid) {
+        return Optional.ofNullable(this.tentativePlayerMap.get(uuid));
+    }
+
+    /**
+     * Discard a player state when it is unregistered (i.e., through the player info packet).
+     * It is possible that references to the {@link Player} object still exist in the spawned players map.
+     *
+     * @param uuid The UUID of the player entity.
+     * @since 4.0.0
+     */
+    public void discardTentativePlayer(@NotNull UUID uuid) {
+        this.tentativePlayerMap.remove(uuid);
+    }
+
+    /**
+     * Associate a player state ({@link Player}) with a given entity ID when it is spawned.
+     * The player state can be retrieved from {@link PacketEventsRefresh#getTentativePlayer(UUID)}.
+     *
+     * @param id     The ID of the spawned entity (from the perspective of the current player).
+     * @param player The player state, for refresh purposes.
+     * @since 4.0.0
+     */
+    public void saveSpawnedPlayer(int id, @NotNull Player player) {
+        this.spawnedPlayerMap.put(id, player);
+    }
+
+    /**
+     * Get a player state from their entity ID. Keep in mind this is likely not a real player, but an NPC.
+     *
+     * @param id The ID of the player entity (from the perspective of the current player).
+     * @return The player state matching the given entity ID, if it exists.
+     * @since 4.0.0
+     */
+    public @NotNull Optional<Player> getSpawnedPlayer(int id) {
+        return Optional.ofNullable(this.spawnedPlayerMap.get(id));
+    }
+
+    /**
+     * Discard a player state when it is despawned.
+     * It is possible that references to the {@link Player} object still exist in the tentative players map.
+     *
+     * @param id The ID of the player entity (from the perspective of the current player).
+     * @since 4.0.0
+     */
+    public void discardSpawnedPlayer(int id) {
+        this.spawnedPlayerMap.remove(id);
+    }
+
+    /**
      * Refresh all active features of a player.
      *
      * @since 4.0.0
@@ -225,14 +312,17 @@ public class PacketEventsRefresh {
             updateScoreboardTeams(user, syntax, parser);
             updateScoreboardObjectives(user, syntax, parser);
         }
+        if (cfg.isHologramsAll() || !cfg.getHolograms().isEmpty()) {
+            val syntax = cfg.getHologramSyntax();
+            updateEntities(user, syntax, parser);
+            // translate players before tab, so that the custom display name can be translated
+            // by the tab refresher
+            updatePlayer(user, syntax, parser);
+        }
         if (cfg.isTab()) {
             val syntax = cfg.getTabSyntax();
             updatePlayerListHeaderFooter(user, syntax, parser);
             updatePlayerList(user, syntax, parser);
-        }
-        if (cfg.isHologramsAll() || !cfg.getHolograms().isEmpty()) {
-            val syntax = cfg.getHologramSyntax();
-            updateEntities(user, syntax, parser);
         }
     }
 
@@ -400,11 +490,11 @@ public class PacketEventsRefresh {
                         )
                         .mapToObj(
                                 Optional::ofNullable,
+                                () -> Optional.of(displayName),
                                 () -> {
                                     showCustomName.set(false);
                                     return Optional.empty();
-                                },
-                                () -> Optional.of(displayName)
+                                }
                         );
                 entityData.add(new EntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, result));
                 entityData.add(new EntityData(3, EntityDataTypes.BOOLEAN, showCustomName.get()));
@@ -428,6 +518,120 @@ public class PacketEventsRefresh {
             val packet = new WrapperPlayServerEntityMetadata(entry.getKey(), entityData);
             user.sendPacketSilently(packet);
         }
+    }
+
+    private void updatePlayer(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
+        for (val entry : this.spawnedPlayerMap.entrySet()) {
+            // Changing the name of a player entity requires 4 steps:
+            // - remove player info
+            // - despawn entity
+            // - send player info
+            // - spawn entity
+            // This means that most of the properties of a player will be discarded by the client,
+            // so Triton must send them again.
+            // It is unrealistic for Triton to keep track of all these properties, so these are provided
+            // on a best-effort basis.
+            // Server owners should use holograms (either text displays, or legacy armor-stands) instead.
+            val id = entry.getKey();
+            val player = entry.getValue();
+
+            val removePlayerInfoPacket = getRemovePlayerInfoPacket(user.getClientVersion(), player.getUuid());
+            val despawnEntity = new WrapperPlayServerDestroyEntities(id);
+
+            val translatedName = parser.translateString(
+                            player.getName(),
+                            languagePlayer,
+                            syntax
+                    )
+                    .mapToObj(
+                            Function.identity(),
+                            player::getName,
+                            String::new
+                    );
+            val addPlayerInfoPacket = getAddPlayerInfoPacket(user.getClientVersion(), player, translatedName);
+            val spawnEntityPacket = getSpawnPlayerPacket(user.getClientVersion(), id, player);
+
+            user.sendPacketSilently(removePlayerInfoPacket);
+            user.sendPacketSilently(despawnEntity);
+            user.sendPacketSilently(addPlayerInfoPacket);
+            user.sendPacketSilently(spawnEntityPacket);
+            if (user.getClientVersion().isOlderThan(ClientVersion.V_1_20_2)) {
+                // before 1.20.2, headYaw was not sent on the spawn packet, so it has to be sent separately
+                val headRotationPacket = new WrapperPlayServerEntityHeadLook(id, player.getHeadYaw());
+                user.sendPacketSilently(headRotationPacket);
+            }
+        }
+    }
+
+    private @NotNull PacketWrapper<?> getRemovePlayerInfoPacket(ClientVersion clientVersion, UUID uuid) {
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_19_3)) {
+            return new WrapperPlayServerPlayerInfoRemove(uuid);
+        }
+        val playerInfo = new WrapperPlayServerPlayerInfo.PlayerData(null, new UserProfile(uuid, null), null, 0);
+        return new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, playerInfo);
+    }
+
+    private @NotNull PacketWrapper<?> getAddPlayerInfoPacket(ClientVersion clientVersion, Player player, String translatedName) {
+        val userProfile = new UserProfile(player.getUuid(), translatedName, player.getTextureProperties());
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_19_3)) {
+            val actionList = EnumSet.of(
+                    WrapperPlayServerPlayerInfoUpdate.Action.ADD_PLAYER
+            );
+            val playerInfo = new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(userProfile);
+            if (player.getDisplayName() != null) {
+                actionList.add(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_DISPLAY_NAME);
+                playerInfo.setDisplayName(playerInfo.getDisplayName());
+            }
+            if (player.getLatency() != null) {
+                actionList.add(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_LATENCY);
+                playerInfo.setLatency(player.getLatency());
+            }
+            if (player.getListed() != null) {
+                actionList.add(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_LISTED);
+                playerInfo.setListed(player.getListed());
+            }
+            if (player.getListOrder() != null) {
+                actionList.add(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_LIST_ORDER);
+                playerInfo.setListOrder(player.getListOrder());
+            }
+            if (player.getShowHat() != null) {
+                actionList.add(WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_HAT);
+                playerInfo.setShowHat(player.getShowHat());
+            }
+            return new WrapperPlayServerPlayerInfoUpdate(actionList, playerInfo);
+        }
+        val latency = player.getLatency();
+        val playerInfo = new WrapperPlayServerPlayerInfo.PlayerData(
+                player.getDisplayName(),
+                userProfile,
+                GameMode.SURVIVAL,
+                latency == null ? 0 : latency
+        );
+        return new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, playerInfo);
+    }
+
+    private @NotNull PacketWrapper<?> getSpawnPlayerPacket(ClientVersion clientVersion, int id, Player player) {
+        if (clientVersion.isNewerThanOrEquals(ClientVersion.V_1_20_2)) {
+            return new WrapperPlayServerSpawnEntity(
+                    id,
+                    Optional.of(player.getUuid()),
+                    EntityTypes.PLAYER,
+                    player.getPosition(),
+                    player.getPitch(),
+                    player.getYaw(),
+                    player.getHeadYaw(),
+                    0, // entity data that we can ignore
+                    Optional.empty()
+            );
+        }
+        return new WrapperPlayServerSpawnPlayer(
+                id,
+                player.getUuid(),
+                player.getPosition(),
+                player.getYaw(),
+                player.getPitch(),
+                new ArrayList<>()
+        );
     }
 
     @RequiredArgsConstructor
@@ -457,5 +661,26 @@ public class PacketEventsRefresh {
         private @Nullable Component displayName;
         private boolean showDisplayName;
         private @Nullable Component textDisplayContent;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @Setter
+    public static class Player {
+        private final @NotNull UUID uuid;
+        private final @NotNull String name;
+        private @NotNull List<TextureProperty> textureProperties = new ArrayList<>();
+
+        // only for refreshes, not to translate
+        private @Nullable Component displayName;
+        private @Nullable Integer latency;
+        private @Nullable Boolean listed;
+        private @Nullable Integer listOrder;
+        private @Nullable Boolean showHat;
+
+        private @NotNull Vector3d position = Vector3d.zero();
+        private float pitch;
+        private float yaw;
+        private float headYaw;
     }
 }

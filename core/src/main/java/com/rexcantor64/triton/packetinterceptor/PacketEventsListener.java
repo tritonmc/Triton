@@ -3,6 +3,7 @@ package com.rexcantor64.triton.packetinterceptor;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.rexcantor64.triton.Triton;
@@ -22,8 +23,11 @@ import lombok.val;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * Main entrypoint for intercepting packets with PacketEvents.
@@ -46,6 +50,23 @@ public class PacketEventsListener implements PacketListener {
         val parser = Triton.get().getMessageParser();
         val config = Triton.get().getConfig();
         val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>>();
+
+        // parse allowed entity types from config
+        val allowedEntities = config.getAllowedEntityTypes().stream()
+                .map(type -> {
+                    String normalisedType = type;
+                    if (!type.contains(":")) {
+                        normalisedType = "minecraft:" + type.toLowerCase(Locale.ROOT);
+                    }
+                    val entityType = EntityTypes.getByName(normalisedType);
+                    if (entityType == null) {
+                        Triton.get().getLogger().logWarning("Could not find entity type '%1', ignoring", type);
+                    }
+                    return entityType;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        val shouldTranslatePlayers = config.isHologramsAll() || allowedEntities.contains(EntityTypes.PLAYER);
 
         if (config.isActionbars()) {
             val actionBarHandler = new ActionBarPacketHandler(parser, config);
@@ -73,9 +94,11 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.TEAMS, scoreboardHandler::onTeamsPacket);
             updatedHandlers.put(PacketType.Play.Server.SCOREBOARD_OBJECTIVE, scoreboardHandler::onObjectivePacket);
         }
-        if (config.isTab()) {
-            val tabHandler = new TabPacketHandler(parser, config);
-            updatedHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_AND_FOOTER, tabHandler::onPlayerListHeaderAndFooterPacket);
+        if (config.isTab() || shouldTranslatePlayers) {
+            val tabHandler = new TabPacketHandler(parser, config, shouldTranslatePlayers);
+            if (config.isTab()) {
+                updatedHandlers.put(PacketType.Play.Server.PLAYER_LIST_HEADER_AND_FOOTER, tabHandler::onPlayerListHeaderAndFooterPacket);
+            }
             updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO, tabHandler::onPlayerInfoPacket);
             updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO_UPDATE, tabHandler::onPlayerInfoUpdatePacket);
             updatedHandlers.put(PacketType.Play.Server.PLAYER_INFO_REMOVE, tabHandler::onPlayerInfoRemovePacket);
@@ -97,14 +120,24 @@ public class PacketEventsListener implements PacketListener {
             val guiHandler = new GuiPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.OPEN_WINDOW, guiHandler::onOpenWindowPacket);
         }
-        if (config.isHologramsAll() || !config.getHolograms().isEmpty()) {
-            val entityHandler = new EntityPacketHandler(parser, config);
+        if (config.isHologramsAll() || !config.getAllowedEntityTypes().isEmpty()) {
+            val entityHandler = new EntityPacketHandler(parser, config, allowedEntities);
             updatedHandlers.put(PacketType.Play.Server.SPAWN_ENTITY, entityHandler::onSpawnEntityPacket);
             updatedHandlers.put(PacketType.Play.Server.SPAWN_LIVING_ENTITY, entityHandler::onSpawnLivingEntityPacket);
             updatedHandlers.put(PacketType.Play.Server.SPAWN_PLAYER, entityHandler::onSpawnPlayerPacket);
             updatedHandlers.put(PacketType.Play.Server.DESTROY_ENTITIES, entityHandler::onDestroyEntitiesPacket);
             updatedHandlers.put(PacketType.Play.Server.ENTITY_METADATA, entityHandler::onEntityMetadataPacket);
-            // TODO what about player info packets?
+
+            if (shouldTranslatePlayers) {
+                // for keeping track of players' location only, for refresh
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_POSITION_SYNC, entityHandler::onEntityPositionSync);
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_TELEPORT, entityHandler::onEntityTeleport);
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_RELATIVE_MOVE, entityHandler::onEntityRelativeMove);
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_RELATIVE_MOVE_AND_ROTATION, entityHandler::onEntityRelativeMoveAndRotation);
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_ROTATION, entityHandler::onEntityRotation);
+                updatedHandlers.put(PacketType.Play.Server.ENTITY_HEAD_LOOK, entityHandler::onEntityHeadLook);
+            }
+
             // TODO clear cache when changing world/server (JOIN_GAME packet?)
         }
 
