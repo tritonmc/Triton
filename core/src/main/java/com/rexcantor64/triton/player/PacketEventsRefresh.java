@@ -217,6 +217,16 @@ public class PacketEventsRefresh {
     }
 
     /**
+     * Forget all entities, including players.
+     *
+     * @since 4.0.0
+     */
+    public void discardAllEntitiesAndPlayers() {
+        this.entityMap.clear();
+        this.spawnedPlayerMap.clear();
+    }
+
+    /**
      * Save a player that has been registered (through the player info packet), but hasn't been spawned yet.
      * Only players whose names contain placeholders (e.g., NPCs) should be stored.
      *

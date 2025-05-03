@@ -138,7 +138,7 @@ public class PacketEventsListener implements PacketListener {
                 updatedHandlers.put(PacketType.Play.Server.ENTITY_HEAD_LOOK, entityHandler::onEntityHeadLook);
             }
 
-            // TODO clear cache when changing world/server (JOIN_GAME packet?)
+            updatedHandlers.put(PacketType.Play.Server.JOIN_GAME, entityHandler::onJoinGame);
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);

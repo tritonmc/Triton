@@ -235,4 +235,8 @@ public class EntityPacketHandler {
         languagePlayer.getPacketEventsRefresh().getSpawnedPlayer(packet.getEntityId())
                 .ifPresent(player -> player.setHeadYaw(packet.getHeadYaw()));
     }
+
+    public void onJoinGame(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        languagePlayer.getPacketEventsRefresh().discardAllEntitiesAndPlayers();
+    }
 }
