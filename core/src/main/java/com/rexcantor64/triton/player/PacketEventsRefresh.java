@@ -489,11 +489,11 @@ public class PacketEventsRefresh {
     private void updateEntities(@NotNull User user, @NotNull MainConfig.FeatureSyntax syntax, @NotNull MessageParser parser) {
         for (val entry : entityMap.entrySet()) {
             val entity = entry.getValue();
-            val entityData = new ArrayList<EntityData>();
+            val entityData = new ArrayList<EntityData<?>>();
             val displayName = entity.getDisplayName();
             if (displayName != null) {
                 val showCustomName = new AtomicBoolean(entity.isShowDisplayName());
-                val result = parser.translateComponent(
+                Optional<Component> result = parser.translateComponent(
                                 displayName,
                                 languagePlayer,
                                 syntax
@@ -506,8 +506,8 @@ public class PacketEventsRefresh {
                                     return Optional.empty();
                                 }
                         );
-                entityData.add(new EntityData(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, result));
-                entityData.add(new EntityData(3, EntityDataTypes.BOOLEAN, showCustomName.get()));
+                entityData.add(new EntityData<>(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, result));
+                entityData.add(new EntityData<>(3, EntityDataTypes.BOOLEAN, showCustomName.get()));
             }
             val textDisplayContent = entity.getTextDisplayContent();
             if (textDisplayContent != null) {
@@ -519,7 +519,7 @@ public class PacketEventsRefresh {
                         .getResultOrToRemove(Component::empty)
                         .orElse(textDisplayContent);
                 val id = user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_20_2) ? 23 : 22;
-                entityData.add(new EntityData(id, EntityDataTypes.ADV_COMPONENT, result));
+                entityData.add(new EntityData<>(id, EntityDataTypes.ADV_COMPONENT, result));
             }
 
             if (entityData.isEmpty()) {
