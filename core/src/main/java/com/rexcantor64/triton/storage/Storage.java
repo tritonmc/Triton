@@ -30,6 +30,8 @@ public abstract class Storage {
 
     public abstract void load();
 
+    public abstract void unload();
+
     public abstract boolean uploadToStorage(ConcurrentHashMap<String, Collection> collections);
 
     public abstract boolean uploadPartiallyToStorage(ConcurrentHashMap<String, Collection> collections,

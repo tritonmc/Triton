@@ -72,6 +72,13 @@ public class MysqlStorage extends Storage {
         this.collections = data;
     }
 
+    @Override
+    public void unload() {
+        if (this.dataSource != null) {
+            this.dataSource.close();
+        }
+    }
+
     private Connection openConnection() throws SQLException {
         return this.dataSource.getConnection();
     }

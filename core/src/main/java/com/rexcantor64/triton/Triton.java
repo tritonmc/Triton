@@ -140,6 +140,9 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     public abstract File getDataFolder();
 
     private void setupStorage() {
+        if (this.storage != null) {
+            this.storage.unload();
+        }
         if (config.getStorageType().equalsIgnoreCase("mysql")) {
             try {
                 val mysqlStorage = new MysqlStorage(config.getDatabaseHost(), config.getDatabasePort(), config
@@ -150,6 +153,9 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
                 logger.logInfo("Loaded MySQL storage manager");
                 return;
             } catch (Exception e) {
+                if (this.storage != null) {
+                    this.storage.unload();
+                }
                 logger.logError(e, "Failed to connect to database, falling back to local storage!");
             }
         }
