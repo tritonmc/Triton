@@ -229,4 +229,21 @@ public class ComponentUtils {
         return false;
     }
 
+    /**
+     * Converts an array of {@link BaseComponent} to a single component.
+     * If the array contains exactly one element, that element is returned.
+     * Otherwise, the array is wrapped in an empty {@link TextComponent}.
+     *
+     * @param comps The component array.
+     * @return A single component, which can be either the only element of the given array, or a new instance of a {@link TextComponent}.
+     * @since 3.12.0
+     */
+    public static BaseComponent toSingleBaseComponent(BaseComponent... comps) {
+        if (comps.length == 1) {
+            return comps[0];
+        } else {
+            return new TextComponent(comps);
+        }
+    }
+
 }
