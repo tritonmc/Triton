@@ -19,6 +19,7 @@ import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.spigot.utils.NbtUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
@@ -82,7 +83,8 @@ public class SignPacketHandler extends PacketHandler {
 
             // Ensure this is a sign
             val tileEntityTypeKey = blockEntity.getTypeKey();
-            if (!SIGN_TYPE_ID.equals(tileEntityTypeKey.getFullKey()) && !HANGING_SIGN_TYPE_ID.equals(tileEntityTypeKey.getFullKey())) continue;
+            if (!SIGN_TYPE_ID.equals(tileEntityTypeKey.getFullKey()) && !HANGING_SIGN_TYPE_ID.equals(tileEntityTypeKey.getFullKey()))
+                continue;
 
             val sectionX = blockEntity.getSectionX();
             val sectionZ = blockEntity.getSectionZ();
@@ -245,9 +247,9 @@ public class SignPacketHandler extends PacketHandler {
     /**
      * Builds a Tile Entity Data packet for Minecraft 1.18 and above, used to refresh the content of a sign.
      *
-     * @param location       The location of the sign
-     * @param compound       The NBT Compound of the sign
-     * @param typeKey        The tile entity type of the sign
+     * @param location The location of the sign
+     * @param compound The NBT Compound of the sign
+     * @param typeKey  The tile entity type of the sign
      * @return The packet that was built
      */
     private PacketContainer buildTileEntityDataPacketPost1_18(SignLocation location, NbtCompound compound, MinecraftKey typeKey) {
@@ -317,11 +319,11 @@ public class SignPacketHandler extends PacketHandler {
     /**
      * Translates the sign text using by mutating its NBT Tag Compound.
      *
-     * @param compound       Sign's NBT data
-     * @param location       The location of the sign
-     * @param player         The language player to translate for
-     * @param saveToCache    Whether to save the location and original compound to the player's cache
-     * @param typeKey        The tile entity type of the sign (NMS Object)
+     * @param compound    Sign's NBT data
+     * @param location    The location of the sign
+     * @param player      The language player to translate for
+     * @param saveToCache Whether to save the location and original compound to the player's cache
+     * @param typeKey     The tile entity type of the sign (NMS Object)
      * @return True if the sign was translated or false if left untouched
      */
     private boolean translateSignNbtCompound(NbtCompound compound, SignLocation location, SpigotLanguagePlayer player,
@@ -377,25 +379,50 @@ public class SignPacketHandler extends PacketHandler {
         val sign = getTranslationManager().getSignComponents(player, location, () -> {
             val defaultLines = new Component[8];
             val frontText = compound.getCompound("front_text");
-            val frontTextMessages = frontText.<String>getList("messages");
-            for (int i = 0; i < 4; i++) {
-                try {
-                    val nbtLine = frontTextMessages.getValue(i);
-                    if (nbtLine != null)
-                        defaultLines[i] = ComponentUtils.deserializeFromJson(nbtLine);
-                } catch (Exception e) {
-                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
+            if (MinecraftVersion.v1_21_5.atOrAbove()) {
+                // we need to convert NBT to JSON first
+                val frontTextMessages = frontText.getList("messages").getValue();
+                for (int i = 0; i < 4; i++) {
+                    try {
+                        val nbtLine = NbtUtils.toJson(frontTextMessages.get(i));
+                        defaultLines[i] = ComponentUtils.deserializeFromJsonTree(nbtLine);
+                    } catch (Exception e) {
+                        Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
+                    }
+                }
+            } else {
+                val frontTextMessages = frontText.<String>getList("messages");
+                for (int i = 0; i < 4; i++) {
+                    try {
+                        val nbtLine = frontTextMessages.getValue(i);
+                        if (nbtLine != null)
+                            defaultLines[i] = ComponentUtils.deserializeFromJson(nbtLine);
+                    } catch (Exception e) {
+                        Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
+                    }
                 }
             }
             val backText = compound.getCompound("back_text");
-            val backTextMessages = backText.<String>getList("messages");
-            for (int i = 0; i < 4; i++) {
-                try {
-                    val nbtLine = backTextMessages.getValue(i);
-                    if (nbtLine != null)
-                        defaultLines[i + 4] = ComponentUtils.deserializeFromJson(nbtLine);
-                } catch (Exception e) {
-                    Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
+            if (MinecraftVersion.v1_21_5.atOrAbove()) {
+                val backTextMessages = backText.getList("messages").getValue();
+                for (int i = 0; i < 4; i++) {
+                    try {
+                        val nbtLine = NbtUtils.toJson(backTextMessages.get(i));
+                        defaultLines[i + 4] = ComponentUtils.deserializeFromJsonTree(nbtLine);
+                    } catch (Exception e) {
+                        Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
+                    }
+                }
+            } else {
+                val backTextMessages = backText.<String>getList("messages");
+                for (int i = 0; i < 4; i++) {
+                    try {
+                        val nbtLine = backTextMessages.getValue(i);
+                        if (nbtLine != null)
+                            defaultLines[i + 4] = ComponentUtils.deserializeFromJson(nbtLine);
+                    } catch (Exception e) {
+                        Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
+                    }
                 }
             }
             return defaultLines;
@@ -406,16 +433,36 @@ public class SignPacketHandler extends PacketHandler {
             val compoundClone = saveToCache ? NbtFactory.asCompound(compound.deepClone()) : null;
 
             val frontText = compound.getCompound("front_text");
-            val frontTextMessages = Arrays.stream(lines, 0, 4)
-                    .map(ComponentUtils::serializeToJson)
-                    .collect(Collectors.toList());
-            frontText.put("messages", NbtFactory.ofList("messages", frontTextMessages));
 
-            val backText = compound.getCompound("back_text");
-            val backTextMessages = Arrays.stream(lines, 4, 8)
-                    .map(ComponentUtils::serializeToJson)
-                    .collect(Collectors.toList());
-            backText.put("messages", NbtFactory.ofList("messages", backTextMessages));
+            if (MinecraftVersion.v1_21_5.atOrAbove()) {
+                val frontTextMessages = Arrays.stream(lines, 0, 4)
+                        .map(ComponentUtils::serializeToJsonTree)
+                        .map(NbtUtils::fromJson)
+                        .peek(t -> t.setName(""))
+                        .collect(Collectors.toList());
+                frontText.put("messages", NbtFactory.ofList("messages", frontTextMessages));
+            } else {
+                val frontTextMessages = Arrays.stream(lines, 0, 4)
+                        .map(ComponentUtils::serializeToJson)
+                        .collect(Collectors.toList());
+                frontText.put("messages", NbtFactory.ofList("messages", frontTextMessages));
+            }
+
+            if (MinecraftVersion.v1_21_5.atOrAbove()) {
+                val backText = compound.getCompound("back_text");
+                val backTextMessages = Arrays.stream(lines, 4, 8)
+                        .map(ComponentUtils::serializeToJsonTree)
+                        .map(NbtUtils::fromJson)
+                        .peek(t -> t.setName(""))
+                        .collect(Collectors.toList());
+                backText.put("messages", NbtFactory.ofList("messages", backTextMessages));
+            } else {
+                val backText = compound.getCompound("back_text");
+                val backTextMessages = Arrays.stream(lines, 4, 8)
+                        .map(ComponentUtils::serializeToJson)
+                        .collect(Collectors.toList());
+                backText.put("messages", NbtFactory.ofList("messages", backTextMessages));
+            }
 
             if (compoundClone != null) {
                 player.saveSign(location, typeKey, compoundClone);

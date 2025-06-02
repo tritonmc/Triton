@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.utils;
 
+import com.google.gson.JsonElement;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -58,6 +59,26 @@ public class ComponentUtils {
      */
     public static String serializeToJson(@NotNull Component component) {
         return GsonComponentSerializer.gson().serialize(component);
+    }
+
+    /**
+     * Deserialize a {@link JsonElement} representing a {@link Component}.
+     *
+     * @param element The {@link JsonElement} to deserialize.
+     * @return The corresponding {@link Component}.
+     */
+    public static Component deserializeFromJsonTree(@NotNull JsonElement element) {
+        return GsonComponentSerializer.gson().deserializeFromTree(element);
+    }
+
+    /**
+     * Serialize a {@link Component} to a {@link JsonElement}.
+     *
+     * @param component The {@link Component} to serialize.
+     * @return The corresponding {@link JsonElement}.
+     */
+    public static JsonElement serializeToJsonTree(@NotNull Component component) {
+        return GsonComponentSerializer.gson().serializeToTree(component);
     }
 
     /**
