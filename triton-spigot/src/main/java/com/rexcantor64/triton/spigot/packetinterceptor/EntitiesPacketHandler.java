@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -748,6 +749,17 @@ public class EntitiesPacketHandler extends PacketHandler {
             sendPacket(bukkitPlayer, packetDestroy, true);
             sendPacket(bukkitPlayer, packetAdd, true);
             sendPacket(bukkitPlayer, packetSpawn, true);
+
+            if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove() && !humanEntity.isCustomNameVisible()) { // 1.20.2
+                val metadataPacket = createPacket(PacketType.Play.Server.ENTITY_METADATA);
+                metadataPacket.getIntegers().writeSafely(0, humanEntity.getEntityId());
+
+                val dataValueCustomNameVisible = new WrappedDataValue(3, WrappedDataWatcher.Registry.get((Type) Boolean.class), false);
+                val dataValues = Collections.singletonList(dataValueCustomNameVisible);
+                metadataPacket.getDataValueCollectionModifier().writeSafely(0, dataValues);
+
+                sendPacket(bukkitPlayer, metadataPacket, false);
+            }
 
             if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) { // 1.20.2
                 // Even though this is sent in the spawn packet, we still need to send it again for some reason
