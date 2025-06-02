@@ -178,8 +178,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
-        // Nothing to translate, but register listener to ensure order in async mode
-        packetHandlers.put(PacketType.Play.Server.OPEN_BOOK, asAsync(this::handleNop));
+        if (MinecraftVersion.VILLAGE_UPDATE.atOrAbove()) { // 1.14+
+            // Nothing to translate, but register listener to ensure order in async mode
+            packetHandlers.put(PacketType.Play.Server.OPEN_BOOK, asAsync(this::handleNop));
+        }
         if (MinecraftVersion.CAVES_CLIFFS_2.atOrAbove()) { // 1.18+
             // While the villager merchant interface redesign was on 1.14, the Bukkit API only has all fields on 1.18
             packetHandlers.put(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, asAsync(this::handleMerchantItems));
