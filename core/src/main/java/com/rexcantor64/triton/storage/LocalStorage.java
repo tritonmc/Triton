@@ -39,6 +39,11 @@ public class LocalStorage extends Storage {
         this.collections = downloadFromStorage();
     }
 
+    @Override
+    public void unload() {
+        // no op
+    }
+
     public void loadPlayerData() {
         val playersFile = new File(Triton.get().getDataFolder(), "players.json");
         if (playersFile.isFile()) {
