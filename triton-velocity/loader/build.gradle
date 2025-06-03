@@ -9,8 +9,8 @@ group = 'com.rexcantor64.triton'
 dependencies {
     compileOnly project(':core:triton-core-loader')
 
-    compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
+    compileOnly 'com.velocitypowered:velocity-proxy:3.4.0-SNAPSHOT'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.4.0-SNAPSHOT'
 }
 
 blossom {
