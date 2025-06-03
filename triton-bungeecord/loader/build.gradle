@@ -1,13 +1,13 @@
 plugins {
     id 'java'
-    id 'net.minecrell.plugin-yml.bungee' version '0.5.2'
+    id 'de.eldoria.plugin-yml.bungee' version '0.7.1'
 }
 
 String pluginDescription = project.property("pluginDescription")
 String pluginAuthor = project.property("pluginAuthor")
 String pluginName = project.property("pluginName")
 
-apply plugin: 'net.minecrell.plugin-yml.bungee'
+apply plugin: 'de.eldoria.plugin-yml.bungee'
 group 'com.rexcantor64.triton'
 
 dependencies {

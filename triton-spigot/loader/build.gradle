@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.minecrell.plugin-yml.bukkit' version '0.5.2'
+    id 'de.eldoria.plugin-yml.bukkit' version '0.7.1'
 }
 
 String pluginDescription = project.property("pluginDescription")
@@ -12,7 +12,7 @@ String pluginName = project.property("pluginName")
 // Plugins that also hook into ProtocolLib and therefore have to be loaded before Triton
 List conflictingPlugins = ['Citizens']
 
-apply plugin: 'net.minecrell.plugin-yml.bukkit'
+apply plugin: 'de.eldoria.plugin-yml.bukkit'
 group 'com.rexcantor64.triton'
 
 dependencies {
