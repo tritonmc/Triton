@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 apply from: '../gradle/publish.gradle'
 

@@ -13,7 +13,7 @@ String pluginName = project.property("pluginName")
 List conflictingPlugins = ['Citizens']
 
 apply plugin: 'de.eldoria.plugin-yml.bukkit'
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 dependencies {
     compileOnly project(':core:triton-core-loader')

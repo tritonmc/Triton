@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
 }
 
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 dependencies {
     api 'org.ow2.asm:asm-commons:9.2'

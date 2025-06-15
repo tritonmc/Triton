@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'

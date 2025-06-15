@@ -4,7 +4,7 @@ plugins {
 }
 
 apply plugin: 'net.kyori.blossom'
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 dependencies {
     compileOnly project(':core:triton-core-loader')

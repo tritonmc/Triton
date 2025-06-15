@@ -8,7 +8,7 @@ String pluginAuthor = project.property("pluginAuthor")
 String pluginName = project.property("pluginName")
 
 apply plugin: 'de.eldoria.plugin-yml.bungee'
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 dependencies {
     compileOnly project(':core:triton-core-loader')

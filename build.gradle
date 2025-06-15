@@ -1,45 +1,47 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
-group 'com.rexcantor64.triton'
+group = 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version '4.0.0-SNAPSHOT'
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    version = '4.0.0-SNAPSHOT'
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
     repositories {
         mavenLocal()
         mavenCentral()
         maven {
-            name 'diogotcRepositorySnapshots'
-            url 'https://repo.diogotc.com/snapshots/'
+            name = 'diogotcRepositorySnapshots'
+            url = 'https://repo.diogotc.com/snapshots/'
         }
         maven {
-            url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+            url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
             content {
                 includeGroup 'org.bukkit'
                 includeGroup 'org.spigotmc'
             }
         }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://repo.dmulloy2.net/nexus/repository/public/' }
-        maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url = 'https://repo.dmulloy2.net/nexus/repository/public/' }
+        maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
         maven {
-            name 'CodeMC'
-            url 'https://repo.codemc.org/repository/maven-public'
+            name = 'CodeMC'
+            url = 'https://repo.codemc.org/repository/maven-public'
         }
         maven {
-            name 'velocity'
-            url 'https://nexus.velocitypowered.com/repository/maven-public/'
+            name = 'velocity'
+            url = 'https://nexus.velocitypowered.com/repository/maven-public/'
         }
         maven {
             // Mirror other people's repositories
-            name 'diogotcRepositoryMirror'
-            url 'https://repo.diogotc.com/mirror/'
+            name = 'diogotcRepositoryMirror'
+            url = 'https://repo.diogotc.com/mirror/'
         }
     }
 }
@@ -72,17 +74,14 @@ dependencies {
 shadowJar {
     getArchiveBaseName().set(rootProject.name)
 
-    from {
-        project(':core').tasks.shadowJar.archiveFile
-    }
-    from {
-        project(':triton-bungeecord').tasks.shadowJar.archiveFile
-    }
-    from {
-        project(':triton-spigot').tasks.shadowJar.archiveFile
-    }
-    from {
-        project(':triton-velocity').tasks.shadowJar.archiveFile
+    // Include .jarinjar files in the final build
+    def modules = [':core', ':triton-bungeecord', ':triton-spigot', ':triton-velocity']
+    modules.each { path ->
+        def moduleProject = project(path)
+        moduleProject.afterEvaluate {
+            def shadowJarTask = moduleProject.tasks.named('shadowJar')
+            from(shadowJarTask.flatMap { it.archiveFile })
+        }
     }
 
     relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
