@@ -54,7 +54,7 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
     private boolean hasChanged = false;
 
     static {
-        if (MinecraftVersion.v1_20_4.atOrAbove()) {
+        if (MinecraftVersion.v1_21_5.atOrAbove()) {
             FuzzyReflection fuzzyReflection = FuzzyReflection.fromClass(ADVANCEMENT_DISPLAY, true);
             val clientAssetClass = MinecraftReflection.getMinecraftClass("core.ClientAsset");
             BACKGROUND = Accessors.getFieldAccessor(fuzzyReflection.getParameterizedField(Optional.class, clientAssetClass));
