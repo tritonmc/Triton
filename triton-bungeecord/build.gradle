@@ -13,7 +13,7 @@ dependencies {
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.1-SNAPSHOT'
     compileOnly 'net.md-5:bungeecord-proxy:1.21-R0.1-SNAPSHOT'
 
-    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.2'
+    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.4.0'
 
     implementation 'net.byteflux:libby-bungee:1.3.0'
 

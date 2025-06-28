@@ -17,9 +17,9 @@ dependencies {
 
     compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
 
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.18.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.18.0'
-    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.3.4'
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.23.0'
+    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.23.0'
+    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.4.0'
 
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.6'
