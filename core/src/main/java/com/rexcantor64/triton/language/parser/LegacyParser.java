@@ -394,19 +394,6 @@ public class LegacyParser extends MessageParser {
      */
     @VisibleForTesting
     static class SerializedComponent {
-        private final ComponentFlattener FLATTENER = ComponentFlattener.builder()
-                .mapper(KeybindComponent.class, component -> KEYBIND_DELIM + component.keybind() + KEYBIND_DELIM)
-                .mapper(TextComponent.class, TextComponent::content)
-                .mapper(TranslatableComponent.class, component -> {
-                    val uuid = UUID.randomUUID();
-                    this.translatableComponents.put(uuid, component);
-
-                    // Key is only included for backwards-compatibility
-                    return TRANSLATABLE_DELIM + component.key() + TRANSLATABLE_DELIM + uuid + TRANSLATABLE_DELIM;
-                })
-                // ignore unknown components
-                .build();
-
         @Getter
         private final HashMap<UUID, TranslatableComponent> translatableComponents = new HashMap<>();
         @Getter
@@ -419,7 +406,7 @@ public class LegacyParser extends MessageParser {
 
         public SerializedComponent(Component component) {
             val flattenerListener = new CursedFlattenerListener();
-            FLATTENER.flatten(component, flattenerListener);
+            this.flattenComponent(component, flattenerListener);
             this.text = flattenerListener.toString();
         }
 
@@ -622,6 +609,24 @@ public class LegacyParser extends MessageParser {
             this.translatableComponents.putAll(other.getTranslatableComponents());
         }
 
+        private void flattenComponent(@NotNull Component component, @NotNull CursedFlattenerListener listener) {
+            if (component == Component.empty()) {
+                return;
+            }
+
+            val style = component.style();
+
+            listener.pushStyle(style);
+            try {
+                listener.component(component);
+                for (val child : component.children()) {
+                    this.flattenComponent(child, listener);
+                }
+            } finally {
+                listener.popStyle(style);
+            }
+        }
+
         /**
          * Uses reserved unicode characters to delimit components/styles that cannot be represented with
          * legacy color codes, such as click, hover, translatable components, fonts, keybinds, etc.
@@ -634,7 +639,9 @@ public class LegacyParser extends MessageParser {
          *     <li>\uE800, \uE801 and \uE802 for fonts</li>
          * </ul>
          */
-        private class CursedFlattenerListener implements FlattenerListener {
+        // No longer extending FlattenerListener due to Adventure bug:
+        // https://github.com/KyoriPowered/adventure/issues/1254
+        private class CursedFlattenerListener {
             private final StringBuilder stringBuilder = new StringBuilder();
             private Style[] stack = new Style[8];
             private int topIndex = -1;
@@ -644,12 +651,32 @@ public class LegacyParser extends MessageParser {
             // links is found, so that we can avoid adding color tags on the next sibling, if styles match.
             private Style linkBugStyle = null;
 
-            @Override
-            public void component(@NotNull String text) {
-                stringBuilder.append(text);
+            public void component(@NotNull Component component) {
+                if (component instanceof TextComponent) {
+                    val comp = (TextComponent) component;
+                    stringBuilder.append(comp.content());
+                } else if (component instanceof KeybindComponent) {
+                    val comp = (KeybindComponent) component;
+                    stringBuilder
+                            .append(KEYBIND_DELIM)
+                            .append(comp.keybind())
+                            .append(KEYBIND_DELIM);
+                } else if (component instanceof TranslatableComponent) {
+                    val comp = (TranslatableComponent) component;
+                    val uuid = UUID.randomUUID();
+                    SerializedComponent.this.translatableComponents.put(uuid, comp);
+
+                    // Key is only included for backwards-compatibility
+                    stringBuilder
+                            .append(TRANSLATABLE_DELIM)
+                            .append(comp.key())
+                            .append(TRANSLATABLE_DELIM)
+                            .append(uuid)
+                            .append(TRANSLATABLE_DELIM);
+                }
+                // ignore unknown components
             }
 
-            @Override
             public void pushStyle(@NotNull Style style) {
                 val i = ++this.topIndex;
                 if (i >= this.stack.length) {
@@ -711,7 +738,6 @@ public class LegacyParser extends MessageParser {
                 }
             }
 
-            @Override
             public void popStyle(@NotNull Style style) {
                 this.linkBugStyle = null;
                 val i = this.topIndex--;
