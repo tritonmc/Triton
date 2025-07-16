@@ -1,6 +1,8 @@
 package com.rexcantor64.triton.utils;
 
 import com.google.gson.JsonElement;
+import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -9,6 +11,7 @@ import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +28,7 @@ import java.util.stream.IntStream;
 public class ComponentUtils {
 
     public final static char SECTION_CHAR = '§';
+    private final static GsonComponentSerializer GSON_SERIALIZER;
     private final static LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection()
             .toBuilder()
             .hexColors()
@@ -41,6 +45,19 @@ public class ComponentUtils {
 
     private static final Pattern URL_REGEX = Pattern.compile("^(?:(https?)://)?([-\\w_.]{2,}\\.[a-z]{2,})(/\\S*)?$");
 
+    static {
+        val tritonInstance = Triton.get();
+        if (tritonInstance != null && tritonInstance.getLoader().getLoaderFlags().contains(LoaderFlag.SHADE_ADVENTURE)) {
+            // use most compatible options if we shaded adventure
+            GSON_SERIALIZER = GsonComponentSerializer.builder()
+                    .options(JSONOptions.compatibility())
+                    .build();
+        } else {
+            // if using the server's adventure, just use the default
+            GSON_SERIALIZER = GsonComponentSerializer.gson();
+        }
+    }
+
     /**
      * Deserialize a JSON string representing a {@link Component}.
      *
@@ -48,7 +65,7 @@ public class ComponentUtils {
      * @return The corresponding {@link Component}.
      */
     public static Component deserializeFromJson(@NotNull String json) {
-        return GsonComponentSerializer.gson().deserialize(json);
+        return GSON_SERIALIZER.deserialize(json);
     }
 
     /**
@@ -58,7 +75,7 @@ public class ComponentUtils {
      * @return The corresponding JSON string.
      */
     public static String serializeToJson(@NotNull Component component) {
-        return GsonComponentSerializer.gson().serialize(component);
+        return GSON_SERIALIZER.serialize(component);
     }
 
     /**
@@ -68,7 +85,7 @@ public class ComponentUtils {
      * @return The corresponding {@link Component}.
      */
     public static Component deserializeFromJsonTree(@NotNull JsonElement element) {
-        return GsonComponentSerializer.gson().deserializeFromTree(element);
+        return GSON_SERIALIZER.deserializeFromTree(element);
     }
 
     /**
@@ -78,7 +95,7 @@ public class ComponentUtils {
      * @return The corresponding {@link JsonElement}.
      */
     public static JsonElement serializeToJsonTree(@NotNull Component component) {
-        return GsonComponentSerializer.gson().serializeToTree(component);
+        return GSON_SERIALIZER.serializeToTree(component);
     }
 
     /**

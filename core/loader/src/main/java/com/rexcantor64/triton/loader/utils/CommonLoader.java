@@ -34,6 +34,7 @@ public class CommonLoader {
         if (flags.contains(LoaderFlag.SHADE_ADVENTURE)) {
             if (flags.contains(LoaderFlag.RELOCATE_ADVENTURE)) {
                 relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
+                relocations.add(new Relocation("net/kyori/examination", "com/rexcantor64/triton/lib/kyori/examination"));
             } else {
                 // relocate only specific adventure libraries (instead of everything)
                 relocations.add(new Relocation("net/kyori/adventure/text/minimessage", "com/rexcantor64/triton/lib/adventure/text/minimessage"));
@@ -42,6 +43,7 @@ public class CommonLoader {
                 relocations.add(new Relocation("net/kyori/adventure/text/serializer/plain", "com/rexcantor64/triton/lib/adventure/text/serializer/plain"));
                 relocations.add(new Relocation("net/kyori/adventure/text/serializer/bungeecord", "com/rexcantor64/triton/lib/adventure/text/serializer/bungeecord"));
             }
+            relocations.add(new Relocation("net/kyori/option", "com/rexcantor64/triton/lib/kyori/option"));
         }
 
         if (flags.contains(LoaderFlag.VENDOR_PACKET_EVENTS)) {

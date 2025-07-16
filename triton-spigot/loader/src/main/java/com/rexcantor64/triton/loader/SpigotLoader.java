@@ -4,7 +4,10 @@ import com.rexcantor64.triton.loader.utils.CommonLoader;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import lombok.val;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class SpigotLoader extends JavaPlugin {
     private static final String PLATFORM_JAR_NAME = "triton-spigot.jarinjar";
@@ -17,11 +20,13 @@ public class SpigotLoader extends JavaPlugin {
                 .jarInJarName(PLATFORM_JAR_NAME)
                 .bootstrapClassName(BOOTSTRAP_CLASS)
                 .constructorType(JavaPlugin.class)
-                .constructorValue(this)
-                .flag(LoaderFlag.SHADE_ADVENTURE);
+                .constructorValue(this);
 
-        if (shouldRelocateAdventure()) {
-            builder.flag(LoaderFlag.RELOCATE_ADVENTURE);
+        if (!isModernPaper()) {
+            builder.flag(LoaderFlag.SHADE_ADVENTURE);
+            if (shouldRelocateAdventure()) {
+                builder.flag(LoaderFlag.RELOCATE_ADVENTURE);
+            }
         }
 
         this.plugin = builder
@@ -30,15 +35,37 @@ public class SpigotLoader extends JavaPlugin {
                 .loadPlugin();
     }
 
-    private boolean shouldRelocateAdventure() {
-        // TODO manual override
-
+    private boolean isModernPaper() {
         try {
-            // Method only available on adventure 4.18.0+
-            // Required for minimessage to work
-            // We have to check the method because other plugins might add the ShadowColor class even though it's not used
-            Class<?> styleClass = Class.forName("net.kyori.adventure.text.format.StyleGetter");
-            styleClass.getDeclaredMethod("shadowColor");
+            val server = Bukkit.getServer();
+            // this method is only available on Paper (and forks)
+            val method = server.getClass().getMethod("getMinecraftVersion");
+            String version = method.invoke(server).toString();
+
+            val parts = version.split("\\.");
+            val major = Integer.parseInt(parts[0]);
+            val minor = Integer.parseInt(parts[1]);
+            val patch = Integer.parseInt(parts[2]);
+
+            // Ensure at least Paper 1.21.4 (adventure 4.18, shadow color introduced)
+            val wantedMajor = 1;
+            val wantedMinor = 21;
+            val wantedPatch = 4;
+            return major > wantedMajor
+                    || (major == wantedMajor && minor > wantedMinor)
+                    || (major == wantedMajor && minor == wantedMinor && patch >= wantedPatch);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 IndexOutOfBoundsException | NumberFormatException ignore) {
+            // Paper is not present or an outdated version is present
+            return false;
+        }
+    }
+
+    private boolean shouldRelocateAdventure() {
+        try {
+            // Method only available on adventure 4.22.0+
+            Class<?> clickEventClass = Class.forName("net.kyori.adventure.text.event.ClickEvent");
+            clickEventClass.getMethod("payload");
 
             // A modern version of adventure is already present
             return false;
