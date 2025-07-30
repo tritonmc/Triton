@@ -21,7 +21,7 @@ group 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version '3.12.0'
+    version '3.12.1'
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     repositories {
