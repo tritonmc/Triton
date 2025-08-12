@@ -9,6 +9,8 @@ import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.LanguageManager;
 import com.rexcantor64.triton.language.LanguageParser;
 import com.rexcantor64.triton.logger.TritonLogger;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
+import net.md_5.bungee.chat.VersionedComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -35,6 +37,10 @@ public abstract class PacketHandler {
 
     protected LanguageParser getLanguageParser() {
         return getMain().getLanguageParser();
+    }
+
+    protected VersionedComponentUtils componentSerializer() {
+        return getMain().getComponentSerializer();
     }
 
     /**

@@ -18,11 +18,9 @@ import com.rexcantor64.triton.utils.NMSUtils;
 import com.rexcantor64.triton.wrappers.WrappedAdvancementDisplay;
 import com.rexcantor64.triton.wrappers.WrappedAdvancementHolder;
 import lombok.val;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -153,14 +151,14 @@ public class AdvancementsPacketHandler extends PacketHandler {
     }
 
     private void translateAdvancementDisplay(WrappedAdvancementDisplay advancementDisplay, Localized locale) {
-        val originalTitle = ComponentSerializer.parse(advancementDisplay.getTitle().getJson());
-        val originalDescription = ComponentSerializer.parse(advancementDisplay.getDescription().getJson());
+        val originalTitle = componentSerializer().parse(advancementDisplay.getTitle().getJson());
+        val originalDescription = componentSerializer().parse(advancementDisplay.getDescription().getJson());
 
         val translatedTitle = getLanguageParser().parseComponent(locale, getMain().getConf().getAdvancementsSyntax(), originalTitle);
         val translatedDescription = getLanguageParser().parseComponent(locale, getMain().getConf().getAdvancementsSyntax(), originalDescription);
 
-        advancementDisplay.setTitle(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedTitle)));
-        advancementDisplay.setDescription(WrappedChatComponent.fromJson(ComponentSerializer.toString(translatedDescription)));
+        advancementDisplay.setTitle(WrappedChatComponent.fromJson(componentSerializer().toString(translatedTitle)));
+        advancementDisplay.setDescription(WrappedChatComponent.fromJson(componentSerializer().toString(translatedDescription)));
     }
 
     /**

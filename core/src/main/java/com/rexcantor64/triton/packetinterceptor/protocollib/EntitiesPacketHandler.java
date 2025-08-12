@@ -21,7 +21,6 @@ import com.rexcantor64.triton.utils.EntityTypeUtils;
 import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -474,12 +473,12 @@ public class EntitiesPacketHandler extends PacketHandler {
                 BaseComponent[] result = getLanguageParser().parseComponent(
                         languagePlayer,
                         getConfig().getHologramSyntax(),
-                        ComponentSerializer.parse(msg.getJson())
+                        componentSerializer().parse(msg.getJson())
                 );
                 if (result == null) {
                     msg = null;
                 } else {
-                    msg.setJson(ComponentSerializer.toString(result));
+                    msg.setJson(componentSerializer().toString(result));
                 }
             }
             if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
@@ -592,7 +591,7 @@ public class EntitiesPacketHandler extends PacketHandler {
                 val result = getLanguageParser().parseComponent(
                         languagePlayer,
                         getConfig().getHologramSyntax(),
-                        ComponentSerializer.parse(displayName)
+                        componentSerializer().parse(displayName)
                 );
 
                 this.dataValueHandler.getPlayerDisplayNameDataValue(result).ifPresent(dataValues::add);
@@ -611,7 +610,7 @@ public class EntitiesPacketHandler extends PacketHandler {
                 val result = getLanguageParser().parseComponent(
                         languagePlayer,
                         getConfig().getHologramSyntax(),
-                        ComponentSerializer.parse(displayName)
+                        componentSerializer().parse(displayName)
                 );
 
                 this.dataWatcherHandler.getPlayerDisplayNameWatchableObject(result).ifPresent(watchableObjects::add);
@@ -907,7 +906,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             val result = getLanguageParser().parseComponent(
                     languagePlayer,
                     getConfig().getHologramSyntax(),
-                    ComponentSerializer.parse(text)
+                    componentSerializer().parse(text)
             );
 
             final List<WrappedDataValue> dataValues = new ArrayList<>();
@@ -1227,7 +1226,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         Optional<WrappedWatchableObject> getPlayerDisplayNameWatchableObject(BaseComponent[] components) {
             Optional<Object> payload;
             if (components != null) {
-                val wrappedChatComponent = WrappedChatComponent.fromJson(ComponentSerializer.toString(components));
+                val wrappedChatComponent = WrappedChatComponent.fromJson(componentSerializer().toString(components));
                 payload = Optional.of(wrappedChatComponent.getHandle());
             } else {
                 payload = Optional.empty();
@@ -1301,7 +1300,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             val result = getLanguageParser().parseComponent(
                     languagePlayer,
                     getConfig().getHologramSyntax(),
-                    ComponentSerializer.parse(displayNameJson)
+                    componentSerializer().parse(displayNameJson)
             );
 
             if (hasCustomNameConsumer != null) {
@@ -1344,7 +1343,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         Optional<WrappedDataValue> getPlayerDisplayNameDataValue(BaseComponent[] components) {
             Optional<Object> payload;
             if (components != null) {
-                val wrappedChatComponent = WrappedChatComponent.fromJson(ComponentSerializer.toString(components));
+                val wrappedChatComponent = WrappedChatComponent.fromJson(componentSerializer().toString(components));
                 payload = Optional.of(wrappedChatComponent.getHandle());
             } else {
                 payload = Optional.empty();
@@ -1396,7 +1395,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         Optional<WrappedDataValue> getTextDisplayTextDataValue(BaseComponent[] components) {
             Object payload;
             if (components != null) {
-                payload = WrappedChatComponent.fromJson(ComponentSerializer.toString(components)).getHandle();
+                payload = WrappedChatComponent.fromJson(componentSerializer().toString(components)).getHandle();
             } else {
                 payload = WrappedChatComponent.fromText("").getHandle();
             }
@@ -1430,7 +1429,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             val result = getLanguageParser().parseComponent(
                     languagePlayer,
                     getConfig().getHologramSyntax(),
-                    ComponentSerializer.parse(displayNameJson)
+                    componentSerializer().parse(displayNameJson)
             );
 
             if (hasCustomNameConsumer != null) {
@@ -1477,7 +1476,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             val result = getLanguageParser().parseComponent(
                     languagePlayer,
                     getConfig().getHologramSyntax(),
-                    ComponentSerializer.parse(displayNameJson)
+                    componentSerializer().parse(displayNameJson)
             );
 
             return this.getTextDisplayTextDataValue(result);

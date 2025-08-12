@@ -22,7 +22,6 @@ import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.NbtUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -191,7 +190,7 @@ public class SignPacketHandler extends PacketHandler {
             for (int i = 0; i < 4; i++) {
                 try {
                     defaultLines[i] = AdvancedComponent
-                            .fromBaseComponent(ComponentSerializer.parse(defaultLinesWrapped[i].getJson()))
+                            .fromBaseComponent(componentSerializer().parse(defaultLinesWrapped[i].getJson()))
                             .getTextClean();
                 } catch (Exception e) {
                     Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, l);
@@ -204,7 +203,7 @@ public class SignPacketHandler extends PacketHandler {
         val comps = new WrappedChatComponent[4];
         for (int i = 0; i < 4; i++)
             comps[i] =
-                    WrappedChatComponent.fromJson(ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                    WrappedChatComponent.fromJson(componentSerializer().toString(TextComponent.fromLegacyText(lines[i])));
         linesModifier.writeSafely(0, comps);
 
         languagePlayer.getLegacySigns().put(l, Arrays.stream(defaultLinesWrapped).map(WrappedChatComponent::getJson).toArray(String[]::new));
@@ -244,7 +243,7 @@ public class SignPacketHandler extends PacketHandler {
                 for (int i = 0; i < 4; i++) {
                     try {
                         defaultLines[i] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.parse(lines[i]))
+                                .fromBaseComponent(componentSerializer().parse(lines[i]))
                                 .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, signLocation);
@@ -326,7 +325,7 @@ public class SignPacketHandler extends PacketHandler {
         val comps = new WrappedChatComponent[4];
         for (int i = 0; i < 4; ++i)
             comps[i] =
-                    WrappedChatComponent.fromJson(ComponentSerializer
+                    WrappedChatComponent.fromJson(componentSerializer()
                             .toString(TextComponent.fromLegacyText(lines[i])));
         packet.getChatComponentArrays().writeSafely(0, comps);
 
@@ -365,7 +364,7 @@ public class SignPacketHandler extends PacketHandler {
                     val nbtLine = compound.getStringOrDefault("Text" + (i + 1));
                     if (nbtLine != null)
                         defaultLines[i] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.parse(nbtLine))
+                                .fromBaseComponent(componentSerializer().parse(nbtLine))
                                 .getTextClean();
                 } catch (Exception e) {
                     Triton.get().getLogger().logError(e, "Failed to parse sign line %1 at %2.", i + 1, location);
@@ -377,7 +376,7 @@ public class SignPacketHandler extends PacketHandler {
         if (sign != null) {
             val compoundClone = saveToCache ? NbtFactory.asCompound(compound.deepClone()) : null;
             for (int i = 0; i < 4; i++) {
-                compound.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(sign[i])));
+                compound.put("Text" + (i + 1), componentSerializer().toString(TextComponent.fromLegacyText(sign[i])));
             }
             if (compoundClone != null) {
                 player.saveSign(location, typeKey, compoundClone);
@@ -403,7 +402,7 @@ public class SignPacketHandler extends PacketHandler {
                     try {
                         val nbtLine = NbtUtils.toJson(frontTextMessages.get(i));
                         defaultLines[i] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.deserialize(nbtLine))
+                                .fromBaseComponent(componentSerializer().deserialize(nbtLine))
                                 .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
@@ -416,7 +415,7 @@ public class SignPacketHandler extends PacketHandler {
                         val nbtLine = frontTextMessages.getValue(i);
                         if (nbtLine != null)
                             defaultLines[i] = AdvancedComponent
-                                    .fromBaseComponent(ComponentSerializer.parse(nbtLine))
+                                    .fromBaseComponent(componentSerializer().parse(nbtLine))
                                     .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (front) at %2.", i + 1, location);
@@ -430,7 +429,7 @@ public class SignPacketHandler extends PacketHandler {
                     try {
                         val nbtLine = NbtUtils.toJson(backTextMessages.get(i));
                         defaultLines[i + 4] = AdvancedComponent
-                                .fromBaseComponent(ComponentSerializer.deserialize(nbtLine))
+                                .fromBaseComponent(componentSerializer().deserialize(nbtLine))
                                 .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
@@ -443,7 +442,7 @@ public class SignPacketHandler extends PacketHandler {
                         val nbtLine = backTextMessages.getValue(i);
                         if (nbtLine != null)
                             defaultLines[i + 4] = AdvancedComponent
-                                    .fromBaseComponent(ComponentSerializer.parse(nbtLine))
+                                    .fromBaseComponent(componentSerializer().parse(nbtLine))
                                     .getTextClean();
                     } catch (Exception e) {
                         Triton.get().getLogger().logError(e, "Failed to parse sign line %1 (back) at %2.", i + 1, location);
@@ -461,7 +460,7 @@ public class SignPacketHandler extends PacketHandler {
                 val frontTextMessages = Arrays.stream(sign, 0, 4)
                         .map(TextComponent::fromLegacyText)
                         .map(ComponentUtils::toSingleBaseComponent)
-                        .map(ComponentSerializer::toJson)
+                        .map(c -> componentSerializer().toJson(c))
                         .map(NbtUtils::fromJson)
                         .peek(t -> t.setName(""))
                         .collect(Collectors.toList());
@@ -469,7 +468,7 @@ public class SignPacketHandler extends PacketHandler {
             } else {
                 val frontTextMessages = Arrays.stream(sign, 0, 4)
                         .map(TextComponent::fromLegacyText)
-                        .map(ComponentSerializer::toString)
+                        .map(c -> componentSerializer().toString(c))
                         .collect(Collectors.toList());
                 frontText.put("messages", NbtFactory.ofList("messages", frontTextMessages));
             }
@@ -479,7 +478,7 @@ public class SignPacketHandler extends PacketHandler {
                 val backTextMessages = Arrays.stream(sign, 4, 8)
                         .map(TextComponent::fromLegacyText)
                         .map(ComponentUtils::toSingleBaseComponent)
-                        .map(ComponentSerializer::toJson)
+                        .map(c -> componentSerializer().toJson(c))
                         .map(NbtUtils::fromJson)
                         .peek(t -> t.setName(""))
                         .collect(Collectors.toList());
@@ -487,7 +486,7 @@ public class SignPacketHandler extends PacketHandler {
             } else {
                 val backTextMessages = Arrays.stream(sign, 4, 8)
                         .map(TextComponent::fromLegacyText)
-                        .map(ComponentSerializer::toString)
+                        .map(c -> componentSerializer().toString(c))
                         .collect(Collectors.toList());
                 backText.put("messages", NbtFactory.ofList("messages", backTextMessages));
             }

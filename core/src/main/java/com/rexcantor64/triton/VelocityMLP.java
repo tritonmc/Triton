@@ -6,6 +6,7 @@ import com.rexcantor64.triton.listeners.VelocityListener;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.VelocityPlugin;
 import com.rexcantor64.triton.storage.LocalStorage;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
@@ -99,5 +100,10 @@ public class VelocityMLP extends Triton {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    @Override
+    public VersionedComponentUtils getComponentSerializer() {
+        return null; // velocity doesn't have the md5 chat library
     }
 }

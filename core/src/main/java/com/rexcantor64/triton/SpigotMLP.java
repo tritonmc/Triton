@@ -18,12 +18,15 @@ import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.plugin.SpigotPlugin;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
 import com.rexcantor64.triton.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.wrappers.items.ItemStackParser;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.chat.ChatVersion;
+import net.md_5.bungee.chat.VersionedComponentSerializer;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
@@ -49,6 +52,8 @@ public class SpigotMLP extends Triton {
     @Getter
     private boolean papiEnabled = false;
     private int refreshTaskId = -1;
+    @Getter
+    private VersionedComponentUtils componentSerializer;
 
     public SpigotMLP(PluginLoader loader) {
         super.loader = loader;
@@ -69,6 +74,8 @@ public class SpigotMLP extends Triton {
             Bukkit.getPluginManager().disablePlugin(getLoader());
             return;
         }
+
+        setupVersionedComponentSerializer();
 
         Metrics metrics = new Metrics(getLoader(), 5606);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
@@ -146,6 +153,15 @@ public class SpigotMLP extends Triton {
         commandMap.register("triton", command);
 
         return command;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private void setupVersionedComponentSerializer() {
+        if (MinecraftVersion.v1_21_5.atOrAbove()) {
+            componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5));
+        } else {
+            componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.forVersion(ChatVersion.V1_16));
+        }
     }
 
     @Override

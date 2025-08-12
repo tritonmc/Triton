@@ -17,6 +17,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.Storage;
 import com.rexcantor64.triton.utils.FileUtils;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
 import lombok.val;
@@ -168,4 +169,6 @@ public abstract class Triton implements com.rexcantor64.triton.api.Triton {
     }
 
     public abstract UUID getPlayerUUIDFromString(String input);
+
+    public abstract VersionedComponentUtils getComponentSerializer();
 }

@@ -35,6 +35,7 @@ import com.rexcantor64.triton.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
 import com.rexcantor64.triton.wrappers.AdventureComponentWrapper;
 import com.rexcantor64.triton.wrappers.WrappedClientConfiguration;
 import com.rexcantor64.triton.wrappers.WrappedPlayerChatMessage;
@@ -42,7 +43,6 @@ import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -84,6 +84,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
     private final SignPacketHandler signPacketHandler = new SignPacketHandler();
 
     private final SpigotMLP main;
+    private final VersionedComponentUtils componentSerializer;
     private final List<HandlerFunction.HandlerType> allowedTypes;
     private final Map<PacketType, HandlerFunction> packetHandlers = new HashMap<>();
     private final AtomicBoolean firstRun = new AtomicBoolean(true);
@@ -95,6 +96,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
     public ProtocolLibListener(SpigotMLP main, HandlerFunction.HandlerType... allowedTypes) {
         this.main = main;
+        this.componentSerializer = main.getComponentSerializer();
         this.allowedTypes = Arrays.asList(allowedTypes);
         ADVENTURE_COMPONENT_CLASS = NMSUtils.getClassOrNull("net.kyori.adventure.text.Component");
         if (MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) { // 1.11+
@@ -260,7 +262,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (playerChatMessage != null) {
                 Optional<WrappedChatComponent> msg = playerChatMessage.getMessage();
                 if (msg.isPresent()) {
-                    result = ComponentSerializer.parse(msg.get().getJson());
+                    result = componentSerializer.parse(msg.get().getJson());
                 }
             }
         } else if (adventureModifier != null && adventureModifier.readSafely(0) != null) {
@@ -271,7 +273,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             result = baseComponentModifier.readSafely(0);
         } else {
             val msg = chatModifier.readSafely(0);
-            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
+            if (msg != null) result = componentSerializer.parse(msg.getJson());
         }
 
         // Something went wrong while getting data from the packet, or the packet is empty...?
@@ -291,10 +293,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // MC 1.19.3+
             // While chat is signed, we can still mess around with formatting and prefixes
-            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(componentSerializer.toString(result)));
         } else if (hasPlayerChatMessageRecord) { // MC 1.19-1.19.2
             // While chat is signed, we can still mess around with formatting and prefixes
-            playerChatModifier.readSafely(0).setMessage(Optional.of(WrappedChatComponent.fromJson(ComponentSerializer.toString(result))));
+            playerChatModifier.readSafely(0).setMessage(Optional.of(WrappedChatComponent.fromJson(componentSerializer.toString(result))));
         } else if (ab && !MinecraftVersion.EXPLORATION_UPDATE.atOrAbove()) {
             // The Notchian client does not support true JSON messages on actionbars
             // on 1.10 and below. Therefore, we must convert to a legacy string inside
@@ -334,7 +336,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             adventureModifier.writeSafely(0, null);
         } else if (chatModifier.readSafely(0) != null) {
             try {
-                result = ComponentSerializer.parse(chatModifier.readSafely(0).getJson());
+                result = componentSerializer.parse(chatModifier.readSafely(0).getJson());
             } catch (JsonSyntaxException ignore) {
                 // The md_5 chat library can't handle some messages of 1.20.4
                 // https://github.com/SpigotMC/BungeeCord/issues/3578
@@ -343,7 +345,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else {
             val msgJson = stringModifier.readSafely(0);
             if (msgJson != null) {
-                result = ComponentSerializer.parse(msgJson);
+                result = componentSerializer.parse(msgJson);
             }
         }
 
@@ -363,9 +365,9 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         if (chatModifier.size() > 0) {
-            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+            chatModifier.writeSafely(0, WrappedChatComponent.fromJson(componentSerializer.toString(result)));
         } else {
-            stringModifier.writeSafely(0, ComponentSerializer.toString(result));
+            stringModifier.writeSafely(0, componentSerializer.toString(result));
         }
     }
 
@@ -393,7 +395,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         } else {
             val msg = chatComponentsModifier.readSafely(0);
             if (msg != null) {
-                result = ComponentSerializer.parse(msg.getJson());
+                result = componentSerializer.parse(msg.getJson());
             }
         }
 
@@ -413,7 +415,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         }
 
-        chatComponentsModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        chatComponentsModifier.writeSafely(0, WrappedChatComponent.fromJson(componentSerializer.toString(result)));
     }
 
     /**
@@ -430,7 +432,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         val chatModifier = packet.getPacket().getChatComponents();
 
-        BaseComponent[] result = ComponentSerializer.parse(chatModifier.readSafely(0).getJson());
+        BaseComponent[] result = componentSerializer.parse(chatModifier.readSafely(0).getJson());
 
         // Translate the message
         result = main.getLanguageParser().parseComponent(
@@ -445,7 +447,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             return;
         }
 
-        chatModifier.writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        chatModifier.writeSafely(0, WrappedChatComponent.fromJson(componentSerializer.toString(result)));
     }
 
     private void handleActionbar(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -467,7 +469,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             baseComponentModifier.writeSafely(0, null);
         } else {
             val msg = packet.getPacket().getChatComponents().readSafely(0);
-            if (msg != null) result = ComponentSerializer.parse(msg.getJson());
+            if (msg != null) result = componentSerializer.parse(msg.getJson());
         }
 
         // Something went wrong while getting data from the packet, or the packet is empty...?
@@ -486,7 +488,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         // Flatten action bar's json
-        packet.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(ComponentSerializer.toString(result)));
+        packet.getPacket().getChatComponents().writeSafely(0, WrappedChatComponent.fromJson(componentSerializer.toString(result)));
     }
 
     private void handleTitle(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
@@ -495,12 +497,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         if (msg == null) return;
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTitleSyntax(), ComponentSerializer.parse(msg.getJson()));
+                main.getConf().getTitleSyntax(), componentSerializer.parse(msg.getJson()));
         if (result == null) {
             packet.setCancelled(true);
             return;
         }
-        msg.setJson(ComponentSerializer.toString(result));
+        msg.setJson(componentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -537,7 +539,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
 
         BaseComponent[] resultHeader = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(headerJson));
+                main.getConf().getTabSyntax(), componentSerializer.parse(headerJson));
         if (resultHeader == null)
             resultHeader = new BaseComponent[]{new TextComponent("")};
         else if (resultHeader.length == 1 && resultHeader[0] instanceof TextComponent) {
@@ -547,14 +549,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             if (textComp.getText().length() == 0 && !headerJson.equals("{\"text\":\"\"}"))
                 textComp.setText("§0§1§2§r");
         }
-        header = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultHeader));
+        header = WrappedChatComponent.fromJson(componentSerializer.toString(resultHeader));
         packet.getPacket().getChatComponents().writeSafely(0, header);
 
         BaseComponent[] resultFooter = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getTabSyntax(), ComponentSerializer.parse(footerJson));
+                main.getConf().getTabSyntax(), componentSerializer.parse(footerJson));
         if (resultFooter == null)
             resultFooter = new BaseComponent[]{new TextComponent("")};
-        footer = WrappedChatComponent.fromJson(ComponentSerializer.toString(resultFooter));
+        footer = WrappedChatComponent.fromJson(componentSerializer.toString(resultFooter));
         packet.getPacket().getChatComponents().writeSafely(1, footer);
         languagePlayer.setLastTabHeader(headerJson);
         languagePlayer.setLastTabFooter(footerJson);
@@ -565,14 +567,14 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), ComponentSerializer
+                .parseComponent(languagePlayer, main.getConf().getGuiSyntax(), componentSerializer
                         .parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
         if (MinecraftVersion.NETHER_UPDATE.atOrAbove()) { // 1.16+
-            msg.setJson(ComponentSerializer.toString(result));
+            msg.setJson(componentSerializer.toString(result));
         } else {
-            msg.setJson(ComponentSerializer.toString(ComponentUtils.mergeComponents(result)));
+            msg.setJson(componentSerializer.toString(ComponentUtils.mergeComponents(result)));
         }
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
@@ -582,10 +584,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         WrappedChatComponent msg = packet.getPacket().getChatComponents().readSafely(0);
         BaseComponent[] result = main.getLanguageParser().parseComponent(languagePlayer,
-                main.getConf().getKickSyntax(), ComponentSerializer.parse(msg.getJson()));
+                main.getConf().getKickSyntax(), componentSerializer.parse(msg.getJson()));
         if (result == null)
             result = new BaseComponent[]{new TextComponent("")};
-        msg.setJson(ComponentSerializer.toString(result));
+        msg.setJson(componentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, msg);
     }
 
@@ -713,10 +715,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
 
         for (WrappedChatComponent component : Arrays.asList(displayName, prefix, suffix)) {
             BaseComponent[] result = main.getLanguageParser()
-                    .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                    .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), componentSerializer
                             .parse(component.getJson()));
             if (result == null) result = new BaseComponent[]{new TextComponent("")};
-            component.setJson(ComponentSerializer.toString(result));
+            component.setJson(componentSerializer.toString(result));
         }
 
         if (MinecraftVersion.CAVES_CLIFFS_1.atOrAbove()) { // 1.17+
@@ -779,10 +781,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         languagePlayer.setScoreboardObjective(objectiveName, displayName.getJson(), renderType, numberFormat);
 
         BaseComponent[] result = main.getLanguageParser()
-                .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), ComponentSerializer
+                .parseComponent(languagePlayer, main.getConf().getScoreboardSyntax(), componentSerializer
                         .parse(displayName.getJson()));
         if (result == null) result = new BaseComponent[]{new TextComponent("")};
-        displayName.setJson(ComponentSerializer.toString(result));
+        displayName.setJson(componentSerializer.toString(result));
         packet.getPacket().getChatComponents().writeSafely(0, displayName);
     }
 
@@ -799,12 +801,12 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         BaseComponent[] result = main.getLanguageParser().parseComponent(
                 languagePlayer,
                 main.getConf().getDeathScreenSyntax(),
-                ComponentSerializer.parse(component.getJson())
+                componentSerializer.parse(component.getJson())
         );
         if (result == null) {
             result = new BaseComponent[]{new TextComponent("")};
         }
-        component.setJson(ComponentSerializer.toString(result));
+        component.setJson(componentSerializer.toString(result));
 
         packet.getPacket().getChatComponents().writeSafely(0, component);
     }
@@ -1009,7 +1011,7 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
             container.getIntegers().writeSafely(0, 9); // Action (9): Update sign text
             NbtCompound nbt = NbtFactory.asCompound(container.getNbtModifier().readSafely(0));
             for (int i = 0; i < 4; i++)
-                nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
+                nbt.put("Text" + (i + 1), componentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
             nbt.put("name", "null")
                     .put("x", block.getX())
                     .put("y", block.getY())

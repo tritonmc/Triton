@@ -20,7 +20,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,7 +176,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
     }
 
     public BaseComponent[] parseComponent(Localized language, FeatureSyntax syntax, BaseComponent... text) {
-        text = ComponentSerializer.parse(ComponentSerializer.toString(text));
+        text = Triton.get().getComponentSerializer().reparse(text);
         text = removeTritonLinks(text).toArray(new BaseComponent[0]);
         val advancedComponent = parseAdvancedComponent(language, syntax, AdvancedComponent.fromBaseComponent(text));
 
@@ -297,7 +296,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
         if (translatedResult.startsWith("[triton_json]")) {
             val jsonInput = translatedResult.substring(13);
             try {
-                componentResult = ComponentSerializer.parse(jsonInput);
+                componentResult = Triton.get().getComponentSerializer().parse(jsonInput);
             } catch (JsonParseException e) {
                 Triton.get().getLogger()
                         .logError(e, "Failed to parse JSON translation: %1", jsonInput);
@@ -308,7 +307,7 @@ public class LanguageParser implements com.rexcantor64.triton.api.language.Langu
             try {
                 val textComponent = MiniMessage.miniMessage().deserialize(mmInput);
                 val jsonSerialized = GsonComponentSerializer.gson().serialize(textComponent);
-                componentResult = ComponentSerializer.parse(jsonSerialized);
+                componentResult = Triton.get().getComponentSerializer().parse(jsonSerialized);
             } catch (JsonParseException | NullPointerException e) {
                 Triton.get().getLogger()
                         .logError(e, "Failed to parse Mini Message translation: %1", mmInput);

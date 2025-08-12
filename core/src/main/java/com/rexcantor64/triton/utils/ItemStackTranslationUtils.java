@@ -14,7 +14,11 @@ import com.google.gson.JsonParseException;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.config.MainConfig;
-import com.rexcantor64.triton.wrappers.items.*;
+import com.rexcantor64.triton.wrappers.items.WrappedFilterable;
+import com.rexcantor64.triton.wrappers.items.WrappedItemContainerContents;
+import com.rexcantor64.triton.wrappers.items.WrappedItemLore;
+import com.rexcantor64.triton.wrappers.items.WrappedPatchedDataComponentMap;
+import com.rexcantor64.triton.wrappers.items.WrappedWrittenBookContent;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,7 +30,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ItemStackTranslationUtils {
@@ -113,10 +121,10 @@ public class ItemStackTranslationUtils {
                                 .parseComponent(
                                         languagePlayer,
                                         main().getConf().getItemsSyntax(),
-                                        ComponentSerializer.parse(page.getValue())
+                                        main().getComponentSerializer().parse(page.getValue())
                                 );
                         if (result != null) {
-                            newPagesCollection.add(ComponentSerializer.toString(result));
+                            newPagesCollection.add(main().getComponentSerializer().toString(result));
                         }
                     } catch (JsonParseException e) {
                         String result = translate(
@@ -126,7 +134,7 @@ public class ItemStackTranslationUtils {
                         );
                         if (result != null) {
                             newPagesCollection.add(
-                                    ComponentSerializer.toString(
+                                    main().getComponentSerializer().toString(
                                             TextComponent.fromLegacyText(result)));
                         }
                     }
@@ -152,12 +160,12 @@ public class ItemStackTranslationUtils {
                     .parseComponent(
                             languagePlayer,
                             main().getConf().getItemsSyntax(),
-                            ComponentSerializer.parse(customName.getJson())
+                            main().getComponentSerializer().parse(customName.getJson())
                     );
             if (result == null) {
                 componentMap.setCustomName(null);
             } else {
-                customName.setJson(ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
+                customName.setJson(main().getComponentSerializer().toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
                 componentMap.setCustomName(customName);
             }
         }
@@ -172,13 +180,13 @@ public class ItemStackTranslationUtils {
                             .parseComponent(
                                     languagePlayer,
                                     main().getConf().getItemsSyntax(),
-                                    ComponentSerializer.parse(line.getJson())
+                                    main().getComponentSerializer().parse(line.getJson())
                             );
                     if (result != null) {
                         List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
                         newLines.addAll(splitLoreLines.stream()
                                 .map(comps -> ComponentUtils.ensureNotItalic(comps.stream()))
-                                .map(ComponentSerializer::toString)
+                                .map(main().getComponentSerializer()::toString)
                                 .map(WrappedChatComponent::fromJson)
                                 .collect(Collectors.toList()));
                     }
@@ -210,10 +218,10 @@ public class ItemStackTranslationUtils {
                             .parseComponent(
                                     languagePlayer,
                                     main().getConf().getItemsSyntax(),
-                                    ComponentSerializer.parse(raw.getJson())
+                                    main().getComponentSerializer().parse(raw.getJson())
                             );
                     if (result != null) {
-                        raw.setJson(ComponentSerializer.toString(result));
+                        raw.setJson(main().getComponentSerializer().toString(result));
                         page.setRaw(raw);
                         newPages.add(page);
                     }
@@ -273,7 +281,7 @@ public class ItemStackTranslationUtils {
                 if (result == null) {
                     display.remove("Name");
                 } else {
-                    display.put("Name", ComponentSerializer.toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
+                    display.put("Name", main().getComponentSerializer().toString(ComponentUtils.ensureNotItalic(Arrays.stream(result))));
                 }
             } catch (JsonParseException e) {
                 String result = translate(name, languagePlayer, main().getConf().getItemsSyntax());
@@ -301,7 +309,7 @@ public class ItemStackTranslationUtils {
                         List<List<BaseComponent>> splitLoreLines = ComponentUtils.splitByNewLine(Arrays.asList(result));
                         newLore.addAll(splitLoreLines.stream()
                                 .map(comps -> ComponentUtils.ensureNotItalic(comps.stream()))
-                                .map(ComponentSerializer::toString)
+                                .map(main().getComponentSerializer()::toString)
                                 .collect(Collectors.toList()));
                     }
                 } catch (JsonParseException e) {
@@ -359,7 +367,7 @@ public class ItemStackTranslationUtils {
         if (!MinecraftVersion.AQUATIC_UPDATE.atOrAbove()) { // MC 1.13
             throw new JsonParseException("This Minecraft version does not support JSON text on items");
         }
-        return ComponentSerializer.parse(json);
+        return main().getComponentSerializer().parse(json);
     }
 
     private static Triton main() {

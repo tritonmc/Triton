@@ -12,6 +12,7 @@ import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.NMSUtils;
+import com.rexcantor64.triton.utils.VersionedComponentUtils;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.val;
@@ -19,6 +20,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
+import net.md_5.bungee.chat.VersionedComponentSerializer;
 import net.md_5.bungee.netty.PipelineUtils;
 import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.SingleLineChart;
@@ -33,6 +35,8 @@ public class BungeeMLP extends Triton {
     @Getter
     private BungeeBridgeManager bridgeManager;
     private ScheduledTask configRefreshTask;
+    @Getter
+    private VersionedComponentUtils componentSerializer;
 
     public BungeeMLP(PluginLoader loader) {
         super.loader = loader;
@@ -46,6 +50,9 @@ public class BungeeMLP extends Triton {
     public void onEnable() {
         instance = this;
         super.onEnable();
+
+        // noinspection UnstableApiUsage,deprecation
+        componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.getDefault());
 
         Metrics metrics = new Metrics(getLoader(), 5607);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",

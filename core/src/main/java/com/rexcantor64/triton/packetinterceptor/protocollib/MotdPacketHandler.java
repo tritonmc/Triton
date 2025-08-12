@@ -11,7 +11,6 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.net.InetAddress;
@@ -70,10 +69,11 @@ public class MotdPacketHandler extends PacketAdapter {
         serverPing.setVersionName(Triton.get().getLanguageParser().replaceLanguages(serverPing.getVersionName(), lang, syntax));
 
         val motd = serverPing.getMotD();
+        val serializer = Triton.get().getComponentSerializer();
         val result = Triton.get().getLanguageParser()
-                .parseComponent(lang, syntax, ComponentSerializer.parse(motd.getJson()));
+                .parseComponent(lang, syntax, serializer.parse(motd.getJson()));
         if (result != null)
-            motd.setJson(ComponentSerializer.toString(result));
+            motd.setJson(serializer.toString(result));
         serverPing.setMotD(motd);
 
         if (MinecraftVersion.FEATURE_PREVIEW_2.atOrAbove()) {

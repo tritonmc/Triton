@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -174,12 +173,12 @@ public class BossBarPacketHandler extends PacketHandler {
         BaseComponent[] result = getLanguageParser().parseComponent(
                 languagePlayer,
                 getConfig().getBossbarSyntax(),
-                ComponentSerializer.parse(component.getJson())
+                componentSerializer().parse(component.getJson())
         );
         if (result == null) {
             result = new BaseComponent[]{new TranslatableComponent("")};
         }
-        component.setJson(ComponentSerializer.toString(result));
+        component.setJson(componentSerializer().toString(result));
     }
 
     private void translateAndSaveBossBar(SpigotLanguagePlayer languagePlayer, UUID uuid, WrappedChatComponent component) {
