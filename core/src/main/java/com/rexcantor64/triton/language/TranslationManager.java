@@ -62,10 +62,19 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     @Getter
     private Component translationNotFoundComponent = Component.empty();
 
+    private LegacyComponentSerializer legacyComponentSerializer;
+
     private final Map<Language, MiniMessage> miniMessageInstances = new HashMap<>();
 
     public synchronized void setup() {
         this.translationNotFoundComponent = this.triton.getMessagesConfig().getMessageComponent("error.message-not-found");
+
+        // used to allow parsing links in translations
+        legacyComponentSerializer = LegacyComponentSerializer.legacyAmpersand()
+                .toBuilder()
+                .hexColors()
+                .extractUrls()
+                .build();
 
         // Map<Language, Map<Translation Key, Text>>
         val textItems = new HashMap<Language, HashMap<String, String>>();
@@ -275,7 +284,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         } else if (message.startsWith(JSON_TYPE_TAG)) {
             return GsonComponentSerializer.gson().deserialize(message.substring(JSON_TYPE_TAG.length()));
         } else {
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+            return this.legacyComponentSerializer.deserialize(message);
         }
     }
 
