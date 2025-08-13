@@ -158,9 +158,9 @@ public class SpigotMLP extends Triton {
     @SuppressWarnings("UnstableApiUsage")
     private void setupVersionedComponentSerializer() {
         if (MinecraftVersion.v1_21_5.atOrAbove()) {
-            componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5));
+            componentSerializer = new VersionedComponentUtils.Versioned(VersionedComponentSerializer.forVersion(ChatVersion.V1_21_5));
         } else {
-            componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.forVersion(ChatVersion.V1_16));
+            componentSerializer = new VersionedComponentUtils.Legacy();
         }
     }
 

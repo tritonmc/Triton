@@ -52,7 +52,7 @@ public class BungeeMLP extends Triton {
         super.onEnable();
 
         // noinspection UnstableApiUsage,deprecation
-        componentSerializer = new VersionedComponentUtils(VersionedComponentSerializer.getDefault());
+        componentSerializer = new VersionedComponentUtils.Versioned(VersionedComponentSerializer.getDefault());
 
         Metrics metrics = new Metrics(getLoader(), 5607);
         metrics.addCustomChart(new SingleLineChart("active_placeholders",
