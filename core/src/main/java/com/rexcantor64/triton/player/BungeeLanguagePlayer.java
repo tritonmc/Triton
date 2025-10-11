@@ -17,11 +17,11 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.protocol.Either;
-import net.md_5.bungee.protocol.NumberFormat;
+import net.md_5.bungee.protocol.data.NumberFormat;
 import net.md_5.bungee.protocol.packet.Chat;
 import net.md_5.bungee.protocol.packet.ScoreboardObjective.HealthDisplay;
 import net.md_5.bungee.protocol.packet.Team;
+import net.md_5.bungee.protocol.util.Either;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
