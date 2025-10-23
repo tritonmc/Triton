@@ -16,10 +16,12 @@ import org.jetbrains.annotations.Nullable;
 public class TritonPlaceholderHook extends PlaceholderExpansion implements Relational {
 
     private final SpigotTriton triton;
+    // whether the "viewer" in a %rel_% placeholder should be swapped
+    private final boolean swapRel;
 
     @Override
     public @NotNull String getIdentifier() {
-        return "triton";
+        return swapRel ? "triton2" : "triton";
     }
 
     @Override
@@ -53,9 +55,8 @@ public class TritonPlaceholderHook extends PlaceholderExpansion implements Relat
     }
 
 
-
     @Override
-    public String onPlaceholderRequest(Player ignore, Player viewer, String params) {
-        return onPlaceholderRequest(viewer, params);
+    public String onPlaceholderRequest(Player viewer2, Player viewer1, String params) {
+        return onPlaceholderRequest(swapRel ? viewer2 : viewer1, params);
     }
 }

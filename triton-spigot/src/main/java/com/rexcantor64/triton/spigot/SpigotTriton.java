@@ -114,7 +114,8 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            new TritonPlaceholderHook(this).register();
+            new TritonPlaceholderHook(this, false).register();
+            new TritonPlaceholderHook(this, true).register();
             papiEnabled = true;
         }
 
