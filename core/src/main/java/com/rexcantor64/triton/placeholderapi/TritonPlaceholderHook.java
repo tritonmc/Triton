@@ -1,21 +1,21 @@
 package com.rexcantor64.triton.placeholderapi;
 
 import com.rexcantor64.triton.SpigotMLP;
+import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.entity.Player;
 
+@RequiredArgsConstructor
 public class TritonPlaceholderHook extends PlaceholderExpansion implements Relational {
 
     private final SpigotMLP triton;
-
-    public TritonPlaceholderHook(SpigotMLP triton) {
-        this.triton = triton;
-    }
+    // whether the "viewer" in a %rel_% placeholder should be swapped
+    private final boolean swapRel;
 
     @Override
     public String getIdentifier() {
-        return "triton";
+        return swapRel ? "triton2" : "triton";
     }
 
     @Override
@@ -41,7 +41,7 @@ public class TritonPlaceholderHook extends PlaceholderExpansion implements Relat
     }
 
     @Override
-    public String onPlaceholderRequest(Player ignore, Player viewer, String params) {
-        return onPlaceholderRequest(viewer, params);
+    public String onPlaceholderRequest(Player viewer2, Player viewer1, String params) {
+        return onPlaceholderRequest(swapRel ? viewer2 : viewer1, params);
     }
 }
