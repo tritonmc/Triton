@@ -149,6 +149,21 @@ public class ItemStackTranslationUtils {
         }
         WrappedPatchedDataComponentMap componentMap = componentMapOpt.get();
 
+        // translate item name
+        WrappedChatComponent itemName = componentMap.getItemName();
+        if (itemName != null) {
+            main().getMessageParser()
+                    .translateComponent(
+                            WrappedComponentUtils.deserialize(itemName),
+                            languagePlayer,
+                            main().getConfig().getItemsSyntax()
+                    )
+                    .map(ComponentUtils::ensureNotItalic)
+                    .map(WrappedComponentUtils::serialize)
+                    .getResultOrToRemove(() -> null)
+                    .ifPresent(componentMap::setItemName);
+        }
+
         // translate custom name
         WrappedChatComponent customName = componentMap.getCustomName();
         if (customName != null) {

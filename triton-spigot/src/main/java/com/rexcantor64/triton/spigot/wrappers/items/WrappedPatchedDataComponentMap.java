@@ -47,6 +47,7 @@ public class WrappedPatchedDataComponentMap extends AbstractWrapper {
                     .getMethodByReturnTypeAndParameters("set", Object.class, DATA_COMPONENT_TYPE, Object.class)
     );
 
+    private static final WrappedRegistrable TYPE_ITEM_NAME;
     private static final WrappedRegistrable TYPE_CUSTOM_NAME;
     private static final WrappedRegistrable TYPE_LORE;
     private static final WrappedRegistrable TYPE_CONTAINER;
@@ -79,11 +80,13 @@ public class WrappedPatchedDataComponentMap extends AbstractWrapper {
             WrappedRegistry wrappedRegistry = (WrappedRegistry) wrappedRegistryConstructor.invoke(registry);
 
             // The WrappedRegistrable will have an incorrect factory, but that's fine because we only use the handle anyway
+            TYPE_ITEM_NAME = WrappedRegistrable.fromHandle(DATA_COMPONENT_TYPE, wrappedRegistry.get("item_name"));
             TYPE_CUSTOM_NAME = WrappedRegistrable.fromHandle(DATA_COMPONENT_TYPE, wrappedRegistry.get("custom_name"));
             TYPE_LORE = WrappedRegistrable.fromHandle(DATA_COMPONENT_TYPE, wrappedRegistry.get("lore"));
             TYPE_CONTAINER = WrappedRegistrable.fromHandle(DATA_COMPONENT_TYPE, wrappedRegistry.get("container"));
             TYPE_WRITTEN_BOOK_CONTENT = WrappedRegistrable.fromHandle(DATA_COMPONENT_TYPE, wrappedRegistry.get("written_book_content"));
         } else {
+            TYPE_ITEM_NAME = WrappedRegistrable.fromClassAndKey(DATA_COMPONENT_TYPE, "item_name");
             TYPE_CUSTOM_NAME = WrappedRegistrable.fromClassAndKey(DATA_COMPONENT_TYPE, "custom_name");
             TYPE_LORE = WrappedRegistrable.fromClassAndKey(DATA_COMPONENT_TYPE, "lore");
             TYPE_CONTAINER = WrappedRegistrable.fromClassAndKey(DATA_COMPONENT_TYPE, "container");
@@ -102,6 +105,10 @@ public class WrappedPatchedDataComponentMap extends AbstractWrapper {
 
     public @Nullable Object get(@NotNull WrappedRegistrable key) {
         return GET_METHOD.invoke(this.getHandle(), key.getHandle());
+    }
+
+    public @Nullable WrappedChatComponent getItemName() {
+        return BukkitConverters.getWrappedChatComponentConverter().getSpecific(get(TYPE_ITEM_NAME));
     }
 
     public @Nullable WrappedChatComponent getCustomName() {
@@ -126,6 +133,10 @@ public class WrappedPatchedDataComponentMap extends AbstractWrapper {
 
     public @Nullable Object set(@NotNull WrappedRegistrable key, @Nullable Object value) {
         return SET_METHOD.invoke(this.getHandle(), key.getHandle(), value);
+    }
+
+    public void setItemName(@Nullable WrappedChatComponent component) {
+        set(TYPE_ITEM_NAME, BukkitConverters.getWrappedChatComponentConverter().getGeneric(component));
     }
 
     public void setCustomName(@Nullable WrappedChatComponent component) {
