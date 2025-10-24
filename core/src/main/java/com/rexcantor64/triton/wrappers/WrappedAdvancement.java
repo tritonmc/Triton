@@ -30,7 +30,7 @@ public class WrappedAdvancement extends AbstractWrapper {
     private static FieldAccessor ADVANCEMENT_REQUIREMENTS = Accessors.getFieldAccessor(ADVANCEMENT, ADVANCEMENT_REQUIREMENTS_CLASS, true);
     private static FieldAccessor SEND_TELEMETRY_EVENT_BOOL = Accessors.getFieldAccessor(ADVANCEMENT, boolean.class, true);
     private static FieldAccessor CHAT = Accessors.getFieldAccessor(FUZZY_REFLECTION.getParameterizedField(Optional.class, MinecraftReflection.getIChatBaseComponentClass()));
-    private static ConstructorAccessor ADVANCEMENT_CONSTRUTOR = Accessors.getConstructorAccessor(
+    private static ConstructorAccessor ADVANCEMENT_CONSTRUCTOR = Accessors.getConstructorAccessor(
             ADVANCEMENT,
             Optional.class,
             Optional.class,
@@ -63,7 +63,7 @@ public class WrappedAdvancement extends AbstractWrapper {
     }
 
     public WrappedAdvancement shallowClone() {
-        Object newInstance = ADVANCEMENT_CONSTRUTOR.invoke(
+        Object newInstance = ADVANCEMENT_CONSTRUCTOR.invoke(
                 MINECRAFT_KEY.get(handle),
                 ADVANCEMENT_DISPLAY.get(handle),
                 ADVANCEMENT_REWARDS.get(handle),
