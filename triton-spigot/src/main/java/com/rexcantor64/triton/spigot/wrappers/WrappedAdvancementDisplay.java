@@ -13,6 +13,8 @@ import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import lombok.val;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Optional;
 
 /**
@@ -57,7 +59,18 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
         if (MinecraftVersion.v1_21_5.atOrAbove()) {
             FuzzyReflection fuzzyReflection = FuzzyReflection.fromClass(ADVANCEMENT_DISPLAY, true);
             val clientAssetClass = MinecraftReflection.getMinecraftClass("core.ClientAsset");
-            BACKGROUND = Accessors.getFieldAccessor(fuzzyReflection.getParameterizedField(Optional.class, clientAssetClass));
+            // on 1.21.10 the parameter of the optional is a subclass of ClientAsset instead, so check that instead of equality
+            val backgroundField = fuzzyReflection.getField((field, clazz) -> {
+                if (field.getType().equals(Optional.class)) {
+                    Type type = field.getGenericType();
+                    if (type instanceof ParameterizedType) {
+                        val types = ((ParameterizedType) type).getActualTypeArguments();
+                        return types.length == 1 && clientAssetClass.isAssignableFrom((Class<?>) types[0]);
+                    }
+                }
+                return false;
+            });
+            BACKGROUND = Accessors.getFieldAccessor(backgroundField);
         } else if (MinecraftVersion.v1_20_4.atOrAbove()) {
             FuzzyReflection fuzzyReflection = FuzzyReflection.fromClass(ADVANCEMENT_DISPLAY, true);
             BACKGROUND = Accessors.getFieldAccessor(fuzzyReflection.getParameterizedField(Optional.class, MinecraftReflection.getMinecraftKeyClass()));
