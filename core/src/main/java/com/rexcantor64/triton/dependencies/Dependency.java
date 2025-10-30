@@ -122,8 +122,8 @@ public enum Dependency {
     PACKET_EVENTS_API(
             "com{}github{}retrooper",
             "packetevents-api",
-            "2.8.0",
-            "VCzaF+FQa2xME8T0VBjnA96EvBaIECFhypoGusB5k2M=",
+            "2.10.0",
+            "pdaW/xrw13MT9H0xnJez9+WNmafRApdijp34njZ05n4=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
             // TODO relocate adventure (?)
@@ -131,16 +131,16 @@ public enum Dependency {
     PACKET_EVENTS_NETTY_COMMON(
             "com{}github{}retrooper",
             "packetevents-netty-common",
-            "2.8.0",
-            "59peqrKoKCYa3jEBY3i3ZGwq1IAjZ3hhP1b4Il4lNJg=",
+            "2.10.0",
+            "3WafAPe9IXICdUgbffRMpAq4zj3LniwNkO/XfnZAX+g=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
     ),
     PACKET_EVENTS_VELOCITY(
             "com{}github{}retrooper",
             "packetevents-velocity",
-            "2.8.0",
-            "atT9KQYYT5ASIU0wMSJOLrhDt0ehmrTYK4YdP2uxJaw=",
+            "2.10.0",
+            "EUbMnX9enkzYbdduoc+KS/3FjbCke0i4ZvMAQHjLFXY=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
     );

@@ -23,7 +23,7 @@ dependencies {
 
     implementation 'org.bstats:bstats-velocity:3.1.0'
 
-    compileOnly 'com.github.retrooper:packetevents-velocity:2.8.0'
+    compileOnly 'com.github.retrooper:packetevents-velocity:2.10.0'
 }
 
 shadowJar {
