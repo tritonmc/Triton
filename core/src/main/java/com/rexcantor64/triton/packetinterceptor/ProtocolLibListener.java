@@ -184,6 +184,10 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         }
         packetHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, asAsync(this::handleWindowItems));
         packetHandlers.put(PacketType.Play.Server.SET_SLOT, asAsync(this::handleSetSlot));
+        if (MinecraftVersion.v1_21_2.atOrAbove()) { // 1.21.2+
+            packetHandlers.put(PacketType.Play.Server.SET_CURSOR_ITEM, asAsync(this::handleSetCursorItem));
+            packetHandlers.put(PacketType.Play.Server.SET_PLAYER_INVENTORY, asAsync(this::handleSetPlayerInventory));
+        }
         if (MinecraftVersion.VILLAGE_UPDATE.atOrAbove()) { // 1.14+
             // Nothing to translate, but register listener to ensure order in async mode
             packetHandlers.put(PacketType.Play.Server.OPEN_BOOK, asAsync(this::handleNop));
@@ -627,6 +631,16 @@ public class ProtocolLibListener implements PacketListener, PacketInterceptor {
         ItemStack item = packet.getPacket().getItemModifier().readSafely(0);
         ItemStackTranslationUtils.translateItemStack(item, languagePlayer, true);
         packet.getPacket().getItemModifier().writeSafely(0, item);
+    }
+
+    private void handleSetCursorItem(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // same structure as set slot, reuse
+        handleSetSlot(packet, languagePlayer);
+    }
+
+    private void handleSetPlayerInventory(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
+        // same structure as set slot, reuse
+        handleSetSlot(packet, languagePlayer);
     }
 
     private void handleMerchantItems(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
