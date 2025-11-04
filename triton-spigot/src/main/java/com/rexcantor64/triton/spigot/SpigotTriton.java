@@ -16,6 +16,7 @@ import com.rexcantor64.triton.spigot.listeners.BukkitListener;
 import com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction;
 import com.rexcantor64.triton.spigot.packetinterceptor.MotdPacketHandler;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.spigot.packetinterceptor.SpigotPacketEventsManager;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
@@ -98,7 +99,9 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getJavaPlugin());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getJavaPlugin());
 
-        registerProtocolLibListeners();
+        if (!this.getConfig().isUsePacketEvents()) {
+            registerProtocolLibListeners();
+        }
 
         if (getConfig().isBungeecord()) {
             if (!isSpigotProxyMode() && !isPaperProxyMode()) {
@@ -170,7 +173,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
     @Override
     protected void initPacketEventsManager() {
-        // TODO: triton does not support packetevents on this platform yet
+        this.packetEventsManager = new SpigotPacketEventsManager();
     }
 
     @Override

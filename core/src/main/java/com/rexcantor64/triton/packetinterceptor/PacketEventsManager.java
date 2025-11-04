@@ -31,7 +31,6 @@ public abstract class PacketEventsManager {
 
             initPacketEventsPlatform();
         }
-        this.packetEventsListener.setupHandlers();
         PacketEvents.getAPI().load();
         if (isPacketEventsVendored) {
             // Don't check for PacketEvents updates if it's vendored (the user can't do anything)
@@ -40,10 +39,11 @@ public abstract class PacketEventsManager {
             // We can't do this when not vendored, since it might affect other plugins.
             PacketEvents.getAPI().getSettings().reEncodeByDefault(false);
         }
-        PacketEvents.getAPI().getEventManager().registerListener(this.packetEventsListener, PacketListenerPriority.HIGHEST);
     }
 
     public void onEnable() {
+        this.packetEventsListener.setupHandlers();
+        PacketEvents.getAPI().getEventManager().registerListener(this.packetEventsListener, PacketListenerPriority.HIGHEST);
         PacketEvents.getAPI().init();
     }
 

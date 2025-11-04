@@ -28,6 +28,8 @@ public class SpigotLoader extends JavaPlugin {
         // paper does not include the bungee md5 library serializer
         builder.flag(LoaderFlag.VENDOR_ADVENTURE_BUNGEE_SERIALIZER);
 
+        builder.flag(LoaderFlag.VENDOR_PACKET_EVENTS);
+
         this.plugin = builder
                 .build()
                 .loadUserLoaderFlags(this.getDataFolder().toPath())
@@ -63,6 +65,11 @@ public class SpigotLoader extends JavaPlugin {
             // Adventure serializers are not present or outdated versions are present
             return true;
         }
+    }
+
+    @Override
+    public void onLoad() {
+        this.plugin.onLoad();
     }
 
     @Override

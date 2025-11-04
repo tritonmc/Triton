@@ -123,8 +123,14 @@ public enum Dependency {
             "2.10.0",
             "pdaW/xrw13MT9H0xnJez9+WNmafRApdijp34njZ05n4=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
-            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
-            // TODO relocate adventure (?)
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
     ),
     PACKET_EVENTS_NETTY_COMMON(
             "com{}github{}retrooper",
@@ -132,7 +138,29 @@ public enum Dependency {
             "2.10.0",
             "3WafAPe9IXICdUgbffRMpAq4zj3LniwNkO/XfnZAX+g=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
-            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
+    ),
+    PACKET_EVENTS_SPIGOT(
+            "com{}github{}retrooper",
+            "packetevents-spigot",
+            "2.10.0",
+            "DFb6juVlnwbbNIvGYUXDIRfjXFWQ+isuU/iVuwn56Yw=",
+            relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
     ),
     PACKET_EVENTS_VELOCITY(
             "com{}github{}retrooper",
@@ -140,7 +168,14 @@ public enum Dependency {
             "2.10.0",
             "EUbMnX9enkzYbdduoc+KS/3FjbCke0i4ZvMAQHjLFXY=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
-            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl")
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
     );
 
     @Getter

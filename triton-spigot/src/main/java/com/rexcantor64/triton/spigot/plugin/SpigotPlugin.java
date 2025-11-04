@@ -1,7 +1,6 @@
 package com.rexcantor64.triton.spigot.plugin;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.dependencies.Dependency;
 import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
@@ -30,18 +29,24 @@ public class SpigotPlugin implements PluginLoader, LoaderBootstrap {
     private DependencyManager dependencyManager;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         this.logger = new JavaLogger(this.plugin.getLogger());
         this.dependencyManager = new DependencyManager(new BukkitLibraryManager(this.getPlugin()), loaderFlags);
 
         this.dependencyManager.init();
         this.loadAdventure();
 
-        new SpigotTriton(this).onEnable();
+        new SpigotTriton(this).onLoad();
+    }
+
+    @Override
+    public void onEnable() {
+        Triton.get().onEnable();
     }
 
     @Override
     public void onDisable() {
+        Triton.get().onDisable();
         if (Triton.get().getConfig().isTerminal())
             Log4jInjector.uninjectAppender();
     }

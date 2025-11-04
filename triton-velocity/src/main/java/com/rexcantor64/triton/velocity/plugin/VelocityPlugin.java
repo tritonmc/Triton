@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.velocity.plugin;
 
 import com.google.inject.name.Named;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
@@ -13,6 +14,7 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
+import lombok.val;
 import net.byteflux.libby.VelocityLibraryManager;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
@@ -62,11 +64,21 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     }
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         getDependencyManager().init();
         loadAdventure();
 
-        new VelocityTriton(this).onEnable();
+        new VelocityTriton(this).onLoad();
+    }
+
+    @Override
+    public void onEnable() {
+        Triton.get().onEnable();
+    }
+
+    @Override
+    public void onDisable() {
+        Triton.get().onDisable();
     }
 
     @Override

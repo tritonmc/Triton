@@ -26,6 +26,11 @@ public class BungeeLoader extends Plugin {
     }
 
     @Override
+    public void onLoad() {
+        this.plugin.onLoad();
+    }
+
+    @Override
     public void onEnable() {
         this.plugin.onEnable();
     }

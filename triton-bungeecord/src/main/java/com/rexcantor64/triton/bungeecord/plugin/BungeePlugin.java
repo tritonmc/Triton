@@ -3,7 +3,6 @@ package com.rexcantor64.triton.bungeecord.plugin;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
-import com.rexcantor64.triton.dependencies.Dependency;
 import com.rexcantor64.triton.dependencies.DependencyManager;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
@@ -32,20 +31,26 @@ public class BungeePlugin implements PluginLoader, LoaderBootstrap {
     private DependencyManager dependencyManager;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         this.logger = new JavaLogger(this.getPlugin().getLogger());
         this.dependencyManager = new DependencyManager(new BungeeLibraryManager(this.getPlugin()), loaderFlags);
 
         this.dependencyManager.init();
         this.loadAdventure();
 
-        new BungeeTriton(this).onEnable();
+        new BungeeTriton(this).onLoad();
+    }
+
+    @Override
+    public void onEnable() {
+        Triton.get().onEnable();
     }
 
     @Override
     public void onDisable() {
         // Set the formatter back to default
         try {
+            Triton.get().onDisable();
             if (Triton.get().getConfig().isTerminal()) {
                 BungeeTerminalManager.uninjectTerminalFormatter();
             }

@@ -95,7 +95,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         return instance;
     }
 
-    protected void onEnable() {
+    public void onLoad() {
         instance = this;
         TritonAPIUtils.register(instance);
 
@@ -104,15 +104,8 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         logger = loader.getTritonLogger();
 
         config = new MainConfig(this);
-        languageManager = new LanguageManager(this);
-        messagesConfig = new MessagesConfig();
-        translationManager = new TranslationManager(this);
-
-        LanguageMigration.migrate();
-
-        reload();
-
-        twinManager = new TwinManager(this);
+        configYAML = loadYAML("config", getConfigFileName());
+        config.setup();
 
         if (config.isUsePacketEvents()) {
             val dependencyManager = Triton.get().getLoader().getDependencyManager();
@@ -125,14 +118,27 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         }
 
         if (this.packetEventsManager != null) {
-            // TODO: when spigot is supported, onLoad needs to be called earlier
             this.packetEventsManager.onLoad();
+        }
+    }
+
+    public void onEnable() {
+        languageManager = new LanguageManager(this);
+        messagesConfig = new MessagesConfig();
+        translationManager = new TranslationManager(this);
+
+        LanguageMigration.migrate();
+
+        reload();
+
+        twinManager = new TwinManager(this);
+
+        if (this.packetEventsManager != null) {
             this.packetEventsManager.onEnable();
         }
     }
 
-    protected void onDisable() {
-        // TODO: this should be called at some point
+    public void onDisable() {
         if (this.packetEventsManager != null) {
             this.packetEventsManager.onDisable();
         }

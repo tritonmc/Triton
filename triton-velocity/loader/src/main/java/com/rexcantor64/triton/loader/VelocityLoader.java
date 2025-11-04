@@ -7,6 +7,7 @@ import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
@@ -61,7 +62,13 @@ public class VelocityLoader {
 
     @Subscribe
     public void onEnable(ProxyInitializeEvent event) {
+        this.plugin.onLoad();
         this.plugin.onEnable();
+    }
+
+    @Subscribe
+    public void onDisable(ProxyShutdownEvent event) {
+        this.plugin.onDisable();
     }
 
 }

@@ -5,8 +5,13 @@ package com.rexcantor64.triton.loader.utils;
  */
 public interface LoaderBootstrap {
 
-    default void onEnable() {}
+    default void onLoad() {
+    }
 
-    default void onDisable() {}
+    default void onEnable() {
+    }
+
+    default void onDisable() {
+    }
 
 }
