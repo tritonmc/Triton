@@ -26,55 +26,53 @@ public enum Dependency {
             "adventure-text-serializer-gson",
             "4.25.0",
             "kx9nlZ1G4P5Vtkq5Fk4xtXi3kjV4f2nUcrYoZfl7ckU=",
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.RELOCATE_ADVENTURE)
+            relocate("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json")
     ),
     ADVENTURE_TEXT_SERIALIZER_LEGACY(
             "net{}kyori",
             "adventure-text-serializer-legacy",
             "4.25.0",
             "BvFSXr8X+080w08bUmKt5nJwXBFj9qSLaKTgMU36ahM=",
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.RELOCATE_ADVENTURE)
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocate("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy")
     ),
     ADVENTURE_TEXT_SERIALIZER_PLAIN(
             "net{}kyori",
             "adventure-text-serializer-plain",
             "4.25.0",
             "lFN1egpsDdnktfzSVOgqfqhn9MvkA3cWf0QMQexgUu4=",
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}plain", "adventure{}text{}serializer{}plain", LoaderFlag.RELOCATE_ADVENTURE)
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocate("net{}kyori{}adventure{}text{}serializer{}plain", "adventure{}text{}serializer{}plain")
     ),
     ADVENTURE_TEXT_SERIALIZER_BUNGEECORD(
             "net{}kyori",
             "adventure-text-serializer-bungeecord",
             "4.4.1",
             "4bw3bG3HohAAFgFXNc5MzFNNKya/WrgqrHUcUDIFbDk=",
-            relocate("net{}kyori{}option", "kyori{}option"),
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}bungeecord", "adventure{}text{}serializer{}bungeecord", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.RELOCATE_ADVENTURE)
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocate("net{}kyori{}adventure{}text{}serializer{}bungeecord", "adventure{}text{}serializer{}bungeecord"),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
     ),
     ADVENTURE_MINI_MESSAGE(
             "net{}kyori",
             "adventure-text-minimessage",
             "4.25.0",
             "GY8nxvkeXjJxZAZQhp/v3WgW17MQtIz6UptfWOSpKaQ=",
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.RELOCATE_ADVENTURE)
+            relocate("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json"),
+            relocate("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy")
     ),
 
     // Dependencies of Adventure
@@ -84,17 +82,17 @@ public enum Dependency {
             "4.25.0",
             "zsjwq/ZC3w5ie/Wp//bxfLtiDqb+BfIWK5bK0VZNiFc=",
             relocate("net{}kyori{}adventure", "adventure"),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE)
+            relocate("net{}kyori{}examination", "kyori{}examination")
     ),
     ADVENTURE_TEXT_SERIALIZER_JSON(
             "net{}kyori",
             "adventure-text-serializer-json",
             "4.25.0",
             "SCtKohjXyHn89X5dD5zATbS01LVnnrmbcn9hBO1/uYI=",
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
-            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.RELOCATE_ADVENTURE),
-            relocateIfNot("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.RELOCATE_ADVENTURE)
+            relocate("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json")
     ),
     KYORI_EXAMINATION_API(
             "net{}kyori",
@@ -181,11 +179,7 @@ public enum Dependency {
     }
 
     private static OptionalRelocation relocateIf(String relocateFrom, String relocateTo, LoaderFlag flag) {
-        return new ConditionalRelocation(relocateFrom, relocateTo, flag, false);
-    }
-
-    private static OptionalRelocation relocateIfNot(String relocateFrom, String relocateTo, LoaderFlag flag) {
-        return new ConditionalRelocation(relocateFrom, relocateTo, flag, true);
+        return new ConditionalRelocation(relocateFrom, relocateTo, flag);
     }
 
     private static Relocation relocateInner(String relocateFrom, String relocateTo) {
@@ -201,11 +195,10 @@ public enum Dependency {
         private final String relocateFrom;
         private final String relocateTo;
         private final LoaderFlag flag;
-        private final boolean negate;
 
         @Override
         public Optional<Relocation> relocate(Set<LoaderFlag> loaderFlags) {
-            if (loaderFlags.contains(flag) != negate) {
+            if (loaderFlags.contains(flag)) {
                 return Optional.of(Dependency.relocateInner(relocateFrom, relocateTo));
             }
             return Optional.empty();

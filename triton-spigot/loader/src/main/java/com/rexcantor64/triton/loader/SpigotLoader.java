@@ -4,10 +4,7 @@ import com.rexcantor64.triton.loader.utils.CommonLoader;
 import com.rexcantor64.triton.loader.utils.LoaderBootstrap;
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import lombok.val;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class SpigotLoader extends JavaPlugin {
     private static final String PLATFORM_JAR_NAME = "triton-spigot.jarinjar";
@@ -22,12 +19,14 @@ public class SpigotLoader extends JavaPlugin {
                 .constructorType(JavaPlugin.class)
                 .constructorValue(this);
 
-        if (!isModernPaper()) {
-            builder.flag(LoaderFlag.SHADE_ADVENTURE);
-            if (shouldRelocateAdventure()) {
-                builder.flag(LoaderFlag.RELOCATE_ADVENTURE);
-            }
+        if (shouldVendorAdventure()) {
+            builder.flag(LoaderFlag.VENDOR_ADVENTURE);
+            builder.flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS);
+        } else if (shouldVendorAdventureSerializers()) {
+            builder.flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS);
         }
+        // paper does not include the bungee md5 library serializer
+        builder.flag(LoaderFlag.VENDOR_ADVENTURE_BUNGEE_SERIALIZER);
 
         this.plugin = builder
                 .build()
@@ -35,42 +34,33 @@ public class SpigotLoader extends JavaPlugin {
                 .loadPlugin();
     }
 
-    private boolean isModernPaper() {
+    private boolean shouldVendorAdventure() {
         try {
-            val server = Bukkit.getServer();
-            // this method is only available on Paper (and forks)
-            val method = server.getClass().getMethod("getMinecraftVersion");
-            String version = method.invoke(server).toString();
-
-            val parts = version.split("\\.");
-            val major = Integer.parseInt(parts[0]);
-            val minor = Integer.parseInt(parts[1]);
-            val patch = Integer.parseInt(parts[2]);
-
-            // Ensure at least Paper 1.21.4 (adventure 4.18, shadow color introduced)
-            val wantedMajor = 1;
-            val wantedMinor = 21;
-            val wantedPatch = 4;
-            return major > wantedMajor
-                    || (major == wantedMajor && minor > wantedMinor)
-                    || (major == wantedMajor && minor == wantedMinor && patch >= wantedPatch);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                 IndexOutOfBoundsException | NumberFormatException ignore) {
-            // Paper is not present or an outdated version is present
-            return false;
-        }
-    }
-
-    private boolean shouldRelocateAdventure() {
-        try {
-            // Method only available on adventure 4.22.0+
-            Class<?> clickEventClass = Class.forName("net.kyori.adventure.text.event.ClickEvent");
-            clickEventClass.getMethod("payload");
+            // Method only available on adventure 4.25.0+
+            // Finding a method instead of a class, since plugins can incorrectly shade newer versions than what is installed in the server
+            Class<?> clickEventClass = Class.forName("net.kyori.adventure.text.Component");
+            clickEventClass.getMethod("object");
 
             // A modern version of adventure is already present
             return false;
         } catch (ClassNotFoundException | NoSuchMethodException ignore) {
             // Adventure is not present or an outdated version is present
+            return true;
+        }
+    }
+
+    private boolean shouldVendorAdventureSerializers() {
+        try {
+            // Get a method from all the wanted packages
+            Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
+            Class.forName("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer");
+            Class.forName("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer");
+            Class.forName("net.kyori.adventure.text.serializer.plain.PlainComponentSerializer");
+
+            // A modern version of adventure serializers is already present
+            return false;
+        } catch (ClassNotFoundException ignore) {
+            // Adventure serializers are not present or outdated versions are present
             return true;
         }
     }

@@ -47,7 +47,7 @@ public class ComponentUtils {
 
     static {
         val tritonInstance = Triton.get();
-        if (tritonInstance != null && tritonInstance.getLoader().getLoaderFlags().contains(LoaderFlag.SHADE_ADVENTURE)) {
+        if (tritonInstance != null && tritonInstance.getLoader().getLoaderFlags().contains(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)) {
             // use most compatible options if we shaded adventure
             GSON_SERIALIZER = GsonComponentSerializer.builder()
                     .options(JSONOptions.compatibility())

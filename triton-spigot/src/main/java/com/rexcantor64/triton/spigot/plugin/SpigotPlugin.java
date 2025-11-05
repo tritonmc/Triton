@@ -35,7 +35,7 @@ public class SpigotPlugin implements PluginLoader, LoaderBootstrap {
         this.dependencyManager = new DependencyManager(new BukkitLibraryManager(this.getPlugin()), loaderFlags);
 
         this.dependencyManager.init();
-        this.dependencyManager.loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD);
+        this.loadAdventure();
 
         new SpigotTriton(this).onEnable();
     }

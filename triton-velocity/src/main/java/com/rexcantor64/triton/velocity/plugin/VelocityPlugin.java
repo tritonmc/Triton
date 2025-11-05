@@ -64,6 +64,7 @@ public class VelocityPlugin implements PluginLoader, LoaderBootstrap {
     @Override
     public void onEnable() {
         getDependencyManager().init();
+        loadAdventure();
 
         new VelocityTriton(this).onEnable();
     }

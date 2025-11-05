@@ -37,7 +37,7 @@ public class BungeePlugin implements PluginLoader, LoaderBootstrap {
         this.dependencyManager = new DependencyManager(new BungeeLibraryManager(this.getPlugin()), loaderFlags);
 
         this.dependencyManager.init();
-        this.dependencyManager.loadDependency(Dependency.ADVENTURE_TEXT_SERIALIZER_BUNGEECORD);
+        this.loadAdventure();
 
         new BungeeTriton(this).onEnable();
     }
