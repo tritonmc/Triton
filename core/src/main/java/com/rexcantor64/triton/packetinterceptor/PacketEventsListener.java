@@ -14,6 +14,7 @@ import com.rexcantor64.triton.packetinterceptor.handlers.DeathScreenPacketHandle
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.EntityPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.GuiPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.ItemPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ResourcePackPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ScoreboardPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.TabPacketHandler;
@@ -140,6 +141,13 @@ public class PacketEventsListener implements PacketListener {
             }
 
             updatedHandlers.put(PacketType.Play.Server.JOIN_GAME, entityHandler::onJoinGame);
+        }
+        if (config.isItems()) {
+            val itemHandler = new ItemPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Play.Server.SET_CURSOR_ITEM, itemHandler::onSetCursorItemPacket);
+            updatedHandlers.put(PacketType.Play.Server.SET_PLAYER_INVENTORY, itemHandler::onSetPlayerInventoryPacket);
+            updatedHandlers.put(PacketType.Play.Server.SET_SLOT, itemHandler::onSetSlotPacket);
+            updatedHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, itemHandler::onWindowItemsPacket);
         }
 
         receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
