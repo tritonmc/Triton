@@ -30,6 +30,7 @@ public class DependencyManager {
 
         libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
         libraryManager.addMavenCentral();
+        libraryManager.setRelocator(new NativeRelocationHelper());
 
         if (hasLoaderFlag(LoaderFlag.SHADE_ADVENTURE)) {
             if (hasLoaderFlag(LoaderFlag.RELOCATE_ADVENTURE)) {

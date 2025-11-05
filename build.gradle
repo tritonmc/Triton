@@ -17,6 +17,10 @@ allprojects {
         mavenLocal()
         mavenCentral()
         maven {
+            name = 'diogotcRepositoryReleases'
+            url = 'https://repo.diogotc.com/releases/'
+        }
+        maven {
             name = 'diogotcRepositorySnapshots'
             url = 'https://repo.diogotc.com/snapshots/'
         }
