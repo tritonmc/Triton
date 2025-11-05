@@ -29,8 +29,8 @@ bukkit {
     main = 'com.rexcantor64.triton.loader.SpigotLoader'
     apiVersion = pluginApiVersion
 
-    depend = ['ProtocolLib']
-    softDepend = ['PlaceholderAPI'] + conflictingPlugins
+    depend = []
+    softDepend = ['ProtocolLib', 'PlaceholderAPI'] + conflictingPlugins
 
     commands {
         twin {

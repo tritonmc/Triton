@@ -11,7 +11,7 @@ import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
-import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibRefresher;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -165,8 +165,8 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
         this.waitingForClientLocale = true;
     }
 
-    private Optional<ProtocolLibListener> getInterceptor() {
-        return Optional.ofNullable(SpigotTriton.asSpigot().getProtocolLibListener());
+    private Optional<ProtocolLibRefresher> getInterceptor() {
+        return Optional.ofNullable(SpigotTriton.asSpigot().getProtocolLibRefresher());
     }
 
     /**

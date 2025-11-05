@@ -84,10 +84,12 @@ public class SignCommand extends com.rexcantor64.triton.commands.SignCommand {
                         .getX(), block.getY(), block.getZ());
                 executeSignChange(loc, null);
             }
-            for (val p2 : Objects.requireNonNull(Bukkit.getPlayer(sender.getUUID())).getWorld().getPlayers())
-                SpigotTriton.asSpigot().getProtocolLibListener()
+            for (val p2 : Objects.requireNonNull(Bukkit.getPlayer(sender.getUUID())).getWorld().getPlayers()) {
+                // TODO: handle packetevents
+                SpigotTriton.asSpigot().getProtocolLibRefresher()
                         .resetSign(p2, new SignLocation(block.getWorld().getName(), block.getX(), block
                                 .getY(), block.getZ()));
+            }
             sender.sendMessageFormatted("success.sign-remove");
         } else {
             sender.sendMessageFormatted("help.sign", event.getLabel());

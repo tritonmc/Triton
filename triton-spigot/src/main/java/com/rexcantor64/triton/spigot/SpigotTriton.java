@@ -1,7 +1,5 @@
 package com.rexcantor64.triton.spigot;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.utility.MinecraftVersion;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
@@ -13,9 +11,8 @@ import com.rexcantor64.triton.spigot.guiapi.GuiButton;
 import com.rexcantor64.triton.spigot.guiapi.GuiManager;
 import com.rexcantor64.triton.spigot.guiapi.ScrollableGui;
 import com.rexcantor64.triton.spigot.listeners.BukkitListener;
-import com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction;
-import com.rexcantor64.triton.spigot.packetinterceptor.MotdPacketHandler;
-import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibListener;
+import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibManager;
+import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibRefresher;
 import com.rexcantor64.triton.spigot.packetinterceptor.SpigotPacketEventsManager;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
@@ -34,6 +31,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Objects;
@@ -44,7 +42,8 @@ import java.util.concurrent.ExecutionException;
 
 public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager> {
 
-    private ProtocolLibListener protocolLibListener;
+    @Getter
+    private @Nullable ProtocolLibRefresher protocolLibRefresher;
     @Getter
     private MaterialWrapperManager wrapperManager;
     @Getter
@@ -78,10 +77,13 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     public void onEnable() {
         super.onEnable();
 
-        if (!this.isProtocolLibAvailable()) {
-            getLogger().logError("Shutting down...");
-            Bukkit.getPluginManager().disablePlugin(getJavaPlugin());
-            return;
+        if (!this.getConfig().isUsePacketEvents()) {
+            if (!ProtocolLibManager.isProtocolLibAvailable()) {
+                getLogger().logError("Shutting down...");
+                Bukkit.getPluginManager().disablePlugin(getJavaPlugin());
+                return;
+            }
+            this.protocolLibRefresher = ProtocolLibManager.registerProtocolLibListeners();
         }
 
         Metrics metrics = new Metrics(getJavaPlugin(), 5606);
@@ -98,10 +100,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         // Setup listeners
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getJavaPlugin());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getJavaPlugin());
-
-        if (!this.getConfig().isUsePacketEvents()) {
-            registerProtocolLibListeners();
-        }
 
         if (getConfig().isBungeecord()) {
             if (!isSpigotProxyMode() && !isPaperProxyMode()) {
@@ -125,29 +123,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         if (getConfig().isTerminal()) {
             Log4jInjector.injectAppender();
         }
-    }
-
-    private void registerProtocolLibListeners() {
-        if (getConfig().isAsyncProtocolLib()) {
-            protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC);
-        } else {
-            protocolLibListener = new ProtocolLibListener(this, HandlerFunction.HandlerType.ASYNC, HandlerFunction.HandlerType.SYNC);
-        }
-
-        // Use delayed task to try to be the last registered listener and therefore have the final say in packets
-        Bukkit.getScheduler().scheduleSyncDelayedTask(getJavaPlugin(), () -> {
-            if (getConfig().isAsyncProtocolLib()) {
-                val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
-                asyncManager.registerAsyncHandler(protocolLibListener).start();
-                asyncManager.registerAsyncHandler(new MotdPacketHandler()).start();
-                ProtocolLibrary.getProtocolManager().addPacketListener(new ProtocolLibListener(this, HandlerFunction.HandlerType.SYNC));
-            } else {
-                ProtocolLibrary.getProtocolManager().addPacketListener(protocolLibListener);
-                ProtocolLibrary.getProtocolManager().addPacketListener(new MotdPacketHandler());
-            }
-            getLogger().logInfo("Registered ProtocolLib listeners");
-        }, 1L);
-
     }
 
     @SneakyThrows
@@ -182,44 +157,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         if (getConfig().getConfigAutoRefresh() <= 0) return;
         refreshTaskId = Bukkit.getScheduler()
                 .scheduleSyncDelayedTask(getJavaPlugin(), this::reload, getConfig().getConfigAutoRefresh() * 20L);
-    }
-
-    /**
-     * Checks if ProtocolLib is enabled and if its version matches
-     * the expected version.
-     * Triton requires ProtocolLib 5.4.0 or later.
-     *
-     * @return Whether the plugin should continue loading
-     * @since 3.8.2
-     */
-    private boolean isProtocolLibAvailable() {
-        val protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
-        if (!Bukkit.getPluginManager().isPluginEnabled(protocolLib)) {
-            getLogger().logError("ProtocolLib IS REQUIRED! Without ProtocolLib, Triton will not translate any messages.");
-            getLogger().logError("For the plugin to work correctly, please download the latest version of ProtocolLib.");
-            return false;
-        }
-
-        if (getConfig().isIKnowWhatIAmDoing()) {
-            return true;
-        }
-
-        try {
-            // Field known to exist in build 717 (commit e726f6e)
-            boolean ignore = MinecraftVersion.v1_21_5.atOrAbove();
-        } catch (NoSuchFieldError ignore) {
-            // Triton requires ProtocolLib 5.4.0 or later
-            getLogger().logError("ProtocolLib 5.4.0 or later is required! Older versions of ProtocolLib will only partially work or not work at all, and are therefore not recommended.");
-            getLogger().logError("It is likely that you need the latest dev version, which you can download at https://triton.rexcantor64.com/protocollib");
-            getLogger().logError("If you want to enable the plugin anyway, add `i-know-what-i-am-doing: true` to Triton's config.yml.");
-            return false;
-        }
-
-        return true;
-    }
-
-    public ProtocolLibListener getProtocolLibListener() {
-        return protocolLibListener;
     }
 
     public File getDataFolder() {

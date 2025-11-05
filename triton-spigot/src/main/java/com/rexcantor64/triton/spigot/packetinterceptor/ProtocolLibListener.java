@@ -65,7 +65,7 @@ import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.as
 import static com.rexcantor64.triton.spigot.packetinterceptor.HandlerFunction.asSync;
 
 @SuppressWarnings({"deprecation"})
-public class ProtocolLibListener implements PacketListener {
+public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher {
     private final Class<?> CONTAINER_PLAYER_CLASS;
     private final Class<BaseComponent[]> BASE_COMPONENT_ARRAY_CLASS = BaseComponent[].class;
     private final Class<Component> ADVENTURE_COMPONENT_CLASS = Component.class;
