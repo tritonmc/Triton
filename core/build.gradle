@@ -14,10 +14,10 @@ dependencies {
     compileOnly project(":api")
 
     // Adventure / MiniMessage
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.23.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.23.0'
-    compileOnly 'net.kyori:adventure-text-serializer-plain:4.23.0'
-    compileOnly('net.kyori:adventure-text-minimessage:4.23.0') {
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.25.0'
+    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.25.0'
+    compileOnly 'net.kyori:adventure-text-serializer-plain:4.25.0'
+    compileOnly('net.kyori:adventure-text-minimessage:4.25.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
@@ -48,10 +48,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
-    testImplementation 'net.kyori:adventure-api:4.23.0'
-    testImplementation 'net.kyori:adventure-text-serializer-gson:4.23.0'
-    testImplementation 'net.kyori:adventure-text-serializer-legacy:4.23.0'
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.23.0'
+    testImplementation 'net.kyori:adventure-api:4.25.0'
+    testImplementation 'net.kyori:adventure-text-serializer-gson:4.25.0'
+    testImplementation 'net.kyori:adventure-text-serializer-legacy:4.25.0'
+    testImplementation 'net.kyori:adventure-text-serializer-plain:4.25.0'
 }
 
 shadowJar {
