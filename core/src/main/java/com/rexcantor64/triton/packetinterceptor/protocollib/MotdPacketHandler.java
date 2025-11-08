@@ -5,10 +5,16 @@ import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.accessors.Accessors;
+import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
+import com.comphenix.protocol.wrappers.ping.ServerPingImpl;
+import com.comphenix.protocol.wrappers.ping.ServerPingRecord;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.ComponentUtils;
+import com.rexcantor64.triton.wrappers.WrappedNameAndId;
 import lombok.val;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.entity.Player;
@@ -24,9 +30,15 @@ import java.util.stream.Stream;
 
 public class MotdPacketHandler extends PacketAdapter {
 
+    private final FieldAccessor WRAPPED_SERVER_PING_IMPL;
+    private final FieldAccessor SERVER_PING_RECORD_PLAYERS_SAMPLE;
+
     public MotdPacketHandler() {
         super(Triton.asSpigot().getLoader(), ListenerPriority.HIGHEST,
                 Collections.singleton(PacketType.Status.Server.SERVER_INFO), ListenerOptions.ASYNC);
+
+        WRAPPED_SERVER_PING_IMPL = Accessors.getFieldAccessor(WrappedServerPing.class, ServerPingImpl.class, true);
+        SERVER_PING_RECORD_PLAYERS_SAMPLE = Accessors.getFieldAccessor(ServerPingRecord.class, ServerPingRecord.PlayerSample.class, true);
     }
 
     /**
@@ -53,18 +65,45 @@ public class MotdPacketHandler extends PacketAdapter {
         val syntax = Triton.get().getConfig().getMotdSyntax();
 
         val serverPing = event.getPacket().getServerPings().readSafely(0);
-        serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
-            if (gp.getName() == null) return Stream.of(gp);
-            val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
-            if (gp.getName().equals(translatedName)) return Stream.of(gp);
-            if (translatedName == null) return null;
-            val translatedNameSplit = translatedName.split("\n", -1);
-            if (translatedNameSplit.length > 1) {
-                return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
-            } else {
-                return Stream.of(gp.withName(translatedName));
+        if (WrappedNameAndId.getWrappedClass() == null) {
+            // MC 1.21.8 and below
+            serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
+                if (gp.getName() == null) return Stream.of(gp);
+                val translatedName = Triton.get().getLanguageParser().replaceLanguages(gp.getName(), lang, syntax);
+                if (gp.getName().equals(translatedName)) return Stream.of(gp);
+                if (translatedName == null) return null;
+                val translatedNameSplit = translatedName.split("\n", -1);
+                if (translatedNameSplit.length > 1) {
+                    return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
+                } else {
+                    return Stream.of(gp.withName(translatedName));
+                }
+            }).collect(Collectors.toList()));
+        } else {
+            // MC 1.21.9+
+
+            // I guess we're doing reflection on ProtocolLib again...
+            ServerPingRecord impl = (ServerPingRecord) WRAPPED_SERVER_PING_IMPL.get(serverPing);
+            ServerPingRecord.PlayerSample playerSample = (ServerPingRecord.PlayerSample) SERVER_PING_RECORD_PLAYERS_SAMPLE.get(impl);
+
+            if (playerSample.sample != null) {
+                val sample = WrappedNameAndId.LIST_CONVERTER.getSpecific(playerSample.sample);
+                val newList = sample.stream().flatMap((player) -> {
+                    if (player.getName() == null) return Stream.of(player);
+                    val translatedName = Triton.get().getLanguageParser().replaceLanguages(player.getName(), lang, syntax);
+                    if (player.getName().equals(translatedName)) return Stream.of(player);
+                    if (translatedName == null) return null;
+                    val translatedNameSplit = translatedName.split("\n", -1);
+                    if (translatedNameSplit.length > 1) {
+                        return Arrays.stream(translatedNameSplit).map(name -> new WrappedNameAndId(UUID.randomUUID(), name));
+                    } else {
+                        return Stream.of(player.withName(translatedName));
+                    }
+                }).collect(Collectors.toList());
+
+                playerSample.sample = WrappedNameAndId.LIST_CONVERTER.getGeneric(newList);
             }
-        }).collect(Collectors.toList()));
+        }
 
         serverPing.setVersionName(Triton.get().getLanguageParser().replaceLanguages(serverPing.getVersionName(), lang, syntax));
 
