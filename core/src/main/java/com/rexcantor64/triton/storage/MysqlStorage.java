@@ -365,9 +365,13 @@ public class MysqlStorage extends Storage {
 
                     item.setTwinData(twinData);
 
-                    val col = collections.get(translationsResult.getString("collection"));
-                    if (col != null)
+                    val colStr = translationsResult.getString("collection");
+                    val col = collections.get(colStr);
+                    if (col != null) {
                         col.getItems().add(item);
+                    } else {
+                        Triton.get().getLogger().logWarning("Tried to load text translation (%s) for a collection that does not exist (%s). This likely means missing database foreign keys.", colStr);
+                    }
                 } else if (type.equalsIgnoreCase("sign")) {
                     val item = new LanguageSign();
 
@@ -387,9 +391,13 @@ public class MysqlStorage extends Storage {
 
                     item.setTwinData(twinData);
 
-                    val col = collections.get(translationsResult.getString("collection"));
-                    if (col != null)
+                    val colStr = translationsResult.getString("collection");
+                    val col = collections.get(colStr);
+                    if (col != null) {
                         col.getItems().add(item);
+                    } else {
+                        Triton.get().getLogger().logWarning("Tried to load sign translation (%s) for a collection that does not exist (%s). This likely means missing database foreign keys.", colStr);
+                    }
                 }
             }
 
