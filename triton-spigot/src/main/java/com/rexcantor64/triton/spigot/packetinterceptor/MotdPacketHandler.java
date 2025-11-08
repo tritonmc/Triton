@@ -5,13 +5,18 @@ import com.comphenix.protocol.events.ListenerOptions;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.reflect.accessors.Accessors;
+import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
+import com.comphenix.protocol.wrappers.ping.ServerPingImpl;
+import com.comphenix.protocol.wrappers.ping.ServerPingRecord;
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.language.parser.AdventureParser;
 import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
+import com.rexcantor64.triton.spigot.wrappers.WrappedNameAndId;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -20,7 +25,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,9 +32,15 @@ import java.util.stream.Stream;
 
 public class MotdPacketHandler extends PacketAdapter {
 
+    private final FieldAccessor WRAPPED_SERVER_PING_IMPL;
+    private final FieldAccessor SERVER_PING_RECORD_PLAYERS_SAMPLE;
+
     public MotdPacketHandler() {
         super(SpigotTriton.asSpigot().getJavaPlugin(), ListenerPriority.HIGHEST,
                 Collections.singleton(PacketType.Status.Server.SERVER_INFO), ListenerOptions.ASYNC);
+
+        WRAPPED_SERVER_PING_IMPL = Accessors.getFieldAccessor(WrappedServerPing.class, ServerPingImpl.class, true);
+        SERVER_PING_RECORD_PLAYERS_SAMPLE = Accessors.getFieldAccessor(ServerPingRecord.class, ServerPingRecord.PlayerSample.class, true);
     }
 
     /**
@@ -65,31 +75,70 @@ public class MotdPacketHandler extends PacketAdapter {
         val syntax = Triton.get().getConfig().getMotdSyntax();
 
         val serverPing = event.getPacket().getServerPings().readSafely(0);
-        serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
-            if (gp.getName() == null) {
-                return Stream.of(gp);
+        if (WrappedNameAndId.getWrappedClass() == null) {
+            // MC 1.21.8 and below
+            serverPing.setPlayers(serverPing.getPlayers().stream().flatMap((gp) -> {
+                if (gp.getName() == null) {
+                    return Stream.of(gp);
+                }
+
+                return parser()
+                        .translateString(
+                                gp.getName(),
+                                lang,
+                                syntax
+                        )
+                        .mapToObj(
+                                (translatedName) -> {
+                                    val translatedNameSplit = translatedName.split("\n", -1);
+                                    if (translatedNameSplit.length > 1) {
+                                        return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
+                                    } else {
+                                        return Stream.of(gp.withName(translatedName));
+                                    }
+                                },
+                                () -> Stream.of(gp),
+                                Stream::empty
+                        );
+
+            }).collect(Collectors.toList()));
+        } else {
+            // MC 1.21.9+
+
+            // I guess we're doing reflection on ProtocolLib again...
+            ServerPingRecord impl = (ServerPingRecord) WRAPPED_SERVER_PING_IMPL.get(serverPing);
+            ServerPingRecord.PlayerSample playerSample = (ServerPingRecord.PlayerSample) SERVER_PING_RECORD_PLAYERS_SAMPLE.get(impl);
+
+            if (playerSample.sample != null) {
+                val sample = WrappedNameAndId.LIST_CONVERTER.getSpecific(playerSample.sample);
+                val newList = sample.stream().flatMap((player) -> {
+                    if (player.getName() == null) {
+                        return Stream.of(player);
+                    }
+
+                    return parser()
+                            .translateString(
+                                    player.getName(),
+                                    lang,
+                                    syntax
+                            )
+                            .mapToObj(
+                                    (translatedName) -> {
+                                        val translatedNameSplit = translatedName.split("\n", -1);
+                                        if (translatedNameSplit.length > 1) {
+                                            return Arrays.stream(translatedNameSplit).map(name -> new WrappedNameAndId(UUID.randomUUID(), name));
+                                        } else {
+                                            return Stream.of(player.withName(translatedName));
+                                        }
+                                    },
+                                    () -> Stream.of(player),
+                                    Stream::empty
+                            );
+                }).collect(Collectors.toList());
+
+                playerSample.sample = WrappedNameAndId.LIST_CONVERTER.getGeneric(newList);
             }
-
-            return parser()
-                    .translateString(
-                            gp.getName(),
-                            lang,
-                            syntax
-                    )
-                    .mapToObj(
-                            (translatedName) -> {
-                                val translatedNameSplit = translatedName.split("\n", -1);
-                                if (translatedNameSplit.length > 1) {
-                                    return Arrays.stream(translatedNameSplit).map(name -> new WrappedGameProfile(UUID.randomUUID(), name));
-                                } else {
-                                    return Stream.of(gp.withName(translatedName));
-                                }
-                            },
-                            () -> Stream.of(gp),
-                            Stream::empty
-                    );
-
-        }).collect(Collectors.toList()));
+        }
 
         parser().translateString(serverPing.getVersionName(), lang, syntax)
                 .ifChanged(serverPing::setVersionName);
