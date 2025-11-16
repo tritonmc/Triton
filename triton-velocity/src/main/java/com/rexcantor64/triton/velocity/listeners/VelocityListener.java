@@ -52,8 +52,8 @@ public class VelocityListener {
             val lp = (VelocityLanguagePlayer) Triton.get().getPlayerManager().get(e.getPlayer().getUniqueId());
             VelocityTriton.asVelocity().getBridgeManager().sendPlayerLanguage(lp);
 
-            if (lp.getProtocolVersion().compareTo(ProtocolVersion.MINECRAFT_1_20_3) > 0) {
-                // On 1.20.6 and above, the notchian client crashes if a bossbar that does not exist client-side is updated
+            if (lp.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_20_2)) {
+                // On 1.20.2 and above, the join player packet starts clearing bossbars automatically, so clear them here
                 lp.clearCachedBossbars();
                 if (Triton.get().getConfig().isUsePacketEvents()) {
                     lp.getPacketEventsRefresh().discardAllBossBars();
