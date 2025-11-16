@@ -1,10 +1,10 @@
 package com.rexcantor64.triton.bungeecord.listeners;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.PreLoginBungeeEncoder;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import com.rexcantor64.triton.utils.SocketUtils;
 import io.netty.channel.Channel;
@@ -20,6 +20,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import net.md_5.bungee.netty.PipelineUtils;
+import net.md_5.bungee.protocol.ProtocolConstants;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -34,6 +35,14 @@ public class BungeeListener implements Listener {
         Triton.get().getLogger().logTrace("Player %1 connected to a new server", lp);
 
         BungeeTriton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
+
+        if (event.getPlayer().getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_20_2) {
+            // On 1.20.2 and above, the join player packet starts clearing bossbars automatically, so clear them here
+            lp.clearCachedBossbars();
+            if (Triton.get().getConfig().isUsePacketEvents()) {
+                lp.getPacketEventsRefresh().discardAllBossBars();
+            }
+        }
 
         if (Triton.get().getConfig().isRunLanguageCommandsOnLogin()) {
             lp.executeCommands(event.getServer());

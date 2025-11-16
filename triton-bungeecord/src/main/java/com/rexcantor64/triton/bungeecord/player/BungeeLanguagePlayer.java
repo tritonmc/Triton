@@ -79,6 +79,10 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         bossBars.remove(uuid);
     }
 
+    public void clearCachedBossbars() {
+        bossBars.clear();
+    }
+
     public void setLastTabHeader(BaseComponent lastTabHeader) {
         this.lastTabHeader = lastTabHeader.duplicate();
     }
