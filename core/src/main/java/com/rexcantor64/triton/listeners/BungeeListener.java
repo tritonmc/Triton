@@ -17,6 +17,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import net.md_5.bungee.netty.PipelineUtils;
+import net.md_5.bungee.protocol.ProtocolConstants;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,6 +33,11 @@ public class BungeeListener implements Listener {
         Triton.get().getLogger().logTrace("Player %1 connected to a new server", lp);
 
         Triton.asBungee().getBridgeManager().sendPlayerLanguage(lp, event.getServer());
+
+        if (event.getPlayer().getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_20_2) {
+            // On 1.20.2 and above, the join player packet starts clearing bossbars automatically, so clear them here
+            lp.clearCachedBossbars();
+        }
 
         if (Triton.get().getConf().isRunLanguageCommandsOnLogin()) {
             lp.executeCommands(event.getServer());
