@@ -65,11 +65,11 @@ public class ChatPacketHandler {
                         languagePlayer,
                         isActionbar ? actionbarSyntax : chatSyntax
                 )
-                .getResultOrToRemove(Component::empty)
-                .ifPresent(result -> {
+                .ifChanged(result -> {
                     packet.setMessage(result);
                     event.markForReEncode(true);
-                });
+                })
+                .ifToRemove(() -> event.setCancelled(true));
     }
 
 }
