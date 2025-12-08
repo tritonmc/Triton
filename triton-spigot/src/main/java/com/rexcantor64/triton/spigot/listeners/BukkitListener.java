@@ -30,10 +30,12 @@ public class BukkitListener implements Listener {
     public void onLogin(AsyncPlayerPreLoginEvent loginEvent) {
         val languagePlayer = SpigotTriton.asSpigot().getPlayerManager().get(loginEvent.getUniqueId());
         if (loginEvent.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
-            parser()
-                    .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
-                    .ifChanged(loginEvent::setKickMessage)
-                    .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            if (Triton.get().getConfig().isKick()) {
+                parser()
+                        .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
+                        .ifChanged(loginEvent::setKickMessage)
+                        .ifToRemove(() -> loginEvent.setKickMessage(""));
+            }
             // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
             SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getUniqueId());
         }
@@ -43,10 +45,12 @@ public class BukkitListener implements Listener {
     public void onLoginSync(PlayerLoginEvent loginEvent) {
         val languagePlayer = Triton.get().getPlayerManager().get(loginEvent.getPlayer().getUniqueId());
         if (loginEvent.getResult() != PlayerLoginEvent.Result.ALLOWED) {
-            parser()
-                    .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
-                    .ifChanged(loginEvent::setKickMessage)
-                    .ifUnchanged(() -> loginEvent.setKickMessage(""));
+            if (Triton.get().getConfig().isKick()) {
+                parser()
+                        .translateString(loginEvent.getKickMessage(), languagePlayer, Triton.get().getConfig().getKickSyntax())
+                        .ifChanged(loginEvent::setKickMessage)
+                        .ifToRemove(() -> loginEvent.setKickMessage(""));
+            }
             // Unregister the player, otherwise their language will stay (perhaps incorrectly) cached
             SpigotTriton.asSpigot().getPlayerManager().unregisterPlayer(loginEvent.getPlayer().getUniqueId());
         }
