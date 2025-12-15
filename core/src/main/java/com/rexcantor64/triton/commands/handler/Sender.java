@@ -2,6 +2,7 @@ package com.rexcantor64.triton.commands.handler;
 
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -13,9 +14,9 @@ public interface Sender {
 
     void sendMessageFormatted(String code, Object... args);
 
-    void assertPermission(String... permissions) throws NoPermissionException;
+    void assertPermission(@NotNull String permission) throws NoPermissionException;
 
-    boolean hasPermission(String permission);
+    boolean hasPermission(@NotNull String permission);
 
     UUID getUUID();
 

@@ -18,7 +18,7 @@ public class ReloadCommand implements Command {
         val sender = event.getSender();
         val isProxy = event.getPlatform().isProxy();
 
-        sender.assertPermission("triton.reload", "multilanguageplugin.reload");
+        sender.assertPermission("triton.reload");
 
         if (isProxy) {
             val action = event.getArgs().length >= 1 && sender.getUUID() != null ? event.getArgs()[0] : "bungee";

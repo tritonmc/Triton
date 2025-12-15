@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -34,21 +35,14 @@ public class VelocitySender implements Sender {
     }
 
     @Override
-    public void assertPermission(String... permissions) throws NoPermissionException {
-        if (permissions.length == 0) {
-            throw new NoPermissionException("");
+    public void assertPermission(@NotNull String permission) throws NoPermissionException {
+        if (!hasPermission(permission)) {
+            throw new NoPermissionException(permission);
         }
-
-        for (val permission : permissions) {
-            if (hasPermission(permission)) {
-                return;
-            }
-        }
-        throw new NoPermissionException(permissions[0]);
     }
 
     @Override
-    public boolean hasPermission(String permission) {
+    public boolean hasPermission(@NotNull String permission) {
         return handler.hasPermission(permission);
     }
 

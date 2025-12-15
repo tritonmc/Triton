@@ -18,7 +18,7 @@ public class HelpCommand implements Command {
 
     @Override
     public void handleCommand(CommandEvent event) throws NoPermissionException {
-        event.getSender().assertPermission("triton.help", "multilanguageplugin.help");
+        event.getSender().assertPermission("triton.help");
 
         for (val str : Triton.get().getMessagesConfig().getMessageList("help.menu")) {
             if (str.equalsIgnoreCase("%1")) {

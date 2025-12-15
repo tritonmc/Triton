@@ -19,7 +19,7 @@ public class GetFlagCommand extends com.rexcantor64.triton.commands.GetFlagComma
         val sender = event.getSender();
         val uuid = sender.getUUID();
 
-        sender.assertPermission("triton.getflag", "multilanguageplugin.getflag");
+        sender.assertPermission("triton.getflag");
 
         if (event.getArgs().length == 0) {
             sender.sendMessageFormatted("help.getflag", event.getLabel());

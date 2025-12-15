@@ -28,7 +28,7 @@ public class GetFlagCommand implements Command {
 
     @Override
     public List<String> handleTabCompletion(CommandEvent event) throws NoPermissionException {
-        event.getSender().assertPermission("triton.getflag", "multilanguageplugin.getflag");
+        event.getSender().assertPermission("triton.getflag");
 
         if (event.getArgs().length != 1) return Collections.emptyList();
 

@@ -16,7 +16,7 @@ public class OpenSelectorCommand extends com.rexcantor64.triton.commands.OpenSel
         val sender = event.getSender();
         val uuid = sender.getUUID();
 
-        sender.assertPermission("triton.openselector", "multilanguageplugin.openselector");
+        sender.assertPermission("triton.openselector");
 
         SpigotTriton.asSpigot().openLanguagesSelectionGUI(Triton.get().getPlayerManager().get(uuid));
     }

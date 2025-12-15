@@ -20,7 +20,7 @@ public class SetLanguageCommand implements Command {
         val sender = event.getSender();
         val args = event.getArgs();
 
-        sender.assertPermission("triton.setlanguage", "multilanguageplugin.setlanguage");
+        sender.assertPermission("triton.setlanguage");
 
         if (args.length == 0) {
             sender.sendMessageFormatted("help.setlanguage", event.getLabel());
@@ -31,7 +31,7 @@ public class SetLanguageCommand implements Command {
         val langName = args[0];
 
         if (args.length >= 2) {
-            sender.assertPermission("triton.setlanguage.others", "multilanguageplugin.setlanguage.others");
+            sender.assertPermission("triton.setlanguage.others");
 
             target = Triton.get().getPlayerUUIDFromString(args[1]);
 
@@ -73,7 +73,7 @@ public class SetLanguageCommand implements Command {
     @Override
     public List<String> handleTabCompletion(CommandEvent event) throws NoPermissionException {
         val sender = event.getSender();
-        sender.assertPermission("triton.setlanguage", "multilanguageplugin.setlanguage");
+        sender.assertPermission("triton.setlanguage");
 
         if (event.getArgs().length == 1) {
             return Triton.get().getLanguageManager().getAllLanguages().stream().map(Language::getName)
