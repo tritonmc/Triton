@@ -14,7 +14,9 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.json.JSONOptions;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +30,8 @@ import java.util.stream.IntStream;
 public class ComponentUtils {
 
     public final static char SECTION_CHAR = '§';
+    private final static char AMPERSAND_CHAR = '&';
+    private final static String VALID_COLOR_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
     private final static GsonComponentSerializer GSON_SERIALIZER;
     private final static LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection()
             .toBuilder()
@@ -240,6 +244,29 @@ public class ComponentUtils {
     public static boolean isValidClickEvent(ClickEvent clickEvent) {
         return clickEvent.action() != ClickEvent.Action.OPEN_URL
                 || URL_REGEX.matcher(clickEvent.value()).find();
+    }
+
+    /**
+     * Convert color codes with ampersand (&) into section characters (§).
+     * The character is only converted if followed by a valid color code.
+     * Inspired by md5's ChatColor#translateAlternateColorCodes.
+     *
+     * @param text The text to convert the color code characters from.
+     * @return The input text with the color codes replaced.
+     */
+    @Contract("null -> null; !null -> !null")
+    public static @Nullable String translateAlternateColorCodes(@Nullable String text) {
+        if (text == null) {
+            return null;
+        }
+
+        char[] chars = text.toCharArray();
+        for (int i = 0; i < chars.length - 1; i++) {
+            if (chars[i] == AMPERSAND_CHAR && VALID_COLOR_CODES.indexOf(chars[i + 1]) != -1) {
+                chars[i] = SECTION_CHAR;
+            }
+        }
+        return new String(chars);
     }
 
 }

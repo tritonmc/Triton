@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -79,7 +80,8 @@ public class AdventureParser extends MessageParser {
                 syntax,
                 Triton.get().getConfig().getDisabledLine(),
                 // TODO properly integrate this
-                (key, arguments) -> Triton.get().getTranslationManager().getTextComponentOr404(language, key, arguments)
+                (key, arguments) -> Triton.get().getTranslationManager().getTextComponentOr404(language, key, arguments),
+                Function.identity()
         );
 
         Triton.get().getDumpManager().dump(component, language, syntax);

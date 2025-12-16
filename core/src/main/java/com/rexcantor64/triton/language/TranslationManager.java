@@ -8,6 +8,7 @@ import com.rexcantor64.triton.api.language.SignLocation;
 import com.rexcantor64.triton.language.item.LanguageSign;
 import com.rexcantor64.triton.language.item.LanguageText;
 import com.rexcantor64.triton.storage.LocalStorage;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -150,6 +151,10 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         this.signTranslationCount = signTranslationCount;
 
         setupMiniMessage();
+
+        if (!this.matches.isEmpty() && !this.triton.getConfig().getParser().equalsIgnoreCase("legacy")) {
+            this.triton.getLogger().logWarning("Some of your translations have patterns, but you are currently using the Adventure parser, which does not support those. If you need patterns, please use the legacy parser instead.");
+        }
 
         this.triton.getLogger()
                 .logInfo(
@@ -377,22 +382,16 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     }
 
     public String matchPattern(String input, @NotNull Localized localized) {
-        return matchPattern(input, localized.getLanguageId());
-    }
-
-    public String matchPattern(String input, String language) {
         // TODO this needs to be rethought to work with Adventure
         for (Map.Entry<Pattern, LanguageText> entry : matches.entrySet()) {
-            String replacement = entry.getValue().getMessageRegex(language);
-            if (replacement == null) {
-                replacement = entry.getValue().getMessageRegex(triton.getLanguageManager().getMainLanguage().getName());
-            }
+            String replacement = getPatternReplacement(entry.getValue(), localized);
             if (replacement == null) {
                 continue;
             }
             try {
                 Matcher matcher = entry.getKey().matcher(input);
-                input = matcher.replaceAll(replacement);
+                // patterns only support legacy formatting for now
+                input = matcher.replaceAll(ComponentUtils.translateAlternateColorCodes(replacement));
             } catch (IndexOutOfBoundsException e) {
                 this.triton.getLogger().logError(
                         "Failed to translate using patterns: translation has more placeholders than regex groups. Translation key: %1",
@@ -400,6 +399,24 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
             }
         }
         return input;
+    }
+
+    private @Nullable String getPatternReplacement(@NotNull LanguageText languageText, @NotNull Localized localized) {
+        String replacement = languageText.getMessageRegex(localized.getLanguageId());
+        if (replacement != null) {
+            return replacement;
+        }
+        for (String fallbackLanguageName : localized.getLanguage().getFallbackLanguages()) {
+            val fallbackLanguage = triton.getLanguageManager().getLanguageByName(fallbackLanguageName);
+            if (!fallbackLanguage.isPresent()) {
+                continue;
+            }
+            replacement = languageText.getMessageRegex(fallbackLanguage.get().getLanguageId());
+            if (replacement != null) {
+                return replacement;
+            }
+        }
+        return languageText.getMessageRegex(triton.getLanguageManager().getMainLanguage().getName());
     }
 
     /**

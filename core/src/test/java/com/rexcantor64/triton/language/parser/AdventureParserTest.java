@@ -74,7 +74,8 @@ public class AdventureParserTest {
     private final TranslationConfiguration<Component> configuration = new TranslationConfiguration<>(
             defaultSyntax,
             "disabled.line",
-            (key, args) -> parser.replaceArguments(messageResolver.apply(key), Arrays.asList(args))
+            (key, args) -> parser.replaceArguments(messageResolver.apply(key), Arrays.asList(args)),
+            Function.identity()
     );
 
     @Test

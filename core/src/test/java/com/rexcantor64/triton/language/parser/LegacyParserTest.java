@@ -50,7 +50,8 @@ public class LegacyParserTest {
     private final TranslationConfiguration<SerializedComponent> configuration = new TranslationConfiguration<>(
             defaultSyntax,
             "disabled.line",
-            (key, args) -> parser.replaceArguments(messageResolver.apply(key), args)
+            (key, args) -> parser.replaceArguments(messageResolver.apply(key), args),
+            text -> text.replace("abababab", "this has been replaced").replace("babababa", "[lang]without.formatting[/lang]")
     );
 
     private final Component ALL_IN_ONE_COMPONENT = Component.text("Lorem ")
@@ -377,6 +378,52 @@ public class LegacyParserTest {
                                 Key.key("creeper"),
                                 new UUID(0, 0),
                                 Component.text("This is text without formatting")
+                        )
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPatternsNoPlaceholders() {
+        Component comp = Component.text()
+                .content("test abababab lorem")
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .content("test this has been replaced lorem")
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
+
+    @Test
+    public void testParseComponentWithPatterns() {
+        Component comp = Component.text()
+                .content("test abababab lorem")
+                .hoverEvent(
+                        HoverEvent.showText(
+                                Component.text("ipsum babababa")
+                        )
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .content("test this has been replaced lorem")
+                .hoverEvent(
+                        HoverEvent.showText(
+                                Component.text("ipsum This is text without formatting")
                         )
                 )
                 .asComponent();

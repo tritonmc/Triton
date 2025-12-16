@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,12 +66,10 @@ public class LegacyParser extends MessageParser {
     private static final char FONT_MID_DELIM = FONT_START_DELIM + 2;
     private static final char FONT_END_DELIM = FONT_START_DELIM + 1;
 
-    private static final char AMPERSAND_CHAR = '&';
     private static final char SECTION_CHAR = '§';
     private static final char HEX_PREFIX = '#';
     private static final char HEX_CODE = 'x';
     private static final char SHADOW_COLOR_CODE = 's';
-    private static final String VALID_COLOR_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
     private static final Pattern FORMATTING_STRIP_PATTERN = Pattern.compile(
             CLICK_DELIM + "\\d[\\w-]{36}|" + HOVER_DELIM + "[\\w-]{36}|" + CLICK_END_DELIM + "|" + HOVER_END_DELIM
                     + "|" + SECTION_CHAR + "[0-9A-Fa-fK-Ok-oRrXx]"
@@ -128,7 +127,8 @@ public class LegacyParser extends MessageParser {
                             }
 
                             return replaceArguments(notFoundComponent, new SerializedComponent(key), argsConcatenationComp);
-                        })
+                        }),
+                prevText -> Triton.get().getTranslationManager().matchPattern(prevText, language)
         );
 
         return translateComponent(component, configuration);
@@ -141,9 +141,21 @@ public class LegacyParser extends MessageParser {
             @NotNull TranslationConfiguration<SerializedComponent> configuration
     ) {
         String text = component.getText();
+        String newText = configuration.getMatchSupplier().apply(text);
+        val changedByPatterns = !Objects.equals(text, newText);
+        if (changedByPatterns) {
+            component.setText(newText);
+            text = newText;
+        }
         val indexes = ParserUtils.getPatternIndexArray(text, configuration.getFeatureSyntax().getLang());
 
         if (indexes.isEmpty()) {
+            if (changedByPatterns) {
+                component = handleNonContentText(component, configuration)
+                        .getResult()
+                        .orElse(component);
+                return TranslationResult.changed(component);
+            }
             return handleNonContentText(component, configuration);
         }
 
@@ -344,31 +356,8 @@ public class LegacyParser extends MessageParser {
         } else if (message.startsWith(JSON_TYPE_TAG)) {
             return new SerializedComponent(GsonComponentSerializer.gson().deserialize(message.substring(JSON_TYPE_TAG.length())));
         } else {
-            return new SerializedComponent(translateAlternateColorCodes(message));
+            return new SerializedComponent(ComponentUtils.translateAlternateColorCodes(message));
         }
-    }
-
-    /**
-     * Convert color codes with ampersand (&) into section characters (§).
-     * The character is only converted if followed by a valid color code.
-     * Inspired by md5's ChatColor#translateAlternateColorCodes.
-     *
-     * @param text The text to convert the color code characters from.
-     * @return The input text with the color codes replaced.
-     */
-    @Contract("null -> null; !null -> !null")
-    private @Nullable String translateAlternateColorCodes(@Nullable String text) {
-        if (text == null) {
-            return null;
-        }
-
-        char[] chars = text.toCharArray();
-        for (int i = 0; i < chars.length - 1; i++) {
-            if (chars[i] == AMPERSAND_CHAR && VALID_COLOR_CODES.indexOf(chars[i + 1]) != -1) {
-                chars[i] = SECTION_CHAR;
-            }
-        }
-        return new String(chars);
     }
 
     /**
@@ -401,7 +390,8 @@ public class LegacyParser extends MessageParser {
         @Getter
         private final HashMap<UUID, @Nullable HoverEvent<?>> hoverEvents = new HashMap<>();
         @Getter
-        @Setter(AccessLevel.PRIVATE)
+        @Setter(AccessLevel.PACKAGE)
+        @VisibleForTesting
         private String text;
 
         public SerializedComponent(Component component) {
