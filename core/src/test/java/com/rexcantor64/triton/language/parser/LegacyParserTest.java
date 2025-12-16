@@ -432,4 +432,13 @@ public class LegacyParserTest {
         assertNotNull(result.getResultRaw());
         assertEquals(expected.compact(), result.getResultRaw().compact());
     }
+
+    @Test
+    public void testParseComponentWithDisabledLine() {
+        Component comp = Component.text("[lang]disabled.line[/lang]");
+
+        TranslationResult<SerializedComponent> result = parser.translateComponent(new SerializedComponent(comp), configuration);
+
+        assertEquals(TranslationResult.ResultState.TO_REMOVE, result.getState());
+    }
 }

@@ -5,6 +5,7 @@ import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import com.rexcantor64.triton.utils.ParserUtils;
+import com.rexcantor64.triton.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -217,6 +218,9 @@ public class LegacyParser extends MessageParser {
         }
         key = ParserUtils.normalizeTranslationKey(key, configuration);
         key = stripFormatting(key);
+        if (!StringUtils.isEmptyOrNull(configuration.getDisabledLine()) && configuration.getDisabledLine().equals(key)) {
+            return Optional.empty();
+        }
 
         val result = configuration.translationSupplier.apply(key, arguments);
 
