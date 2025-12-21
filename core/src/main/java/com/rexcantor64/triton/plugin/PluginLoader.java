@@ -31,6 +31,7 @@ public interface PluginLoader {
         if (depManager.hasLoaderFlag(LoaderFlag.VENDOR_ADVENTURE)) {
             depManager.loadDependency(Dependency.ADVENTURE);
             depManager.loadDependency(Dependency.ADVENTURE_KEY);
+            depManager.loadDependency(Dependency.ADVENTURE_NBT);
             depManager.loadDependency(Dependency.KYORI_EXAMINATION_API);
             depManager.loadDependency(Dependency.KYORI_EXAMINATION_STRING);
         }

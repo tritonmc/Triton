@@ -84,6 +84,14 @@ public enum Dependency {
             relocate("net{}kyori{}adventure", "adventure"),
             relocate("net{}kyori{}examination", "kyori{}examination")
     ),
+    ADVENTURE_NBT(
+            "net{}kyori",
+            "adventure-nbt",
+            "4.25.0",
+            "jubaYh9JbxbGGd5uxcC5wUDOrJuJwqWzN3k429VaFi4=",
+            relocate("net{}kyori{}adventure", "adventure"),
+            relocate("net{}kyori{}examination", "kyori{}examination")
+    ),
     ADVENTURE_TEXT_SERIALIZER_JSON(
             "net{}kyori",
             "adventure-text-serializer-json",

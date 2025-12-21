@@ -20,6 +20,7 @@ dependencies {
     compileOnly('net.kyori:adventure-text-minimessage:4.25.0') {
         exclude group: 'net.kyori', module: 'adventure-api'
         exclude group: 'net.kyori', module: 'adventure-key'
+        exclude group: 'net.kyori', module: 'adventure-nbt'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
         exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
