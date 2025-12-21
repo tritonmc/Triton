@@ -16,16 +16,16 @@ public enum Dependency {
     ADVENTURE(
             "net{}kyori",
             "adventure-api",
-            "4.25.0",
-            "jigb8TV/+Rr5eDpsJCdrSD2BVKezyrWwTpCea/XnLJ0=",
+            "4.26.1",
+            "VR5Ta56oaPMOcseQCjCbNRJO59SIn6OzrtCRApl1GiY=",
             relocate("net{}kyori{}adventure", "adventure"),
             relocate("net{}kyori{}examination", "kyori{}examination")
     ),
     ADVENTURE_TEXT_SERIALIZER_GSON(
             "net{}kyori",
             "adventure-text-serializer-gson",
-            "4.25.0",
-            "kx9nlZ1G4P5Vtkq5Fk4xtXi3kjV4f2nUcrYoZfl7ckU=",
+            "4.26.1",
+            "5KkI3txKy0MFCD2RbTYt3Csh7PRS1XegvmZSgL3a6fw=",
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
@@ -35,8 +35,8 @@ public enum Dependency {
     ADVENTURE_TEXT_SERIALIZER_LEGACY(
             "net{}kyori",
             "adventure-text-serializer-legacy",
-            "4.25.0",
-            "BvFSXr8X+080w08bUmKt5nJwXBFj9qSLaKTgMU36ahM=",
+            "4.26.1",
+            "chEHvCE1ckVN8b++Q426Yw4wRXVQx1C3oVSzXcMmSqg=",
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy")
@@ -44,8 +44,8 @@ public enum Dependency {
     ADVENTURE_TEXT_SERIALIZER_PLAIN(
             "net{}kyori",
             "adventure-text-serializer-plain",
-            "4.25.0",
-            "lFN1egpsDdnktfzSVOgqfqhn9MvkA3cWf0QMQexgUu4=",
+            "4.26.1",
+            "Obm/5XkPZFYF/1RkOCwOBiR29I+b+yVIgB8nXxL69AU=",
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}adventure{}text{}serializer{}plain", "adventure{}text{}serializer{}plain")
@@ -64,8 +64,8 @@ public enum Dependency {
     ADVENTURE_MINI_MESSAGE(
             "net{}kyori",
             "adventure-text-minimessage",
-            "4.25.0",
-            "GY8nxvkeXjJxZAZQhp/v3WgW17MQtIz6UptfWOSpKaQ=",
+            "4.26.1",
+            "HUNFHpr0cyUtyK8+gIQjjVzmitQ68OO3OD6z1LY//58=",
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
@@ -79,24 +79,24 @@ public enum Dependency {
     ADVENTURE_KEY(
             "net{}kyori",
             "adventure-key",
-            "4.25.0",
-            "zsjwq/ZC3w5ie/Wp//bxfLtiDqb+BfIWK5bK0VZNiFc=",
+            "4.26.1",
+            "7sFy1j23e0Drer7rJfZe7eqJvTAmTQV7aLEv7Lcxvl4=",
             relocate("net{}kyori{}adventure", "adventure"),
             relocate("net{}kyori{}examination", "kyori{}examination")
     ),
     ADVENTURE_NBT(
             "net{}kyori",
             "adventure-nbt",
-            "4.25.0",
-            "jubaYh9JbxbGGd5uxcC5wUDOrJuJwqWzN3k429VaFi4=",
+            "4.26.1",
+            "8m72v/X83YF5ArTf01NWHZjLExtOy2c0H/AO8u0TNvg=",
             relocate("net{}kyori{}adventure", "adventure"),
             relocate("net{}kyori{}examination", "kyori{}examination")
     ),
     ADVENTURE_TEXT_SERIALIZER_JSON(
             "net{}kyori",
             "adventure-text-serializer-json",
-            "4.25.0",
-            "SCtKohjXyHn89X5dD5zATbS01LVnnrmbcn9hBO1/uYI=",
+            "4.26.1",
+            "VcZLQzPV0paKASW48p2ufPuhU5LV+Z94266nEcsNTcI=",
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
             relocate("net{}kyori{}option", "kyori{}option"),
