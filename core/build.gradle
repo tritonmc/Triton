@@ -38,8 +38,8 @@ dependencies {
     // Test dependencies
     testImplementation project(":api")
 
-    testImplementation libs.junit.jupiter.api
-    testRuntimeOnly libs.junit.jupiter.engine
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
 
     testImplementation libs.adventure.api
     testImplementation libs.adventure.serializer.gson
