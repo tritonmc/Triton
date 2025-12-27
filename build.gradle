@@ -39,8 +39,8 @@ allprojects {
             url = 'https://repo.codemc.org/repository/maven-public'
         }
         maven {
-            name = 'velocity'
-            url = 'https://nexus.velocitypowered.com/repository/maven-public/'
+            name = 'papermc'
+            url = 'https://repo.papermc.io/repository/maven-public/'
         }
         maven {
             // Mirror other people's repositories
