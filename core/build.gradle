@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '8.3.6'
+    alias(libs.plugins.shadow)
 }
 
 group = 'com.rexcantor64.triton'
@@ -14,45 +14,37 @@ dependencies {
     compileOnly project(":api")
 
     // Adventure / MiniMessage
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.26.1'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.26.1'
-    compileOnly 'net.kyori:adventure-text-serializer-plain:4.26.1'
-    compileOnly('net.kyori:adventure-text-minimessage:4.26.1') {
-        exclude group: 'net.kyori', module: 'adventure-api'
-        exclude group: 'net.kyori', module: 'adventure-key'
-        exclude group: 'net.kyori', module: 'adventure-nbt'
-        exclude group: 'net.kyori', module: 'adventure-text-serialize-gson'
-        exclude group: 'net.kyori', module: 'adventure-text-serialize-legacy'
-        exclude group: 'net.kyori', module: 'adventure-text-serialize-plain'
-    }
+    compileOnly libs.adventure.serializer.gson
+    compileOnly libs.adventure.serializer.legacy
+    compileOnly libs.adventure.serializer.plain
+    compileOnly libs.minimessage
 
     // Dependencies we can depend on, since they are on all platforms
-    compileOnly 'com.google.guava:guava:31.1-jre'
+    compileOnly libs.guava
+    compileOnly libs.log4j.core
+    compileOnly libs.snakeyaml
 
-    compileOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
-    compileOnly 'org.yaml:snakeyaml:2.0'
+    compileOnly libs.packetevents.api
 
-    compileOnly 'com.github.retrooper:packetevents-api:2.11.1'
-
-    implementation 'org.slf4j:slf4j-nop:1.7.36'
-    implementation 'com.zaxxer:HikariCP:4.0.3'
-    implementation('com.tananaev:json-patch:1.1') {
+    implementation libs.slf4j.nop
+    implementation libs.hikari
+    implementation(libs.jsonpatch) {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
-    compileOnly 'com.google.code.gson:gson:2.9.0'
+    compileOnly libs.gson
 
-    implementation 'com.rexcantor64:libby-core:2.0.0'
+    implementation libs.libby.core
 
     // Test dependencies
     testImplementation project(":api")
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
 
-    testImplementation 'net.kyori:adventure-api:4.26.1'
-    testImplementation 'net.kyori:adventure-text-serializer-gson:4.26.1'
-    testImplementation 'net.kyori:adventure-text-serializer-legacy:4.26.1'
-    testImplementation 'net.kyori:adventure-text-serializer-plain:4.26.1'
+    testImplementation libs.adventure.api
+    testImplementation libs.adventure.serializer.gson
+    testImplementation libs.adventure.serializer.legacy
+    testImplementation libs.adventure.serializer.plain
 }
 
 shadowJar {

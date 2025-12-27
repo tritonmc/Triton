@@ -1,0 +1,61 @@
+[versions]
+adventure = "4.26.1"
+adventure-platform = "4.4.1"
+asm = "9.9"
+bstats = "3.1.0"
+bungeecord = "1.21-R0.4-SNAPSHOT"
+junit-jupiter = "5.9.0"
+libby = "2.0.0"
+packetevents = "2.11.1"
+plugin-yml = "0.7.1"
+spigot = "1.21.1-R0.1-SNAPSHOT"
+velocity = "3.4.0-SNAPSHOT"
+
+[libraries]
+adventure-api = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
+adventure-serializer-bungeecord = { group = "net.kyori", name = "adventure-text-serializer-bungeecord", version.ref = "adventure-platform" }
+adventure-serializer-gson = { group = "net.kyori", name = "adventure-text-serializer-gson", version.ref = "adventure" }
+adventure-serializer-legacy = { group = "net.kyori", name = "adventure-text-serializer-legacy", version.ref = "adventure" }
+adventure-serializer-plain = { group = "net.kyori", name = "adventure-text-serializer-plain", version.ref = "adventure" }
+asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
+asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
+bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
+bstats-bungeecord = { group = "org.bstats", name = "bstats-bungeecord", version.ref = "bstats" }
+bstats-velocity = { group = "org.bstats", name = "bstats-velocity", version.ref = "bstats" }
+bungeecord-api = { group = "net.md-5", name = "bungeecord-api", version.ref = "bungeecord" }
+bungeecord-proxy = { group = "net.md-5", name = "bungeecord-proxy", version.ref = "bungeecord" }
+gson = { group = "com.google.code.gson", name = "gson", version = "2.9.0" }
+guava = { group = "com.google.guava", name = "guava", version = "31.1-jre" }
+hikari = { group = "com.zaxxer", name = "HikariCP", version = "4.0.3" }
+jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.0" }
+jarrelocator = { group = "me.lucko", name = "jar-relocator", version = "1.7" }
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "23.0.0" }
+jsonpatch = { group = "com.tananaev", name = "json-patch", version = "1.1" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter" }
+libby-bukkit = { group = "com.rexcantor64", name = "libby-bukkit", version.ref = "libby" }
+libby-bungee = { group = "com.rexcantor64", name = "libby-bungee", version.ref = "libby" }
+libby-core = { group = "com.rexcantor64", name = "libby-core", version.ref = "libby" }
+libby-velocity = { group = "com.rexcantor64", name = "libby-velocity", version.ref = "libby" }
+log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version = "2.17.1" }
+lombok = { group = "org.projectlombok", name = "lombok", version = "1.18.38" }
+minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "adventure" }
+mysql-connector = { group = "mysql", name = "mysql-connector-java", version = "8.0.30" }
+netty-codec = { group = "io.netty", name = "netty-codec", version = "4.1.80.Final" }
+packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }
+packetevents-spigot = { group = "com.github.retrooper", name = "packetevents-spigot", version.ref = "packetevents" }
+packetevents-velocity = { group = "com.github.retrooper", name = "packetevents-velocity", version.ref = "packetevents" }
+placeholderapi = { group = "me.clip", name = "placeholderapi", version = "2.11.6" }
+protocollib = { group = "com.comphenix.protocol", name = "ProtocolLib", version = "5.4.0-SNAPSHOT" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version = "1.7.36" }
+snakeyaml = { group = "org.yaml", name = "snakeyaml", version = "2.0" }
+spigot-api = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
+spigot-legacy = { group = "org.spigotmc", name = "spigot-api", version = "1.8.8-R0.1-SNAPSHOT" }
+velocity-api = { group = "com.velocitypowered", name = "velocity-api", version.ref = "velocity" }
+velocity-proxy = { group = "com.velocitypowered", name = "velocity-proxy", version.ref = "velocity" }
+
+[plugins]
+blossom = { id = "net.kyori.blossom", version = "1.3.0" }
+pluginyml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "plugin-yml" }
+pluginyml-bungee = { id = "de.eldoria.plugin-yml.bungee", version.ref = "plugin-yml" }
+shadow = { id = "com.gradleup.shadow", version = "8.3.6" }

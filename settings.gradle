@@ -14,3 +14,10 @@ findProject(':triton-spigot:loader')?.name = 'triton-spigot-loader'
 include 'triton-velocity:loader'
 findProject(':triton-velocity:loader')?.name = 'triton-velocity-loader'
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("./libs.versions.toml"))
+        }
+    }
+}

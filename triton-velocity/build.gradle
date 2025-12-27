@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '8.3.6'
+    alias(libs.plugins.shadow)
 }
 
 group = 'com.rexcantor64.triton'
@@ -10,20 +10,20 @@ dependencies {
     compileOnly project(':core')
     compileOnly project(':core:triton-core-loader')
 
-    annotationProcessor 'com.velocitypowered:velocity-api:3.4.0-SNAPSHOT'
+    annotationProcessor libs.velocity.api
 
-    compileOnly 'com.velocitypowered:velocity-proxy:3.4.0-SNAPSHOT'
+    compileOnly libs.velocity.proxy
 
-    compileOnly 'io.netty:netty-codec:4.1.80.Final'
+    compileOnly libs.netty.codec
 
     // FIXME in the future change this to dynamic download and loading
-    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation libs.mysql.connector
 
-    implementation 'com.rexcantor64:libby-velocity:2.0.0'
+    implementation libs.libby.velocity
 
-    implementation 'org.bstats:bstats-velocity:3.1.0'
+    implementation libs.bstats.velocity
 
-    compileOnly 'com.github.retrooper:packetevents-velocity:2.11.1'
+    compileOnly libs.packetevents.velocity
 }
 
 shadowJar {

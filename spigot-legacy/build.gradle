@@ -5,6 +5,6 @@ plugins {
 group = 'com.rexcantor64.triton'
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT'
+    compileOnly libs.spigot.legacy
+    compileOnly libs.protocollib
 }

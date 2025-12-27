@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '8.3.6'
+    alias(libs.plugins.shadow)
 }
 
 group = 'com.rexcantor64.triton'
@@ -15,31 +15,31 @@ dependencies {
     compileOnly project(':core')
     implementation project(':spigot-legacy')
 
-    compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
+    compileOnly libs.spigot.api
 
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.26.1'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.26.1'
-    compileOnly 'net.kyori:adventure-text-serializer-bungeecord:4.4.1'
+    compileOnly libs.adventure.serializer.gson
+    compileOnly libs.adventure.serializer.legacy
+    compileOnly libs.adventure.serializer.bungeecord
 
-    compileOnly 'com.comphenix.protocol:ProtocolLib:5.4.0-SNAPSHOT'
-    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly libs.protocollib
+    compileOnly libs.placeholderapi
 
-    compileOnly 'com.github.retrooper:packetevents-spigot:2.11.1'
+    compileOnly libs.packetevents.spigot
 
     // Libraries available on Spigot
-    compileOnly 'org.fusesource.jansi:jansi:2.4.0' // Used for terminal translation
+    compileOnly libs.jansi // Used for terminal translation
 
-    implementation 'com.rexcantor64:libby-bukkit:2.0.0'
+    implementation libs.libby.bukkit
 
-    implementation 'org.bstats:bstats-bukkit:3.1.0'
+    implementation libs.bstats.bukkit
 
     // Test dependencies
     testImplementation project(":api")
 
-    testImplementation 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
+    testImplementation libs.spigot.api
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
 }
 
 shadowJar {

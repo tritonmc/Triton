@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'de.eldoria.plugin-yml.bungee' version '0.7.1'
+    alias(libs.plugins.pluginyml.bungee)
 }
 
 String pluginDescription = project.property("pluginDescription")
@@ -12,7 +12,7 @@ group = 'com.rexcantor64.triton'
 
 dependencies {
     compileOnly project(':core:triton-core-loader')
-    compileOnly 'net.md-5:bungeecord-api:1.21-R0.4-SNAPSHOT'
+    compileOnly libs.bungeecord.api
 }
 
 bungee {
