@@ -79,6 +79,7 @@ public class PacketEventsListener implements PacketListener {
         if (config.isChat() || config.isActionbars()) {
             val chatHandler = new ChatPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.CHAT_MESSAGE, chatHandler::onChatMessagePacket);
+            updatedHandlers.put(PacketType.Play.Server.DISGUISED_CHAT, chatHandler::onDisguisedChatPacket);
             updatedHandlers.put(PacketType.Play.Server.SYSTEM_CHAT_MESSAGE, chatHandler::onSystemChatMessagePacket);
         }
         if (config.isKick()) {

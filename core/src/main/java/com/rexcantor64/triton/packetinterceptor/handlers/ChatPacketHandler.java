@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.chat.ChatTypes;
 import com.github.retrooper.packetevents.protocol.chat.message.ChatMessage_v1_19_1;
 import com.github.retrooper.packetevents.protocol.chat.message.ChatMessage_v1_19_3;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDisguisedChat;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.MessageParser;
@@ -59,6 +60,25 @@ public class ChatPacketHandler {
                     } else {
                         message.setChatContent(result);
                     }
+                    event.markForReEncode(true);
+                })
+                .ifToRemove(() -> event.setCancelled(true));
+    }
+
+    public void onDisguisedChatPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        if (!translateChat) {
+            return;
+        }
+
+        val packet = new WrapperPlayServerDisguisedChat(event);
+
+        parser.translateComponent(
+                        packet.getMessage(),
+                        languagePlayer,
+                        chatSyntax
+                )
+                .ifChanged(result -> {
+                    packet.setMessage(result);
                     event.markForReEncode(true);
                 })
                 .ifToRemove(() -> event.setCancelled(true));
