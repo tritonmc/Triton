@@ -17,7 +17,9 @@ import com.velocitypowered.api.proxy.server.ServerPing;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 
+import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,9 +89,14 @@ public class VelocityListener {
         }
 
         val serverPing = event.getPing().asBuilder();
-        val ip = event.getConnection().getRemoteAddress().getAddress().getHostAddress();
+        val ip = Optional.ofNullable(event.getConnection().getRemoteAddress())
+                .flatMap(remoteAddr -> Optional.ofNullable(remoteAddr.getAddress()))
+                .map(InetAddress::getHostAddress);
+        if (!ip.isPresent()) {
+            return;
+        }
 
-        val language = Triton.get().getStorage().getLanguageFromIp(ip);
+        val language = Triton.get().getStorage().getLanguageFromIp(ip.get());
 
         if (serverPing.getDescriptionComponent().isPresent()) {
             parser().translateComponent(serverPing.getDescriptionComponent().get(), language, getMotdSyntax())
