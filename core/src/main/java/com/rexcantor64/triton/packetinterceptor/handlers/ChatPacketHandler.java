@@ -2,6 +2,8 @@ package com.rexcantor64.triton.packetinterceptor.handlers;
 
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.chat.ChatTypes;
+import com.github.retrooper.packetevents.protocol.chat.message.ChatMessage_v1_19_1;
+import com.github.retrooper.packetevents.protocol.chat.message.ChatMessage_v1_19_3;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
 import com.rexcantor64.triton.config.MainConfig;
@@ -9,7 +11,6 @@ import com.rexcantor64.triton.language.parser.MessageParser;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class ChatPacketHandler {
     private final @NotNull MainConfig.FeatureSyntax chatSyntax;
     private final @NotNull MainConfig.FeatureSyntax actionbarSyntax;
     private final boolean translateChat;
+    private final boolean translateSignedChat;
     private final boolean translateActionbars;
 
     public ChatPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
@@ -26,16 +28,21 @@ public class ChatPacketHandler {
         this.chatSyntax = config.getChatSyntax();
         this.actionbarSyntax = config.getActionbarSyntax();
         this.translateChat = config.isChat();
+        this.translateSignedChat = config.isSignedChat();
         this.translateActionbars = config.isActionbars();
     }
 
     public void onChatMessagePacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerChatMessage(event);
         val message = packet.getMessage();
+        val isSigned = message instanceof ChatMessage_v1_19_1 || message instanceof ChatMessage_v1_19_3;
 
         @SuppressWarnings("deprecation")
         val isActionbar = message.getType() == ChatTypes.GAME_INFO;
         if (!(isActionbar && translateActionbars) && !(!isActionbar && translateChat)) {
+            return;
+        }
+        if (isSigned && !this.translateSignedChat) {
             return;
         }
 
@@ -45,7 +52,13 @@ public class ChatPacketHandler {
                         isActionbar ? actionbarSyntax : chatSyntax
                 )
                 .ifChanged(result -> {
-                    message.setChatContent(result);
+                    if (message instanceof ChatMessage_v1_19_1) {
+                        ((ChatMessage_v1_19_1) message).setUnsignedChatContent(result);
+                    } else if (message instanceof ChatMessage_v1_19_3) {
+                        ((ChatMessage_v1_19_3) message).setUnsignedChatContent(result);
+                    } else {
+                        message.setChatContent(result);
+                    }
                     event.markForReEncode(true);
                 })
                 .ifToRemove(() -> event.setCancelled(true));
