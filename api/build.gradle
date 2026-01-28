@@ -42,9 +42,9 @@ javadoc {
     options.charSet = 'UTF-8'
     options.links(
             'https://hub.spigotmc.org/javadocs/spigot/',
-            'https://jd.papermc.io/waterfall/1.19/', // Use Waterfall's JavaDocs instead of Bungee's since those are broken
-            'https://docs.oracle.com/en/java/javase/11/docs/api//',
-            'https://jd.adventure.kyori.net/api/4.11.0/'
+            'https://jd.papermc.io/waterfall/1.21/', // Use Waterfall's JavaDocs instead of Bungee's since those are broken
+            'https://docs.oracle.com/en/java/javase/21/docs/api/',
+            'https://jd.advntr.dev/text-minimessage/4.26.1/'
     )
 
     // Disable the crazy super-strict doclint tool in Java 8
