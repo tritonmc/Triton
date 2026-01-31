@@ -185,7 +185,7 @@ language-creation:
     syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
-  # Example (assuming you have the default values on your config and you set disabled-line to 'disabled.line'):
+  # Example (assuming you have the default values on your config and you've set disabled-line to 'disabled.line'):
   # If any message contains '[lang]disabled.line[/lang]' it won't be sent.
   disabled-line: ''
   # Translate messages that go through console to the default language.
