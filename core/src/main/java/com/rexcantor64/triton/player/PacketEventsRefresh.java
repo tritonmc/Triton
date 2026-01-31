@@ -68,6 +68,7 @@ public class PacketEventsRefresh {
      * If no window is open, this must be set to 0, which corresponds to the player's inventory.
      */
     @Setter
+    @Getter
     private int currentWindowId = 0;
 
     private final TritonLanguagePlayer<?> languagePlayer;

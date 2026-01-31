@@ -18,13 +18,19 @@ import org.jetbrains.annotations.NotNull;
 public class ItemPacketHandler {
 
     private final ItemStackTranslationUtils itemHandler;
+    private final boolean translateInventoryItems;
 
     public ItemPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.itemHandler = new ItemStackTranslationUtils(parser, config.getItemsSyntax());
+        this.translateInventoryItems = config.isInventoryItems();
     }
 
     public void onSetCursorItemPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSetCursorItem(event);
+
+        if (!this.translateInventoryItems && languagePlayer.getPacketEventsRefresh().getCurrentWindowId() == 0) {
+            return;
+        }
 
         val result = this.itemHandler.translateItem(packet.getStack(), languagePlayer);
         if (result.isModified()) {
@@ -36,6 +42,10 @@ public class ItemPacketHandler {
     public void onSetPlayerInventoryPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSetPlayerInventory(event);
 
+        if (!this.translateInventoryItems && languagePlayer.getPacketEventsRefresh().getCurrentWindowId() == 0) {
+            return;
+        }
+
         val result = this.itemHandler.translateItem(packet.getStack(), languagePlayer);
         if (result.isModified()) {
             packet.setStack(result.getModified());
@@ -46,6 +56,10 @@ public class ItemPacketHandler {
     public void onSetSlotPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerSetSlot(event);
 
+        if (!this.translateInventoryItems && languagePlayer.getPacketEventsRefresh().getCurrentWindowId() == 0) {
+            return;
+        }
+
         val result = this.itemHandler.translateItem(packet.getItem(), languagePlayer);
         if (result.isModified()) {
             packet.setItem(result.getModified());
@@ -55,6 +69,10 @@ public class ItemPacketHandler {
 
     public void onWindowItemsPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerWindowItems(event);
+
+        if (!this.translateInventoryItems && languagePlayer.getPacketEventsRefresh().getCurrentWindowId() == 0) {
+            return;
+        }
 
         val carriedItem = packet.getCarriedItem();
         if (carriedItem.isPresent()) {
