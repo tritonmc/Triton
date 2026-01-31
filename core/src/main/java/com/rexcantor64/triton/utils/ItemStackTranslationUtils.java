@@ -26,6 +26,7 @@ public class ItemStackTranslationUtils {
 
     private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax syntax;
+    private final boolean translateBooks;
 
     public ModifiableItemStack translateItem(ItemStack item, Localized locale) {
         val modifiableItem = new ModifiableItemStack(item);
@@ -40,7 +41,7 @@ public class ItemStackTranslationUtils {
             translateLore(item, locale);
             translateContainerContents(item, locale);
         }
-        if (translateBook) {
+        if (translateBook && this.translateBooks) {
             translateBook(item, locale);
         }
     }

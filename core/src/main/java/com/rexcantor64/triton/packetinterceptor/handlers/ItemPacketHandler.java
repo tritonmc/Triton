@@ -21,7 +21,7 @@ public class ItemPacketHandler {
     private final boolean translateInventoryItems;
 
     public ItemPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
-        this.itemHandler = new ItemStackTranslationUtils(parser, config.getItemsSyntax());
+        this.itemHandler = new ItemStackTranslationUtils(parser, config.getItemsSyntax(), config.isBooks());
         this.translateInventoryItems = config.isInventoryItems();
     }
 

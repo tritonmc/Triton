@@ -30,7 +30,6 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.MessageParser;
-import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -346,8 +345,7 @@ public class PacketEventsRefresh {
             updatePlayerList(user, syntax, parser);
         }
         if (cfg.isItems()) {
-            val handler = new ItemStackTranslationUtils(parser, cfg.getItemsSyntax());
-            updateInventoryItems(user, handler);
+            updateInventoryItems(user);
         }
     }
 
@@ -659,7 +657,7 @@ public class PacketEventsRefresh {
         );
     }
 
-    private void updateInventoryItems(@NotNull User user, @NotNull ItemStackTranslationUtils handler) {
+    private void updateInventoryItems(@NotNull User user) {
         if (user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_17_1)) {
             // Here we use a hack where we pretend to the server that the client is out-of-sync (i.e., incorrect stateId),
             // making it resend the entire window contents
