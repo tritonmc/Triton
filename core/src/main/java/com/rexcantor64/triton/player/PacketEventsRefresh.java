@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBossBar;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
@@ -29,6 +30,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.MessageParser;
+import com.rexcantor64.triton.utils.ItemStackTranslationUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -39,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +62,13 @@ public class PacketEventsRefresh {
     private final Map<Integer, Entity> entityMap = new ConcurrentHashMap<>();
     private final Map<UUID, Player> tentativePlayerMap = new ConcurrentHashMap<>();
     private final Map<Integer, Player> spawnedPlayerMap = new ConcurrentHashMap<>();
+
+    /**
+     * The window ID of the currently open window.
+     * If no window is open, this must be set to 0, which corresponds to the player's inventory.
+     */
+    @Setter
+    private int currentWindowId = 0;
 
     private final TritonLanguagePlayer<?> languagePlayer;
 
@@ -333,6 +343,10 @@ public class PacketEventsRefresh {
             val syntax = cfg.getTabSyntax();
             updatePlayerListHeaderFooter(user, syntax, parser);
             updatePlayerList(user, syntax, parser);
+        }
+        if (cfg.isItems()) {
+            val handler = new ItemStackTranslationUtils(parser, cfg.getItemsSyntax());
+            updateInventoryItems(user, handler);
         }
     }
 
@@ -642,6 +656,15 @@ public class PacketEventsRefresh {
                 player.getPitch(),
                 new ArrayList<>()
         );
+    }
+
+    private void updateInventoryItems(@NotNull User user, @NotNull ItemStackTranslationUtils handler) {
+        if (user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_17_1)) {
+            // Here we use a hack where we pretend to the server that the client is out-of-sync (i.e., incorrect stateId),
+            // making it resend the entire window contents
+            val packet = new WrapperPlayClientClickWindow(this.currentWindowId, -1, 0, Byte.MAX_VALUE, WrapperPlayClientClickWindow.WindowClickType.PICKUP, Collections.emptyMap(), Optional.empty());
+            user.receivePacketSilently(packet);
+        }
     }
 
     @RequiredArgsConstructor

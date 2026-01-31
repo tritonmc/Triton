@@ -1,5 +1,6 @@
 package com.rexcantor64.triton.packetinterceptor.handlers;
 
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPlayerInventory;
@@ -73,5 +74,13 @@ public class ItemPacketHandler {
                 event.markForReEncode(true);
             }
         }
+    }
+
+    public void onClientCloseWindowPacket(@NotNull PacketReceiveEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        languagePlayer.getPacketEventsRefresh().setCurrentWindowId(0);
+    }
+
+    public void onServerCloseWindowPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
+        languagePlayer.getPacketEventsRefresh().setCurrentWindowId(0);
     }
 }

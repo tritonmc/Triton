@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.packetinterceptor;
 
 import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
@@ -40,7 +41,8 @@ import java.util.stream.Collectors;
  */
 public class PacketEventsListener implements PacketListener {
 
-    private Map<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>> receiveHandlers = Collections.emptyMap();
+    private Map<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>> sendHandlers = Collections.emptyMap();
+    private Map<PacketTypeCommon, BiConsumer<PacketReceiveEvent, TritonLanguagePlayer<?>>> receiveHandlers = Collections.emptyMap();
 
     /**
      * Setup handlers according to what is enabled on config.
@@ -51,6 +53,7 @@ public class PacketEventsListener implements PacketListener {
         val parser = Triton.get().getMessageParser();
         val config = Triton.get().getConfig();
         val updatedHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketSendEvent, TritonLanguagePlayer<?>>>();
+        val updatedReceiveHandlers = new HashMap<PacketTypeCommon, BiConsumer<PacketReceiveEvent, TritonLanguagePlayer<?>>>();
 
         // parse allowed entity types from config
         val allowedEntities = config.getAllowedEntityTypes().stream()
@@ -118,7 +121,7 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.COMBAT_EVENT, deathScreenHandler::onCombatEventPacket);
             updatedHandlers.put(PacketType.Play.Server.DEATH_COMBAT_EVENT, deathScreenHandler::onDeathCombatEventPacket);
         }
-        if (config.isGuis()) {
+        if (config.isGuis() || config.isItems()) {
             val guiHandler = new GuiPacketHandler(parser, config);
             updatedHandlers.put(PacketType.Play.Server.OPEN_WINDOW, guiHandler::onOpenWindowPacket);
         }
@@ -148,13 +151,27 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.SET_PLAYER_INVENTORY, itemHandler::onSetPlayerInventoryPacket);
             updatedHandlers.put(PacketType.Play.Server.SET_SLOT, itemHandler::onSetSlotPacket);
             updatedHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, itemHandler::onWindowItemsPacket);
+            updatedHandlers.put(PacketType.Play.Server.CLOSE_WINDOW, itemHandler::onServerCloseWindowPacket);
+            updatedReceiveHandlers.put(PacketType.Play.Client.CLOSE_WINDOW, itemHandler::onClientCloseWindowPacket);
         }
 
-        receiveHandlers = Collections.unmodifiableMap(updatedHandlers);
+        sendHandlers = Collections.unmodifiableMap(updatedHandlers);
+        receiveHandlers = Collections.unmodifiableMap(updatedReceiveHandlers);
     }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
+        val type = event.getPacketType();
+
+        val handler = sendHandlers.get(type);
+        if (handler != null) {
+            val languagePlayer = Triton.get().getPlayerManager().get(event.getUser().getUUID());
+            handler.accept(event, languagePlayer);
+        }
+    }
+
+    @Override
+    public void onPacketReceive(PacketReceiveEvent event) {
         val type = event.getPacketType();
 
         val handler = receiveHandlers.get(type);

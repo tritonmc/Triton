@@ -15,24 +15,34 @@ public class GuiPacketHandler {
 
     private final @NotNull MessageParser parser;
     private final @NotNull MainConfig.FeatureSyntax syntax;
+    private final boolean translateGuiTitles;
+    private final boolean translateItems;
 
     public GuiPacketHandler(@NotNull MessageParser parser, @NotNull MainConfig config) {
         this.parser = parser;
         this.syntax = config.getGuiSyntax();
+        this.translateGuiTitles = config.isGuis();
+        this.translateItems = config.isItems();
     }
 
     public void onOpenWindowPacket(@NotNull PacketSendEvent event, @NotNull TritonLanguagePlayer<?> languagePlayer) {
         val packet = new WrapperPlayServerOpenWindow(event);
 
-        parser.translateComponent(
-                        packet.getTitle(),
-                        languagePlayer,
-                        syntax
-                )
-                .getResultOrToRemove(Component::empty)
-                .ifPresent(result -> {
-                    packet.setTitle(result);
-                    event.markForReEncode(true);
-                });
+        if (this.translateItems) {
+            languagePlayer.getPacketEventsRefresh().setCurrentWindowId(packet.getContainerId());
+        }
+
+        if (translateGuiTitles) {
+            parser.translateComponent(
+                            packet.getTitle(),
+                            languagePlayer,
+                            syntax
+                    )
+                    .getResultOrToRemove(Component::empty)
+                    .ifPresent(result -> {
+                        packet.setTitle(result);
+                        event.markForReEncode(true);
+                    });
+        }
     }
 }
