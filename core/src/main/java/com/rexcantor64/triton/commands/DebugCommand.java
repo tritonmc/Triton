@@ -8,6 +8,7 @@ import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
 import com.rexcantor64.triton.debug.LoadDump;
+import com.rexcantor64.triton.utils.DebugUtils;
 import lombok.val;
 
 import java.io.IOException;
@@ -65,6 +66,9 @@ public class DebugCommand implements Command {
         }
 
         switch (subcommand.get()) {
+            case INFO:
+                handleInfoCommand(event);
+                break;
             case DUMP:
                 handleDumpCommand(event);
                 break;
@@ -74,6 +78,15 @@ public class DebugCommand implements Command {
         }
     }
 
+    public void handleInfoCommand(CommandEvent event) {
+        val debugInfo = DebugUtils.generateDebugInfo();
+        val path = DebugUtils.saveDebugInfo(debugInfo);
+        if (path == null) {
+            sendMessage(event, "debug.info.error");
+        } else {
+            sendMessage(event, "debug.info.success", path);
+        }
+    }
 
     public void handleDumpCommand(CommandEvent event) {
         val sender = event.getSender();
@@ -302,6 +315,7 @@ public class DebugCommand implements Command {
     }
 
     private enum Subcommand {
+        INFO,
         DUMP,
         LOAD
     }

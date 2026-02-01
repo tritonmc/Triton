@@ -9,6 +9,7 @@ import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.config.TritonConfig;
 import com.rexcantor64.triton.config.interfaces.Configuration;
 import com.rexcantor64.triton.language.Language;
+import com.rexcantor64.triton.utils.DebugUtils.GsonExclude;
 import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.Cleanup;
 import lombok.Getter;
@@ -42,6 +43,7 @@ public class MainConfig implements TritonConfig {
     }.getType();
 
     @ToString.Exclude
+    @GsonExclude
     private transient final Triton<?, ?> main;
     @Setter
     private List<Language> languages;
@@ -54,6 +56,7 @@ public class MainConfig implements TritonConfig {
     private boolean bungeecord;
     private int configAutoRefresh;
     @ToString.Exclude
+    @GsonExclude
     private String twinToken;
     private List<String> commandAliases;
     private String parser = "adventure";
@@ -103,16 +106,22 @@ public class MainConfig implements TritonConfig {
     private String storageType = "local";
     private String serverName;
     @ToString.Exclude
+    @GsonExclude
     private String databaseHost;
     @ToString.Exclude
+    @GsonExclude
     private int databasePort;
     @ToString.Exclude
+    @GsonExclude
     private String databaseName;
     @ToString.Exclude
+    @GsonExclude
     private String databaseUser;
     @ToString.Exclude
+    @GsonExclude
     private String databasePassword;
     @ToString.Exclude
+    @GsonExclude
     private String databaseTablePrefix;
     private int databaseMysqlPoolMaxSize;
     private int databaseMysqlPoolMinIdle;
@@ -333,6 +342,8 @@ public class MainConfig implements TritonConfig {
         private final String lang;
         private final String args;
         private final String arg;
+        @ToString.Exclude
+        @GsonExclude
         private boolean interactive = false;
 
         private static FeatureSyntax fromSection(Configuration section) {

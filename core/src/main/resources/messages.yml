@@ -101,6 +101,9 @@ debug:
       invalid: "&cProvided line number '&4%1&c' is not a valid number"
     success:
       sent: '&aSend &6%1&a message(s)!'
+  info:
+    error: "&cThere was an error dumping info about the plugin. See console for details."
+    success: "&aDumped plugin info to <plugin dir>/%1"
 
 info-command:
   - "&8-------[ &b&lTriton&8 ]-------"

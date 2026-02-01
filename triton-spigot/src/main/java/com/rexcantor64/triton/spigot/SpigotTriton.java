@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.spigot;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
@@ -30,7 +32,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -280,5 +284,29 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private Optional<String> getProtocolLibVersion() {
+        return getPluginVersion("ProtocolLib");
+    }
+
+    private Optional<String> getPacketEventsVersion() {
+        return getPluginVersion("packetevents");
+    }
+
+    private Optional<String> getPluginVersion(String name) {
+        return Optional.ofNullable(Bukkit.getPluginManager().getPlugin(name))
+                .map(Plugin::getDescription)
+                .map(PluginDescriptionFile::getVersion);
+    }
+
+    @Override
+    public @NotNull JsonElement getPlatformDebugInfo() {
+        val obj = new JsonObject();
+        obj.addProperty("serverName", Bukkit.getName());
+        obj.addProperty("serverVersion", Bukkit.getVersion());
+        getProtocolLibVersion().ifPresent(version -> obj.addProperty("protocolLibVersion", version));
+        getPacketEventsVersion().ifPresent(version -> obj.addProperty("packetEventsVersion", version));
+        return obj;
     }
 }

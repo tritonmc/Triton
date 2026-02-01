@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.velocity;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -10,6 +12,8 @@ import com.rexcantor64.triton.velocity.listeners.VelocityListener;
 import com.rexcantor64.triton.velocity.packetinterceptor.VelocityPacketEventsManager;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
@@ -19,8 +23,10 @@ import lombok.NonNull;
 import lombok.val;
 import org.bstats.charts.SingleLineChart;
 import org.bstats.velocity.Metrics;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -128,5 +134,22 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     @Override
     protected String getConfigFileName() {
         return "config_velocity";
+    }
+
+    private Optional<String> getPacketEventsVersion() {
+        return getLoader().getServer().getPluginManager().getPlugin("packetevents")
+                .map(PluginContainer::getDescription)
+                .flatMap(PluginDescription::getVersion);
+    }
+
+    @Override
+    public @NotNull JsonElement getPlatformDebugInfo() {
+        val obj = new JsonObject();
+        val version = getLoader().getServer().getVersion();
+        obj.addProperty("serverName", version.getName());
+        obj.addProperty("serverVersion", version.getVersion());
+        obj.addProperty("serverVendor", version.getVendor());
+        getPacketEventsVersion().ifPresent(v -> obj.addProperty("packetEventsVersion", v));
+        return obj;
     }
 }

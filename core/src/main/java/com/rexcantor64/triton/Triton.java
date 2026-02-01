@@ -1,5 +1,6 @@
 package com.rexcantor64.triton;
 
+import com.google.gson.JsonElement;
 import com.rexcantor64.triton.api.language.LanguageParser;
 import com.rexcantor64.triton.api.legacy.LegacyLanguageParser;
 import com.rexcantor64.triton.bridge.BridgeManager;
@@ -19,8 +20,8 @@ import com.rexcantor64.triton.loader.utils.LoaderFlag;
 import com.rexcantor64.triton.logger.TritonLogger;
 import com.rexcantor64.triton.migration.LanguageMigration;
 import com.rexcantor64.triton.packetinterceptor.PacketEventsManager;
-import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
+import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.storage.LocalStorage;
@@ -31,6 +32,7 @@ import com.rexcantor64.triton.utils.TritonAPIUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -192,6 +194,8 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
     }
 
     public abstract String getVersion();
+
+    public abstract @NotNull JsonElement getPlatformDebugInfo();
 
     protected abstract void startConfigRefreshTask();
 

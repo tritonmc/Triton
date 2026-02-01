@@ -1,5 +1,7 @@
 package com.rexcantor64.triton.bungeecord;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.bungeecord.bridge.BungeeBridgeManager;
 import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommand;
@@ -21,13 +23,16 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.plugin.PluginDescription;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
 import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.SingleLineChart;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -170,5 +175,21 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
     @Override
     protected String getConfigFileName() {
         return "config_bungeecord";
+    }
+
+    private Optional<String> getPacketEventsVersion() {
+        return Optional.ofNullable(getLoader().getPlugin().getProxy().getPluginManager().getPlugin("packetevents"))
+                .map(Plugin::getDescription)
+                .map(PluginDescription::getVersion);
+    }
+
+    @Override
+    public @NotNull JsonElement getPlatformDebugInfo() {
+        val obj = new JsonObject();
+        val proxy = getLoader().getPlugin().getProxy();
+        obj.addProperty("serverName", proxy.getName());
+        obj.addProperty("serverVersion", proxy.getVersion());
+        getPacketEventsVersion().ifPresent(version -> obj.addProperty("packetEventsVersion", version));
+        return obj;
     }
 }
