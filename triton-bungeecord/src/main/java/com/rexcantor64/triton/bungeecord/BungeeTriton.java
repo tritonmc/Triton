@@ -27,11 +27,13 @@ import net.md_5.bungee.api.plugin.PluginDescription;
 import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
 import org.bstats.bungeecord.Metrics;
-import org.bstats.charts.SingleLineChart;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.SimplePie;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -64,8 +66,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         super.onEnable();
 
         Metrics metrics = new Metrics(getPlugin(), 5607);
-        metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> this.getTranslationManager().getTranslationCount()));
+        getBStatsCustomCharts().forEach(metrics::addCustomChart);
 
         bridgeManager = new BungeeBridgeManager();
         getBungeeCord().getPluginManager().registerListener(getPlugin(), bridgeManager);
@@ -175,6 +176,16 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
     @Override
     protected String getConfigFileName() {
         return "config_bungeecord";
+    }
+
+    @Override
+    protected @NotNull List<@NotNull CustomChart> getBStatsCustomCharts() {
+        val charts = super.getBStatsCustomCharts();
+        charts.add(new SimplePie(
+                "packet_interception_backend",
+                () -> this.getConfig().isUsePacketEvents() ? "PacketEvents" : "Native"
+        ));
+        return charts;
     }
 
     private Optional<String> getPacketEventsVersion() {

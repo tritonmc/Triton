@@ -437,4 +437,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     public int getTranslationCount() {
         return this.getTextTranslationCount() + this.getSignTranslationCount();
     }
+
+    public int getMatchesCount() {
+        return this.matches.size();
+    }
 }

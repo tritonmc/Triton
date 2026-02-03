@@ -27,7 +27,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import net.md_5.bungee.api.ChatColor;
 import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SingleLineChart;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -38,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,8 +93,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         }
 
         Metrics metrics = new Metrics(getJavaPlugin(), 5606);
-        metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> this.getTranslationManager().getTranslationCount()));
+        getBStatsCustomCharts().forEach(metrics::addCustomChart);
 
         // Setup custom managers
         wrapperManager = new MaterialWrapperManager();
@@ -284,6 +285,24 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    protected @NotNull List<@NotNull CustomChart> getBStatsCustomCharts() {
+        val charts = super.getBStatsCustomCharts();
+        charts.add(new SimplePie(
+                "packet_interception_backend",
+                () -> {
+                    if (this.getConfig().isUsePacketEvents()) {
+                        return "PacketEvents";
+                    }
+                    if (this.getConfig().isAsyncProtocolLib()) {
+                        return "ProtocolLib (Async)";
+                    }
+                    return "ProtocolLib (Sync)";
+                }
+        ));
+        return charts;
     }
 
     private Optional<String> getProtocolLibVersion() {

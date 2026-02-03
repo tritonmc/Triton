@@ -32,6 +32,10 @@ import com.rexcantor64.triton.utils.TritonAPIUtils;
 import com.rexcantor64.triton.web.TwinManager;
 import lombok.Getter;
 import lombok.val;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +43,9 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -232,6 +239,33 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         this.storage = new LocalStorage();
         this.storage.load();
         logger.logInfo("Loaded local storage manager");
+    }
+
+    protected @NotNull List<@NotNull CustomChart> getBStatsCustomCharts() {
+        val charts = new ArrayList<CustomChart>();
+        charts.add(new SingleLineChart(
+                "active_placeholders",
+                () -> this.getTranslationManager().getTranslationCount()
+        ));
+        charts.add(new SimplePie(
+                "message_parser",
+                () -> this.getConfig().getParser().equalsIgnoreCase("legacy") ? "Legacy" : "Adventure"
+        ));
+        charts.add(new SimplePie(
+                "storage_backend",
+                () -> this.getConfig().getStorageType().equalsIgnoreCase("mysql") ? "MySQL" : "Local"
+        ));
+        charts.add(new AdvancedPie(
+                "translation_types",
+                () -> {
+                    val data = new HashMap<String, Integer>();
+                    data.put("Text", Math.min(this.getTranslationManager().getTextTranslationCount(), 1));
+                    data.put("Sign", Math.min(this.getTranslationManager().getSignTranslationCount(), 1));
+                    data.put("Pattern", Math.min(this.getTranslationManager().getMatchesCount(), 1));
+                    return data;
+                }
+        ));
+        return charts;
     }
 
     public void openLanguagesSelectionGUI(com.rexcantor64.triton.api.players.LanguagePlayer p) {

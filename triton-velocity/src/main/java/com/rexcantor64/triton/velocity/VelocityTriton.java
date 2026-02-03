@@ -21,11 +21,13 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import org.bstats.charts.SingleLineChart;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -59,8 +61,7 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
 
         // bStats
         Metrics metrics = getLoader().getMetricsFactory().make(getPlugin(), 16222);
-        metrics.addCustomChart(new SingleLineChart("active_placeholders",
-                () -> this.getTranslationManager().getTranslationCount()));
+        getBStatsCustomCharts().forEach(metrics::addCustomChart);
 
         val eventManager = getVelocity().getEventManager();
         eventManager.register(getPlugin(), new VelocityListener());
@@ -134,6 +135,16 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     @Override
     protected String getConfigFileName() {
         return "config_velocity";
+    }
+
+    @Override
+    protected @NotNull List<@NotNull CustomChart> getBStatsCustomCharts() {
+        val charts = super.getBStatsCustomCharts();
+        charts.add(new SimplePie(
+                "packet_interception_backend",
+                () -> this.getConfig().isUsePacketEvents() ? "PacketEvents" : "Native"
+        ));
+        return charts;
     }
 
     private Optional<String> getPacketEventsVersion() {

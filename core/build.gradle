@@ -26,6 +26,8 @@ dependencies {
 
     compileOnly libs.packetevents.api
 
+    compileOnly libs.bstats.base
+
     implementation libs.slf4j.nop
     implementation libs.hikari
     implementation(libs.jsonpatch) {

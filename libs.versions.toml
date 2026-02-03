@@ -19,6 +19,7 @@ adventure-serializer-legacy = { group = "net.kyori", name = "adventure-text-seri
 adventure-serializer-plain = { group = "net.kyori", name = "adventure-text-serializer-plain", version.ref = "adventure" }
 asm = { group = "org.ow2.asm", name = "asm", version.ref = "asm" }
 asm-commons = { group = "org.ow2.asm", name = "asm-commons", version.ref = "asm" }
+bstats-base = { group = "org.bstats", name = "bstats-base", version.ref = "bstats" }
 bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 bstats-bungeecord = { group = "org.bstats", name = "bstats-bungeecord", version.ref = "bstats" }
 bstats-velocity = { group = "org.bstats", name = "bstats-velocity", version.ref = "bstats" }
