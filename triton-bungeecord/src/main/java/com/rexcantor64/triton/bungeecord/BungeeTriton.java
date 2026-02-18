@@ -8,6 +8,7 @@ import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommand;
 import com.rexcantor64.triton.bungeecord.commands.handler.BungeeCommandHandler;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeDecoder;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
+import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeePacketEventsManager;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.bungeecord.plugin.BungeePlugin;
 import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
@@ -74,9 +75,11 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
                 .registerListener(getPlugin(), new com.rexcantor64.triton.bungeecord.listeners.BungeeListener());
         getBungeeCord().registerChannel("triton:main");
 
-        for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
-            BungeeLanguagePlayer lp = getPlayerManager().get(p.getUniqueId());
-            injectPipeline(lp, p, p.getPendingConnection().getVersion());
+        if (!this.getConfig().isUsePacketEvents()) {
+            for (ProxiedPlayer p : getBungeeCord().getPlayers()) {
+                BungeeLanguagePlayer lp = getPlayerManager().get(p.getUniqueId());
+                injectPipeline(lp, p, p.getPendingConnection().getVersion());
+            }
         }
 
         val commandHandler = new BungeeCommandHandler();
@@ -115,7 +118,7 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
 
     @Override
     protected void initPacketEventsManager() {
-        // TODO: triton does not support packetevents on this platform yet
+        this.packetEventsManager = new BungeePacketEventsManager();
     }
 
     @Override

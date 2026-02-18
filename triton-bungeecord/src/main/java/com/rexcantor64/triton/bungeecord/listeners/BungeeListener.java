@@ -57,7 +57,9 @@ public class BungeeListener implements Listener {
         BungeeTriton.asBungee().getBungeeCord().getScheduler().runAsync(plugin, () -> {
             val lp = new BungeeLanguagePlayer(event.getConnection().getUniqueId(), event.getConnection());
             BungeeTriton.asBungee().getPlayerManager().registerPlayer(lp);
-            BungeeTriton.asBungee().injectPipeline(lp, event.getConnection(), event.getConnection().getVersion());
+            if (!Triton.get().getConfig().isUsePacketEvents()) {
+                BungeeTriton.asBungee().injectPipeline(lp, event.getConnection(), event.getConnection().getVersion());
+            }
             event.completeIntent(plugin);
         });
     }
@@ -69,6 +71,9 @@ public class BungeeListener implements Listener {
 
     @EventHandler(priority = -128)
     public void onPreLogin(PlayerHandshakeEvent event) {
+        if (Triton.get().getConfig().isUsePacketEvents()) {
+            return;
+        }
         val ip = SocketUtils.getIpAddress(event.getConnection().getSocketAddress());
         try {
             Object ch = ReflectionUtils.getDeclaredField(event.getConnection(), "ch");

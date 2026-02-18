@@ -170,6 +170,21 @@ public enum Dependency {
             relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
     ),
+    PACKET_EVENTS_BUNGEE(
+            "com{}github{}retrooper",
+            "packetevents-bungeecord",
+            "2.11.2",
+            "uqfNJPYZEG8ZpvC9VXGKorGs/9e+rDd8RBsLSxOyAGc=",
+            relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
+            relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}json", "adventure{}text{}serializer{}json", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
+            relocateIf("net{}kyori{}adventure{}text{}serializer{}legacy", "adventure{}text{}serializer{}legacy", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
+    ),
     PACKET_EVENTS_VELOCITY(
             "com{}github{}retrooper",
             "packetevents-velocity",

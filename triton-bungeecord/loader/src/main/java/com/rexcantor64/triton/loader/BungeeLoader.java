@@ -20,6 +20,7 @@ public class BungeeLoader extends Plugin {
                 .flag(LoaderFlag.VENDOR_ADVENTURE)
                 .flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
                 .flag(LoaderFlag.VENDOR_ADVENTURE_BUNGEE_SERIALIZER)
+                .flag(LoaderFlag.VENDOR_PACKET_EVENTS)
                 .build()
                 .loadUserLoaderFlags(this.getDataFolder().toPath())
                 .loadPlugin();

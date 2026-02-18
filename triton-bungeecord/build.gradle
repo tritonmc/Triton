@@ -18,6 +18,8 @@ dependencies {
     implementation libs.libby.bungee
 
     implementation libs.bstats.bungeecord
+
+    compileOnly libs.packetevents.bungeecord
 }
 
 shadowJar {

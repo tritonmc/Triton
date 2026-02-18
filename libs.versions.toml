@@ -45,6 +45,7 @@ minimessage = { group = "net.kyori", name = "adventure-text-minimessage", versio
 mysql-connector = { group = "com.mysql", name = "mysql-connector-j", version = "9.5.0" }
 netty-codec = { group = "io.netty", name = "netty-codec", version = "4.1.80.Final" }
 packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }
+packetevents-bungeecord = { group = "com.github.retrooper", name = "packetevents-bungeecord", version.ref = "packetevents" }
 packetevents-spigot = { group = "com.github.retrooper", name = "packetevents-spigot", version.ref = "packetevents" }
 packetevents-velocity = { group = "com.github.retrooper", name = "packetevents-velocity", version.ref = "packetevents" }
 placeholderapi = { group = "me.clip", name = "placeholderapi", version = "2.11.7" }
