@@ -658,6 +658,9 @@ public class PacketEventsRefresh {
     }
 
     private void updateInventoryItems(@NotNull User user) {
+        if (Triton.isBungee()) {
+            return;
+        }
         if (user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_17_1)) {
             // Here we use a hack where we pretend to the server that the client is out-of-sync (i.e., incorrect stateId),
             // making it resend the entire window contents
