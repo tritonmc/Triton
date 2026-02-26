@@ -21,4 +21,5 @@ bungee {
     description = pluginDescription
     author = pluginAuthor
     main = 'com.rexcantor64.triton.loader.BungeeLoader'
+    softDepends = ['PacketEvents']
 }

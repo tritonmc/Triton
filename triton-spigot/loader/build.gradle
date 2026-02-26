@@ -30,7 +30,7 @@ bukkit {
     apiVersion = pluginApiVersion
 
     depend = []
-    softDepend = ['ProtocolLib', 'PlaceholderAPI'] + conflictingPlugins
+    softDepend = ['ProtocolLib', 'PlaceholderAPI', 'PacketEvents'] + conflictingPlugins
 
     commands {
         twin {
