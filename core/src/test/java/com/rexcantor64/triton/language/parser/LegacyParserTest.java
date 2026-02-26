@@ -441,4 +441,28 @@ public class LegacyParserTest {
 
         assertEquals(TranslationResult.ResultState.TO_REMOVE, result.getState());
     }
+
+    @Test
+    public void testParseComponentWithClickAndHoverAndFontInSameComponent() {
+        Component comp = Component.text()
+                .content("[lang]without.formatting[/lang]")
+                .hoverEvent(HoverEvent.showText(Component.text("hover")))
+                .clickEvent(ClickEvent.copyToClipboard("click"))
+                .font(Key.key("testing:testing"))
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .content("This is text without formatting")
+                .hoverEvent(HoverEvent.showText(Component.text("hover")))
+                .clickEvent(ClickEvent.copyToClipboard("click"))
+                .font(Key.key("testing:testing"))
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
 }

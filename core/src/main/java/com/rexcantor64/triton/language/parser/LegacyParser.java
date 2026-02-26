@@ -18,8 +18,6 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.flattener.ComponentFlattener;
-import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.ShadowColor;
 import net.kyori.adventure.text.format.Style;
@@ -736,6 +734,17 @@ public class LegacyParser extends MessageParser {
                 this.linkBugStyle = null;
                 val i = this.topIndex--;
 
+                // The order needs to be the reverse of pushStyle
+                @Nullable val font = style.font();
+                if (font != null && (i == 0 || !font.equals(this.stack[i - 1].font()))) {
+                    this.stringBuilder.append(FONT_END_DELIM);
+                }
+
+                @Nullable val hoverEvent = style.hoverEvent();
+                if (hoverEvent != null && (i == 0 || !hoverEvent.equals(this.stack[i - 1].hoverEvent()))) {
+                    this.stringBuilder.append(HOVER_END_DELIM);
+                }
+
                 @Nullable val clickEvent = style.clickEvent();
                 if (clickEvent != null && (i == 0 || !clickEvent.equals(this.stack[i - 1].clickEvent()))) {
                     // See comment on linkBugStyle
@@ -744,16 +753,6 @@ public class LegacyParser extends MessageParser {
                     } else {
                         this.linkBugStyle = this.stack[i].clickEvent(null);
                     }
-                }
-
-                @Nullable val hoverEvent = style.hoverEvent();
-                if (hoverEvent != null && (i == 0 || !hoverEvent.equals(this.stack[i - 1].hoverEvent()))) {
-                    this.stringBuilder.append(HOVER_END_DELIM);
-                }
-
-                @Nullable val font = style.font();
-                if (font != null && (i == 0 || !font.equals(this.stack[i - 1].font()))) {
-                    this.stringBuilder.append(FONT_END_DELIM);
                 }
             }
 
