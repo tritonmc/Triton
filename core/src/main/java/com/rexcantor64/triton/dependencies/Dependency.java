@@ -128,8 +128,8 @@ public enum Dependency {
     PACKET_EVENTS_API(
             "com{}github{}retrooper",
             "packetevents-api",
-            "2.11.2",
-            "3iUlwXnzZ8UYPrcUG5inerI6qdtMmpvZ3M9KBvon8OM=",
+            "2.12.0",
+            "92NcbgpZfAQe1XDjBh6IYwCzAEnyrygyn9xg1Xnb08s=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
@@ -143,8 +143,8 @@ public enum Dependency {
     PACKET_EVENTS_NETTY_COMMON(
             "com{}github{}retrooper",
             "packetevents-netty-common",
-            "2.11.2",
-            "iFUyY8j/9ZIJGQI9KNkvS8TBuLIBLqpvt+RQALSipCM=",
+            "2.12.0",
+            "B0zKvQvPPoZ3vWYXk9bMDdl8u+h3dH89jCNK+0fqHkw=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
@@ -158,8 +158,8 @@ public enum Dependency {
     PACKET_EVENTS_SPIGOT(
             "com{}github{}retrooper",
             "packetevents-spigot",
-            "2.11.2",
-            "DNgWUMmOnz3rH65hM9MeSFYWWPwrXIU33FvsBxYD/+E=",
+            "2.12.0",
+            "mJHQjPqAQ70m5BtrmcfWVKmV2epUQUla0tM20Lpk5vE=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
@@ -173,8 +173,8 @@ public enum Dependency {
     PACKET_EVENTS_VELOCITY(
             "com{}github{}retrooper",
             "packetevents-velocity",
-            "2.11.2",
-            "FsSHtExrXGXiXrswQIGAO46DaIZDIiVwKgzZw1BRGXA=",
+            "2.12.0",
+            "BQ/8xDMvD3JTnf748bj/Koix5OCmntYnC52q+b1LGT4=",
             relocate("com{}github{}retrooper{}packetevents", "packetevents{}api"),
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
