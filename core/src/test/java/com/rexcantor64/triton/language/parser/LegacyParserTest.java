@@ -465,4 +465,37 @@ public class LegacyParserTest {
         assertNotNull(result.getResultRaw());
         assertEquals(expected.compact(), result.getResultRaw().compact());
     }
+
+    @Test
+    public void testTranslatableComponentDoesNotInheritChildren() {
+        Component comp = Component.text()
+                .content("[lang]with.colors.two.args[args][arg]")
+                .append(
+                        Component.text()
+                                .content("x1 ")
+                                .color(TextColor.fromHexString("#8ee6e3"))
+                                .append(
+                                        Component.translatable("block.minecraft.cobblestone")
+                                                .color(NamedTextColor.GRAY)
+                                                .append(Component.text("[/arg][arg]10$[/arg][/args][/lang]"))
+                                )
+                )
+                .asComponent();
+
+        TranslationResult<Component> result = parser.translateComponent(new SerializedComponent(comp), configuration)
+                .map(SerializedComponent::toComponent);
+
+        Component expected = Component.text()
+                .append(
+                        Component.text("This text is pink and has two arguments (", NamedTextColor.LIGHT_PURPLE),
+                        Component.text("x1 ", TextColor.fromHexString("#8ee6e3")),
+                        Component.translatable("block.minecraft.cobblestone", NamedTextColor.GRAY),
+                        Component.text(" and 10$)", NamedTextColor.GRAY)
+                )
+                .asComponent();
+
+        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
+        assertNotNull(result.getResultRaw());
+        assertEquals(expected.compact(), result.getResultRaw().compact());
+    }
 }

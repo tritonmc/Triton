@@ -36,6 +36,7 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -556,7 +557,7 @@ public class LegacyParser extends MessageParser {
                     }
                     val translatableComponent = this.translatableComponents.get(UUID.fromString(uuid.toString()));
                     if (translatableComponent != null) {
-                        list.add(translatableComponent.style(currentStyle));
+                        list.add(translatableComponent.style(currentStyle).children(Collections.emptyList()));
                     }
                 } else if (c == KEYBIND_DELIM) {
                     i++;
