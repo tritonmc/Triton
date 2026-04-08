@@ -160,8 +160,8 @@ public class ItemStackTranslationUtils {
                     )
                     .map(ComponentUtils::ensureNotItalic)
                     .map(WrappedComponentUtils::serialize)
-                    .getResultOrToRemove(() -> null)
-                    .ifPresent(componentMap::setItemName);
+                    .ifToRemove(() -> componentMap.setItemName(null))
+                    .ifChanged(componentMap::setItemName);
         }
 
         // translate custom name
@@ -175,8 +175,8 @@ public class ItemStackTranslationUtils {
                     )
                     .map(ComponentUtils::ensureNotItalic)
                     .map(WrappedComponentUtils::serialize)
-                    .getResultOrToRemove(() -> null)
-                    .ifPresent(componentMap::setCustomName);
+                    .ifToRemove(() -> componentMap.setCustomName(null))
+                    .ifChanged(componentMap::setCustomName);
         }
 
         if (translateLore) {
