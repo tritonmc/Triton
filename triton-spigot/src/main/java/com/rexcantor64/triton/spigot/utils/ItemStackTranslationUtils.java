@@ -208,8 +208,12 @@ public class ItemStackTranslationUtils {
             WrappedItemContainerContents containerContents = componentMap.getContainer();
             if (containerContents != null) {
                 List<ItemStack> newItems = containerContents.getItems()
-                        .stream()
-                        .map(containerItem -> translateItemStackPost_1_20_6(containerItem.clone(), languagePlayer, false, false))
+                        .map(containerItem -> {
+                            if (containerItem == null) {
+                                return null;
+                            }
+                            return translateItemStackPost_1_20_6(containerItem.clone(), languagePlayer, false, false);
+                        })
                         .collect(Collectors.toList());
                 containerContents.setItems(newItems);
                 componentMap.setContainer(containerContents);
