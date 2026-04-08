@@ -24,21 +24,11 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
 
     private static Class<?> ADVANCEMENT_DISPLAY = MinecraftReflection.getMinecraftClass("advancements.DisplayInfo", "advancements.AdvancementDisplay", "AdvancementDisplay");
     private static Class<?> ADVANCEMENT_FRAME_TYPE_CLASS = MinecraftReflection.getMinecraftClass("advancements.AdvancementType", "advancements.AdvancementFrameType", "AdvancementFrameType");
-    private static ConstructorAccessor ADVANCEMENT_DISPLAY_CONSTRUCTOR = Accessors.getConstructorAccessor(
-            ADVANCEMENT_DISPLAY,
-            MinecraftReflection.getItemStackClass(), // icon
-            MinecraftReflection.getIChatBaseComponentClass(), // title
-            MinecraftReflection.getIChatBaseComponentClass(), // description
-            MinecraftVersion.v1_20_4.atOrAbove() ? Optional.class : MinecraftReflection.getMinecraftKeyClass(), // background
-            ADVANCEMENT_FRAME_TYPE_CLASS, // frame
-            boolean.class, // showToast
-            boolean.class, // announceToChat
-            boolean.class // hidden
-    );
+    private static ConstructorAccessor ADVANCEMENT_DISPLAY_CONSTRUCTOR;
     private static FieldAccessor[] CHAT_COMPONENTS = Accessors.getFieldAccessorArray(ADVANCEMENT_DISPLAY, MinecraftReflection.getIChatBaseComponentClass(), true);
     private static FieldAccessor TITLE = CHAT_COMPONENTS[0];
     private static FieldAccessor DESCRIPTION = CHAT_COMPONENTS[1];
-    private static FieldAccessor ITEM_STACK = Accessors.getFieldAccessor(ADVANCEMENT_DISPLAY, MinecraftReflection.getItemStackClass(), true);
+    private static FieldAccessor ITEM_STACK;
     private static FieldAccessor BACKGROUND;
     private static FieldAccessor ADVANCEMENT_FRAME_TYPE = Accessors.getFieldAccessor(ADVANCEMENT_DISPLAY, ADVANCEMENT_FRAME_TYPE_CLASS, true);
     private static FieldAccessor[] BOOLEANS = Accessors.getFieldAccessorArray(ADVANCEMENT_DISPLAY, boolean.class, true);
@@ -76,6 +66,37 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
             BACKGROUND = Accessors.getFieldAccessor(fuzzyReflection.getParameterizedField(Optional.class, MinecraftReflection.getMinecraftKeyClass()));
         } else {
             BACKGROUND = Accessors.getFieldAccessor(ADVANCEMENT_DISPLAY, MinecraftReflection.getMinecraftKeyClass(), true);
+        }
+
+        try {
+            // up to MC 1.21.11
+            ADVANCEMENT_DISPLAY_CONSTRUCTOR = Accessors.getConstructorAccessor(
+                    ADVANCEMENT_DISPLAY,
+                    MinecraftReflection.getItemStackClass(), // icon
+                    MinecraftReflection.getIChatBaseComponentClass(), // title
+                    MinecraftReflection.getIChatBaseComponentClass(), // description
+                    MinecraftVersion.v1_20_4.atOrAbove() ? Optional.class : MinecraftReflection.getMinecraftKeyClass(), // background
+                    ADVANCEMENT_FRAME_TYPE_CLASS, // frame
+                    boolean.class, // showToast
+                    boolean.class, // announceToChat
+                    boolean.class // hidden
+            );
+            ITEM_STACK = Accessors.getFieldAccessor(ADVANCEMENT_DISPLAY, MinecraftReflection.getItemStackClass(), true);
+        } catch (NullPointerException | IllegalArgumentException e) {
+            // MC 26.1+
+            Class<?> itemStackTemplateClass = MinecraftReflection.getMinecraftClass("world.item.ItemStackTemplate");
+            ADVANCEMENT_DISPLAY_CONSTRUCTOR = Accessors.getConstructorAccessor(
+                    ADVANCEMENT_DISPLAY,
+                    itemStackTemplateClass, // icon
+                    MinecraftReflection.getIChatBaseComponentClass(), // title
+                    MinecraftReflection.getIChatBaseComponentClass(), // description
+                    MinecraftVersion.v1_20_4.atOrAbove() ? Optional.class : MinecraftReflection.getMinecraftKeyClass(), // background
+                    ADVANCEMENT_FRAME_TYPE_CLASS, // frame
+                    boolean.class, // showToast
+                    boolean.class, // announceToChat
+                    boolean.class // hidden
+            );
+            ITEM_STACK = Accessors.getFieldAccessor(ADVANCEMENT_DISPLAY, itemStackTemplateClass, true);
         }
     }
 
