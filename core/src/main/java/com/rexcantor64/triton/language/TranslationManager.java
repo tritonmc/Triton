@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -180,6 +181,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
                                     .resolvers(TagResolver.standard())
                                     .tag("triton", this.createTritonMiniMessageTagHandler(language))
                                     .build())
+                            // avoid compacting due to legacy parser needing full style information
+                            .postProcessor(UnaryOperator.identity())
                             .build();
                     this.miniMessageInstances.put(language, miniMessage);
                 });
