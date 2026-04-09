@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface Sender {
 
+    @Deprecated
     void sendMessage(String message);
 
     void sendMessage(Component component);

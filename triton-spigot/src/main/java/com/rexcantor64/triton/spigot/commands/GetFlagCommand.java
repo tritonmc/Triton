@@ -5,6 +5,7 @@ import com.rexcantor64.triton.commands.handler.CommandEvent;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.commands.handler.exceptions.PlayerOnlyCommandException;
 import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformException;
+import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import lombok.val;
 import org.bukkit.Bukkit;
@@ -26,11 +27,12 @@ public class GetFlagCommand extends com.rexcantor64.triton.commands.GetFlagComma
             return;
         }
 
-        val lang = Triton.get().getLanguageManager().getLanguageByName(event.getArgs()[0], false);
-        if (lang == null) {
+        val langOpt = Triton.get().getLanguageManager().getLanguageByName(event.getArgs()[0]);
+        if (!langOpt.isPresent()) {
             sender.sendMessageFormatted("error.lang-not-found", event.getArgs()[0]);
             return;
         }
+        val lang = (Language) langOpt.get();
 
         Objects.requireNonNull(Bukkit.getPlayer(uuid))
                 .getInventory()

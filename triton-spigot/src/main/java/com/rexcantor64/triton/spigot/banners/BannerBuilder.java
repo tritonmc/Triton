@@ -1,10 +1,11 @@
 package com.rexcantor64.triton.spigot.banners;
 
 import com.rexcantor64.triton.Triton;
-import com.rexcantor64.triton.api.language.Language;
+import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import lombok.val;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -33,7 +34,7 @@ public class BannerBuilder {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Failed to get HIDE_ADDITIONAL_TOOLTIP item flag"));
 
-        ITEM_FLAGS = new ItemFlag[] {
+        ITEM_FLAGS = new ItemFlag[]{
                 ItemFlag.HIDE_ENCHANTS,
                 ItemFlag.HIDE_ATTRIBUTES,
                 ItemFlag.HIDE_UNBREAKABLE,
@@ -52,10 +53,10 @@ public class BannerBuilder {
     public ItemStack fromLanguage(Language language, boolean active) {
         final Banner banner = bannerCache.computeIfAbsent(language, (lang) -> new Banner(lang.getFlagCode()));
 
-        return bannerToItemStack(banner, language.getDisplayName(), active);
+        return bannerToItemStack(banner, language.getDisplayNameComponent(), active);
     }
 
-    private ItemStack bannerToItemStack(Banner banner, String displayName, boolean active) {
+    private ItemStack bannerToItemStack(Banner banner, Component displayName, boolean active) {
         ItemStack itemStack = new ItemStack(SpigotTriton.asSpigot().getWrapperManager().getBannerMaterial());
         BannerMeta bannerMeta = Objects.requireNonNull((BannerMeta) itemStack.getItemMeta());
         for (Banner.Layer layer : banner.getLayers()) {
@@ -63,9 +64,9 @@ public class BannerBuilder {
             val patternType = layer.getPattern().toPatternType();
             bannerMeta.addPattern(new Pattern(dyeColor, patternType));
         }
-        bannerMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+        bannerMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(displayName));
         if (active) {
-            val selectedMsg = ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig().getMessage("other.selected"));
+            val selectedMsg = LegacyComponentSerializer.legacySection().serialize(Triton.get().getMessagesConfig().getMessageComponent("other.selected"));
             bannerMeta.setLore(Collections.singletonList(selectedMsg));
         }
         bannerMeta.addItemFlags(ITEM_FLAGS);

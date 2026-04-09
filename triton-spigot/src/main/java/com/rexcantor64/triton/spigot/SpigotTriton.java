@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
+import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.spigot.banners.BannerBuilder;
@@ -21,13 +22,13 @@ import com.rexcantor64.triton.spigot.placeholderapi.PapiProcessor;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
+import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.ReflectionUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
-import net.md_5.bungee.api.ChatColor;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.SimplePie;
@@ -200,15 +201,15 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
             val language = Triton.get().getLanguageManager();
             val pLang = languagePlayer.getLang();
-            val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessage("other.selector-gui-name"));
+            val gui = new ScrollableGui(Triton.get().getMessagesConfig().getMessageComponent("other.selector-gui-name"));
             for (val lang : language.getAllLanguages()) {
                 val isLanguageActive = pLang.equals(lang);
-                val languageItem = this.getBannerBuilder().fromLanguage(lang, isLanguageActive);
+                val languageItem = this.getBannerBuilder().fromLanguage((Language) lang, isLanguageActive);
                 gui.addButton(new GuiButton(languageItem).setListener(event -> {
                     languagePlayer.setLang(lang);
                     player.closeInventory();
-                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                            .getMessage("success.selector", lang.getDisplayName())));
+                    player.spigot().sendMessage(BaseComponentUtils.serialize(Triton.get().getMessagesConfig()
+                            .getMessageComponent("success.selector", lang.getDisplayName())));
                 }));
             }
             gui.open(player);

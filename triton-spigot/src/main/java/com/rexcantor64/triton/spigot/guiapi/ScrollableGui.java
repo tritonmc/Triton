@@ -2,8 +2,9 @@ package com.rexcantor64.triton.spigot.guiapi;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.spigot.SpigotTriton;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -19,10 +20,10 @@ public class ScrollableGui extends Gui {
     private List<GuiButton> items = new ArrayList<>();
 
     public ScrollableGui() {
-        this("");
+        this(Component.empty());
     }
 
-    public ScrollableGui(String title) {
+    public ScrollableGui(Component title) {
         super();
         rows = -1;
         super.title = title;
@@ -82,7 +83,7 @@ public class ScrollableGui extends Gui {
 
     public void open(Player p, int page) {
         Inventory inv = Bukkit
-                .createInventory(this, getRows(getSize(page)), ChatColor.translateAlternateColorCodes('&', title));
+                .createInventory(this, getRows(getSize(page)), LegacyComponentSerializer.legacySection().serialize(title));
         if (getMaxPages() == 1)
             for (GuiButton btn : items)
                 inv.addItem(btn.getItemStack());
@@ -106,8 +107,8 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                    .getMessage("other.selector-gui-prev")));
+            stackMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(Triton.get().getMessagesConfig()
+                    .getMessageComponent("other.selector-gui-prev")));
             backwardsButton.setItemMeta(stackMeta);
             inv.setItem(45, backwardsButton);
         }
@@ -117,8 +118,8 @@ public class ScrollableGui extends Gui {
             stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-            stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                    .getMessage("other.selector-gui-forward")));
+            stackMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(Triton.get().getMessagesConfig()
+                    .getMessageComponent("other.selector-gui-forward")));
             forwardButton.setItemMeta(stackMeta);
             inv.setItem(53, forwardButton);
         }
@@ -128,8 +129,8 @@ public class ScrollableGui extends Gui {
         stackMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
-        stackMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                .getMessage("other.selector-gui-currentpage", page, getMaxPages())));
+        stackMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(Triton.get().getMessagesConfig()
+                .getMessageComponent("other.selector-gui-currentpage", page, getMaxPages())));
         infoButton.setItemMeta(stackMeta);
         inv.setItem(49, infoButton);
     }
@@ -142,7 +143,7 @@ public class ScrollableGui extends Gui {
         this.blocked = blocked;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(Component title) {
         this.title = title;
     }
 

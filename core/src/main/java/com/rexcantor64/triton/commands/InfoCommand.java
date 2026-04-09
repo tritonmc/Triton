@@ -15,13 +15,13 @@ public class InfoCommand implements Command {
         val sender = event.getSender();
         sender.assertPermission("triton.info");
 
-        Triton.get().getMessagesConfig().getMessageList("info-command").forEach((msg) -> sender
-                .sendMessage(handleArguments(msg,
-                        Triton.get().getVersion(),
-                        "Rexcantor64 (Diogo Correia)",
-                        Triton.get().getStorage().toString(),
-                        event.getPlatform().isProxy() || Triton.get().getConfig().isBungeecord()
-                )));
+        sender.sendMessageFormatted(
+                "info-command",
+                Triton.get().getVersion(),
+                "Rexcantor64 (Diogo Correia)",
+                Triton.get().getStorage().toString(),
+                event.getPlatform().isProxy() || Triton.get().getConfig().isBungeecord()
+        );
         Triton.get().getLogger().logTrace("Current config: %1", Triton.get().getConfig());
     }
 
@@ -30,10 +30,4 @@ public class InfoCommand implements Command {
         return Collections.emptyList();
     }
 
-    private String handleArguments(String s, Object... args) {
-        for (int i = 0; i < args.length; i++)
-            if (args[i] != null)
-                s = s.replace("%" + (i + 1), args[i].toString());
-        return s;
-    }
 }

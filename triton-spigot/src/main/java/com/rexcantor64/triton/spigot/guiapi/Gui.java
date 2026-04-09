@@ -1,10 +1,10 @@
 package com.rexcantor64.triton.spigot.guiapi;
 
 import com.google.common.collect.Maps;
-import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.spigot.SpigotTriton;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -15,28 +15,28 @@ import java.util.Map.Entry;
 public class Gui implements InventoryHolder {
 
     int rows;
-    String title;
+    Component title;
     boolean blocked = true;
     int currentPage;
     int maxPages;
     Inventory inv;
     private HashMap<Integer, GuiButton> items = Maps.newHashMap();
 
-    public Gui(int rows, String title) {
+    public Gui(int rows, Component title) {
         this.rows = rows;
         this.title = title;
     }
 
     public Gui(int rows) {
-        this(rows, "");
+        this(rows, Component.empty());
     }
 
-    public Gui(String title) {
+    public Gui(Component title) {
         this(1, title);
     }
 
     public Gui() {
-        this(1, "");
+        this(1, Component.empty());
     }
 
     public int nextIndex() {
@@ -80,7 +80,7 @@ public class Gui implements InventoryHolder {
     }
 
     public void open(Player p) {
-        Inventory inv = Bukkit.createInventory(this, getSize(), ChatColor.translateAlternateColorCodes('&', title));
+        Inventory inv = Bukkit.createInventory(this, getSize(), LegacyComponentSerializer.legacySection().serialize(title));
         for (Entry<Integer, GuiButton> entry : items.entrySet())
             inv.setItem(entry.getKey(), entry.getValue().getItemStack());
         p.openInventory(inv);
@@ -96,7 +96,7 @@ public class Gui implements InventoryHolder {
         this.blocked = blocked;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(Component title) {
         this.title = title;
     }
 

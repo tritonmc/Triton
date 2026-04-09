@@ -15,7 +15,7 @@ languages:
     minecraft-code: [ en_GB, en_AU, en_CA, en_NZ, en_PT, en_UD, en_US ]
     # The display name. This will be the language name in non-code version. For example, en_UK should be English (UK)
     # Feel free to use colours here!
-    display-name: '&3English (UK)'
+    display-name: '<dark_aqua>English (UK)'
     # The languages to check for translations when this language does not have them.
     # The main language is also always checked last, even if you leave this empty.
     fallback-languages:
@@ -37,7 +37,7 @@ languages:
   pt_PT:
     flag: bacLlt
     minecraft-code: [ pt_PT, pt_BR ]
-    display-name: '&3Portuguese (Portugal)'
+    display-name: '<dark_aqua>Portuguese (Portugal)'
     fallback-languages: []
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'

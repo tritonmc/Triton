@@ -305,7 +305,7 @@ public class DebugCommand implements Command {
         event.getSender().sendMessageFormatted(
                 "debug.prefix",
                 event.getPlatform(),
-                Triton.get().getMessagesConfig().getMessage(code, args)
+                Triton.get().getMessagesConfig().getMessageUnsafe(code, args)
         );
     }
 

@@ -7,9 +7,7 @@ import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -41,10 +39,14 @@ public class MessagesConfig {
         if (msg == null)
             msg = defaultMessages.get(code);
 
+        if (msg instanceof List) {
+            return ((List<?>) msg).stream().map(Objects::toString).collect(Collectors.joining("<reset><newline>"));
+        }
+
         return Objects.toString(msg, "Unknown message");
     }
 
-    public String getMessage(String code, Object... args) {
+    private String getMessage(String code, Object... args) {
         String s = getString(code);
         for (int i = 0; i < args.length; i++)
             if (args[i] != null)
@@ -52,18 +54,12 @@ public class MessagesConfig {
         return s;
     }
 
+    public String getMessageUnsafe(String code, Object... args) {
+        return this.getMessage(code, args);
+    }
+
     public Component getMessageComponent(String code, Object... args) {
         String msg = getMessage(code, args);
         return MiniMessage.miniMessage().deserialize(msg);
-    }
-
-    public List<String> getMessageList(String code) {
-        Object list = messages.get(code);
-        if (list == null)
-            list = defaultMessages.get(code);
-
-        if (list instanceof List)
-            return ((List<?>) list).stream().map(Objects::toString).collect(Collectors.toList());
-        return Collections.singletonList("Unknown message");
     }
 }

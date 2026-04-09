@@ -5,6 +5,7 @@ import com.rexcantor64.triton.api.events.PlayerChangeLanguageBungeeEvent;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.bungeecord.BungeeTriton;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
+import com.rexcantor64.triton.bungeecord.utils.BaseComponentUtils;
 import com.rexcantor64.triton.language.ExecutableCommand;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.utils.SocketUtils;
@@ -13,9 +14,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.val;
 import net.md_5.bungee.BungeeCord;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -136,8 +135,8 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         if (event.isCancelled()) return;
         this.language = event.getNewLanguage();
         if (this.waitingForClientLocale && getParent() != null)
-            parent.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                    .getMessage("success.detected-language", language.getDisplayName()))));
+            parent.sendMessage(BaseComponentUtils.serialize(Triton.get().getMessagesConfig()
+                    .getMessageComponent("success.detected-language", language.getDisplayName())));
         this.waitingForClientLocale = false;
 
         if (sendToSpigot && getParent() != null)

@@ -1,6 +1,8 @@
 package com.rexcantor64.triton.language;
 
 import lombok.Data;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +17,7 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
     private String rawDisplayName;
     private List<String> fallbackLanguages = Collections.emptyList();
     private transient String displayName;
+    private transient Component displayNameComponent;
     private String flagCode;
     private List<ExecutableCommand> cmds = new ArrayList<>();
 
@@ -36,6 +39,7 @@ public class Language implements com.rexcantor64.triton.api.language.Language {
 
     public void computeProperties() {
         this.displayName = this.rawDisplayName;
+        this.displayNameComponent = MiniMessage.miniMessage().deserialize(this.rawDisplayName);
         // If loading with Gson, this might be set to null
         if (fallbackLanguages == null) {
             fallbackLanguages = Collections.emptyList();

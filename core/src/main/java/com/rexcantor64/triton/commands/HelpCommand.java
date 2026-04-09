@@ -10,6 +10,7 @@ import lombok.val;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class HelpCommand implements Command {
@@ -20,17 +21,14 @@ public class HelpCommand implements Command {
     public void handleCommand(CommandEvent event) throws NoPermissionException {
         event.getSender().assertPermission("triton.help");
 
-        for (val str : Triton.get().getMessagesConfig().getMessageList("help.menu")) {
-            if (str.equalsIgnoreCase("%1")) {
-                for (String command : commandHandler.getAvailableCommands()) {
-                    event.getSender().sendMessageFormatted("help.menu-item", event.getLabel(), command, Triton.get()
-                            .getMessagesConfig()
-                            .getMessage("command." + command));
-                }
-            } else {
-                event.getSender().sendMessage(str);
-            }
-        }
+        val commands = commandHandler.getAvailableCommands()
+                .stream()
+                .map(name -> {
+                    val description = Triton.get().getMessagesConfig().getMessageUnsafe("command." + name);
+                    return Triton.get().getMessagesConfig().getMessageUnsafe("help.menu-item", event.getLabel(), name, description);
+                })
+                .collect(Collectors.joining("<reset><newline>"));
+        event.getSender().sendMessageFormatted("help.menu", commands);
     }
 
     @Override

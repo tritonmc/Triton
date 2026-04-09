@@ -6,7 +6,6 @@ import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
-import lombok.val;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +19,7 @@ public class VelocitySender implements Sender {
             .extractUrls().build();
 
     @Override
+    @Deprecated
     public void sendMessage(String message) {
         this.sendMessage(serializer.deserialize(message));
     }
@@ -31,7 +31,7 @@ public class VelocitySender implements Sender {
 
     @Override
     public void sendMessageFormatted(String code, Object... args) {
-        sendMessage(Triton.get().getMessagesConfig().getMessage(code, args));
+        sendMessage(Triton.get().getMessagesConfig().getMessageComponent(code, args));
     }
 
     @Override

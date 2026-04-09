@@ -12,6 +12,7 @@ import com.rexcantor64.triton.language.item.SignLocation;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibRefresher;
+import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import com.rexcantor64.triton.storage.LocalStorage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +21,6 @@ import lombok.Setter;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -134,8 +134,9 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
         if (this.waitingForClientLocale) {
             try {
                 if (toBukkit().isPresent()) {
-                    bukkit.sendMessage(ChatColor.translateAlternateColorCodes('&', Triton.get().getMessagesConfig()
-                            .getMessage("success.detected-language", lang.getDisplayName())));
+                    bukkit.spigot().sendMessage(BaseComponentUtils.serialize(
+                            Triton.get().getMessagesConfig().getMessageComponent("success.detected-language", lang.getDisplayName())
+                    ));
                 } else {
                     Triton.get().getLogger()
                             .logWarning("Could not automatically set language for %1 because Bukkit Player instance " +

@@ -19,6 +19,7 @@ public class BungeeSender implements Sender {
     private final CommandSender handler;
 
     @Override
+    @Deprecated
     public void sendMessage(String message) {
         handler.sendMessage(TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', message)));
     }
@@ -30,7 +31,7 @@ public class BungeeSender implements Sender {
 
     @Override
     public void sendMessageFormatted(String code, Object... args) {
-        sendMessage(Triton.get().getMessagesConfig().getMessage(code, args));
+        sendMessage(Triton.get().getMessagesConfig().getMessageComponent(code, args));
     }
 
     @Override

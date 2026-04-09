@@ -18,7 +18,7 @@ languages:
     minecraft-code: [ en_GB, en_AU, en_CA, en_NZ, en_PT, en_UD, en_US ]
     # display-name将是最终游戏里展示的语言名称 例如, en_UK 将变为 English (UK)
     # 这里可以运用自如的使用颜色代码!
-    display-name: '&3English (UK)'
+    display-name: '<dark_aqua>English (UK)'
     # 当语言改变时将执行此指令.
     # 设置的指令不用以/开头.
     # 前缀类型有: 'PLAYER'以玩家身份执行指令, 'SERVER' 以服务器执行指令
@@ -32,7 +32,7 @@ languages:
   pt_PT:
     flag: bacLlt
     minecraft-code: [ pt_PT, pt_BR ]
-    display-name: '&3Portuguese (Portugal)'
+    display-name: '<dark_aqua>Portuguese (Portugal)'
   #  commands:
   #    - 'SERVER:say %player% (%uuid%) has just changed their language!'
 

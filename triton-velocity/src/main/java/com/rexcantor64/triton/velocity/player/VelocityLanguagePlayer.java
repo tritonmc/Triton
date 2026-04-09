@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,10 +127,8 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
 
         this.language = language;
         if (this.waitingForClientLocale) {
-            player.ifPresent(parent -> parent.sendMessage(
-                    LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
-                            .getMessage("success.detected-language", language.getDisplayName()))));
-
+            player.ifPresent(parent -> parent.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessageComponent("success.detected-language", language.getDisplayName())));
         }
         this.waitingForClientLocale = false;
 
@@ -179,9 +176,8 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
         if (this.clientLocale != null && this.isWaitingForClientLocale()) {
             this.waitingForClientLocale = false;
             this.language = Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(this.clientLocale);
-            player.ifPresent(parent -> parent.sendMessage(
-                    LegacyComponentSerializer.legacyAmpersand().deserialize(Triton.get().getMessagesConfig()
-                            .getMessage("success.detected-language", language.getDisplayName()))));
+            player.ifPresent(parent -> parent.sendMessage(Triton.get().getMessagesConfig()
+                    .getMessageComponent("success.detected-language", language.getDisplayName())));
         }
         player.ifPresent(parent -> Triton.get().getStorage()
                 .setLanguage(null, SocketUtils.getIpAddress(parent.getRemoteAddress()), language));
