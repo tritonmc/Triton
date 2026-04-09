@@ -26,7 +26,7 @@ public class MessagesConfig {
                 .load(Triton.get().getLoader().getResourceAsStream("messages.yml"));
         defaultMessages = YAMLUtils.deepToMap(defaultConf, "");
 
-        if (messages.size() != defaultMessages.size()) {
+        if (!defaultMessages.keySet().equals(messages.keySet())) {
             Triton.get().getLogger()
                     .logWarning("It seems like your messages.yml file is outdated");
             Triton.get().getLogger()
