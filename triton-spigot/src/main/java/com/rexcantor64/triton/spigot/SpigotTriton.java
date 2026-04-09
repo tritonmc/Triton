@@ -3,6 +3,7 @@ package com.rexcantor64.triton.spigot;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.rexcantor64.triton.Triton;
+import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -16,6 +17,7 @@ import com.rexcantor64.triton.spigot.listeners.BukkitListener;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibManager;
 import com.rexcantor64.triton.spigot.packetinterceptor.ProtocolLibRefresher;
 import com.rexcantor64.triton.spigot.packetinterceptor.SpigotPacketEventsManager;
+import com.rexcantor64.triton.spigot.placeholderapi.PapiProcessor;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
@@ -35,6 +37,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -154,6 +157,18 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     @Override
     protected void initPacketEventsManager() {
         this.packetEventsManager = new SpigotPacketEventsManager();
+    }
+
+    @Override
+    @Contract("_, _ -> _")
+    public @NotNull String preprocessLegacyParserTranslation(@NotNull String translation, @NotNull Localized language) {
+        if (!isPapiEnabled() || !(language instanceof SpigotLanguagePlayer)) {
+            return translation;
+        }
+        SpigotLanguagePlayer slp = (SpigotLanguagePlayer) language;
+        return slp.toBukkit()
+                .map(player -> PapiProcessor.replacePlaceholders(translation, player))
+                .orElse(translation);
     }
 
     @Override

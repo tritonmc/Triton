@@ -352,6 +352,7 @@ public class LegacyParser extends MessageParser {
     }
 
     private @NotNull SerializedComponent handleTranslationType(@NotNull String message, @NotNull Localized language) {
+        message = Triton.get().preprocessLegacyParserTranslation(message, language);
         // TODO make minimsg the default (?)
         if (message.startsWith(MINIMESSAGE_TYPE_TAG)) {
             MiniMessage miniMessage = Triton.get().getTranslationManager().getMiniMessageInstanceForLanguage(language.getLanguage());

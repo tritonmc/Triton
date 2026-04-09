@@ -2,6 +2,7 @@ package com.rexcantor64.triton;
 
 import com.google.gson.JsonElement;
 import com.rexcantor64.triton.api.language.LanguageParser;
+import com.rexcantor64.triton.api.language.Localized;
 import com.rexcantor64.triton.api.legacy.LegacyLanguageParser;
 import com.rexcantor64.triton.bridge.BridgeManager;
 import com.rexcantor64.triton.config.MainConfig;
@@ -36,6 +37,7 @@ import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -181,6 +183,20 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
      * @since 4.0.0
      */
     protected abstract void initPacketEventsManager();
+
+    /**
+     * Preprocess a translation (i.e., the ones defined in the translations directory) when using the legacy parser.
+     * This is used to support PlaceholderAPI placeholders on Spigot platforms,
+     * but is an identity function on other platforms.
+     *
+     * @param translation The translation to process.
+     * @param language    The language this translation corresponds to.
+     * @return The transformed translation.
+     */
+    @Contract("_, _ -> param1")
+    public @NotNull String preprocessLegacyParserTranslation(@NotNull String translation, @NotNull Localized language) {
+        return translation;
+    }
 
     public void refreshPlayers() {
         playerManager.getAll().stream()
