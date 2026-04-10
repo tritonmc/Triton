@@ -12,7 +12,10 @@ dependencies {
 
     annotationProcessor libs.velocity.api
 
+    compileOnly libs.velocity.api
     compileOnly libs.velocity.proxy
+
+    compileOnly libs.adventure.nbt
 
     compileOnly libs.netty.codec
 

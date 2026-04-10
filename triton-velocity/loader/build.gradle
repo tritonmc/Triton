@@ -9,6 +9,7 @@ dependencies {
     compileOnly project(':core:triton-core-loader')
 
     compileOnly libs.velocity.proxy
+    compileOnly libs.velocity.api
     annotationProcessor libs.velocity.api
 }
 

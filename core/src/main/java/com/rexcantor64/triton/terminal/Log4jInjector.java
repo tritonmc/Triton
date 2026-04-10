@@ -2,7 +2,6 @@ package com.rexcantor64.triton.terminal;
 
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.utils.AppenderRefFactory;
-import lombok.var;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
