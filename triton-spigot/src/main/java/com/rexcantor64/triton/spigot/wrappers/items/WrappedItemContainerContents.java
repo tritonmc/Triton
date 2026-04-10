@@ -43,29 +43,8 @@ public class WrappedItemContainerContents extends AbstractWrapper {
     private static final EquivalentConverter<ItemStack> ITEM_STACK_CONVERTER = BukkitConverters.getItemStackConverter();
     private static final EquivalentConverter<List<ItemStack>> ITEM_STACK_LIST_CONVERTER = BukkitConverters.getListConverter(ITEM_STACK_CONVERTER);
 
-    private static final EquivalentConverter<ItemStack> ITEM_STACK_TEMPLATE_CONVERTER = new EquivalentConverter<ItemStack>() {
-        private final Class<?> ITEM_STACK_TEMPLATE_CLASS = MinecraftReflection.getMinecraftClass("world.item.ItemStackTemplate");
-        private final MethodAccessor ITEM_TO_TEMPLATE = Accessors.getMethodAccessor(FuzzyReflection.fromClass(ITEM_STACK_TEMPLATE_CLASS).getMethodByReturnTypeAndParameters("fromNonEmptyStack", ITEM_STACK_TEMPLATE_CLASS, MinecraftReflection.getItemStackClass()));
-        private final MethodAccessor TEMPLATE_TO_ITEM = Accessors.getMethodAccessor(FuzzyReflection.fromClass(ITEM_STACK_TEMPLATE_CLASS).getMethodByReturnTypeAndParameters("create", MinecraftReflection.getItemStackClass()));
-
-        @Override
-        public Object getGeneric(ItemStack specific) {
-            Object nmsItem = ITEM_STACK_CONVERTER.getGeneric(specific);
-            return ITEM_TO_TEMPLATE.invoke(null, nmsItem);
-        }
-
-        @Override
-        public ItemStack getSpecific(Object generic) {
-            Object nmsItem = TEMPLATE_TO_ITEM.invoke(generic);
-            return ITEM_STACK_CONVERTER.getSpecific(nmsItem);
-        }
-
-        @Override
-        public Class<ItemStack> getSpecificType() {
-            return ItemStack.class;
-        }
-    };
-    private static final EquivalentConverter<List<Optional<ItemStack>>> ITEM_STACK_TEMPLATE_LIST_OPTIONAL_CONVERTER = BukkitConverters.getListConverter(Converters.optional(ITEM_STACK_TEMPLATE_CONVERTER));
+    private static final EquivalentConverter<ItemStack> ITEM_STACK_TEMPLATE_CONVERTER;
+    private static final EquivalentConverter<List<Optional<ItemStack>>> ITEM_STACK_TEMPLATE_LIST_OPTIONAL_CONVERTER;
 
     private static final EquivalentConverter<WrappedItemContainerContents> CONVERTER = Converters.ignoreNull(Converters.handle(AbstractWrapper::getHandle, WrappedItemContainerContents::fromHandle, WrappedItemContainerContents.class));
 
@@ -75,10 +54,35 @@ public class WrappedItemContainerContents extends AbstractWrapper {
             // up to MC 1.21.11
             ITEMS_FIELD = Accessors.getFieldAccessor(itemsField.get(0));
             IS_OPTIONAL_LIST = false;
+            ITEM_STACK_TEMPLATE_CONVERTER = null;
+            ITEM_STACK_TEMPLATE_LIST_OPTIONAL_CONVERTER = null;
         } else {
             // MC 26.1+
             ITEMS_FIELD = Accessors.getFieldAccessor(ITEM_CONTAINER_CONTENTS, List.class, true);
             IS_OPTIONAL_LIST = true;
+            ITEM_STACK_TEMPLATE_CONVERTER = new EquivalentConverter<ItemStack>() {
+                private final Class<?> ITEM_STACK_TEMPLATE_CLASS = MinecraftReflection.getMinecraftClass("world.item.ItemStackTemplate");
+                private final MethodAccessor ITEM_TO_TEMPLATE = Accessors.getMethodAccessor(FuzzyReflection.fromClass(ITEM_STACK_TEMPLATE_CLASS).getMethodByReturnTypeAndParameters("fromNonEmptyStack", ITEM_STACK_TEMPLATE_CLASS, MinecraftReflection.getItemStackClass()));
+                private final MethodAccessor TEMPLATE_TO_ITEM = Accessors.getMethodAccessor(FuzzyReflection.fromClass(ITEM_STACK_TEMPLATE_CLASS).getMethodByReturnTypeAndParameters("create", MinecraftReflection.getItemStackClass()));
+
+                @Override
+                public Object getGeneric(ItemStack specific) {
+                    Object nmsItem = ITEM_STACK_CONVERTER.getGeneric(specific);
+                    return ITEM_TO_TEMPLATE.invoke(null, nmsItem);
+                }
+
+                @Override
+                public ItemStack getSpecific(Object generic) {
+                    Object nmsItem = TEMPLATE_TO_ITEM.invoke(generic);
+                    return ITEM_STACK_CONVERTER.getSpecific(nmsItem);
+                }
+
+                @Override
+                public Class<ItemStack> getSpecificType() {
+                    return ItemStack.class;
+                }
+            };
+            ITEM_STACK_TEMPLATE_LIST_OPTIONAL_CONVERTER = BukkitConverters.getListConverter(Converters.optional(ITEM_STACK_TEMPLATE_CONVERTER));
         }
     }
 
