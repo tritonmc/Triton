@@ -22,7 +22,7 @@ import java.nio.file.Path;
         name = "Triton",
         url = "https://triton.rexcantor64.com",
         description = "A plugin that replaces any message on your server, to the receiver's language, in real time!",
-        version = "@version@",
+        version = VelocityBuildParameters.VERSION,
         authors = {"Rexcantor64"},
         dependencies = {
                 // Soft-depend on packet events: use bundled version, but allow using one available in the server

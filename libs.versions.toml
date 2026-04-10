@@ -56,7 +56,7 @@ velocity-api = { group = "com.velocitypowered", name = "velocity-api", version.r
 velocity-proxy = { group = "com.velocitypowered", name = "velocity-proxy", version.ref = "velocity" }
 
 [plugins]
-blossom = { id = "net.kyori.blossom", version = "1.3.1" }
+blossom = { id = "net.kyori.blossom", version = "2.2.0" }
 pluginyml-bukkit = { id = "de.eldoria.plugin-yml.bukkit", version.ref = "plugin-yml" }
 pluginyml-bungee = { id = "de.eldoria.plugin-yml.bungee", version.ref = "plugin-yml" }
 shadow = { id = "com.gradleup.shadow", version = "9.3.0" }

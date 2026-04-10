@@ -1,0 +1,5 @@
+package com.rexcantor64.triton.loader;
+
+class VelocityBuildParameters {
+    public static final String VERSION = "{{ version }}";
+}

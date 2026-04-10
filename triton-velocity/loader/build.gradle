@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.blossom)
 }
 
-apply plugin: 'net.kyori.blossom'
 group = 'com.rexcantor64.triton'
 
 dependencies {
@@ -13,6 +12,12 @@ dependencies {
     annotationProcessor libs.velocity.api
 }
 
-blossom {
-    replaceToken '@version@', project.version
+sourceSets {
+    main {
+        blossom {
+            javaSources {
+                property("version", project.provider { project.version.toString() })
+            }
+        }
+    }
 }
