@@ -127,44 +127,38 @@ experimental-use-packetevents: false
 message-parser: "adventure"
 
 # Here you can enable and disable certain features of the plugin.
-# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
+# Every section contains a "syntax-lang" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.
 language-creation:
   chat:
     # Should the plugin check for placeholders in chat messages?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   actionbars:
     # Should the plugin check for placeholders in action bars?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   titles:
     # Should the plugin check for placeholders in titles and subtitles?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   kick:
     # Should the plugin check for placeholders in kick messages?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   tab:
     # Should the plugin check for placeholders in tab?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   bossbars:
     # Should the plugin check for placeholders in bossbars? (1.9+)
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   motd:
     # Should the plugin check for placeholders in the MOTD?
@@ -172,7 +166,6 @@ language-creation:
     # When the IP is unknown, the default language is used.
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   scoreboards:
     # Should the plugin check for placeholders in scoreboard teams and objectives?
@@ -181,7 +174,6 @@ language-creation:
     # To translate scoreboards, it is recommended to translate using PlaceholderAPI
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).

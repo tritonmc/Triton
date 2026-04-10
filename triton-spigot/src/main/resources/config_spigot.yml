@@ -146,7 +146,7 @@ experimental-use-packetevents: false
 message-parser: "adventure"
 
 # Here you can enable and disable certain features of the plugin.
-# Every section contains a "syntax-lang", "syntax-args" and "syntax-arg" field. These are used in the placeholders.
+# Every section contains a "syntax-lang" and "syntax-arg" field. These are used in the placeholders.
 # If you change them, make sure to adjust accordingly in your plugins.
 language-creation:
   chat:
@@ -155,25 +155,21 @@ language-creation:
     # Should the plugin check for placeholders in signed chat messages (MC 1.19+)? Requires the above option to be enabled as well.
     signed-enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   actionbars:
     # Should the plugin check for placeholders in action bars?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   titles:
     # Should the plugin check for placeholders in titles and subtitles?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   guis:
     # Should the plugin check for placeholders in GUIs' titles?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   holograms:
     # Should the plugin check for placeholders in holograms (and/or entity display names)?
@@ -188,19 +184,16 @@ language-creation:
     # When enabled, the list above is ignored and all entities' names are checked and translated.
     allow-all: false
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   kick:
     # Should the plugin check for placeholders in kick messages?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   tab:
     # Should the plugin check for placeholders in tab?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   items:
     # Should the plugin check for placeholders in items?
@@ -212,19 +205,16 @@ language-creation:
     # It is recommended to enable "allow-in-inventory" above if this is enabled.
     books: false
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   signs:
     # Should the plugin overlay the signs with the translations on languages.json?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   bossbars:
     # Should the plugin check for placeholders in bossbars? (1.9+)
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   motd:
     # Should the plugin check for placeholders in the MOTD?
@@ -232,7 +222,6 @@ language-creation:
     # When the IP is unknown, the default language is used.
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   scoreboards:
     # Should the plugin check for placeholders in scoreboard teams and objectives?
@@ -241,7 +230,6 @@ language-creation:
     # To translate scoreboards, it is recommended to translate using PlaceholderAPI
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   advancements:
     # Should the plugin check for placeholders in advancements?
@@ -249,7 +237,6 @@ language-creation:
     # This is intended for plugins that add custom advancements, since Minecraft's default advancements are already translated.
     enabled: false
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
     # EXPERIMENTAL: Should the advancements be refreshed when the language changes?
     # There might be some issues with this enabled, disable if you have those issues.
@@ -260,13 +247,11 @@ language-creation:
     # Only works on 1.9 and above.
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   resource-pack-prompt:
     # Should the plugin translate the prompt for Resource Pack requests? (1.17+)
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).

@@ -340,6 +340,7 @@ public class MainConfig implements TritonConfig {
     @VisibleForTesting
     public static class FeatureSyntax implements com.rexcantor64.triton.api.config.FeatureSyntax {
         private final String lang;
+        @Deprecated
         private final String args;
         private final String arg;
         @ToString.Exclude

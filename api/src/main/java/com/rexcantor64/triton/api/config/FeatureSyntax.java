@@ -19,7 +19,10 @@ public interface FeatureSyntax {
      * Default is "args".
      * @return The key of the tag that starts/end the variables of a placeholder
      * @since 1.0.0
+     * @deprecated The [args] tag is no longer needed as of Triton v4.0.0.
+     * Simply using the [arg] tags without surrounding them with [args].
      */
+    @Deprecated
     String getArgs();
 
     /**

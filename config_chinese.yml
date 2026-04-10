@@ -123,32 +123,28 @@ storage:
     #  verifyServerCertificate: false
 
 # 这里你可以关闭一些插件的功能
-# 每个选项都包含"syntax-lang", "syntax-args" 和 "syntax-arg"三个字符. 这用于变量.
+# 每个选项都包含"syntax-lang" 和 "syntax-arg"三个字符. 这用于变量.
 # 如果更改了变量,也需在其他翻译了的插件配置文件中更改.
 language-creation:
   chat:
     # 需替换聊天中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   actionbars:
     # 需替换Actionbar中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   titles:
     # 需替换题目标题中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   guis:
     # 需替换gui中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   holograms:
     # 需替换全息悬浮字中的变量吗 (或实体名)?
@@ -160,19 +156,16 @@ language-creation:
     # 当开启此选项 将忽略types选项 并检查/替换所有实体名
     allow-all: false
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   kick:
     # 需替换kick信息中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   tab:
     # 需替换tab中的变量吗?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   items:
     # 需替换物品名中的变量吗?
@@ -184,19 +177,16 @@ language-creation:
     # 若要翻译书请开启上面的 "allow-in-inventory" 选项
     books: false
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   signs:
     # 插件是否需要将木牌上的语言替换为 languages.json?
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   bossbars:
     # 需替换boss条中的变量吗? (1.9+)
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   motd:
     # 插件需替换 MOTD 中的变量吗?
@@ -204,7 +194,6 @@ language-creation:
     # 若IP地区为未知地区,则将使用主语言
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   scoreboards:
     # Should the plugin check for placeholders in scoreboard teams and objectives?
@@ -213,7 +202,6 @@ language-creation:
     # To translate scoreboards, it is recommended to translate using PlaceholderAPI
     enabled: true
     syntax-lang: lang
-    syntax-args: args
     syntax-arg: arg
   # 若含以下消息的变量将不会发送给玩家(控制台仍可接受).
   # 不填写则为关闭此功能 (默认为关闭).
