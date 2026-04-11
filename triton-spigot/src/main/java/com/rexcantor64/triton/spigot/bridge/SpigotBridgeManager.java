@@ -202,9 +202,6 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                             .refreshPlayers(), 10L);
                 });
             } else if (action == BridgeSerializer.ActionP2S.FORWARD_TRITON_COMMAND.getKey()) {
-                @Deprecated
-                val uuid = new UUID(in.readLong(), in.readLong()); // TODO remove in v4
-
                 val subCommand = in.readBoolean() ? in.readUTF() : null;
                 val args = new String[in.readShort()];
                 for (int i = 0; i < args.length; ++i)

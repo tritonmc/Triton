@@ -224,10 +224,6 @@ public class BridgeSerializer {
         val out = ByteStreams.newDataOutput();
         out.writeByte(ActionP2S.FORWARD_TRITON_COMMAND.getKey());
 
-        val uuid = commandEvent.getSender().getUUID();
-        out.writeLong(uuid.getMostSignificantBits());
-        out.writeLong(uuid.getLeastSignificantBits());
-
         out.writeBoolean(commandEvent.getSubCommand() != null);
         if (commandEvent.getSubCommand() != null)
             out.writeUTF(commandEvent.getSubCommand());
