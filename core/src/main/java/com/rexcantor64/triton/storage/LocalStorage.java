@@ -135,7 +135,7 @@ public class LocalStorage extends Storage {
 
         // Use translations.cache.json
         if (Triton.get().getConfig().isBehindProxy() && Triton.isSpigot()) {
-            Triton.get().getLogger().logDebug("Saving translations to cache since bungeecord mode is enabled.");
+            Triton.get().getLogger().logDebug("Saving translations to cache since behind-proxy mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
 
@@ -217,7 +217,7 @@ public class LocalStorage extends Storage {
 
         // Use translations.cache.json
         if (Triton.get().getConfig().isBehindProxy() && Triton.isSpigot()) {
-            Triton.get().getLogger().logDebug("Loading translations from cache since bungeecord mode is enabled.");
+            Triton.get().getLogger().logDebug("Loading translations from cache since behind-proxy mode is enabled.");
 
             val cacheFile = new File(Triton.get().getDataFolder(), "translations.cache.json");
 

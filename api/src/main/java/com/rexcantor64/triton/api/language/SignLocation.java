@@ -8,7 +8,7 @@ package com.rexcantor64.triton.api.language;
 public interface SignLocation {
 
     /**
-     * Bungee only.
+     * Proxy only.
      *
      * @return Get the server where this sign is.
      * @since 1.0.0

@@ -56,7 +56,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
             if (action == BridgeSerializer.ActionP2S.SEND_STORAGE_AND_CONFIG.getKey()) {
                 if (!(Triton.get().getStorage() instanceof LocalStorage)) {
                     Triton.get().getLogger()
-                            .logWarning("You're using BungeeCord with a local storage option, but this server is " +
+                            .logWarning("You're using a proxy with a local storage option, but this server is " +
                                     "using non-local storage.");
                     Triton.get().getLogger()
                             .logWarning("All servers must share the same storage settings, otherwise translations " +
@@ -162,7 +162,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                     Triton.get().getStorage().setCollections(collections);
                     Triton.get().getStorage().uploadToStorage(collections);
 
-                    Triton.get().getLogger().logDebug("Received config from BungeeCord and parsed it in %1ms!",
+                    Triton.get().getLogger().logDebug("Received config from the proxy and parsed it in %1ms!",
                             System.currentTimeMillis() - start);
                 } finally {
                     Triton.get().getLanguageManager().setup();
@@ -185,7 +185,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                 val storage = Triton.get().getStorage();
                 if (storage instanceof LocalStorage) {
                     Triton.get().getLogger()
-                            .logWarning("You're using BungeeCord with a non-local storage option, but this server " +
+                            .logWarning("You're using a proxy with a non-local storage option, but this server " +
                                     "is using local storage.");
                     Triton.get().getLogger()
                             .logWarning("All servers must share the same storage settings, otherwise translations " +
