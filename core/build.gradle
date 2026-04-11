@@ -62,3 +62,55 @@ shadowJar {
     relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
     relocate 'me.lucko.jarrelocator', 'com.rexcantor64.triton.lib.jarrelocator'
 }
+
+import groovy.json.JsonOutput
+
+abstract class GenerateFromEnumTask extends DefaultTask {
+
+    @Input
+    abstract Property<String> getEnumClassName()
+
+    @Classpath
+    abstract ConfigurableFileCollection getClasspath()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    @TaskAction
+    void generate() {
+        def urls = classpath.files.collect { it.toURI().toURL() } as URL[]
+        def classLoader = new URLClassLoader(urls, (ClassLoader) null)
+
+        try {
+            def enumClass = classLoader.loadClass(enumClassName.get())
+            if (!enumClass.isEnum()) {
+                throw new GradleException("${enumClassName.get()} is not an enum")
+            }
+
+            def outputDirFile = outputDir.get().asFile
+            outputDirFile.mkdirs()
+
+            def values = enumClass.enumConstants.collect {
+                value ->
+                    [
+                            groupId       : value.groupId,
+                            artifactId    : value.artifactId,
+                            version       : value.version,
+                            sha256Checksum: value.sha256Checksum
+                    ]
+            }
+
+            def file = new File(outputDirFile, "libby-libs.json")
+            file.text = JsonOutput.toJson(values)
+        } finally {
+            classLoader.close()
+        }
+    }
+}
+
+tasks.register('genLibbyLibsJson', GenerateFromEnumTask) {
+    enumClassName = "com.rexcantor64.triton.dependencies.Dependency"
+    outputDir = layout.buildDirectory.dir("generated")
+
+    classpath.from(sourceSets.main.runtimeClasspath).from(sourceSets.main.compileClasspath)
+}

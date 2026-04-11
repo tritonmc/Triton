@@ -39,3 +39,6 @@ gradle-app.setting
 *.iml
 .idea/
 out/
+
+# Nix result files
+result*
