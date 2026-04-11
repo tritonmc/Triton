@@ -22,10 +22,10 @@ languages:
       - pt_PT
     # Use this to run commands on language change.
     # The commands must not start with a slash.
-    # Prefix with the desired type. Available types: 'PLAYER', 'SERVER', 'BUNGEE', 'BUNGEE_PLAYER'.
+    # Prefix with the desired type. Available types: 'PLAYER', 'SERVER', 'PROXY', 'PROXY_PLAYER'.
     # i. e. "PLAYER:say I'm using English now!"
     # You can also limit the command to certain servers:
-    # i. e. "BUNGEE:lobby,lobby-2,lobby-3:alert This will only run on 3 servers!"
+    # i. e. "PROXY:lobby,lobby-2,lobby-3:alert This will only run on 3 servers!"
     # NOTE: If a command you're using contains a ':' and you want it to be universal, do something like this:
     # i. e. "PLAYER::give @a minecraft:dirt"
     # Please uncomment the lines below to start using this feature.

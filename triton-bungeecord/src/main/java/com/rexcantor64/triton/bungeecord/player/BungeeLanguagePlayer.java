@@ -220,10 +220,10 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
                 BungeeTriton.asBungee().getBridgeManager().sendExecutableCommand(cmdText, server);
             } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
                 server.unsafe().sendPacket(new Chat("/" + cmdText));
-            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE) {
+            } else if (cmd.getType() == ExecutableCommand.Type.PROXY) {
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(BungeeCord.getInstance().getConsole(),
                         cmdText);
-            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER) {
+            } else if (cmd.getType() == ExecutableCommand.Type.PROXY_PLAYER) {
                 BungeeCord.getInstance().getPluginManager().dispatchCommand(parent, cmdText);
             }
         }

@@ -5,6 +5,7 @@ import com.rexcantor64.triton.utils.StringUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,13 +36,7 @@ public class ExecutableCommand {
                     .logWarning("Language command '%1' doesn't have a type. Using type 'PLAYER' by default.", input);
             return new ExecutableCommand(input, Type.PLAYER);
         }
-        Type type = null;
-        for (Type t : Type.values()) {
-            if (inputSplit[0].equals(t.name())) {
-                type = t;
-                break;
-            }
-        }
+        Type type = Type.parse(inputSplit[0]);
         if (type == null) {
             Triton.get().getLogger()
                     .logWarning("Language command '%1' has invalid type '%2'. Using the default type 'PLAYER'.",
@@ -61,7 +56,17 @@ public class ExecutableCommand {
     }
 
     public enum Type {
-        PLAYER, SERVER, BUNGEE, BUNGEE_PLAYER
+        PLAYER, SERVER, PROXY, PROXY_PLAYER;
+
+        static @Nullable Type parse(String input) {
+            return switch (input) {
+                case "PLAYER" -> PLAYER;
+                case "SERVER" -> SERVER;
+                case "PROXY", "BUNGEE", "VELOCITY" -> PROXY;
+                case "PROXY_PLAYER", "BUNGEE_PLAYER", "VELOCITY_PLAYER" -> PROXY_PLAYER;
+                default -> null;
+            };
+        }
     }
 
 }

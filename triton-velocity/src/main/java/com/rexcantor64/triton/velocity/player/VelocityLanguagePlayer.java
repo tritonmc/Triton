@@ -216,9 +216,9 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
                 VelocityTriton.asVelocity().getBridgeManager().sendExecutableCommand(cmdText, server);
             } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
                 player.spoofChatInput("/" + cmdText);
-            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE) {
+            } else if (cmd.getType() == ExecutableCommand.Type.PROXY) {
                 velocity.getCommandManager().executeAsync(velocity.getConsoleCommandSource(), cmdText);
-            } else if (cmd.getType() == ExecutableCommand.Type.BUNGEE_PLAYER) {
+            } else if (cmd.getType() == ExecutableCommand.Type.PROXY_PLAYER) {
                 velocity.getCommandManager().executeAsync(player, cmdText);
             }
         }
