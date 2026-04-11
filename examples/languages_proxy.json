@@ -5,8 +5,7 @@
     "languages": {
       "en_GB": "&6Welcome to the server!",
       "pt_PT": "&6Bem vindo ao servidor!"
-    },
-    "universal": true
+    }
   },
   {
     "type": "text",
@@ -15,7 +14,7 @@
       "en_GB": "&6Your balance: &e$%1",
       "pt_PT": "&6O seu saldo: &e$%1"
     },
-    "universal": false,
+    "blacklist": false,
     "servers": ["survival-1", "survival-2"]
   },
   {
@@ -25,7 +24,7 @@
       "en_GB": "&6You've just sent &e$%1 &6 to &e%2&6!",
       "pt_PT": "&6Enviaste &e$%1 &6 para &e%2&6!"
     },
-    "universal": false,
+    "blacklist": false,
     "servers": ["survival-3", "survival-4"]
   },
   {
