@@ -8,7 +8,7 @@ error:
   sign-not-found: "<red>Sign group <dark_red>%1</dark_red> not found! <gray><italic>Note: It's case sensitive. Use TAB to all the available options.</italic>"
   database-invalid-mode: "<red>Mode <dark_red>%1</dark_red> does not exist. Available modes are 'upload' (or 'u') and 'download' (or 'd')."
   database-not-supported: "<red>This command isn't supported on local storage."
-  not-available-on-spigot: "<red>This action isn't available on Spigot when using BungeeCord. Please run this through BungeeCord instead."
+  not-available-on-spigot: "<red>This action isn't available on Spigot when using a proxy. Please run this through your proxy instead."
   only-console: "<red>This command can only be executed from the server console."
 help:
   menu:
@@ -47,7 +47,7 @@ success:
   current-loglevel: "<green>Triton is currently outputting at log level %1"
   set-loglevel: "<green>Triton's log level has been changed to %1 until the plugin is reloaded"
 twin:
-  failed-bungeecord: "<red>Can't upload the config because you have BungeeCord enabled on config! Please execute this command through BungeeCord."
+  failed-behind-proxy: "<red>Can't upload the config because you have behind-proxy enabled on config! Please execute this command through your proxy instead."
   no-internet: "<red>Failed to upload config. Please check your internet connection and/or firewall! Error description: %1"
   failed-fetch: "<red>Failed to fetch the config: <gray>%1"
   failed-upload: "<red>Failed to upload the config: <gray>%1"
@@ -110,4 +110,4 @@ info-command:
   - "<aqua>Version: <gray>%1"
   - "<aqua>Developed by: <gray>%2"
   - "<aqua>Storage in use: <gray>%3"
-  - "<aqua>Using BungeeCord: <gray>%4"
+  - "<aqua>Using proxy: <gray>%4"

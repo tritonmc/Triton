@@ -57,7 +57,7 @@ public class TwinCommand implements Command {
                     response = twinManager.upload(collections, languages);
                 }
             } catch (NotOnProxyException exception) {
-                sender.sendMessageFormatted("twin.failed-bungeecord");
+                sender.sendMessageFormatted("twin.failed-behind-proxy");
                 return;
             }
 
