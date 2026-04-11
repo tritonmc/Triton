@@ -21,7 +21,7 @@ public class DatabaseCommand implements Command {
 
         sender.assertPermission("triton.database");
 
-        if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
+        if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBehindProxy()) {
             sender.sendMessageFormatted("error.not-available-on-spigot");
             return;
         }

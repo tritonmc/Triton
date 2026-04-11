@@ -53,7 +53,7 @@ public class MainConfig implements TritonConfig {
     private boolean runLanguageCommandsOnLogin;
     private boolean alwaysCheckClientLocale;
     private int logLevel;
-    private boolean bungeecord;
+    private boolean behindProxy;
     private int configAutoRefresh;
     @ToString.Exclude
     @GsonExclude
@@ -136,8 +136,8 @@ public class MainConfig implements TritonConfig {
     }
 
     private void setup(Configuration section) {
-        this.bungeecord = section.getBoolean("bungeecord", false);
-        if (Triton.isProxy() || !this.bungeecord) {
+        this.behindProxy = section.getBoolean("behind-proxy", section.getBoolean("bungeecord", false));
+        if (Triton.isProxy() || !this.behindProxy) {
             this.twinToken = section.getString("twin-token", "");
         }
 
@@ -204,7 +204,7 @@ public class MainConfig implements TritonConfig {
 
     public void setup() {
         setup(main.getConfigYAML());
-        if (Triton.isSpigot() && this.bungeecord && storageType.equalsIgnoreCase("local"))
+        if (Triton.isSpigot() && this.behindProxy && storageType.equalsIgnoreCase("local"))
             setupFromCache();
     }
 
@@ -315,6 +315,12 @@ public class MainConfig implements TritonConfig {
         this.deathScreen = deathScreen.getBoolean("enabled", true);
         this.deathScreenSyntax = FeatureSyntax.fromSection(deathScreen);
 
+    }
+
+    @Override
+    public boolean isBungeecord() {
+        // Handle deprecated API
+        return this.isBehindProxy();
     }
 
     @Override

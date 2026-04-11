@@ -55,7 +55,7 @@ public class SetLanguageCommand implements Command {
         if (Triton.get().getPlayerManager().hasPlayer(target)) {
             Triton.get().getPlayerManager().get(target).setLang(lang);
         } else {
-            if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBungeecord()) {
+            if (event.getPlatform() == Platform.SPIGOT && Triton.get().getConfig().isBehindProxy()) {
                 sender.sendMessage("Changing the language of offline players must be done through the proxy " +
                         "console.");
                 return;

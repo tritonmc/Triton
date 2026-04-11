@@ -44,7 +44,7 @@ public class TwinManager {
 
     public @NotNull HttpResponse upload(@Nullable List<String> allowedCollections, @Nullable List<String> allowedLanguages) throws NotOnProxyException {
         val isProxy = Triton.isProxy();
-        if (!isProxy && main.getConfig().isBungeecord()) {
+        if (!isProxy && main.getConfig().isBehindProxy()) {
             throw new NotOnProxyException();
         }
         try {
@@ -161,7 +161,7 @@ public class TwinManager {
     }
 
     public @NotNull HttpResponse download(@NotNull String id) throws NotOnProxyException {
-        if (Triton.isSpigot() && main.getConfig().isBungeecord()) {
+        if (Triton.isSpigot() && main.getConfig().isBehindProxy()) {
             throw new NotOnProxyException();
         }
         try {

@@ -1,5 +1,5 @@
-# This will be ignored if 'bungeecord' is enabled and local storage is being used.
-# If using non-local storage, please make sure this matches what's on BungeeCord.
+# This will be ignored if `behind-proxy` is enabled and local storage is being used.
+# If using non-local storage, please make sure this matches what's on Triton's configuration on your proxy.
 languages:
   # The language name. This will influence the language key in the translation files.
   # It's recommended to follow this syntax: xx_XX
@@ -57,7 +57,7 @@ run-language-commands-on-join: false
 # When enabled, the plugin will set the player's Triton language to their game language every time.
 # By default, the plugin only does this when they join the server for the first time.
 # It is recommended to leave this off for user experience reasons.
-# Ignored when bungeecord is enabled.
+# Ignored when `behind-proxy` is enabled.
 force-client-locale-on-join: false
 
 # Automatically reload the plugin (equivalent to /twin reload) every X seconds.
@@ -65,13 +65,13 @@ force-client-locale-on-join: false
 # Set to -1 to disable (default)
 config-auto-refresh-interval: -1
 
-# Enable this if you're using the plugin on BungeeCord.
-# A restart of the server and BungeeCord might be required after changing this setting.
-bungeecord: false
+# Enable this if you're using the plugin on a proxy (e.g., BungeeCord or Velocity) as well.
+# A restart of the server and the proxy might be required after changing this setting.
+behind-proxy: false
 
 # To access TWIN, you need a special token.
 # To get it, join our Discord server at https://triton.rexcantor64.com/discord or DM me on Spigot.
-# If you've enabled "bungeecord" above, there is no need to put your token here. You just need it on your BungeeCord config.
+# If you've enabled `behind-proxy` above, there is no need to put your token here. You just need it on Triton's config on your proxy.
 twin-token: ""
 
 # Triton command aliases.
@@ -90,11 +90,11 @@ log-level: 0
 # This section controls the storage location of player data and translations.
 # If using a database, the tables/collections will be created automatically for you.
 # You can use '/triton database upload' to upload the local translations to a remote storage.
-# This MUST match what is on BungeeCord
+# If you are using a proxy (e.g., BungeeCord or Velocity), this MUST match Triton's configuration there.
 storage:
   # Valid options: 'local', 'mysql'
   type: 'local'
-  # This should match the name of this server in BungeeCord's config.yml
+  # This should match the name of this server your proxy's configuration (e.g., BungeeCord's config.yml or Velocity's velocity.toml).
   # Used to filter translations for this server only
   server-name: 'lobby'
   # The options below this are for non-local storage only

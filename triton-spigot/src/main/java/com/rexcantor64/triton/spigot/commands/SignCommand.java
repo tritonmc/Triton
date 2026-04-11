@@ -63,7 +63,7 @@ public class SignCommand extends com.rexcantor64.triton.commands.SignCommand {
                 return;
             }
 
-            if (Triton.get().getConfig().isBungeecord()) {
+            if (Triton.get().getConfig().isBehindProxy()) {
                 SpigotTriton.asSpigot().getBridgeManager()
                         .updateSign(block.getWorld().getName(), block.getX(), block.getY(), block
                                 .getZ(), key, Bukkit.getPlayer(sender.getUUID()));
@@ -75,7 +75,7 @@ public class SignCommand extends com.rexcantor64.triton.commands.SignCommand {
             }
             sender.sendMessageFormatted("success.sign-set", key);
         } else if (args[0].equalsIgnoreCase("remove")) {
-            if (Triton.get().getConfig().isBungeecord()) {
+            if (Triton.get().getConfig().isBehindProxy()) {
                 SpigotTriton.asSpigot().getBridgeManager()
                         .updateSign(block.getWorld().getName(), block.getX(), block.getY(), block.getZ(), null, Bukkit
                                 .getPlayer(sender.getUUID()));

@@ -87,7 +87,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         Map<Pattern, LanguageText> matches = new HashMap<>();
 
         // Only filter items if using MySQL
-        val filterItems = Triton.isSpigot() && this.triton.getConfig().isBungeecord()
+        val filterItems = Triton.isSpigot() && this.triton.getConfig().isBehindProxy()
                 && !(this.triton.getStorage() instanceof LocalStorage);
         val serverName = this.triton.getConfig().getServerName();
 

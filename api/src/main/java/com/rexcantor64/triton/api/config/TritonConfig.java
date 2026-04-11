@@ -34,10 +34,20 @@ public interface TritonConfig {
     /**
      * Spigot only
      *
-     * @return The value of "bungeecord" in the config.
+     * @return The value of "behind-proxy" (formerly "bungeecord") in the config.
      * @since 1.0.0
+     * @deprecated This config option has been renamed to "behind-proxy", use {@link TritonConfig#isBehindProxy()} instead.
      */
+    @Deprecated(since = "4.0.0")
     boolean isBungeecord();
+
+    /**
+     * Spigot only
+     *
+     * @return The value of "behind-proxy" in the config.
+     * @since 4.0.0
+     */
+    boolean isBehindProxy();
 
     /**
      * @return The value of "log-level" in the config.

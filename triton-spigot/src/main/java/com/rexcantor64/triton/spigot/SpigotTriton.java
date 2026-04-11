@@ -110,7 +110,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
         Bukkit.getPluginManager().registerEvents(guiManager = new GuiManager(), getJavaPlugin());
         Bukkit.getPluginManager().registerEvents(new BukkitListener(), getJavaPlugin());
 
-        if (getConfig().isBungeecord()) {
+        if (getConfig().isBehindProxy()) {
             if (!isSpigotProxyMode() && !isPaperProxyMode()) {
                 getLogger().logError("DANGER! DANGER! DANGER!");
                 getLogger().logError("Proxy mode is enabled on Triton but disabled on Spigot!");
