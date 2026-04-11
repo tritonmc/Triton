@@ -89,15 +89,12 @@ public interface TritonConfig {
     boolean isTitles();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.guis.enabled" in the config.
      * @since 1.0.0
      */
     boolean isGuis();
 
     /**
-     * Spigot only.
      * From v3.0.0 to v3.2.0, this always returned false because scoreboard was dropped.
      *
      * @return The value of "language-creation.scoreboards.enabled" in the config.
@@ -106,8 +103,6 @@ public interface TritonConfig {
     boolean isScoreboards();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.scoreboards.advanced" in the config.
      * @since 1.0.0
      * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return false from now on.
@@ -116,7 +111,6 @@ public interface TritonConfig {
     boolean isScoreboardsAdvanced();
 
     /**
-     * Spigot only
      * Be careful because this method returns a list of a custom wrapper of EntityType, not Bukkit's EntityType.
      *
      * @return The value of "language-creation.holograms.types" in the config.
@@ -148,8 +142,6 @@ public interface TritonConfig {
     List<String> getAllowedEntityTypes();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.holograms.allow-all" in the config.
      * @since 1.0.0
      */
@@ -168,32 +160,24 @@ public interface TritonConfig {
     boolean isTab();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.items.enabled" in the config.
      * @since 1.0.0
      */
     boolean isItems();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.items.allow-in-inventory" in the config.
      * @since 1.0.0
      */
     boolean isInventoryItems();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.items.books" in the config.
      * @since 1.4.0
      */
     boolean isBooks();
 
     /**
-     * Spigot only
-     *
      * @return The value of "language-creation.signs.enabled" in the config.
      * @since 1.0.0
      */
@@ -286,8 +270,6 @@ public interface TritonConfig {
     FeatureSyntax getTitleSyntax();
 
     /**
-     * Spigot only
-     *
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.guis"
      * in the config.
      * @since 1.0.0
@@ -295,7 +277,6 @@ public interface TritonConfig {
     FeatureSyntax getGuiSyntax();
 
     /**
-     * Spigot only
      * From v3.0.0 to v3.2.0, this always returned a default
      * {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax}.
      *
@@ -327,8 +308,6 @@ public interface TritonConfig {
     FeatureSyntax getTabSyntax();
 
     /**
-     * Spigot only
-     *
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.items"
      * in the config.
      * @since 1.0.0
@@ -336,8 +315,6 @@ public interface TritonConfig {
     FeatureSyntax getItemsSyntax();
 
     /**
-     * Spigot only
-     *
      * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation.signs"
      * in the config.
      * @since 2.3.0
