@@ -25,7 +25,7 @@ public interface FeatureSyntax {
      * @deprecated The [args] tag is no longer needed as of Triton v4.0.0.
      * Simply using the [arg] tags without surrounding them with [args].
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String getArgs();
 
     /**

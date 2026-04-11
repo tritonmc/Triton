@@ -112,6 +112,7 @@ public interface TritonConfig {
      * @since 1.0.0
      * @deprecated Scoreboard translation has been removed in v3.0.0 and this will always return false from now on.
      */
+    @Deprecated(since = "3.0.0")
     boolean isScoreboardsAdvanced();
 
     /**
@@ -122,6 +123,8 @@ public interface TritonConfig {
      * @since 1.0.0
      * @deprecated Starting with Triton v4.0.0, use {@link TritonConfig#getAllowedEntityTypes()} instead.
      */
+    @SuppressWarnings("removal")
+    @Deprecated(since = "4.0.0", forRemoval = true)
     default List<EntityType> getHolograms() {
         return this.getAllowedEntityTypes().stream()
                 .map(type -> {
@@ -210,6 +213,7 @@ public interface TritonConfig {
      * @since 2.6.0
      * @deprecated This has been deprecated since v3.0.0 in favor of {@link #getStorageType()}
      */
+    @Deprecated(since = "3.0.0", forRemoval = true)
     boolean isMysql();
 
     /**

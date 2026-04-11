@@ -11,6 +11,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
  *
  * @deprecated Since 4.0.0. Use {@link MessageParser} instead.
  */
+@Deprecated(since = "4.0.0")
 public interface LanguageParser {
 
     /**
@@ -23,6 +24,7 @@ public interface LanguageParser {
      * @return The input but with Triton's placeholders replaced by the message in the provided language.
      * @deprecated See class deprecation.
      */
+    @Deprecated(since = "4.0.0")
     String parseString(String language, FeatureSyntax syntax, String input);
 
     /**
@@ -35,6 +37,7 @@ public interface LanguageParser {
      * @return The input but with Triton's placeholders replaced by the message in the provided language.
      * @deprecated See class deprecation.
      */
+    @Deprecated(since = "4.0.0")
     default BaseComponent[] parseComponent(String language, FeatureSyntax syntax, BaseComponent... input) {
         // hacky way to keep compatibility
         val result = TritonAPI.getInstance().getMessageParser()

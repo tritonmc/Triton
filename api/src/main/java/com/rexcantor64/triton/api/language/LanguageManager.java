@@ -25,7 +25,7 @@ public interface LanguageManager {
      * @since 2.0.0
      * @deprecated Since 4.0.0, this is not guaranteed to work when using the Adventure parser. There is still no alternative.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String matchPattern(String input, LanguagePlayer p);
 
     /**
@@ -40,7 +40,7 @@ public interface LanguageManager {
      * @since 1.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String getText(LanguagePlayer player, String code, Object... args);
 
     /**
@@ -54,7 +54,7 @@ public interface LanguageManager {
      * @since 3.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String getText(String language, String code, Object... args);
 
     /**
@@ -67,7 +67,7 @@ public interface LanguageManager {
      * @since 1.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getTextComponent(Localized, String, Component...)} instead, giving the main language as argument.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String getTextFromMain(String code, Object... args);
 
     /**
@@ -81,7 +81,7 @@ public interface LanguageManager {
      * @since 1.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String[] getSign(LanguagePlayer player, SignLocation location);
 
     /**
@@ -96,7 +96,7 @@ public interface LanguageManager {
      * @since 2.3.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Component[])} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String[] getSign(LanguagePlayer player, SignLocation location, String[] defaultLines);
 
     /**
@@ -113,7 +113,7 @@ public interface LanguageManager {
      * @since 3.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Supplier)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String[] getSign(LanguagePlayer player, SignLocation location, Supplier<String[]> defaultLines);
 
     /**
@@ -130,7 +130,7 @@ public interface LanguageManager {
      * @since 3.0.0
      * @deprecated Since 4.0.0, use {@link TranslationManager#getSignComponents(Localized, SignLocation, Supplier)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     String[] getSign(String language, SignLocation location, Supplier<String[]> defaultLines);
 
     /**
@@ -187,7 +187,7 @@ public interface LanguageManager {
      * @since 1.0.0
      * @deprecated Since 4.0.0. Use {@link LanguageManager#getLanguageByName(String)} or {@link LanguageManager#getLanguageByNameOrDefault(String)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     Language getLanguageByName(String name, boolean fallback);
 
     /**
@@ -200,7 +200,7 @@ public interface LanguageManager {
      * @since 1.3.0
      * @deprecated Since 4.0.0. Use {@link LanguageManager#getLanguageByLocale(String)} or {@link LanguageManager#getLanguageByLocaleOrDefault(String)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "4.0.0")
     Language getLanguageByLocale(String locale, boolean fallback);
 
     /**

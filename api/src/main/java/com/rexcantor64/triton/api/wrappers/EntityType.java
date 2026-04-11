@@ -7,7 +7,7 @@ import com.rexcantor64.triton.api.config.TritonConfig;
  * and is therefore scheduled for removal.
  * See {@link TritonConfig#getHolograms()} and its deprecation message.
  */
-@Deprecated
+@Deprecated(since = "4.0.0", forRemoval = true)
 public enum EntityType {
 
     // https://github.com/PaperMC/Paper/blob/main/paper-api/src/main/java/org/bukkit/entity/EntityType.java
