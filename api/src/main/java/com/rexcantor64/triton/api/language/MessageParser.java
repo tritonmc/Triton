@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Replacement for {@link LanguageParser} that uses the Adventure chat library
  * instead of md_5's chat library;
+ *
+ * @since 4.0.0
  */
 public interface MessageParser {
 

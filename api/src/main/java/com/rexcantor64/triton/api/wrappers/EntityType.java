@@ -1,7 +1,11 @@
 package com.rexcantor64.triton.api.wrappers;
 
+import com.rexcantor64.triton.api.config.TritonConfig;
+
 /**
- * @deprecated Not used internally anymore, please use
+ * @deprecated This is not used in the experimental PacketEvents implementation anymore,
+ * and is therefore scheduled for removal.
+ * See {@link TritonConfig#getHolograms()} and its deprecation message.
  */
 @Deprecated
 public enum EntityType {

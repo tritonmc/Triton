@@ -23,7 +23,7 @@ public interface LanguageManager {
      *              {@link com.rexcantor64.triton.api.players.PlayerManager PlayerManager} to get it.
      * @return A translated message. If no patterns are found, it returns the input.
      * @since 2.0.0
-     * @deprecated Since 4.0.0, this will return the input unmodified. There is still no alternative.
+     * @deprecated Since 4.0.0, this is not guaranteed to work when using the Adventure parser. There is still no alternative.
      */
     @Deprecated
     String matchPattern(String input, LanguagePlayer p);
@@ -133,12 +133,48 @@ public interface LanguageManager {
     @Deprecated
     String[] getSign(String language, SignLocation location, Supplier<String[]> defaultLines);
 
+    /**
+     * Search the available languages for one with the given name.
+     * The search is case-sensitive.
+     * Returns an empty optional if not found.
+     *
+     * @param name The name of the language to search for.
+     * @return The language if found, or an empty optional otherwise.
+     * @since 4.0.0
+     */
     @NotNull Optional<Language> getLanguageByName(@NotNull String name);
 
+    /**
+     * Search the available languages for one with the given name.
+     * The search is case-sensitive.
+     * Returns the default language if not found.
+     *
+     * @param name The name of the language to search for.
+     * @return The language if found, or the default language otherwise.
+     * @since 4.0.0
+     */
     @NotNull Language getLanguageByNameOrDefault(@NotNull String name);
 
+    /**
+     * Search the available languages for one that contains the given locale.
+     * The search is case-insensitive.
+     * Returns an empty optional if not found.
+     *
+     * @param locale The locale to search for.
+     * @return The language if found, or an empty optional otherwise.
+     * @since 4.0.0
+     */
     @NotNull Optional<Language> getLanguageByLocale(@NotNull String locale);
 
+    /**
+     * Search the available languages for one that contains the given locale.
+     * The search is case-insensitive.
+     * Returns the default language if not found.
+     *
+     * @param locale The locale to search for.
+     * @return The language if found, or the default language otherwise.
+     * @since 4.0.0
+     */
     @NotNull Language getLanguageByLocaleOrDefault(@NotNull String locale);
 
     /**

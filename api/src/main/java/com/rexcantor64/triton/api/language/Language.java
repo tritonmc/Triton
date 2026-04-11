@@ -41,7 +41,7 @@ public interface Language extends Localized {
 
     /**
      * Get the list of languages to fall back to if this language does not have the requested key.
-     * The main language is always a fall back language even if not in this list.
+     * The main language is always a fallback language even if not in this list.
      *
      * @return The languages to fall back to if this language does not have the requested key.
      * @since 3.7.0

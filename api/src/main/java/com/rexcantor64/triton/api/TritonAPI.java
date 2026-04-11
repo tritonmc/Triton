@@ -28,6 +28,7 @@ public final class TritonAPI {
     @SuppressWarnings("unused")
     @Internal
     private static void register(@NotNull Triton instance) {
+        // This method is called via reflection in TritonAPIUtils
         TritonAPI.instance = instance;
     }
 
