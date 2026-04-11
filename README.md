@@ -7,7 +7,7 @@
 _Translate your server! Sends the same message in different languages... Hooks into all plugins!_  
 This repository was previously called MultiLanguagePlugin.
 
-Triton is a Minecraft plugin for Spigot and BungeeCord that helps you translate your Minecraft server!
+Triton is a Minecraft plugin for Spigot/Paper, BungeeCord, and Velocity that helps you translate your Minecraft server!
 
 Purchase the plugin on [Spigot](https://spigotmc.org/resources/triton.30331/)
 or [Polymart](https://polymart.org/resource/triton.38)!
