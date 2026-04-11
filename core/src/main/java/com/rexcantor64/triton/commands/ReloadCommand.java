@@ -21,7 +21,7 @@ public class ReloadCommand implements Command {
         sender.assertPermission("triton.reload");
 
         if (isProxy) {
-            val action = event.getArgs().length >= 1 && sender.getUUID() != null ? event.getArgs()[0] : "bungee";
+            val action = event.getArgs().length >= 1 && sender.getUUID() != null ? event.getArgs()[0] : "proxy";
 
             switch (action) {
                 case "server":
@@ -32,24 +32,28 @@ public class ReloadCommand implements Command {
                 case "a":
                     Triton.get().getBridgeManager().forwardCommand(event);
                     break;
+                case "proxy":
+                case "p":
                 case "bungee":
                 case "b":
+                case "velocity":
+                case "v":
                     break;
                 default:
-                    sender.sendMessageFormatted("error.bungee-reload-invalid-mode", action);
+                    sender.sendMessageFormatted("error.proxy-reload-invalid-mode", action);
                     return;
             }
         }
 
         Triton.get().reload();
-        sender.sendMessageFormatted(isProxy ? "success.bungee-reload" : "success.reload");
+        sender.sendMessageFormatted(isProxy ? "success.proxy-reload" : "success.reload");
     }
 
     @Override
     public List<String> handleTabCompletion(CommandEvent event) {
         if (event.getArgs().length > 1 || (!Triton.isProxy() && !Triton.get().getConfig().isBehindProxy()))
             return Collections.emptyList();
-        return Stream.of("server", "all", "bungee")
+        return Stream.of("server", "all", "proxy")
                 .filter(v -> v.toLowerCase().startsWith(event.getArgs()[0].toLowerCase()))
                 .collect(Collectors.toList());
     }
