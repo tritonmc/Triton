@@ -15,14 +15,9 @@ dependencies {
     compileOnly libs.adventure.serializer.bungeecord
 }
 
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 jar {
@@ -32,26 +27,21 @@ jar {
     }
 }
 
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
 javadoc {
     options.encoding = 'UTF-8'
     options.charSet = 'UTF-8'
     options.links(
             'https://hub.spigotmc.org/javadocs/spigot/',
             'https://jd.papermc.io/waterfall/1.21/', // Use Waterfall's JavaDocs instead of Bungee's since those are broken
-            'https://docs.oracle.com/en/java/javase/21/docs/api/',
-            'https://jd.advntr.dev/text-minimessage/4.26.1/'
+            'https://docs.oracle.com/en/java/javase/25/docs/api/',
+            "https://jd.advntr.dev/api/${libs.adventure.api.get().version}/",
     )
 
-    // Disable the crazy super-strict doclint tool in Java 8
+    // Disable the crazy super-strict doclint tool
     options.addStringOption('Xdoclint:none', '-quiet')
 
-    // Mark sources as Java 8 source compatible
-    options.source = '8'
+    // Mark sources as Java 17 source compatible
+    options.source = '17'
 }
 
 publishing {
@@ -59,8 +49,18 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
 
-            artifact sourcesJar
-            artifact javadocJar
+            artifactId = 'triton-api'
+
+            pom {
+                name.set('Triton API')
+                description.set('Translate your server! Sends the same message in different languages... Hooks into all plugins!')
+                url.set('https://triton.rexcantor64.com')
+                scm {
+                    url.set('https://github.com/tritonmc/Triton')
+                    connection.set('scm:git:https://github.com/tritonmc/Triton.git')
+                    developerConnection.set('scm:git:https://github.com/tritonmc/Triton.git')
+                }
+            }
         }
     }
 }
