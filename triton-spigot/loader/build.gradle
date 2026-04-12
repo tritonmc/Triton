@@ -70,6 +70,9 @@ bukkit {
         'triton.loglevel' {
             setDefault('OP')
         }
+        'triton.debug' {
+            setDefault('OP')
+        }
         'twin.upload' {
             setDefault('OP')
         }
