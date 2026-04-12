@@ -273,9 +273,9 @@ public class LocalStorage extends Storage {
         sampleTranslation.setKey("example.translation");
         sampleTranslation.setLanguages(new HashMap<>());
         sampleTranslation.getLanguages().put("en_GB", "This is an example translation in English. " +
-                "You can use it with the placeholder [lang]example.translation[/lang].");
+                "You can use it with the placeholder [.lang]example.translation[/lang] (without the dot in [.lang]).");
         sampleTranslation.getLanguages().put("pt_PT", "Isto é uma tradução exemplo em Português. " +
-                "Podes usá-la com o placeholder [lang]example.translation[/lang].");
+                "Podes usá-la com o placeholder [.lang]example.translation[/lang] (sem o ponto em [.lang]).");
         sampleCollection.getItems().add(sampleTranslation);
 
         val sampleCollectionFile = new File(translationsFolder, "default.json");
