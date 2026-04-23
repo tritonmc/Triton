@@ -21,9 +21,15 @@ public class SpigotLoader extends JavaPlugin {
 
         if (shouldVendorAdventure()) {
             builder.flag(LoaderFlag.VENDOR_ADVENTURE);
+            builder.flag(LoaderFlag.VENDOR_ADVENTURE_NBT);
             builder.flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS);
-        } else if (shouldVendorAdventureSerializers()) {
-            builder.flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS);
+        } else {
+            if (shouldVendorAdventureNbt()) {
+                builder.flag(LoaderFlag.VENDOR_ADVENTURE_NBT);
+            }
+            if (shouldVendorAdventureSerializers()) {
+                builder.flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS);
+            }
         }
         // paper does not include the bungee md5 library serializer
         builder.flag(LoaderFlag.VENDOR_ADVENTURE_BUNGEE_SERIALIZER);
@@ -47,6 +53,19 @@ public class SpigotLoader extends JavaPlugin {
             return false;
         } catch (ClassNotFoundException | NoSuchMethodException ignore) {
             // Adventure is not present or an outdated version is present
+            return true;
+        }
+    }
+
+    private boolean shouldVendorAdventureNbt() {
+        try {
+            // Class from adventure nbt
+            Class.forName("net.kyori.adventure.nbt.BinaryTag");
+
+            // Adventure NBT is already present
+            return false;
+        } catch (ClassNotFoundException ignore) {
+            // Adventure NBT is not present or an outdated version is present
             return true;
         }
     }

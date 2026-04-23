@@ -35,6 +35,9 @@ public class CommonLoader {
             relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
             relocations.add(new Relocation("net/kyori/examination", "com/rexcantor64/triton/lib/kyori/examination"));
         }
+        if (flags.contains(LoaderFlag.VENDOR_ADVENTURE_NBT)) {
+            relocations.add(new Relocation("net/kyori/adventure/nbt", "com/rexcantor64/triton/lib/adventure/nbt", null, Collections.singleton("net/kyori/adventure/nbt/api/*")));
+        }
         if (flags.contains(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)) {
             relocations.add(new Relocation("net/kyori/adventure/text/minimessage", "com/rexcantor64/triton/lib/adventure/text/minimessage"));
             relocations.add(new Relocation("net/kyori/adventure/text/serializer/gson", "com/rexcantor64/triton/lib/adventure/text/serializer/gson"));

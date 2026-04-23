@@ -18,6 +18,7 @@ public class BungeeLoader extends Plugin {
                 .constructorType(Plugin.class)
                 .constructorValue(this)
                 .flag(LoaderFlag.VENDOR_ADVENTURE)
+                .flag(LoaderFlag.VENDOR_ADVENTURE_NBT)
                 .flag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)
                 .flag(LoaderFlag.VENDOR_ADVENTURE_BUNGEE_SERIALIZER)
                 .flag(LoaderFlag.VENDOR_PACKET_EVENTS)

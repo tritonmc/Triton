@@ -1,13 +1,16 @@
 package com.rexcantor64.triton.dependencies;
 
 import com.rexcantor64.triton.loader.utils.LoaderFlag;
-import lombok.Data;
 import lombok.Getter;
 import lombok.val;
 import net.byteflux.libby.Library;
 import net.byteflux.libby.relocation.Relocation;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -89,8 +92,9 @@ public enum Dependency {
             "adventure-nbt",
             "4.26.1",
             "8m72v/X83YF5ArTf01NWHZjLExtOy2c0H/AO8u0TNvg=",
-            relocate("net{}kyori{}adventure", "adventure"),
-            relocate("net{}kyori{}examination", "kyori{}examination")
+            new SimpleRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*"))),
+            relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
+            relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE)
     ),
     ADVENTURE_TEXT_SERIALIZER_JSON(
             "net{}kyori",
@@ -134,6 +138,7 @@ public enum Dependency {
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            new ConditionalRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*")), LoaderFlag.VENDOR_ADVENTURE_NBT),
             relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
@@ -149,6 +154,7 @@ public enum Dependency {
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            new ConditionalRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*")), LoaderFlag.VENDOR_ADVENTURE_NBT),
             relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
@@ -164,6 +170,7 @@ public enum Dependency {
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            new ConditionalRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*")), LoaderFlag.VENDOR_ADVENTURE_NBT),
             relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
@@ -179,6 +186,7 @@ public enum Dependency {
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            new ConditionalRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*")), LoaderFlag.VENDOR_ADVENTURE_NBT),
             relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
@@ -194,6 +202,7 @@ public enum Dependency {
             relocate("io{}github{}retrooper{}packetevents", "packetevents{}impl"),
             relocateIf("net{}kyori{}adventure", "adventure", LoaderFlag.VENDOR_ADVENTURE),
             relocateIf("net{}kyori{}examination", "kyori{}examination", LoaderFlag.VENDOR_ADVENTURE),
+            new ConditionalRelocation(relocateInner("net{}kyori{}adventure{}nbt", "adventure{}nbt", null, Collections.singleton("net{}kyori{}adventure{}nbt{}api{}*")), LoaderFlag.VENDOR_ADVENTURE_NBT),
             relocateIf("net{}kyori{}option", "kyori{}option", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}minimessage", "adventure{}text{}minimessage", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
             relocateIf("net{}kyori{}adventure{}text{}serializer{}gson", "adventure{}text{}serializer{}gson", LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS),
@@ -237,36 +246,32 @@ public enum Dependency {
     }
 
     private static OptionalRelocation relocateIf(String relocateFrom, String relocateTo, LoaderFlag flag) {
-        return new ConditionalRelocation(relocateFrom, relocateTo, flag);
+        return new ConditionalRelocation(relocateInner(relocateFrom, relocateTo), flag);
     }
 
     private static Relocation relocateInner(String relocateFrom, String relocateTo) {
         return new Relocation(relocateFrom, "com{}rexcantor64{}triton{}lib{}" + relocateTo);
     }
 
+    private static @NotNull Relocation relocateInner(@NotNull String relocateFrom, @NotNull String relocateTo, @Nullable Collection<String> includes, @Nullable Collection<String> excludes) {
+        return new Relocation(relocateFrom, "com{}rexcantor64{}triton{}lib{}" + relocateTo, includes, excludes);
+    }
+
     private interface OptionalRelocation {
         Optional<Relocation> relocate(Set<LoaderFlag> loaderFlags);
     }
 
-    @Data
-    private static class ConditionalRelocation implements OptionalRelocation {
-        private final String relocateFrom;
-        private final String relocateTo;
-        private final LoaderFlag flag;
-
+    private record ConditionalRelocation(Relocation relocation, LoaderFlag flag) implements OptionalRelocation {
         @Override
         public Optional<Relocation> relocate(Set<LoaderFlag> loaderFlags) {
             if (loaderFlags.contains(flag)) {
-                return Optional.of(Dependency.relocateInner(relocateFrom, relocateTo));
+                return Optional.of(relocation);
             }
             return Optional.empty();
         }
     }
 
-    @Data
-    private static class SimpleRelocation implements OptionalRelocation {
-        private final Relocation relocation;
-
+    private record SimpleRelocation(Relocation relocation) implements OptionalRelocation {
         @Override
         public Optional<Relocation> relocate(Set<LoaderFlag> loaderFlags) {
             return Optional.of(relocation);

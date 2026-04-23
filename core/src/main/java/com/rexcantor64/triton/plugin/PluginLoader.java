@@ -31,9 +31,11 @@ public interface PluginLoader {
         if (depManager.hasLoaderFlag(LoaderFlag.VENDOR_ADVENTURE)) {
             depManager.loadDependency(Dependency.ADVENTURE);
             depManager.loadDependency(Dependency.ADVENTURE_KEY);
-            depManager.loadDependency(Dependency.ADVENTURE_NBT);
             depManager.loadDependency(Dependency.KYORI_EXAMINATION_API);
             depManager.loadDependency(Dependency.KYORI_EXAMINATION_STRING);
+        }
+        if (depManager.hasLoaderFlag(LoaderFlag.VENDOR_ADVENTURE_NBT)) {
+            depManager.loadDependency(Dependency.ADVENTURE_NBT);
         }
         if (depManager.hasLoaderFlag(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)) {
             depManager.loadDependency(Dependency.KYORI_OPTION);
