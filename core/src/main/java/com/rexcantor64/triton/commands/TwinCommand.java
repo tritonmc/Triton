@@ -10,6 +10,7 @@ import com.rexcantor64.triton.web.TwinParser;
 import com.rexcantor64.triton.web.exceptions.NotOnProxyException;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,7 +84,8 @@ public class TwinCommand implements Command {
             }
 
             if (!downloading) {
-                sender.sendMessageFormatted("twin.uploaded", TwinManager.getBaseUrl() + "/" + response.getPage());
+                val link = TwinManager.getBaseUrl() + "/" + response.getPage();
+                sender.sendMessageFormatted("twin.uploaded", Component.text().content(link).clickEvent(ClickEvent.openUrl(link)));
                 return;
             }
 
