@@ -8,7 +8,7 @@ group = 'com.rexcantor64.triton'
 
 allprojects {
     apply plugin: 'java'
-    version = '4.0.0'
+    version = '4.0.1'
     java {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
