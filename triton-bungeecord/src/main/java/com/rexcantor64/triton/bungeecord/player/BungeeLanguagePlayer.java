@@ -136,7 +136,7 @@ public class BungeeLanguagePlayer extends TritonLanguagePlayer<ProxiedPlayer> {
         this.language = event.getNewLanguage();
         if (this.waitingForClientLocale && getParent() != null)
             parent.sendMessage(BaseComponentUtils.serialize(Triton.get().getMessagesConfig()
-                    .getMessageComponent("success.detected-language", language.getDisplayName())));
+                    .getMessageComponent("success.detected-language", ((com.rexcantor64.triton.language.Language) language).getDisplayNameComponent())));
         this.waitingForClientLocale = false;
 
         if (sendToSpigot && getParent() != null)

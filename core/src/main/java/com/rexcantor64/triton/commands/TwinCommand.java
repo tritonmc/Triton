@@ -9,6 +9,7 @@ import com.rexcantor64.triton.web.TwinManager;
 import com.rexcantor64.triton.web.TwinParser;
 import com.rexcantor64.triton.web.exceptions.NotOnProxyException;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,11 +74,10 @@ public class TwinCommand implements Command {
 
             if (response.getStatusCode() != 200) {
                 sender.sendMessageFormatted(downloading ? "twin.failed-fetch" : "twin.failed-upload", Triton.get()
-                        .getMessagesConfig().getMessageUnsafe("twin.incorrect-status", response.getStatusCode()));
+                        .getMessagesConfig().getMessageComponent("twin.incorrect-status", Component.text(response.getStatusCode())));
                 if (response.getStatusCode() == 404) {
                     // Warn people that accidentally type "/twin reload" instead of "/triton reload" for example
                     sender.sendMessageFormatted("twin.suggestion-wrong-command", "/triton " + event.argumentsToString());
-
                 }
                 return;
             }

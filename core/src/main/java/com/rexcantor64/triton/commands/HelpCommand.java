@@ -7,10 +7,10 @@ import com.rexcantor64.triton.commands.handler.CommandHandler;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class HelpCommand implements Command {
@@ -24,10 +24,15 @@ public class HelpCommand implements Command {
         val commands = commandHandler.getAvailableCommands()
                 .stream()
                 .map(name -> {
-                    val description = Triton.get().getMessagesConfig().getMessageUnsafe("command." + name);
-                    return Triton.get().getMessagesConfig().getMessageUnsafe("help.menu-item", event.getLabel(), name, description);
+                    val description = Triton.get().getMessagesConfig().getMessageComponent("command." + name);
+                    return Triton.get().getMessagesConfig().getMessageComponent(
+                            "help.menu-item",
+                            Component.text(event.getLabel()),
+                            Component.text(name),
+                            description
+                    );
                 })
-                .collect(Collectors.joining("<reset><newline>"));
+                .collect(Component.toComponent(Component.newline()));
         event.getSender().sendMessageFormatted("help.menu", commands);
     }
 

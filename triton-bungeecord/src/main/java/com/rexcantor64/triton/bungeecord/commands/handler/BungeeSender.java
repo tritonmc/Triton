@@ -6,6 +6,7 @@ import com.rexcantor64.triton.commands.handler.Sender;
 import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -30,7 +31,7 @@ public class BungeeSender implements Sender {
     }
 
     @Override
-    public void sendMessageFormatted(String code, Object... args) {
+    public void sendMessageFormatted(String code, ComponentLike... args) {
         sendMessage(Triton.get().getMessagesConfig().getMessageComponent(code, args));
     }
 

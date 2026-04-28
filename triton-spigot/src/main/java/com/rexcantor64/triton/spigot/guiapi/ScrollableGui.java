@@ -130,7 +130,7 @@ public class ScrollableGui extends Gui {
         stackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stackMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
         stackMeta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(Triton.get().getMessagesConfig()
-                .getMessageComponent("other.selector-gui-currentpage", page, getMaxPages())));
+                .getMessageComponent("other.selector-gui-currentpage", Component.text(page), Component.text(getMaxPages()))));
         infoButton.setItemMeta(stackMeta);
         inv.setItem(49, infoButton);
     }

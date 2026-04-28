@@ -6,8 +6,12 @@ import com.rexcantor64.triton.config.interfaces.YamlConfiguration;
 import com.rexcantor64.triton.utils.YAMLUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -46,20 +50,19 @@ public class MessagesConfig {
         return Objects.toString(msg, "Unknown message");
     }
 
-    private String getMessage(String code, Object... args) {
+    private String getMessage(String code, int argsLength) {
         String s = getString(code);
-        for (int i = 0; i < args.length; i++)
-            if (args[i] != null)
-                s = s.replace("%" + (i + 1), args[i].toString());
+        for (int i = 0; i < argsLength; i++)
+            s = s.replace("%" + (i + 1), "<arg" + i + ">");
         return s;
     }
 
-    public String getMessageUnsafe(String code, Object... args) {
-        return this.getMessage(code, args);
-    }
-
-    public Component getMessageComponent(String code, Object... args) {
-        String msg = getMessage(code, args);
-        return MiniMessage.miniMessage().deserialize(msg);
+    public Component getMessageComponent(String code, ComponentLike... args) {
+        String msg = getMessage(code, args.length);
+        val resolvers = new TagResolver[args.length];
+        for (int i = 0; i < args.length; i++) {
+            resolvers[i] = Placeholder.component("arg" + i, args[i]);
+        }
+        return MiniMessage.miniMessage().deserialize(msg, resolvers);
     }
 }

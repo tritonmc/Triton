@@ -7,6 +7,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +31,7 @@ public class VelocitySender implements Sender {
     }
 
     @Override
-    public void sendMessageFormatted(String code, Object... args) {
+    public void sendMessageFormatted(String code, ComponentLike... args) {
         sendMessage(Triton.get().getMessagesConfig().getMessageComponent(code, args));
     }
 

@@ -128,7 +128,7 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
         this.language = language;
         if (this.waitingForClientLocale) {
             player.ifPresent(parent -> parent.sendMessage(Triton.get().getMessagesConfig()
-                    .getMessageComponent("success.detected-language", language.getDisplayName())));
+                    .getMessageComponent("success.detected-language", ((com.rexcantor64.triton.language.Language) language).getDisplayNameComponent())));
         }
         this.waitingForClientLocale = false;
 
@@ -177,7 +177,7 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
             this.waitingForClientLocale = false;
             this.language = Triton.get().getLanguageManager().getLanguageByLocaleOrDefault(this.clientLocale);
             player.ifPresent(parent -> parent.sendMessage(Triton.get().getMessagesConfig()
-                    .getMessageComponent("success.detected-language", language.getDisplayName())));
+                    .getMessageComponent("success.detected-language", ((com.rexcantor64.triton.language.Language) language).getDisplayNameComponent())));
         }
         player.ifPresent(parent -> Triton.get().getStorage()
                 .setLanguage(null, SocketUtils.getIpAddress(parent.getRemoteAddress()), language));

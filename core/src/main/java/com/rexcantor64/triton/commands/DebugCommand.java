@@ -10,6 +10,7 @@ import com.rexcantor64.triton.commands.handler.exceptions.UnsupportedPlatformExc
 import com.rexcantor64.triton.debug.LoadDump;
 import com.rexcantor64.triton.utils.DebugUtils;
 import lombok.val;
+import net.kyori.adventure.text.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -159,10 +160,10 @@ public class DebugCommand implements Command {
                     }
                     if (action.get() == DumpAction.ADD) {
                         dumpManager.enableForPlayer(player, types);
-                        sendMessage(event, "debug.dump.success.add.player", typeNamesStr, player);
+                        sendMessage(event, "debug.dump.success.add.player", typeNamesStr, player.toString());
                     } else {
                         dumpManager.disableForPlayer(player, types);
-                        sendMessage(event, "debug.dump.success.remove.player", typeNamesStr, player);
+                        sendMessage(event, "debug.dump.success.remove.player", typeNamesStr, player.toString());
                     }
                 }
                 break;
@@ -212,7 +213,7 @@ public class DebugCommand implements Command {
                 sender.sendMessage(message);
             }
 
-            sendMessage(event, "debug.load.success.sent", messages.size());
+            sendMessage(event, "debug.load.success.sent", Integer.toString(messages.size()));
         } catch (IOException e) {
             sendMessage(event, "debug.load.dump-file.not-found", dumpName, e.getMessage());
             Triton.get().getLogger().logError(e, "Failed to open dump file");
@@ -301,11 +302,11 @@ public class DebugCommand implements Command {
      * @param code  The code of the message to send
      * @param args  The arguments of the message
      */
-    private void sendMessage(CommandEvent event, String code, Object... args) {
+    private void sendMessage(CommandEvent event, String code, String... args) {
         event.getSender().sendMessageFormatted(
                 "debug.prefix",
-                event.getPlatform(),
-                Triton.get().getMessagesConfig().getMessageUnsafe(code, args)
+                Component.text(event.getPlatform().toString()),
+                Triton.get().getMessagesConfig().getMessageComponent(code, Arrays.stream(args).map(Component::text).toArray(Component[]::new))
         );
     }
 

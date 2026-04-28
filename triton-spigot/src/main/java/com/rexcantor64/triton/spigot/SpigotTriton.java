@@ -209,7 +209,7 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
                     languagePlayer.setLang(lang);
                     player.closeInventory();
                     player.spigot().sendMessage(BaseComponentUtils.serialize(Triton.get().getMessagesConfig()
-                            .getMessageComponent("success.selector", lang.getDisplayName())));
+                            .getMessageComponent("success.selector", ((Language) lang).getDisplayNameComponent())));
                 }));
             }
             gui.open(player);

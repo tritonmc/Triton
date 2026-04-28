@@ -6,6 +6,7 @@ import com.rexcantor64.triton.commands.handler.exceptions.NoPermissionException;
 import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,7 +30,7 @@ public class SpigotSender implements Sender {
     }
 
     @Override
-    public void sendMessageFormatted(String code, Object... args) {
+    public void sendMessageFormatted(String code, ComponentLike... args) {
         sendMessage(Triton.get().getMessagesConfig().getMessageComponent(code, args));
     }
 

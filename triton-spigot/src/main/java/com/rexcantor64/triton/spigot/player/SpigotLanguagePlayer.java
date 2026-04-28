@@ -135,7 +135,7 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
             try {
                 if (toBukkit().isPresent()) {
                     bukkit.spigot().sendMessage(BaseComponentUtils.serialize(
-                            Triton.get().getMessagesConfig().getMessageComponent("success.detected-language", lang.getDisplayName())
+                            Triton.get().getMessagesConfig().getMessageComponent("success.detected-language", ((com.rexcantor64.triton.language.Language) lang).getDisplayNameComponent())
                     ));
                 } else {
                     Triton.get().getLogger()
