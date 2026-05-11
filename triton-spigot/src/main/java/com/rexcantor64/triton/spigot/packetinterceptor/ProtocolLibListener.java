@@ -867,7 +867,9 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             return;
         }
 
-        if (firstRun.compareAndSet(true, false) && !Bukkit.getServer().isPrimaryThread()) {
+        if (firstRun.compareAndSet(true, false)
+                && !main.isOwnedByCurrentRegion(packet.getPlayer())
+                && !main.isGlobalTickThread()) {
             Thread.currentThread().setName("Triton Async Packet Handler");
         }
 
@@ -906,8 +908,8 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
-            Bukkit.getScheduler().runTask(
-                    main.getJavaPlugin(),
+            main.runSync(
+                    packet.getPlayer(),
                     () -> languagePlayer.setLang(
                             main.getLanguageManager()
                                     .getLanguageByLocaleOrDefault(packet.getPacket().getStrings().readSafely(0))
@@ -917,7 +919,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             val clientConfigurations = packet.getPacket().getStructures().withType(WrappedClientConfiguration.getWrappedClass(), WrappedClientConfiguration.CONVERTER);
             val locale = clientConfigurations.readSafely(0).getLocale();
             val language = main.getLanguageManager().getLanguageByLocaleOrDefault(locale);
-            Bukkit.getScheduler().runTaskLater(main.getJavaPlugin(), () -> languagePlayer.setLang(language), 2L);
+            main.runSyncLater(packet.getPlayer(), () -> languagePlayer.setLang(language), 2L);
         }
     }
 
@@ -1017,12 +1019,37 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
     }
 
     public void resetSign(Player p, SignLocation location) {
-        World world = Bukkit.getWorld(location.getWorld());
+        if (main.hasModernSchedulers()) {
+            World world = Bukkit.getWorld(location.getWorld());
+            if (world == null) return;
+            val blockLocation = new org.bukkit.Location(world, location.getX(), location.getY(), location.getZ());
+            main.runSync(blockLocation, () -> resetSignFromRegion(p, location, world));
+            return;
+        }
+        resetSignFromRegion(p, location, null);
+    }
+
+    private void resetSignFromRegion(Player p, SignLocation location, World knownWorld) {
+        World world = knownWorld != null ? knownWorld : Bukkit.getWorld(location.getWorld());
         if (world == null) return;
+        PacketContainer container = buildResetSignPacket(world, location);
+        if (container == null) {
+            return;
+        }
+        main.runSync(p, () -> {
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
+            } catch (Exception e) {
+                main.getLogger().logError(e, "Failed refresh sign.");
+            }
+        });
+    }
+
+    private PacketContainer buildResetSignPacket(World world, SignLocation location) {
         Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
         BlockState state = block.getState();
         if (!(state instanceof Sign))
-            return;
+            return null;
         String[] lines = ((Sign) state).getLines();
         if (MinecraftReflection.signUpdateExists()) {
             PacketContainer container =
@@ -1033,11 +1060,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
                     new WrappedChatComponent[]{WrappedChatComponent.fromText(lines[0]),
                             WrappedChatComponent.fromText(lines[1]), WrappedChatComponent.fromText(lines[2]),
                             WrappedChatComponent.fromText(lines[3])});
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
-            } catch (Exception e) {
-                main.getLogger().logError(e, "Failed refresh sign.");
-            }
+            return container;
         } else {
             PacketContainer container =
                     ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.TILE_ENTITY_DATA, true);
@@ -1052,11 +1075,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
                     .put("y", block.getY())
                     .put("z", block.getZ())
                     .put("id", SIGN_NBT_ID);
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
-            } catch (Exception e) {
-                main.getLogger().logError("Failed refresh sign.");
-            }
+            return container;
         }
     }
 

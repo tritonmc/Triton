@@ -126,6 +126,12 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
     }
 
     public void setLang(Language lang, boolean sendToBungee) {
+        val bukkitPlayerOpt = toBukkit();
+        if (bukkitPlayerOpt.isPresent() && !SpigotTriton.asSpigot().isOwnedByCurrentRegion(bukkitPlayerOpt.get())) {
+            SpigotTriton.asSpigot().runSync(bukkitPlayerOpt.get(), () -> setLang(lang, sendToBungee));
+            return;
+        }
+
         PlayerChangeLanguageSpigotEvent event = new PlayerChangeLanguageSpigotEvent(this, this.lang, lang);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
@@ -176,7 +182,7 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
      */
     public void refreshAll() {
         super.refreshAll();
-        Triton.get().runAsync(() -> toBukkit().ifPresent(player -> {
+        toBukkit().ifPresent(player -> SpigotTriton.asSpigot().runSync(player, () -> {
             refreshEntities();
             refreshSigns();
             player.updateInventory();
@@ -279,10 +285,13 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
             for (ExecutableCommand cmd : ((com.rexcantor64.triton.language.Language) lang).getCmds()) {
                 String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
                         bukkit.getUniqueId().toString());
-                if (cmd.getType() == ExecutableCommand.Type.SERVER)
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText);
-                else if (cmd.getType() == ExecutableCommand.Type.PLAYER)
-                    Bukkit.dispatchCommand(bukkit, cmdText);
+                if (cmd.getType() == ExecutableCommand.Type.SERVER) {
+                    SpigotTriton.asSpigot().runGlobal(() ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText)
+                    );
+                } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
+                    SpigotTriton.asSpigot().runSync(bukkit, () -> Bukkit.dispatchCommand(bukkit, cmdText));
+                }
             }
         });
     }

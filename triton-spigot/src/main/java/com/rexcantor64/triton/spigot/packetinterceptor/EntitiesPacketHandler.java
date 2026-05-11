@@ -13,6 +13,7 @@ import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedWatchableObject;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.wrappers.EntityType;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.spigot.SpigotTriton;
@@ -23,7 +24,6 @@ import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.utils.ComponentUtils;
 import lombok.val;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -120,7 +120,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             // TODO For now, it is only possible to translate NPCs that are saved server side
             // Fetch entity object using main thread, otherwise we'll get concurrency issues
             SpigotTriton.asSpigot()
-                    .callSync(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
+                    .callSync(packet.getPlayer(), () -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                     .ifPresent(entity -> addEntity(
                                     languagePlayer.getPlayersMap(),
                                     packet.getPlayer().getWorld(),
@@ -212,7 +212,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         // TODO For now, it is only possible to translate NPCs that are saved server side
         // Fetch entity object using main thread, otherwise we'll get concurrency issues
         SpigotTriton.asSpigot()
-                .callSync(() -> packet.getPacket().getEntityModifier(packet).readSafely(0))
+                .callSync(packet.getPlayer(), () -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                 .ifPresent(entity -> addEntity(
                                 languagePlayer.getPlayersMap(),
                                 packet.getPlayer().getWorld(),
@@ -772,8 +772,8 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             if (isHiddenEntity) {
                 // If the entity should not show up in tab, hide it again
-                Bukkit.getScheduler().runTaskLater(
-                        getMain().getJavaPlugin(),
+                getMain().runSyncLater(
+                        bukkitPlayer,
                         () -> sendPacket(bukkitPlayer, packetRemove, true),
                         4L
                 );
@@ -958,12 +958,7 @@ public class EntitiesPacketHandler extends PacketHandler {
      * @return True if the player is logged in, false otherwise.
      */
     private boolean isRealPlayer(UUID uniqueId) {
-        for (val op : Bukkit.getOnlinePlayers()) {
-            if (op.getUniqueId().equals(uniqueId)) {
-                return true;
-            }
-        }
-        return false;
+        return Triton.get().getPlayerManager().hasPlayer(uniqueId);
     }
 
     /**

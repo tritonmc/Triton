@@ -27,6 +27,7 @@ bukkit {
     website = pluginWebsite
     author = pluginAuthor
     main = 'com.rexcantor64.triton.loader.SpigotLoader'
+    foliaSupported = true
     apiVersion = pluginApiVersion
 
     depend = []
