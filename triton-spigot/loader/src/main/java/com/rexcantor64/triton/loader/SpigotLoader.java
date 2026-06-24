@@ -46,11 +46,18 @@ public class SpigotLoader extends JavaPlugin {
         try {
             // Method only available on adventure 4.25.0+
             // Finding a method instead of a class, since plugins can incorrectly shade newer versions than what is installed in the server
-            Class<?> clickEventClass = Class.forName("net.kyori.adventure.text.Component");
-            clickEventClass.getMethod("object");
+            Class<?> componentClass = Class.forName("net.kyori.adventure.text.Component");
+            componentClass.getMethod("object");
 
-            // A modern version of adventure is already present
-            return false;
+            try {
+                Class<?> objectComponentClass = Class.forName("net.kyori.adventure.text.ObjectComponent");
+                objectComponentClass.getMethod("fallback");
+                // Adventure v5+ is present and we do not support it yet!
+                return true;
+            } catch (ClassNotFoundException | NoSuchMethodException ignore) {
+                // A modern version of adventure v4 is already present
+                return false;
+            }
         } catch (ClassNotFoundException | NoSuchMethodException ignore) {
             // Adventure is not present or an outdated version is present
             return true;
@@ -72,7 +79,7 @@ public class SpigotLoader extends JavaPlugin {
 
     private boolean shouldVendorAdventureSerializers() {
         try {
-            // Get a method from all the wanted packages
+            // Get a class from all the wanted packages
             Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
             Class.forName("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer");
             Class.forName("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer");
