@@ -47,13 +47,17 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
     private final Map<UUID, Component> playerListItemCache = new ConcurrentHashMap<>();
     private boolean waitingForClientLocale = false;
     private String clientLocale;
-    private final RefreshFeatures refresher;
+    private final @Nullable RefreshFeatures refresher;
 
     public VelocityLanguagePlayer(@NotNull UUID uuid) {
         super();
         Objects.requireNonNull(uuid, "cannot build VelocityLanguagePlayer from null UUID");
         this.uuid = uuid;
-        this.refresher = new RefreshFeatures(this);
+        if (Triton.get().getConfig().isUsePacketEvents()) {
+            this.refresher = null;
+        } else {
+            this.refresher = new RefreshFeatures(this);
+        }
         Triton.get().runAsync(this::load);
     }
 
@@ -143,7 +147,9 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
 
     public void refreshAll() {
         super.refreshAll();
-        this.refresher.refreshAll();
+        if (this.refresher != null) {
+            this.refresher.refreshAll();
+        }
     }
 
     public void injectNettyPipeline() {

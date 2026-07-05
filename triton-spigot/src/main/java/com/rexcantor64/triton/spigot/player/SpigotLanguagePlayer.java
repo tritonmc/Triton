@@ -177,32 +177,28 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
     public void refreshAll() {
         super.refreshAll();
         Triton.get().runAsync(() -> toBukkit().ifPresent(player -> {
-            refreshEntities();
-            refreshSigns();
-            player.updateInventory();
             getInterceptor().ifPresent((interceptor) -> {
-                if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null)
+                if (!Triton.get().getConfig().getAllowedEntityTypes().isEmpty() || Triton.get().getConfig().isHologramsAll()) {
+                    interceptor.refreshEntities(this);
+                }
+                if (Triton.get().getConfig().isSigns()) {
+                    interceptor.refreshSigns(this);
+                }
+                player.updateInventory();
+                if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null) {
                     interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
-                if (Triton.get().getConfig().isBossbars())
-                    for (Map.Entry<UUID, String> entry : bossBars.entrySet())
+                }
+                if (Triton.get().getConfig().isBossbars()) {
+                    for (Map.Entry<UUID, String> entry : bossBars.entrySet()) {
                         interceptor.refreshBossbar(this, entry.getKey(), entry.getValue());
-                if (Triton.get().getConfig().isScoreboards())
+                    }
+                }
+                if (Triton.get().getConfig().isScoreboards()) {
                     interceptor.refreshScoreboard(this);
+                }
                 interceptor.refreshAdvancements(this);
             });
         }));
-    }
-
-    private void refreshSigns() {
-        if (!Triton.get().getConfig().isSigns())
-            return;
-        getInterceptor().ifPresent(interceptor -> interceptor.refreshSigns(this));
-    }
-
-    private void refreshEntities() {
-        if (Triton.get().getConfig().getHolograms().size() == 0 && !Triton.get().getConfig().isHologramsAll())
-            return;
-        getInterceptor().ifPresent(interceptor -> interceptor.refreshEntities(this));
     }
 
     /**
