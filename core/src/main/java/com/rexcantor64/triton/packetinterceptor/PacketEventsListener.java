@@ -89,7 +89,9 @@ public class PacketEventsListener implements PacketListener {
         }
         if (config.isKick()) {
             val disconnectHandler = new DisconnectPacketHandler(parser, config);
-            updatedHandlers.put(PacketType.Play.Server.DISCONNECT, disconnectHandler::onDisconnectPacket);
+            updatedHandlers.put(PacketType.Login.Server.DISCONNECT, disconnectHandler::onLoginDisconnectPacket);
+            updatedHandlers.put(PacketType.Configuration.Server.DISCONNECT, disconnectHandler::onConfigDisconnectPacket);
+            updatedHandlers.put(PacketType.Play.Server.DISCONNECT, disconnectHandler::onPlayDisconnectPacket);
         }
         if (config.isResourcePackPrompt()) {
             val resourcePackHandler = new ResourcePackPacketHandler(parser, config);
