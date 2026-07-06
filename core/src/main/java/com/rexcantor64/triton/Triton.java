@@ -25,6 +25,7 @@ import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.player.TritonLanguagePlayer;
 import com.rexcantor64.triton.plugin.Platform;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.scheduler.TritonScheduler;
 import com.rexcantor64.triton.storage.LocalStorage;
 import com.rexcantor64.triton.storage.MysqlStorage;
 import com.rexcantor64.triton.storage.Storage;
@@ -52,10 +53,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager, S extends TritonScheduler<?, ?>> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    protected static Triton<?, ?> instance;
+    protected static Triton<?, ?, ?> instance;
     protected PluginLoader loader;
     // File-related variables
     private File translationsFolder;
@@ -72,14 +73,17 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;
+    protected final S scheduler;
     private Storage storage;
     private TritonLogger logger;
     private DumpManager dumpManager;
     protected @Nullable PacketEventsManager packetEventsManager;
+    private @Nullable TritonScheduler.TaskHandler configRefreshTask = null;
 
-    protected Triton(PlayerManager<P> playerManager, B bridgeManager) {
+    protected Triton(PlayerManager<P> playerManager, B bridgeManager, S scheduler) {
         this.playerManager = playerManager;
         this.bridgeManager = bridgeManager;
+        this.scheduler = scheduler;
     }
 
     public static Platform platform() {
@@ -102,7 +106,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         return platform() == Platform.SPIGOT;
     }
 
-    public static Triton<?, ?> get() {
+    public static Triton<?, ?, ?> get() {
         return instance;
     }
 
@@ -220,9 +224,17 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
 
     public abstract @NotNull JsonElement getPlatformDebugInfo();
 
-    protected abstract void startConfigRefreshTask();
+    private void startConfigRefreshTask() {
+        if (configRefreshTask != null) {
+            configRefreshTask.cancel();
+        }
 
-    public abstract void runAsync(Runnable runnable);
+        if (getConfig().getConfigAutoRefresh() <= 0) return;
+        configRefreshTask = this.getScheduler().runGlobalLater(
+                this::reload,
+                getConfig().getConfigAutoRefresh() * 20L
+        );
+    }
 
     public abstract File getDataFolder();
 

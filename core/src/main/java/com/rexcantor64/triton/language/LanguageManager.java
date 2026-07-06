@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class LanguageManager implements com.rexcantor64.triton.api.language.LanguageManager {
 
-    private final Triton<?, ?> triton;
+    private final Triton<?, ?, ?> triton;
 
     private List<Language> languages = new ArrayList<>();
     private Language mainLanguage;

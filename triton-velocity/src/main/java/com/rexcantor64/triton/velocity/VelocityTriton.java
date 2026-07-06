@@ -12,12 +12,12 @@ import com.rexcantor64.triton.velocity.listeners.VelocityListener;
 import com.rexcantor64.triton.velocity.packetinterceptor.VelocityPacketEventsManager;
 import com.rexcantor64.triton.velocity.player.VelocityLanguagePlayer;
 import com.rexcantor64.triton.velocity.plugin.VelocityPlugin;
+import com.rexcantor64.triton.velocity.scheduler.VelocityScheduler;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
@@ -30,16 +30,18 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager> {
+public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager, VelocityScheduler> {
 
     @Getter
     private ChannelIdentifier bridgeChannelIdentifier;
-    private ScheduledTask configRefreshTask;
 
     public VelocityTriton(PluginLoader loader) {
-        super(new PlayerManager<>(VelocityLanguagePlayer::new), new VelocityBridgeManager());
+        super(
+                new PlayerManager<>(VelocityLanguagePlayer::new),
+                new VelocityBridgeManager(),
+                new VelocityScheduler(((VelocityPlugin) loader).getServer(), ((VelocityPlugin) loader).getPlugin())
+        );
         super.loader = loader;
     }
 
@@ -93,15 +95,6 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
         this.packetEventsManager = new VelocityPacketEventsManager();
     }
 
-    @Override
-    protected void startConfigRefreshTask() {
-        if (configRefreshTask != null) configRefreshTask.cancel();
-        if (getConfig().getConfigAutoRefresh() <= 0) return;
-        configRefreshTask = getVelocity().getScheduler().buildTask(getPlugin(), this::reload)
-                .delay(getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS).schedule();
-    }
-
-
     public File getDataFolder() {
         return getLoader().getDataDirectory().toFile();
     }
@@ -109,11 +102,6 @@ public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridg
     @Override
     public @NonNull String getVersion() {
         return getLoader().getPluginContainer().getDescription().getVersion().orElse("unknown");
-    }
-
-    @Override
-    public void runAsync(Runnable runnable) {
-        getVelocity().getScheduler().buildTask(getPlugin(), runnable).schedule();
     }
 
     public ProxyServer getVelocity() {

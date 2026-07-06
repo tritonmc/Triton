@@ -8,9 +8,12 @@ import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
+import com.rexcantor64.triton.scheduler.TritonScheduler;
 import com.rexcantor64.triton.spigot.banners.BannerBuilder;
 import com.rexcantor64.triton.spigot.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.spigot.commands.handler.SpigotCommandHandler;
+import com.rexcantor64.triton.spigot.folia.FoliaUtils;
+import com.rexcantor64.triton.spigot.folia.scheduler.FoliaScheduler;
 import com.rexcantor64.triton.spigot.guiapi.GuiButton;
 import com.rexcantor64.triton.spigot.guiapi.GuiManager;
 import com.rexcantor64.triton.spigot.guiapi.ScrollableGui;
@@ -22,8 +25,8 @@ import com.rexcantor64.triton.spigot.placeholderapi.PapiProcessor;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
+import com.rexcantor64.triton.spigot.scheduler.BukkitScheduler;
 import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
-import com.rexcantor64.triton.spigot.utils.FoliaScheduler;
 import com.rexcantor64.triton.spigot.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
 import com.rexcantor64.triton.utils.ReflectionUtils;
@@ -37,7 +40,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -50,11 +53,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
-public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager> {
-
+public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager, TritonScheduler<Player, Location>> {
     @Getter
     private @Nullable ProtocolLibRefresher protocolLibRefresher;
     @Getter
@@ -63,14 +63,17 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     private SpigotCommandHandler commandHandler;
     @Getter
     private boolean papiEnabled = false;
-    private FoliaScheduler.TaskHandle refreshTask = FoliaScheduler.NOOP_TASK;
     @Getter
     private GuiManager guiManager;
     @Getter
     private final BannerBuilder bannerBuilder = new BannerBuilder();
 
     public SpigotTriton(PluginLoader loader) {
-        super(new PlayerManager<>(SpigotLanguagePlayer::new), new SpigotBridgeManager());
+        super(
+                new PlayerManager<>(SpigotLanguagePlayer::new),
+                new SpigotBridgeManager(),
+                FoliaUtils.isFolia() ? new FoliaScheduler(((SpigotPlugin) loader).getPlugin()) : new BukkitScheduler(((SpigotPlugin) loader).getPlugin())
+        );
         super.loader = loader;
     }
 
@@ -175,17 +178,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
                 .orElse(translation);
     }
 
-    @Override
-    protected void startConfigRefreshTask() {
-        refreshTask.cancel();
-        if (getConfig().getConfigAutoRefresh() <= 0) return;
-        refreshTask = FoliaScheduler.runGlobalLater(
-                getJavaPlugin(),
-                this::reload,
-                getConfig().getConfigAutoRefresh() * 20L
-        );
-    }
-
     public File getDataFolder() {
         return getJavaPlugin().getDataFolder();
     }
@@ -230,55 +222,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     @Override
     protected String getConfigFileName() {
         return "config_spigot";
-    }
-
-    @Override
-    public void runAsync(Runnable runnable) {
-        FoliaScheduler.runAsync(getJavaPlugin(), runnable);
-    }
-
-    public <T> Optional<T> callSync(Callable<T> callable) {
-        return FoliaScheduler.callGlobal(getJavaPlugin(), callable);
-    }
-
-    public <T> Optional<T> callSync(Entity entity, Callable<T> callable) {
-        return FoliaScheduler.callEntity(getJavaPlugin(), entity, callable);
-    }
-
-    public void runGlobal(Runnable runnable) {
-        FoliaScheduler.runGlobal(getJavaPlugin(), runnable);
-    }
-
-    public FoliaScheduler.TaskHandle runGlobalLater(Runnable runnable, long delayTicks) {
-        return FoliaScheduler.runGlobalLater(getJavaPlugin(), runnable, delayTicks);
-    }
-
-    public boolean runSync(Entity entity, Runnable runnable) {
-        return FoliaScheduler.runEntity(getJavaPlugin(), entity, runnable);
-    }
-
-    public boolean runSyncLater(Entity entity, Runnable runnable, long delayTicks) {
-        return FoliaScheduler.runEntityLater(getJavaPlugin(), entity, runnable, delayTicks);
-    }
-
-    public boolean runSync(Location location, Runnable runnable) {
-        return FoliaScheduler.runRegion(getJavaPlugin(), location, runnable);
-    }
-
-    public boolean hasModernSchedulers() {
-        return FoliaScheduler.hasModernSchedulers();
-    }
-
-    public boolean isGlobalTickThread() {
-        return FoliaScheduler.isGlobalTickThread();
-    }
-
-    public boolean isOwnedByCurrentRegion(Entity entity) {
-        return FoliaScheduler.isOwnedByCurrentRegion(entity);
-    }
-
-    public boolean isOwnedByCurrentRegion(Location location) {
-        return FoliaScheduler.isOwnedByCurrentRegion(location);
     }
 
     @Override

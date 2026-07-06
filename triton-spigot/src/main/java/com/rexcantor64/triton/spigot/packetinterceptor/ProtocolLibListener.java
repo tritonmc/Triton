@@ -42,6 +42,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -868,8 +869,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
         }
 
         if (firstRun.compareAndSet(true, false)
-                && !main.isOwnedByCurrentRegion(packet.getPlayer())
-                && !main.isGlobalTickThread()) {
+                && !main.getScheduler().isSyncThread(packet.getPlayer(), null)) {
             Thread.currentThread().setName("Triton Async Packet Handler");
         }
 
@@ -908,7 +908,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             return;
         }
         if (packet.getPacketType() == PacketType.Play.Client.SETTINGS) {
-            main.runSync(
+            main.getScheduler().runSync(
                     packet.getPlayer(),
                     () -> languagePlayer.setLang(
                             main.getLanguageManager()
@@ -919,7 +919,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             val clientConfigurations = packet.getPacket().getStructures().withType(WrappedClientConfiguration.getWrappedClass(), WrappedClientConfiguration.CONVERTER);
             val locale = clientConfigurations.readSafely(0).getLocale();
             val language = main.getLanguageManager().getLanguageByLocaleOrDefault(locale);
-            main.runSyncLater(packet.getPlayer(), () -> languagePlayer.setLang(language), 2L);
+            main.getScheduler().runSyncLater(packet.getPlayer(), () -> languagePlayer.setLang(language), 2L);
         }
     }
 
@@ -1019,30 +1019,18 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
     }
 
     public void resetSign(Player p, SignLocation location) {
-        if (main.hasModernSchedulers()) {
-            World world = Bukkit.getWorld(location.getWorld());
-            if (world == null) return;
-            val blockLocation = new org.bukkit.Location(world, location.getX(), location.getY(), location.getZ());
-            main.runSync(blockLocation, () -> resetSignFromRegion(p, location, world));
-            return;
-        }
-        resetSignFromRegion(p, location, null);
-    }
-
-    private void resetSignFromRegion(Player p, SignLocation location, World knownWorld) {
-        World world = knownWorld != null ? knownWorld : Bukkit.getWorld(location.getWorld());
+        World world = Bukkit.getWorld(location.getWorld());
         if (world == null) return;
-        PacketContainer container = buildResetSignPacket(world, location);
-        if (container == null) {
-            return;
-        }
-        main.runSync(p, () -> {
-            try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
-            } catch (Exception e) {
-                main.getLogger().logError(e, "Failed refresh sign.");
-            }
-        });
+        val blockLocation = new Location(world, location.getX(), location.getY(), location.getZ());
+        main.getScheduler()
+                .callSyncAtLocation(blockLocation, () -> buildResetSignPacket(world, location))
+                .ifPresent(container -> {
+                    try {
+                        ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
+                    } catch (Exception e) {
+                        main.getLogger().logError(e, "Failed refresh sign.");
+                    }
+                });
     }
 
     private PacketContainer buildResetSignPacket(World world, SignLocation location) {

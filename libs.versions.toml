@@ -4,6 +4,7 @@ adventure-platform = "4.4.1"
 asm = "9.9.1"
 bstats = "3.1.0"
 bungeecord = "1.21-R0.5-SNAPSHOT"
+folia = "26.1.2.build.8-stable"
 junit = "5.14.1"
 libby = "2.1.0"
 packetevents = "2.13.0"
@@ -26,6 +27,7 @@ bstats-bungeecord = { group = "org.bstats", name = "bstats-bungeecord", version.
 bstats-velocity = { group = "org.bstats", name = "bstats-velocity", version.ref = "bstats" }
 bungeecord-api = { group = "net.md-5", name = "bungeecord-api", version.ref = "bungeecord" }
 bungeecord-proxy = { group = "net.md-5", name = "bungeecord-proxy", version.ref = "bungeecord" }
+folia = { group = "dev.folia", name = "folia-api", version.ref = "folia" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.9.0" }
 guava = { group = "com.google.guava", name = "guava", version = "31.1-jre" }
 hikari = { group = "com.zaxxer", name = "HikariCP", version = "7.0.2" }

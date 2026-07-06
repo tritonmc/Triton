@@ -13,6 +13,8 @@ include 'triton-spigot:loader'
 findProject(':triton-spigot:loader')?.name = 'triton-spigot-loader'
 include 'triton-velocity:loader'
 findProject(':triton-velocity:loader')?.name = 'triton-velocity-loader'
+include 'triton-spigot:folia'
+findProject(':triton-spigot:folia')?.name = 'triton-spigot-folia'
 
 dependencyResolutionManagement {
     versionCatalogs {

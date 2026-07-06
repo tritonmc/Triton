@@ -120,6 +120,7 @@ public class EntitiesPacketHandler extends PacketHandler {
             // TODO For now, it is only possible to translate NPCs that are saved server side
             // Fetch entity object using main thread, otherwise we'll get concurrency issues
             SpigotTriton.asSpigot()
+                    .getScheduler()
                     .callSync(packet.getPlayer(), () -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                     .ifPresent(entity -> addEntity(
                                     languagePlayer.getPlayersMap(),
@@ -212,6 +213,7 @@ public class EntitiesPacketHandler extends PacketHandler {
         // TODO For now, it is only possible to translate NPCs that are saved server side
         // Fetch entity object using main thread, otherwise we'll get concurrency issues
         SpigotTriton.asSpigot()
+                .getScheduler()
                 .callSync(packet.getPlayer(), () -> packet.getPacket().getEntityModifier(packet).readSafely(0))
                 .ifPresent(entity -> addEntity(
                                 languagePlayer.getPlayersMap(),
@@ -772,7 +774,7 @@ public class EntitiesPacketHandler extends PacketHandler {
 
             if (isHiddenEntity) {
                 // If the entity should not show up in tab, hide it again
-                getMain().runSyncLater(
+                getMain().getScheduler().runSyncLater(
                         bukkitPlayer,
                         () -> sendPacket(bukkitPlayer, packetRemove, true),
                         4L

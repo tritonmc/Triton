@@ -44,7 +44,7 @@ public class MainConfig implements TritonConfig {
 
     @ToString.Exclude
     @GsonExclude
-    private transient final Triton<?, ?> main;
+    private transient final Triton<?, ?, ?> main;
     @Setter
     private List<Language> languages;
     @Setter
@@ -131,7 +131,7 @@ public class MainConfig implements TritonConfig {
     private boolean iKnowWhatIAmDoing;
     private String twinInstance;
 
-    public MainConfig(Triton<?, ?> main) {
+    public MainConfig(Triton<?, ?, ?> main) {
         this.main = main;
     }
 

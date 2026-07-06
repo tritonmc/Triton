@@ -166,7 +166,7 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                 } finally {
                     Triton.get().getLanguageManager().setup();
                     Triton.get().getTranslationManager().setup();
-                    SpigotTriton.asSpigot().runGlobalLater(() -> Triton.get().refreshPlayers(), 10L);
+                    SpigotTriton.asSpigot().getScheduler().runGlobalLater(() -> Triton.get().refreshPlayers(), 10L);
                 }
             } else if (action == BridgeSerializer.ActionP2S.SEND_PLAYER_LANGUAGE.getKey()) {
                 val uuid = new UUID(in.readLong(), in.readLong());
@@ -174,10 +174,10 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                 val lang = Triton.get().getLanguageManager().getLanguageByNameOrDefault(in.readUTF());
                 val languagePlayer = (SpigotLanguagePlayer) SpigotTriton.asSpigot().getPlayerManager().get(player.getUniqueId());
                 languagePlayer.setProxyUniqueId(uuid);
-                SpigotTriton.asSpigot().runSyncLater(player, () -> languagePlayer.setLang(lang, false), 10L);
+                SpigotTriton.asSpigot().getScheduler().runSyncLater(player, () -> languagePlayer.setLang(lang, false), 10L);
             } else if (action == BridgeSerializer.ActionP2S.SEND_COMMAND_AS_CONSOLE.getKey()) {
                 val command = in.readUTF();
-                SpigotTriton.asSpigot().runGlobal(() ->
+                SpigotTriton.asSpigot().getScheduler().runGlobal(() ->
                         org.bukkit.Bukkit.dispatchCommand(org.bukkit.Bukkit.getConsoleSender(), command)
                 );
             } else if (action == BridgeSerializer.ActionP2S.SIGNAL_REFRESH_FROM_DB.getKey()) {
@@ -191,13 +191,13 @@ public class SpigotBridgeManager implements PluginMessageListener, BridgeManager
                                     "might not be loaded.");
                     return;
                 }
-                Triton.get().runAsync(() -> {
+                Triton.get().getScheduler().runAsync(() -> {
                     val col = storage.downloadFromStorage();
                     storage.setCollections(col);
 
                     Triton.get().getLanguageManager().setup();
                     Triton.get().getTranslationManager().setup();
-                    SpigotTriton.asSpigot().runGlobalLater(() -> Triton.get().refreshPlayers(), 10L);
+                    SpigotTriton.asSpigot().getScheduler().runGlobalLater(() -> Triton.get().refreshPlayers(), 10L);
                 });
             } else if (action == BridgeSerializer.ActionP2S.FORWARD_TRITON_COMMAND.getKey()) {
                 val subCommand = in.readBoolean() ? in.readUTF() : null;

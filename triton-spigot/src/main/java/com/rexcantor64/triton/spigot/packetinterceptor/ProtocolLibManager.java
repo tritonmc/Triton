@@ -56,7 +56,7 @@ public class ProtocolLibManager {
         }
 
         // Use delayed task to try to be the last registered listener and therefore have the final say in packets
-        triton.runGlobalLater(() -> {
+        triton.getScheduler().runGlobalLater(() -> {
             if (triton.getConfig().isAsyncProtocolLib()) {
                 val asyncManager = ProtocolLibrary.getProtocolManager().getAsynchronousManager();
                 asyncManager.registerAsyncHandler(protocolLibListener).start();

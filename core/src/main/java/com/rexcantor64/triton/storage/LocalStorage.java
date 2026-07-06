@@ -108,7 +108,7 @@ public class LocalStorage extends Storage {
             }
 
             if (changed) {
-                Triton.get().runAsync(() -> {
+                Triton.get().getScheduler().runAsync(() -> {
                     try {
                         // TODO use RandomAccessFile with FileLock if this does not work correctly
                         val playersFile = new File(Triton.get().getDataFolder(), "players.json");

@@ -40,7 +40,7 @@ public class TwinManager {
             .registerTypeAdapter(LanguageSign.class, new LanguageSignSerializer())
             .create();
     private static final int TWIN_VERSION = 6;
-    private final Triton<?, ?> main;
+    private final Triton<?, ?, ?> main;
 
     public @NotNull HttpResponse upload(@Nullable List<String> allowedCollections, @Nullable List<String> allowedLanguages) throws NotOnProxyException {
         val isProxy = Triton.isProxy();

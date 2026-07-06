@@ -48,7 +48,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
 
                 val player = (BungeeLanguagePlayer) Triton.get().getPlayerManager().get(uuid);
                 if (player != null)
-                    Triton.get().runAsync(() -> player
+                    Triton.get().getScheduler().runAsync(() -> player
                             .setLang(Triton.get().getLanguageManager().getLanguageByName(language, true), false));
             }
 
@@ -64,7 +64,7 @@ public class BungeeBridgeManager implements Listener, BridgeManager {
 
                 val changed = Triton.get().getStorage().toggleLocationForSignGroup(location, key);
 
-                Triton.get().runAsync(() -> {
+                Triton.get().getScheduler().runAsync(() -> {
                     Triton.get().getLogger().logDebug("Saving sign to storage...");
                     Triton.get().getStorage()
                             .uploadPartiallyToStorage(Triton.get().getStorage().getCollections(), changed, null);

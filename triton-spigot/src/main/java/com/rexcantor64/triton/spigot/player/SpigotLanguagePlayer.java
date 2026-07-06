@@ -126,12 +126,6 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
     }
 
     public void setLang(Language lang, boolean sendToBungee) {
-        val bukkitPlayerOpt = toBukkit();
-        if (bukkitPlayerOpt.isPresent() && !SpigotTriton.asSpigot().isOwnedByCurrentRegion(bukkitPlayerOpt.get())) {
-            SpigotTriton.asSpigot().runSync(bukkitPlayerOpt.get(), () -> setLang(lang, sendToBungee));
-            return;
-        }
-
         PlayerChangeLanguageSpigotEvent event = new PlayerChangeLanguageSpigotEvent(this, this.lang, lang);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) return;
@@ -182,15 +176,14 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
      */
     public void refreshAll() {
         super.refreshAll();
-        toBukkit().ifPresent(player -> SpigotTriton.asSpigot().runSync(player, () -> {
-            getInterceptor().ifPresent((interceptor) -> {
+        getInterceptor().ifPresent((interceptor) -> {
+            Triton.get().getScheduler().runAsync(() -> {
                 if (!Triton.get().getConfig().getAllowedEntityTypes().isEmpty() || Triton.get().getConfig().isHologramsAll()) {
                     interceptor.refreshEntities(this);
                 }
                 if (Triton.get().getConfig().isSigns()) {
                     interceptor.refreshSigns(this);
                 }
-                player.updateInventory();
                 if (Triton.get().getConfig().isTab() && lastTabHeader != null && lastTabFooter != null) {
                     interceptor.refreshTabHeaderFooter(this, lastTabHeader, lastTabFooter);
                 }
@@ -204,7 +197,8 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
                 }
                 interceptor.refreshAdvancements(this);
             });
-        }));
+            toBukkit().ifPresent(player -> SpigotTriton.asSpigot().getScheduler().runSync(player, player::updateInventory));
+        });
     }
 
     /**
@@ -237,7 +231,7 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
     }
 
     private void save() {
-        Triton.get().runAsync(() -> {
+        Triton.get().getScheduler().runAsync(() -> {
             String ip = null;
             if (toBukkit().isPresent()) {
                 val player = toBukkit().get();
@@ -282,11 +276,11 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
                 String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
                         bukkit.getUniqueId().toString());
                 if (cmd.getType() == ExecutableCommand.Type.SERVER) {
-                    SpigotTriton.asSpigot().runGlobal(() ->
+                    SpigotTriton.asSpigot().getScheduler().runGlobal(() ->
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText)
                     );
                 } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {
-                    SpigotTriton.asSpigot().runSync(bukkit, () -> Bukkit.dispatchCommand(bukkit, cmdText));
+                    SpigotTriton.asSpigot().getScheduler().runSync(bukkit, () -> Bukkit.dispatchCommand(bukkit, cmdText));
                 }
             }
         });
