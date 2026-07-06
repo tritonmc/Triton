@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.player;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
@@ -315,13 +316,35 @@ public class PacketEventsRefresh {
      */
     public void refreshAll() {
         val playerOpt = this.languagePlayer.getPlatformPlayer();
-        if (!playerOpt.isPresent()) {
+        if (playerOpt.isEmpty()) {
+            Triton.get().getLogger().logDebug(
+                    "Skipped refreshing features for player %1 because could not get the platform's player instance",
+                    this.languagePlayer.getUUID()
+            );
             return;
         }
         val player = playerOpt.get();
         val user = PacketEvents.getAPI().getPlayerManager().getUser(player);
         val parser = Triton.get().getMessageParser();
         val cfg = Triton.get().getConfig();
+
+        if (user == null) {
+            Triton.get().getLogger().logDebug(
+                    "Skipped refreshing features for player %1 because could not get a PacketEvents user instance",
+                    this.languagePlayer.getUUID()
+            );
+            return;
+        }
+
+        if (user.getEncoderState() != ConnectionState.PLAY) {
+            // We cannot send these packets if the connection is not in the PLAY state.
+            // Doing so causes the client to throw an error and disconnect.
+            Triton.get().getLogger().logDebug(
+                    "Skipped refreshing features for player %1 because the connection is not in the play phase",
+                    this.languagePlayer.getUUID()
+            );
+            return;
+        }
 
         if (cfg.isBossbars()) {
             val syntax = cfg.getBossbarSyntax();

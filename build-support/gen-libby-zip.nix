@@ -25,7 +25,7 @@ let
       inherit version;
       src = pkgs.fetchurl {
         url = "${repository}/${jarPath}";
-        hash = "sha256-${sha256Checksum}";
+        hash = lib.optionalString (sha256Checksum != "") "sha256-${sha256Checksum}";
       };
 
       dontUnpack = true;
