@@ -35,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,8 @@ public class DialogPacketHandler {
         });
     }
 
-    private @NotNull Optional<Dialog> translateDialog(@NotNull Dialog dialog, @NotNull Localized locale) {
+    @VisibleForTesting
+    @NotNull Optional<Dialog> translateDialog(@NotNull Dialog dialog, @NotNull Localized locale) {
         val type = dialog.getType();
         if (type.equals(DialogTypes.MULTI_ACTION)) {
             return translateDialog((MultiActionDialog) dialog, locale);
@@ -174,7 +176,8 @@ public class DialogPacketHandler {
         return Optional.empty();
     }
 
-    private @NotNull Optional<@NotNull CommonDialogData> translateCommonDialogData(@NotNull CommonDialogData data, @NotNull Localized locale) {
+    @VisibleForTesting
+    @NotNull Optional<@NotNull CommonDialogData> translateCommonDialogData(@NotNull CommonDialogData data, @NotNull Localized locale) {
         val title = parser.translateComponent(data.getTitle(), locale, this.syntax);
         val externalTitle = data.getExternalTitle() == null ?
                 TranslationResult.<Component>unchanged() :
@@ -198,7 +201,8 @@ public class DialogPacketHandler {
         return Optional.empty();
     }
 
-    private @NotNull TranslationResult<@NotNull DialogBody> translateDialogBody(@NotNull DialogBody body, @NotNull Localized locale) {
+    @VisibleForTesting
+    @NotNull TranslationResult<@NotNull DialogBody> translateDialogBody(@NotNull DialogBody body, @NotNull Localized locale) {
         val type = body.getType();
         if (type.equals(DialogBodyTypes.PLAIN_MESSAGE)) {
             return translateDialogBody((PlainMessageDialogBody) body, locale);
@@ -236,7 +240,8 @@ public class DialogPacketHandler {
         return TranslationResult.unchanged();
     }
 
-    private @NotNull TranslationResult<@NotNull Input> translateInput(@NotNull Input input, @NotNull Localized locale) {
+    @VisibleForTesting
+    @NotNull TranslationResult<@NotNull Input> translateInput(@NotNull Input input, @NotNull Localized locale) {
         return translateInputControl(input.getControl(), locale).map(control -> new Input(input.getKey(), control));
     }
 
@@ -305,7 +310,8 @@ public class DialogPacketHandler {
         return TranslationResult.unchanged();
     }
 
-    private @NotNull TranslationResult<SingleOptionInputControl.@NotNull Entry> translateSingleOptionEntry(
+    @VisibleForTesting
+    @NotNull TranslationResult<SingleOptionInputControl.@NotNull Entry> translateSingleOptionEntry(
             @NotNull SingleOptionInputControl.Entry entry,
             @NotNull Localized locale
     ) {
@@ -339,35 +345,40 @@ public class DialogPacketHandler {
         return Optional.empty();
     }
 
-    private @NotNull Optional<@NotNull List<@NotNull DialogBody>> translateDialogBodyList(
+    @VisibleForTesting
+    @NotNull Optional<@NotNull List<@NotNull DialogBody>> translateDialogBodyList(
             @NotNull List<@NotNull DialogBody> bodyList,
             @NotNull Localized locale
     ) {
         return translateList(bodyList, this::translateDialogBody, locale);
     }
 
-    private @NotNull Optional<@NotNull List<@NotNull Input>> translateInputList(
+    @VisibleForTesting
+    @NotNull Optional<@NotNull List<@NotNull Input>> translateInputList(
             @NotNull List<@NotNull Input> inputList,
             @NotNull Localized locale
     ) {
         return translateList(inputList, this::translateInput, locale);
     }
 
-    private @NotNull Optional<@NotNull List<SingleOptionInputControl.@NotNull Entry>> translateSingleOptionEntryList(
+    @VisibleForTesting
+    @NotNull Optional<@NotNull List<SingleOptionInputControl.@NotNull Entry>> translateSingleOptionEntryList(
             @NotNull List<SingleOptionInputControl.@NotNull Entry> entryList,
             @NotNull Localized locale
     ) {
         return translateList(entryList, this::translateSingleOptionEntry, locale);
     }
 
-    private @NotNull Optional<@NotNull List<@NotNull ActionButton>> translateButtonList(
+    @VisibleForTesting
+    @NotNull Optional<@NotNull List<@NotNull ActionButton>> translateButtonList(
             @NotNull List<@NotNull ActionButton> buttons,
             @NotNull Localized locale
     ) {
         return translateList(buttons, this::translateButton, locale);
     }
 
-    private @NotNull TranslationResult<ActionButton> translateButton(@NotNull ActionButton button, @NotNull Localized locale) {
+    @VisibleForTesting
+    @NotNull TranslationResult<ActionButton> translateButton(@NotNull ActionButton button, @NotNull Localized locale) {
         return translateButton(button.getButton(), locale).map(newButton -> new ActionButton(newButton, button.getAction()));
     }
 
