@@ -47,6 +47,15 @@ public class TranslationResult<T> implements com.rexcantor64.triton.api.language
     }
 
     @Override
+    @Contract("_ -> this")
+    public @NotNull TranslationResult<T> ifChangedOrToRemove(Runnable action) {
+        if (state == ResultState.CHANGED || state == ResultState.TO_REMOVE) {
+            action.run();
+        }
+        return this;
+    }
+
+    @Override
     public boolean isChanged() {
         return state == ResultState.CHANGED;
     }
