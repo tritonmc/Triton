@@ -12,6 +12,7 @@ import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.ChatPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DeathScreenPacketHandler;
+import com.rexcantor64.triton.packetinterceptor.handlers.DialogPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.DisconnectPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.EntityPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.GuiPacketHandler;
@@ -153,6 +154,11 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, itemHandler::onWindowItemsPacket);
             updatedHandlers.put(PacketType.Play.Server.CLOSE_WINDOW, itemHandler::onServerCloseWindowPacket);
             updatedReceiveHandlers.put(PacketType.Play.Client.CLOSE_WINDOW, itemHandler::onClientCloseWindowPacket);
+        }
+        if (config.isDialogs()) {
+            val dialogHandler = new DialogPacketHandler(parser, config);
+            updatedHandlers.put(PacketType.Configuration.Server.SHOW_DIALOG, dialogHandler::onConfigShowDialogPacket);
+            updatedHandlers.put(PacketType.Play.Server.SHOW_DIALOG, dialogHandler::onPlayShowDialogPacket);
         }
 
         sendHandlers = Collections.unmodifiableMap(updatedHandlers);

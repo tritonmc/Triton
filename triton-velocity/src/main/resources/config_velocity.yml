@@ -218,6 +218,11 @@ language-creation:
     enabled: true
     syntax-lang: lang
     syntax-arg: arg
+  dialogs:
+    # Should the plugin translate dialogs and their contents? (1.21.6+)
+    enabled: true
+    syntax-lang: lang
+    syntax-arg: arg
   # If any message contains a placeholder with the key defined in the field below, that message won't be sent to the players (console will still receive it).
   # Leave empty to disable this feature (it's disabled by default).
   # Example (assuming you have the default values on your config and you've set disabled-line to 'disabled.line'):

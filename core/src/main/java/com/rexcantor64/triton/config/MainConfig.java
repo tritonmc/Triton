@@ -96,6 +96,8 @@ public class MainConfig implements TritonConfig {
     private FeatureSyntax resourcePackPromptSyntax;
     private boolean deathScreen;
     private FeatureSyntax deathScreenSyntax;
+    private boolean dialogs;
+    private FeatureSyntax dialogsSyntax;
     private boolean terminal;
     private boolean terminalAnsi;
     private boolean preventPlaceholdersInChat;
@@ -314,6 +316,10 @@ public class MainConfig implements TritonConfig {
         Configuration deathScreen = section.getSection("death-screen");
         this.deathScreen = deathScreen.getBoolean("enabled", true);
         this.deathScreenSyntax = FeatureSyntax.fromSection(deathScreen);
+
+        Configuration dialogs = section.getSection("dialogs");
+        this.dialogs = dialogs.getBoolean("enabled", true);
+        this.dialogsSyntax = FeatureSyntax.fromSection(dialogs);
 
     }
 
