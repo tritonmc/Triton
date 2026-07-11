@@ -97,7 +97,7 @@ public class AdventureParser extends MessageParser {
      * @since 4.0.0
      */
     @VisibleForTesting
-    TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull TranslationConfiguration<Component> configuration) {
+    protected TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull TranslationConfiguration<Component> configuration) {
         String plainText = ComponentUtils.componentToString(component);
 
         if (ComponentUtils.hasLegacyFormatting(plainText)) {
