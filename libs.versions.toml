@@ -28,7 +28,7 @@ bungeecord-api = { group = "net.md-5", name = "bungeecord-api", version.ref = "b
 bungeecord-proxy = { group = "net.md-5", name = "bungeecord-proxy", version.ref = "bungeecord" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.9.0" }
 guava = { group = "com.google.guava", name = "guava", version = "31.1-jre" }
-hikari = { group = "com.zaxxer", name = "HikariCP", version = "7.0.2" }
+hikari = { group = "com.zaxxer", name = "HikariCP", version = "7.1.0" }
 jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.3" }
 jarrelocator = { group = "me.lucko", name = "jar-relocator", version = "1.7" }
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "26.1.0" }
