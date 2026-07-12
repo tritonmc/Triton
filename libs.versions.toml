@@ -39,7 +39,7 @@ libby-bukkit = { group = "com.rexcantor64", name = "libby-bukkit", version.ref =
 libby-bungee = { group = "com.rexcantor64", name = "libby-bungee", version.ref = "libby" }
 libby-core = { group = "com.rexcantor64", name = "libby-core", version.ref = "libby" }
 libby-velocity = { group = "com.rexcantor64", name = "libby-velocity", version.ref = "libby" }
-log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version = "2.17.1" }
+log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version = "2.26.1" }
 lombok = { group = "org.projectlombok", name = "lombok", version = "1.18.46" }
 minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "adventure" }
 mysql-connector = { group = "com.mysql", name = "mysql-connector-j", version = "9.7.0" }
