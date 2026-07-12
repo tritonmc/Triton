@@ -1,7 +1,7 @@
 [versions]
 adventure = "4.26.1"
 adventure-platform = "4.4.1"
-asm = "9.9.1"
+asm = "9.10.1"
 bstats = "3.2.1"
 bungeecord = "1.21-R0.5-SNAPSHOT"
 junit = "5.14.4"
