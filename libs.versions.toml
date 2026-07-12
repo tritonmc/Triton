@@ -8,7 +8,7 @@ junit = "5.14.4"
 libby = "2.1.0"
 packetevents = "2.13.0"
 plugin-yml = "0.8.0"
-spigot = "1.21.11-R0.2-SNAPSHOT"
+spigot = "26.2-R0.1-SNAPSHOT"
 velocity = "3.4.0-SNAPSHOT"
 
 [libraries]
