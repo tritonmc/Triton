@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager, VelocityScheduler> {
+public class VelocityTriton extends Triton<VelocityLanguagePlayer, VelocityBridgeManager> {
 
     @Getter
     private ChannelIdentifier bridgeChannelIdentifier;

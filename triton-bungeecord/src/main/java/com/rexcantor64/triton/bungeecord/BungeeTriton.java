@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManager, BungeeScheduler> {
+public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManager> {
 
     @Getter
     private BungeeBridgeManager bridgeManager;
@@ -47,7 +47,8 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         super(
                 new PlayerManager<>(BungeeLanguagePlayer::new),
                 new BungeeBridgeManager(),
-                new BungeeScheduler(((BungeePlugin) loader).getPlugin()));
+                new BungeeScheduler(((BungeePlugin) loader).getPlugin())
+        );
         super.loader = loader;
     }
 

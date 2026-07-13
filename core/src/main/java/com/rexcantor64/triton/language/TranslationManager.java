@@ -46,7 +46,7 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
     public static final String MINIMESSAGE_TYPE_TAG = "[minimsg]";
     public static final String JSON_TYPE_TAG = "[triton_json]";
 
-    private final Triton<?, ?, ?> triton;
+    private final Triton<?, ?> triton;
 
     // We have to store these as Strings and only convert to Component afterwards because
     // of PlaceholderAPI: https://github.com/PlaceholderAPI/PlaceholderAPI/discussions/742

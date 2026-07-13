@@ -1023,7 +1023,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
         if (world == null) return;
         val blockLocation = new Location(world, location.getX(), location.getY(), location.getZ());
         main.getScheduler()
-                .callSyncAtLocation(blockLocation, () -> buildResetSignPacket(world, location))
+                .callSync(blockLocation, () -> buildResetSignPacket(world, location))
                 .ifPresent(container -> {
                     try {
                         ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);

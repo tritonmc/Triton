@@ -53,10 +53,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
-public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager, S extends TritonScheduler<?, ?>> implements com.rexcantor64.triton.api.Triton {
+public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends BridgeManager> implements com.rexcantor64.triton.api.Triton {
 
     // Main instances
-    protected static Triton<?, ?, ?> instance;
+    protected static Triton<?, ?> instance;
     protected PluginLoader loader;
     // File-related variables
     private File translationsFolder;
@@ -73,14 +73,14 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
     private TwinManager twinManager;
     protected final PlayerManager<P> playerManager;
     protected final B bridgeManager;
-    protected final S scheduler;
+    protected final TritonScheduler scheduler;
     private Storage storage;
     private TritonLogger logger;
     private DumpManager dumpManager;
     protected @Nullable PacketEventsManager packetEventsManager;
     private @Nullable TritonScheduler.TaskHandler configRefreshTask = null;
 
-    protected Triton(PlayerManager<P> playerManager, B bridgeManager, S scheduler) {
+    protected Triton(PlayerManager<P> playerManager, B bridgeManager, TritonScheduler scheduler) {
         this.playerManager = playerManager;
         this.bridgeManager = bridgeManager;
         this.scheduler = scheduler;
@@ -106,7 +106,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         return platform() == Platform.SPIGOT;
     }
 
-    public static Triton<?, ?, ?> get() {
+    public static Triton<?, ?> get() {
         return instance;
     }
 
@@ -230,7 +230,7 @@ public abstract class Triton<P extends TritonLanguagePlayer<?>, B extends Bridge
         }
 
         if (getConfig().getConfigAutoRefresh() <= 0) return;
-        configRefreshTask = this.getScheduler().runGlobalLater(
+        configRefreshTask = this.getScheduler().runSyncLater(
                 this::reload,
                 getConfig().getConfigAutoRefresh() * 20L
         );

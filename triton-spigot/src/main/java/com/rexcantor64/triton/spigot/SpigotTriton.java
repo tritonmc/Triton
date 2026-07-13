@@ -8,10 +8,10 @@ import com.rexcantor64.triton.api.players.LanguagePlayer;
 import com.rexcantor64.triton.language.Language;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
-import com.rexcantor64.triton.scheduler.TritonScheduler;
 import com.rexcantor64.triton.spigot.banners.BannerBuilder;
 import com.rexcantor64.triton.spigot.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.spigot.commands.handler.SpigotCommandHandler;
+import com.rexcantor64.triton.spigot.common.scheduler.BukkitGenericScheduler;
 import com.rexcantor64.triton.spigot.folia.FoliaUtils;
 import com.rexcantor64.triton.spigot.folia.scheduler.FoliaScheduler;
 import com.rexcantor64.triton.spigot.guiapi.GuiButton;
@@ -37,10 +37,8 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,7 +52,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager, TritonScheduler<Player, Location>> {
+public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager> {
+
     @Getter
     private @Nullable ProtocolLibRefresher protocolLibRefresher;
     @Getter
@@ -87,6 +86,11 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
     public static SpigotTriton asSpigot() {
         return (SpigotTriton) instance;
+    }
+
+    @Override
+    public BukkitGenericScheduler getScheduler() {
+        return (BukkitGenericScheduler) super.getScheduler();
     }
 
     @Override

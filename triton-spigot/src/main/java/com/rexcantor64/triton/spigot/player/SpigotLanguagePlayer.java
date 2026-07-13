@@ -276,7 +276,7 @@ public class SpigotLanguagePlayer extends TritonLanguagePlayer<Player> {
                 String cmdText = cmd.getCmd().replace("%player%", bukkit.getName()).replace("%uuid%",
                         bukkit.getUniqueId().toString());
                 if (cmd.getType() == ExecutableCommand.Type.SERVER) {
-                    SpigotTriton.asSpigot().getScheduler().runGlobal(() ->
+                    SpigotTriton.asSpigot().getScheduler().runSync(() ->
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmdText)
                     );
                 } else if (cmd.getType() == ExecutableCommand.Type.PLAYER) {

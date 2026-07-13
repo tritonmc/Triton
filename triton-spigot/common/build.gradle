@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly libs.spigot.api
+    compileOnly project(':api')
+    compileOnly project(':core')
+}
