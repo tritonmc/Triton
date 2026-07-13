@@ -227,6 +227,12 @@ public interface TritonConfig {
     boolean isDeathScreen();
 
     /**
+     * @return The value of "language-creation.dialogs.enabled" in the config.
+     * @since 4.1.0
+     */
+    boolean isDialogs();
+
+    /**
      * @return The value of "language-creation.terminal" in the config.
      * @since 2.6.0
      */
@@ -346,5 +352,12 @@ public interface TritonConfig {
      * .death-screen" in the config.
      */
     FeatureSyntax getDeathScreenSyntax();
+
+    /**
+     * @return The {@link com.rexcantor64.triton.api.config.FeatureSyntax FeatureSyntax} of "language-creation
+     * .dialogs" in the config.
+     * @since 4.1.0
+     */
+    FeatureSyntax getDialogsSyntax();
 
 }

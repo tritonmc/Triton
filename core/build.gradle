@@ -44,9 +44,14 @@ dependencies {
     testRuntimeOnly libs.junit.platform.launcher
 
     testImplementation libs.adventure.api
+    testImplementation libs.adventure.nbt
     testImplementation libs.adventure.serializer.gson
     testImplementation libs.adventure.serializer.legacy
     testImplementation libs.adventure.serializer.plain
+
+    testImplementation libs.packetevents.api
+    testImplementation libs.packetevents.netty.common
+    testImplementation libs.netty.codec
 }
 
 shadowJar {

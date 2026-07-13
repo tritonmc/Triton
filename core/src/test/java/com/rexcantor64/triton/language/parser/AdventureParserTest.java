@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.language.parser;
 
 import com.rexcantor64.triton.api.config.FeatureSyntax;
-import com.rexcantor64.triton.utils.DefaultFeatureSyntax;
+import com.rexcantor64.triton.test.DefaultFeatureSyntax;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;

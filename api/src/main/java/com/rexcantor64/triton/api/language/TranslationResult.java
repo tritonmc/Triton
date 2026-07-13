@@ -62,6 +62,16 @@ public interface TranslationResult<T> {
     @NotNull TranslationResult<T> ifUnchanged(Runnable action);
 
     /**
+     * Run the given action if the result is {@link ResultState#CHANGED} or {@link ResultState#TO_REMOVE}.
+     *
+     * @param action A runnable which will be run if the input has changed or is to be removed
+     * @return Itself, to allow chaining
+     * @since 4.1.0
+     */
+    @Contract("_ -> this")
+    @NotNull TranslationResult<T> ifChangedOrToRemove(Runnable action);
+
+    /**
      * @return whether state is {@link ResultState#CHANGED}.
      */
     boolean isChanged();
