@@ -28,7 +28,6 @@ dependencies {
 
     compileOnly libs.bstats.base
 
-    implementation libs.slf4j.nop
     implementation libs.hikari
     implementation(libs.jsonpatch) {
         exclude group: 'com.google.code.gson', module: 'gson'
