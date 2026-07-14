@@ -10,6 +10,7 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.github.retrooper.packetevents.protocol.recipe.RecipeDisplayEntry;
 import com.github.retrooper.packetevents.protocol.score.ScoreFormat;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
@@ -22,6 +23,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerListHeaderAndFooter;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRecipeBookAdd;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective.RenderType;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
@@ -31,6 +33,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.config.MainConfig;
 import com.rexcantor64.triton.language.parser.MessageParser;
+import com.rexcantor64.triton.utils.RecipeTranslationUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -38,6 +41,7 @@ import lombok.val;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -53,6 +57,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@NotNullByDefault
 public class PacketEventsRefresh {
     private final Map<UUID, Component> bossBarMap = new ConcurrentHashMap<>();
     private final Map<String, ScoreBoardTeamInfo> teamsMap = new ConcurrentHashMap<>();
@@ -62,6 +67,7 @@ public class PacketEventsRefresh {
     private final Map<Integer, Entity> entityMap = new ConcurrentHashMap<>();
     private final Map<UUID, Player> tentativePlayerMap = new ConcurrentHashMap<>();
     private final Map<Integer, Player> spawnedPlayerMap = new ConcurrentHashMap<>();
+    private final Map<Integer, RecipeDisplayEntry> recipeMap = new ConcurrentHashMap<>();
 
     /**
      * The window ID of the currently open window.
@@ -310,6 +316,28 @@ public class PacketEventsRefresh {
     }
 
     /**
+     * Save a recipe that has been registered and contains placeholders.
+     *
+     * @param entry The recipe entry.
+     * @since 4.1.0
+     */
+    public void saveRecipe(RecipeDisplayEntry entry) {
+        this.recipeMap.put(entry.getId().getId(), entry);
+    }
+
+    /**
+     * Discard a potentially previously registered recipe that is no longer registered in the client
+     * or no longer contains placeholders.
+     * Unregistering a recipe that is not currently registered is a no-op.
+     *
+     * @param id The ID of the recipe.
+     * @since 4.1.0
+     */
+    public void discardRecipe(int id) {
+        this.recipeMap.remove(id);
+    }
+
+    /**
      * Refresh all active features of a player.
      *
      * @since 4.0.0
@@ -369,6 +397,7 @@ public class PacketEventsRefresh {
         }
         if (cfg.isItems()) {
             updateInventoryItems(user);
+            updateRecipes(user);
         }
     }
 
@@ -690,6 +719,21 @@ public class PacketEventsRefresh {
             val packet = new WrapperPlayClientClickWindow(this.currentWindowId, -1, 0, Byte.MAX_VALUE, WrapperPlayClientClickWindow.WindowClickType.PICKUP, Collections.emptyMap(), Optional.empty());
             user.receivePacketSilently(packet);
         }
+    }
+
+    private void updateRecipes(User user) {
+        if (this.recipeMap.isEmpty()) {
+            return;
+        }
+        val recipeHandler = new RecipeTranslationUtils(Triton.get().getMessageParser(), Triton.get().getConfig().getItemsSyntax());
+
+        val translatedRecipes = this.recipeMap.values().stream()
+                .map(entry -> recipeHandler.translateRecipeDisplayEntry(entry, this.languagePlayer).orElse(entry))
+                .map(entry -> new WrapperPlayServerRecipeBookAdd.AddEntry(entry, false, false))
+                .toList();
+
+        val packet = new WrapperPlayServerRecipeBookAdd(translatedRecipes, false);
+        user.sendPacketSilently(packet);
     }
 
     @RequiredArgsConstructor

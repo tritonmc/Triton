@@ -157,6 +157,9 @@ public class PacketEventsListener implements PacketListener {
             updatedHandlers.put(PacketType.Play.Server.WINDOW_ITEMS, itemHandler::onWindowItemsPacket);
             updatedHandlers.put(PacketType.Play.Server.CLOSE_WINDOW, itemHandler::onServerCloseWindowPacket);
             updatedReceiveHandlers.put(PacketType.Play.Client.CLOSE_WINDOW, itemHandler::onClientCloseWindowPacket);
+            updatedHandlers.put(PacketType.Play.Server.RECIPE_BOOK_ADD, itemHandler::onRecipeBookAddPacket);
+            updatedHandlers.put(PacketType.Play.Server.RECIPE_BOOK_REMOVE, itemHandler::onRecipeBookRemovePacket);
+            updatedHandlers.put(PacketType.Play.Server.CRAFT_RECIPE_RESPONSE, itemHandler::onCraftRecipeResponsePacket);
         }
         if (config.isDialogs()) {
             val dialogHandler = new DialogPacketHandler(parser, config);
