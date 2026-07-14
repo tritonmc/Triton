@@ -90,3 +90,6 @@ To compile, clone this repository and run the following command:
 ```sh
 ./gradlew shadowJar
 ```
+
+**Make sure JDK 25 or newer is installed on your system,
+as it is not possible to compile Triton with an older JDK version.**

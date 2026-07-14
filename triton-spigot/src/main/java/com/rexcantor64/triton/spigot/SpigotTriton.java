@@ -11,6 +11,9 @@ import com.rexcantor64.triton.plugin.PluginLoader;
 import com.rexcantor64.triton.spigot.banners.BannerBuilder;
 import com.rexcantor64.triton.spigot.bridge.SpigotBridgeManager;
 import com.rexcantor64.triton.spigot.commands.handler.SpigotCommandHandler;
+import com.rexcantor64.triton.spigot.common.scheduler.BukkitGenericScheduler;
+import com.rexcantor64.triton.spigot.folia.FoliaUtils;
+import com.rexcantor64.triton.spigot.folia.scheduler.FoliaScheduler;
 import com.rexcantor64.triton.spigot.guiapi.GuiButton;
 import com.rexcantor64.triton.spigot.guiapi.GuiManager;
 import com.rexcantor64.triton.spigot.guiapi.ScrollableGui;
@@ -22,6 +25,7 @@ import com.rexcantor64.triton.spigot.placeholderapi.PapiProcessor;
 import com.rexcantor64.triton.spigot.placeholderapi.TritonPlaceholderHook;
 import com.rexcantor64.triton.spigot.player.SpigotLanguagePlayer;
 import com.rexcantor64.triton.spigot.plugin.SpigotPlugin;
+import com.rexcantor64.triton.spigot.scheduler.BukkitScheduler;
 import com.rexcantor64.triton.spigot.utils.BaseComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.MaterialWrapperManager;
 import com.rexcantor64.triton.terminal.Log4jInjector;
@@ -47,8 +51,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManager> {
 
@@ -60,14 +62,17 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     private SpigotCommandHandler commandHandler;
     @Getter
     private boolean papiEnabled = false;
-    private int refreshTaskId = -1;
     @Getter
     private GuiManager guiManager;
     @Getter
     private final BannerBuilder bannerBuilder = new BannerBuilder();
 
     public SpigotTriton(PluginLoader loader) {
-        super(new PlayerManager<>(SpigotLanguagePlayer::new), new SpigotBridgeManager());
+        super(
+                new PlayerManager<>(SpigotLanguagePlayer::new),
+                new SpigotBridgeManager(),
+                FoliaUtils.isFolia() ? new FoliaScheduler(((SpigotPlugin) loader).getPlugin()) : new BukkitScheduler(((SpigotPlugin) loader).getPlugin())
+        );
         super.loader = loader;
     }
 
@@ -81,6 +86,11 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
 
     public static SpigotTriton asSpigot() {
         return (SpigotTriton) instance;
+    }
+
+    @Override
+    public BukkitGenericScheduler getScheduler() {
+        return (BukkitGenericScheduler) super.getScheduler();
     }
 
     @Override
@@ -172,14 +182,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
                 .orElse(translation);
     }
 
-    @Override
-    protected void startConfigRefreshTask() {
-        if (refreshTaskId != -1) Bukkit.getScheduler().cancelTask(refreshTaskId);
-        if (getConfig().getConfigAutoRefresh() <= 0) return;
-        refreshTaskId = Bukkit.getScheduler()
-                .scheduleSyncDelayedTask(getJavaPlugin(), this::reload, getConfig().getConfigAutoRefresh() * 20L);
-    }
-
     public File getDataFolder() {
         return getJavaPlugin().getDataFolder();
     }
@@ -224,25 +226,6 @@ public class SpigotTriton extends Triton<SpigotLanguagePlayer, SpigotBridgeManag
     @Override
     protected String getConfigFileName() {
         return "config_spigot";
-    }
-
-    @Override
-    public void runAsync(Runnable runnable) {
-        Bukkit.getScheduler().runTaskAsynchronously(getJavaPlugin(), runnable);
-    }
-
-    public <T> Optional<T> callSync(Callable<T> callable) {
-        try {
-            if (Bukkit.getServer().isPrimaryThread()) {
-                return Optional.ofNullable(callable.call());
-            }
-            return Optional.ofNullable(Bukkit.getScheduler().callSyncMethod(getJavaPlugin(), callable).get());
-        } catch (InterruptedException | ExecutionException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
     }
 
     @Override

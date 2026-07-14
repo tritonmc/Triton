@@ -58,7 +58,7 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
         } else {
             this.refresher = new RefreshFeatures(this);
         }
-        Triton.get().runAsync(this::load);
+        Triton.get().getScheduler().runAsync(this::load);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class VelocityLanguagePlayer extends TritonLanguagePlayer<Player> {
     }
 
     private void save() {
-        Triton.get().runAsync(() -> {
+        Triton.get().getScheduler().runAsync(() -> {
             val ip = getPlatformPlayer()
                     .map(player -> SocketUtils.getIpAddress(player.getRemoteAddress()))
                     .orElse(null);

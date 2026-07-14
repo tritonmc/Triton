@@ -16,7 +16,7 @@ public class IpCache {
     }
 
     public String getFromCache(String ip) {
-        Triton.get().runAsync(this::clearExpiredEntries);
+        Triton.get().getScheduler().runAsync(this::clearExpiredEntries);
         val entry = cache.get(ip);
         return entry == null || entry.expiresAt < System.currentTimeMillis() ? null : entry.lang;
     }

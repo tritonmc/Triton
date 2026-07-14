@@ -43,7 +43,7 @@ public class DatabaseCommand implements Command {
             case "upload":
             case "u":
                 sender.sendMessageFormatted("other.database-loading");
-                Triton.get().runAsync(() -> {
+                Triton.get().getScheduler().runAsync(() -> {
                     val localStorage = new LocalStorage();
                     val collections = localStorage.downloadFromStorage();
 
@@ -62,7 +62,7 @@ public class DatabaseCommand implements Command {
             case "download":
             case "d":
                 sender.sendMessageFormatted("other.database-loading");
-                Triton.get().runAsync(() -> {
+                Triton.get().getScheduler().runAsync(() -> {
                     val localStorage = new LocalStorage();
                     localStorage.uploadToStorage(Triton.get().getStorage().getCollections());
 

@@ -11,6 +11,7 @@ import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeeListener;
 import com.rexcantor64.triton.bungeecord.packetinterceptor.BungeePacketEventsManager;
 import com.rexcantor64.triton.bungeecord.player.BungeeLanguagePlayer;
 import com.rexcantor64.triton.bungeecord.plugin.BungeePlugin;
+import com.rexcantor64.triton.bungeecord.scheduler.BungeeScheduler;
 import com.rexcantor64.triton.bungeecord.terminal.BungeeTerminalManager;
 import com.rexcantor64.triton.player.PlayerManager;
 import com.rexcantor64.triton.plugin.PluginLoader;
@@ -25,7 +26,6 @@ import net.md_5.bungee.api.connection.Connection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginDescription;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.netty.PipelineUtils;
 import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.CustomChart;
@@ -37,16 +37,18 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManager> {
 
     @Getter
     private BungeeBridgeManager bridgeManager;
-    private ScheduledTask configRefreshTask;
 
     public BungeeTriton(PluginLoader loader) {
-        super(new PlayerManager<>(BungeeLanguagePlayer::new), new BungeeBridgeManager());
+        super(
+                new PlayerManager<>(BungeeLanguagePlayer::new),
+                new BungeeBridgeManager(),
+                new BungeeScheduler(((BungeePlugin) loader).getPlugin())
+        );
         super.loader = loader;
     }
 
@@ -121,15 +123,6 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         this.packetEventsManager = new BungeePacketEventsManager();
     }
 
-    @Override
-    protected void startConfigRefreshTask() {
-        if (configRefreshTask != null) configRefreshTask.cancel();
-        if (getConfig().getConfigAutoRefresh() <= 0) return;
-        configRefreshTask = getBungeeCord().getScheduler()
-                .schedule(getPlugin(), this::reload, getConfig().getConfigAutoRefresh(), TimeUnit.SECONDS);
-    }
-
-
     public File getDataFolder() {
         return getPlugin().getDataFolder();
     }
@@ -153,11 +146,6 @@ public class BungeeTriton extends Triton<BungeeLanguagePlayer, BungeeBridgeManag
         } catch (Exception e) {
             getLogger().logError(e, "[PacketInjector] Failed to inject client connection for %1", lp.getUUID());
         }
-    }
-
-    @Override
-    public void runAsync(Runnable runnable) {
-        getBungeeCord().getScheduler().runAsync(getPlugin(), runnable);
     }
 
     public ProxyServer getBungeeCord() {

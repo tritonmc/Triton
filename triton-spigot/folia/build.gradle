@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.rexcantor64.triton'
+
+java {
+    // Folia wants Java 25, but we are targeting 17 for now
+    disableAutoTargetJvm()
+}
+
+dependencies {
+    compileOnly libs.folia
+    compileOnly project(':core')
+    compileOnly project(':triton-spigot:triton-spigot-common')
+}

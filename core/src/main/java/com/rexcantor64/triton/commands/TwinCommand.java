@@ -40,7 +40,7 @@ public class TwinCommand implements Command {
 
         sender.sendMessageFormatted("twin.connecting");
 
-        Triton.get().runAsync(() -> {
+        Triton.get().getScheduler().runAsync(() -> {
             val twinManager = Triton.get().getTwinManager();
 
             TwinManager.HttpResponse response;
