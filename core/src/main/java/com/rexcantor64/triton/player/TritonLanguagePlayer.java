@@ -16,6 +16,18 @@ public abstract class TritonLanguagePlayer<P> implements LanguagePlayer {
     @Getter
     private PacketEventsRefresh packetEventsRefresh;
 
+    /**
+     * Keep track of many active connections exist for this player.
+     * While it is not possible for more than one connection to exist in the PLAY phase,
+     * a user can attempt to log in with the same UUID as a player that is already in-game.
+     * Therefore, we need to know how many active connections there are to decide
+     * whether to unregister this player once they disconnect.
+     *
+     * @since 4.1.0
+     */
+    @Getter
+    private int connectionCount = 0;
+
     protected TritonLanguagePlayer() {
         if (Triton.get().getConfig().isUsePacketEvents()) {
             this.packetEventsRefresh = new PacketEventsRefresh(this);
@@ -44,5 +56,13 @@ public abstract class TritonLanguagePlayer<P> implements LanguagePlayer {
      */
     public UUID getStorageUniqueId() {
         return this.getUUID();
+    }
+
+    public void increaseConnectionCount() {
+        connectionCount += 1;
+    }
+
+    public void decreaseConnectionCount() {
+        connectionCount -= 1;
     }
 }

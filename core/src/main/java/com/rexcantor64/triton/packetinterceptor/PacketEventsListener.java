@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.wrapper.login.client.WrapperLoginClientLoginStart;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.packetinterceptor.handlers.ActionBarPacketHandler;
 import com.rexcantor64.triton.packetinterceptor.handlers.BossBarPacketHandler;
@@ -173,14 +174,26 @@ public class PacketEventsListener implements PacketListener {
 
         val handler = sendHandlers.get(type);
         if (handler != null) {
-            val languagePlayer = Triton.get().getPlayerManager().get(event.getUser().getUUID());
-            handler.accept(event, languagePlayer);
+            val uuid = event.getUser().getUUID();
+            if (uuid != null) {
+                val languagePlayer = Triton.get().getPlayerManager().get(uuid);
+                handler.accept(event, languagePlayer);
+            }
         }
     }
 
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         val type = event.getPacketType();
+
+        if (type == PacketType.Login.Client.LOGIN_START) {
+            val packet = new WrapperLoginClientLoginStart(event);
+            packet.getPlayerUUID().ifPresent(uuid -> {
+                event.getUser().getProfile().setUUID(uuid);
+                val languagePlayer = Triton.get().getPlayerManager().get(event.getUser().getUUID());
+                languagePlayer.increaseConnectionCount();
+            });
+        }
 
         val handler = receiveHandlers.get(type);
         if (handler != null) {
@@ -193,8 +206,13 @@ public class PacketEventsListener implements PacketListener {
     public void onUserDisconnect(UserDisconnectEvent event) {
         // force language player to be unregistered
         val uuid = event.getUser().getUUID();
-        if (uuid != null) {
-            Triton.get().getPlayerManager().unregisterPlayer(uuid);
+        val playerManager = Triton.get().getPlayerManager();
+        if (uuid != null && playerManager.hasPlayer(uuid)) {
+            val lp = playerManager.get(event.getUser().getUUID());
+            lp.decreaseConnectionCount();
+            if (lp.getConnectionCount() <= 0) {
+                playerManager.unregisterPlayer(uuid);
+            }
         }
     }
 }
