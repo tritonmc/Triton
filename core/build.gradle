@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     alias(libs.plugins.shadow)
+    alias(libs.plugins.blossom)
 }
 
 group = 'com.rexcantor64.triton'
@@ -37,6 +38,7 @@ dependencies {
     implementation libs.libby.core
 
     // Test dependencies
+    testImplementation project(':core:triton-core-loader')
     testImplementation project(":api")
 
     testImplementation libs.junit.jupiter
@@ -65,6 +67,17 @@ shadowJar {
 
     relocate 'org.objectweb.asm', 'com.rexcantor64.triton.lib.objectweb.asm'
     relocate 'me.lucko.jarrelocator', 'com.rexcantor64.triton.lib.jarrelocator'
+}
+
+sourceSets {
+    test {
+        blossom {
+            javaSources {
+                property("adventure_version", libs.adventure.api.get().version)
+                property("packet_events_version", libs.packetevents.api.get().version)
+            }
+        }
+    }
 }
 
 import groovy.json.JsonOutput

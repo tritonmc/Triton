@@ -1,0 +1,6 @@
+package com.rexcantor64.triton.test;
+
+public class TestParameters {
+    public static final String ADVENTURE_VERSION = "{{ adventure_version }}";
+    public static final String PACKET_EVENTS_VERSION = "{{ packet_events_version }}";
+}

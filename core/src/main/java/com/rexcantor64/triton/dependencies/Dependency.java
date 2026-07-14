@@ -213,6 +213,7 @@ public enum Dependency {
     @Getter
     private final String groupId;
     private final String artifactId;
+    @Getter
     private final String version;
     private final String sha256Checksum;
     private final OptionalRelocation[] relocations;
