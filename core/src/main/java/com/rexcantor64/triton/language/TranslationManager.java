@@ -72,8 +72,8 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         this.translationNotFoundComponent = this.triton.getMessagesConfig().getMessageComponent("error.message-not-found");
 
         // used to allow parsing links in translations
-        legacyComponentSerializer = LegacyComponentSerializer.legacyAmpersand()
-                .toBuilder()
+        legacyComponentSerializer = LegacyComponentSerializer.builder()
+                .character(ComponentUtils.AMPERSAND_CHAR)
                 .hexColors()
                 .extractUrls()
                 .build();

@@ -30,11 +30,11 @@ import java.util.stream.IntStream;
 public class ComponentUtils {
 
     public final static char SECTION_CHAR = '§';
-    private final static char AMPERSAND_CHAR = '&';
+    public final static char AMPERSAND_CHAR = '&';
     private final static String VALID_COLOR_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
     private final static GsonComponentSerializer GSON_SERIALIZER;
-    private final static LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection()
-            .toBuilder()
+    private final static LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
+            .character(SECTION_CHAR)
             .hexColors()
             .useUnusualXRepeatedCharacterHexFormat()
             .build();
