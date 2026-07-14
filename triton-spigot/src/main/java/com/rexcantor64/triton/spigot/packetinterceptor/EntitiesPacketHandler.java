@@ -440,16 +440,14 @@ public class EntitiesPacketHandler extends PacketHandler {
             return;
         }
 
-        List<PlayerInfoData> dataList;
+        List<PlayerInfoData> dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
         if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) { // 1.19.3
             val infoActions = packet.getPacket().getPlayerInfoActions().readSafely(0);
             if (!infoActions.contains(EnumWrappers.PlayerInfoAction.ADD_PLAYER) && !infoActions.contains(EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME)) {
                 return;
             }
-            dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(1);
         } else {
             EnumWrappers.PlayerInfoAction infoAction = packet.getPacket().getPlayerInfoAction().readSafely(0);
-            dataList = packet.getPacket().getPlayerInfoDataLists().readSafely(0);
             if (infoAction == EnumWrappers.PlayerInfoAction.REMOVE_PLAYER) {
                 for (PlayerInfoData data : dataList) {
                     languagePlayer.getShownPlayers().remove(data.getProfile().getUUID());
@@ -527,11 +525,7 @@ public class EntitiesPacketHandler extends PacketHandler {
                 ));
             }
         }
-        if (MinecraftVersion.FEATURE_PREVIEW_UPDATE.atOrAbove()) {
-            packet.getPacket().getPlayerInfoDataLists().writeSafely(1, dataListNew);
-        } else {
-            packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
-        }
+        packet.getPacket().getPlayerInfoDataLists().writeSafely(0, dataListNew);
     }
 
     /**
