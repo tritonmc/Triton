@@ -20,7 +20,7 @@ public class SignCommand implements Command {
     public void handleCommand(CommandEvent event) throws NoPermissionException, PlayerOnlyCommandException, UnsupportedPlatformException {
         assertPlayersOnly(event);
 
-        if (event.getPlatform() == Platform.SPIGOT) {
+        if (event.getPlatform() != Platform.SPIGOT) {
             throw new UnsupportedPlatformException();
         }
 

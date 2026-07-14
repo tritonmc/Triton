@@ -79,31 +79,6 @@ public abstract class BukkitGenericScheduler implements TritonScheduler {
     }
 
     /**
-     * Run a computation on a sync/main thread and obtain its result.
-     *
-     * @param location If applicable, use this location to select the sync thread to run the computation on.
-     * @param task     The computation to run on the sync thread.
-     * @param <T>      The return type of the computation.
-     * @return The result of the computation, or an empty optional if it returned null or failed.
-     * @since 4.1.0
-     */
-    public <T> Optional<T> callSync(Location location, Callable<@Nullable T> task) {
-        try {
-            if (this.isMainThreadOrOwnedBy(location)) {
-                return Optional.ofNullable(task.call());
-            }
-            val future = new FutureTask<@Nullable T>(task);
-            this.runSync(location, future);
-            return Optional.ofNullable(future.get());
-        } catch (InterruptedException | ExecutionException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            Triton.get().getLogger().logError(e, "Failed to run callable in sync thread");
-            return Optional.empty();
-        }
-    }
-
-    /**
      * Whether the current thread is synchronous.
      * If both parameters are null, only checks if this is the main thread.
      *

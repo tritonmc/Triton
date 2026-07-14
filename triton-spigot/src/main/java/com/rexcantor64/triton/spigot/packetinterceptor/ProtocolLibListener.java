@@ -1023,48 +1023,11 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
         if (world == null) return;
         val blockLocation = new Location(world, location.getX(), location.getY(), location.getZ());
         main.getScheduler()
-                .callSync(blockLocation, () -> buildResetSignPacket(world, location))
-                .ifPresent(container -> {
-                    try {
-                        ProtocolLibrary.getProtocolManager().sendServerPacket(p, container, false);
-                    } catch (Exception e) {
-                        main.getLogger().logError(e, "Failed refresh sign.");
-                    }
+                .runSync(blockLocation, () -> {
+                    Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
+                    BlockState state = block.getState();
+                    state.update(true, false);
                 });
-    }
-
-    private PacketContainer buildResetSignPacket(World world, SignLocation location) {
-        Block block = world.getBlockAt(location.getX(), location.getY(), location.getZ());
-        BlockState state = block.getState();
-        if (!(state instanceof Sign))
-            return null;
-        String[] lines = ((Sign) state).getLines();
-        if (MinecraftReflection.signUpdateExists()) {
-            PacketContainer container =
-                    ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.UPDATE_SIGN, true);
-            container.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(),
-                    location.getZ()));
-            container.getChatComponentArrays().writeSafely(0,
-                    new WrappedChatComponent[]{WrappedChatComponent.fromText(lines[0]),
-                            WrappedChatComponent.fromText(lines[1]), WrappedChatComponent.fromText(lines[2]),
-                            WrappedChatComponent.fromText(lines[3])});
-            return container;
-        } else {
-            PacketContainer container =
-                    ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.TILE_ENTITY_DATA, true);
-            container.getBlockPositionModifier().writeSafely(0, new BlockPosition(location.getX(), location.getY(),
-                    location.getZ()));
-            container.getIntegers().writeSafely(0, 9); // Action (9): Update sign text
-            NbtCompound nbt = NbtFactory.asCompound(container.getNbtModifier().readSafely(0));
-            for (int i = 0; i < 4; i++)
-                nbt.put("Text" + (i + 1), ComponentSerializer.toString(TextComponent.fromLegacyText(lines[i])));
-            nbt.put("name", "null")
-                    .put("x", block.getX())
-                    .put("y", block.getY())
-                    .put("z", block.getZ())
-                    .put("id", SIGN_NBT_ID);
-            return container;
-        }
     }
 
     /* UTILITIES */
