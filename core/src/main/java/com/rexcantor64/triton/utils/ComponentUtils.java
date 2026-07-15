@@ -241,9 +241,9 @@ public class ComponentUtils {
         return component;
     }
 
-    public static boolean isValidClickEvent(ClickEvent clickEvent) {
+    public static boolean isValidClickEvent(ClickEvent<?> clickEvent) {
         return clickEvent.action() != ClickEvent.Action.OPEN_URL
-                || URL_REGEX.matcher(clickEvent.value()).find();
+                || URL_REGEX.matcher(((ClickEvent.Payload.Text) clickEvent.payload()).value()).find();
     }
 
     /**

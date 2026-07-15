@@ -29,6 +29,7 @@ public class DependencyManager {
         }
 
         libraryManager.addRepository(Repository.DIOGOTC_MIRROR);
+        libraryManager.addRepository(Repository.DIOGOTC_RELEASES);
         libraryManager.addMavenCentral();
         libraryManager.setRelocator(new NativeRelocationHelper());
     }

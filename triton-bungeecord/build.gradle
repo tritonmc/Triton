@@ -13,7 +13,7 @@ dependencies {
     compileOnly libs.bungeecord.api
     compileOnly libs.bungeecord.proxy
 
-    compileOnly libs.adventure.serializer.bungeecord
+    compileOnly libs.adventure.serializer.gson
 
     implementation libs.libby.bungee
 

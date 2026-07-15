@@ -1,15 +1,11 @@
 package com.rexcantor64.triton.bungeecord.utils;
 
-import com.google.gson.Gson;
-import com.rexcantor64.triton.Triton;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
-import net.md_5.bungee.api.ProxyServer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-
-import java.lang.reflect.Field;
 
 /**
  * Utilities for {@link BaseComponent BaseComponents}.
@@ -17,22 +13,6 @@ import java.lang.reflect.Field;
  * @since 4.0.0
  */
 public class BaseComponentUtils {
-
-    static {
-        // I hate this
-        // https://github.com/KyoriPowered/adventure-platform/blob/36ab6311d9023a4f67d2db6a2e057d9ee3f8a8a7/platform-bungeecord/src/main/java/net/kyori/adventure/platform/bungeecord/BungeeAudiencesImpl.java#L63-L70
-        try {
-            // no need to do anything if it has failed to inject anyway
-            if (BungeeComponentSerializer.isNative()) {
-                final Field gsonField = ProxyServer.getInstance().getClass().getDeclaredField("gson");
-                gsonField.setAccessible(true);
-                final Gson gson = (Gson) gsonField.get(ProxyServer.getInstance());
-                BungeeComponentSerializer.inject(gson);
-            }
-        } catch (final Throwable error) {
-            Triton.get().getLogger().logError(error, "Failed to inject ProxyServer gson");
-        }
-    }
 
     /**
      * Convert {@link BaseComponent} to a {@link Component}.
@@ -42,7 +22,7 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static @NotNull Component deserialize(@NotNull BaseComponent... components) {
-        return BungeeComponentSerializer.get().deserialize(components);
+        return GsonComponentSerializer.gson().deserialize(ComponentSerializer.toString(components));
     }
 
     /**
@@ -53,7 +33,7 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static @NotNull BaseComponent @NotNull [] serialize(@NotNull Component component) {
-        return BungeeComponentSerializer.get().serialize(component);
+        return ComponentSerializer.parse(GsonComponentSerializer.gson().serialize(component));
     }
 
     /**
@@ -64,7 +44,7 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static @NotNull BaseComponent serializeToSingle(@NotNull Component component) {
-        return convertArrayToSingle(BungeeComponentSerializer.get().serialize(component));
+        return convertArrayToSingle(serialize(component));
     }
 
 

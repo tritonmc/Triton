@@ -44,20 +44,12 @@ public class SpigotLoader extends JavaPlugin {
 
     private boolean shouldVendorAdventure() {
         try {
-            // Method only available on adventure 4.25.0+
+            // Method only available on adventure 5.0.0+
             // Finding a method instead of a class, since plugins can incorrectly shade newer versions than what is installed in the server
-            Class<?> componentClass = Class.forName("net.kyori.adventure.text.Component");
-            componentClass.getMethod("object");
+            Class<?> objectComponentClass = Class.forName("net.kyori.adventure.text.ObjectComponent");
+            objectComponentClass.getMethod("fallback");
 
-            try {
-                Class<?> objectComponentClass = Class.forName("net.kyori.adventure.text.ObjectComponent");
-                objectComponentClass.getMethod("fallback");
-                // Adventure v5+ is present and we do not support it yet!
-                return true;
-            } catch (ClassNotFoundException | NoSuchMethodException ignore) {
-                // A modern version of adventure v4 is already present
-                return false;
-            }
+            return false;
         } catch (ClassNotFoundException | NoSuchMethodException ignore) {
             // Adventure is not present or an outdated version is present
             return true;

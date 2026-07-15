@@ -3,8 +3,9 @@ package com.rexcantor64.triton.api.language;
 import com.rexcantor64.triton.api.TritonAPI;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import lombok.val;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 
 /**
  * The class responsible by translating messages with placeholders
@@ -42,13 +43,13 @@ public interface LanguageParser {
         // hacky way to keep compatibility
         val result = TritonAPI.getInstance().getMessageParser()
                 .translateComponent(
-                        BungeeComponentSerializer.get().deserialize(input),
+                        GsonComponentSerializer.gson().deserialize(ComponentSerializer.toString(input)),
                         () -> TritonAPI.getInstance().getLanguageManager().getLanguageByNameOrDefault(language),
                         syntax
                 );
 
         return result.mapToObj(
-                component -> BungeeComponentSerializer.get().serialize(component),
+                component -> ComponentSerializer.parse(GsonComponentSerializer.gson().serialize(component)),
                 () -> input,
                 () -> null
         );

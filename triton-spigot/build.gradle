@@ -21,7 +21,6 @@ dependencies {
 
     compileOnly libs.adventure.serializer.gson
     compileOnly libs.adventure.serializer.legacy
-    compileOnly libs.adventure.serializer.bungeecord
 
     compileOnly libs.protocollib
     compileOnly libs.placeholderapi

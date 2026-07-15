@@ -440,7 +440,7 @@ public class LegacyParser extends MessageParser {
                     }
 
                     val lowercaseChar = Character.toLowerCase(text.charAt(i));
-                    TextFormat format;
+                    @Nullable TextFormat format;
                     if (lowercaseChar == HEX_CODE && i + 12 < text.length()) {
                         val color = text.substring(i + 1, i + 13);
                         format = TextColor.fromHexString(HEX_PREFIX + color.replace(String.valueOf(SECTION_CHAR), ""));
@@ -453,17 +453,16 @@ public class LegacyParser extends MessageParser {
                         i += 9;
                         continue;
                     } else {
-                        format = CharacterAndFormat.defaults().stream()
+                        val foundFormat = CharacterAndFormat.defaults().stream()
                                 .filter(characterAndFormat -> characterAndFormat.character() == lowercaseChar)
-                                .findFirst()
-                                .map(CharacterAndFormat::format)
-                                .orElse(null);
-                    }
-                    if (format == null) {
-                        // unknown code, append color code as-is
-                        builder.append(c);
-                        i--;
-                        continue;
+                                .findFirst();
+                        if (foundFormat.isEmpty()) {
+                            // unknown code, append color code as-is
+                            builder.append(c);
+                            i--;
+                            continue;
+                        }
+                        format = foundFormat.get().format();
                     }
 
                     if (builder.length() != 0) {
@@ -477,7 +476,7 @@ public class LegacyParser extends MessageParser {
                         currentStyle = Style.style((TextColor) format);
                     } else if (format instanceof TextDecoration) {
                         currentStyle = currentStyle.decorate((TextDecoration) format);
-                    } else if (format instanceof Reset) {
+                    } else if (format == null) {
                         currentStyle = Style.empty();
                     }
                     componentBuilder.style(currentStyle);
@@ -685,7 +684,7 @@ public class LegacyParser extends MessageParser {
                 if (!this.stack[i].equals(this.linkBugStyle)) {
                     @Nullable val color = style.color();
                     if (color == null) {
-                        this.stringBuilder.append(formatToString(Reset.INSTANCE));
+                        this.stringBuilder.append(formatToString(null)); // null means reset
                     } else {
                         this.stringBuilder.append(formatToString(color));
                     }
@@ -709,7 +708,7 @@ public class LegacyParser extends MessageParser {
 
                     this.stringBuilder
                             .append(CLICK_DELIM)
-                            .append(clickEvent.action().ordinal()) // backwards compatibility only
+                            .append(0) // backwards compatibility only
                             .append(uuid);
                 }
 
@@ -762,7 +761,7 @@ public class LegacyParser extends MessageParser {
                 return this.stringBuilder.toString();
             }
 
-            private @NotNull String formatToString(@NotNull TextFormat format) {
+            private @NotNull String formatToString(@Nullable TextFormat format) {
                 if (format instanceof TextColor && !(format instanceof NamedTextColor)) {
                     // this is a hex color
                     final TextColor color = (TextColor) format;
@@ -774,7 +773,7 @@ public class LegacyParser extends MessageParser {
                     return legacy.toString();
                 }
                 return CharacterAndFormat.defaults().stream()
-                        .filter(characterAndFormat -> characterAndFormat.format().equals(format))
+                        .filter(characterAndFormat -> Objects.equals(characterAndFormat.format(), format))
                         .findFirst()
                         .map(CharacterAndFormat::character)
                         .map(c -> "" + SECTION_CHAR + c)

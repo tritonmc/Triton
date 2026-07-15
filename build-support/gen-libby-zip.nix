@@ -6,7 +6,10 @@
 let
   inherit (pkgs) lib;
   libs = lib.importJSON libsJson;
-  repository = "https://repo.diogotc.com/mirror";
+  repositories = [
+    "https://repo.diogotc.com/mirror"
+    "https://repo.diogotc.com/releases"
+  ];
   suffix = lib.optionalString (tritonVersion != null) "-${tritonVersion}";
 
   mkJar =
@@ -24,7 +27,7 @@ let
       pname = artifactId;
       inherit version;
       src = pkgs.fetchurl {
-        url = "${repository}/${jarPath}";
+        urls = lib.map (repository: "${repository}/${jarPath}") repositories;
         hash = lib.optionalString (sha256Checksum != "") "sha256-${sha256Checksum}";
       };
 

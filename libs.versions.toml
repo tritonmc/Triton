@@ -1,13 +1,12 @@
 [versions]
-adventure = "4.26.1"
-adventure-platform = "4.4.1"
+adventure = "5.2.0"
 asm = "9.10.1"
 bstats = "3.2.1"
 bungeecord = "1.21-R0.5-SNAPSHOT"
 folia = "26.1.2.build.8-stable"
 junit = "6.1.2"
 libby = "2.1.0"
-packetevents = "2.13.0"
+packetevents = "2.13.0-triton"
 plugin-yml = "0.9.0"
 spigot = "26.2-R0.1-SNAPSHOT"
 velocity = "3.5.1"
@@ -15,7 +14,6 @@ velocity = "3.5.1"
 [libraries]
 adventure-api = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
 adventure-nbt = { group = "net.kyori", name = "adventure-nbt", version.ref = "adventure" }
-adventure-serializer-bungeecord = { group = "net.kyori", name = "adventure-text-serializer-bungeecord", version.ref = "adventure-platform" }
 adventure-serializer-gson = { group = "net.kyori", name = "adventure-text-serializer-gson", version.ref = "adventure" }
 adventure-serializer-legacy = { group = "net.kyori", name = "adventure-text-serializer-legacy", version.ref = "adventure" }
 adventure-serializer-plain = { group = "net.kyori", name = "adventure-text-serializer-plain", version.ref = "adventure" }

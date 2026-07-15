@@ -53,7 +53,7 @@ public class ComponentSplitterTest {
                                         Component.text(" adipiscing").decorate(TextDecoration.ITALIC)
                                 ),
                         Component.text(" elit. ")
-                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com")),
+                                .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com")),
                         Component.text("Cras tincidunt ligula vel ante laoreet tempor.")
                                 .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
                 )
@@ -94,7 +94,7 @@ public class ComponentSplitterTest {
                                                 Component.text("scing").decorate(TextDecoration.ITALIC)
                                         ),
                                 Component.text(" eli")
-                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com"))
                         )
                         .asComponent(),
                 Component.text()
@@ -102,7 +102,7 @@ public class ComponentSplitterTest {
                         .decorate(TextDecoration.BOLD)
                         .append(
                                 Component.text("t. ")
-                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com")),
+                                        .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com")),
                                 Component.text("Cras tincidunt ligula vel an")
                                         .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
                         )
@@ -148,7 +148,7 @@ public class ComponentSplitterTest {
                                                 .decorate(TextDecoration.BOLD)
                                 ),
                         Component.text()
-                                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com"))
                                 .append(
                                         Component.text()
                                                 .content("adipiscing elit")
@@ -241,7 +241,7 @@ public class ComponentSplitterTest {
                                                         .decorate(TextDecoration.BOLD)
                                         ),
                                 Component.text()
-                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com"))
                                         .append(
                                                 Component.text()
                                                         .content("adipi")
@@ -255,7 +255,7 @@ public class ComponentSplitterTest {
                         .decorate(TextDecoration.STRIKETHROUGH)
                         .append(
                                 Component.text()
-                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com"))
                                         .append(
                                                 Component.text()
                                                         .content("scing e")
@@ -269,7 +269,7 @@ public class ComponentSplitterTest {
                         .decorate(TextDecoration.STRIKETHROUGH)
                         .append(
                                 Component.text()
-                                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://triton.rexcantor64.com"))
+                                        .clickEvent(ClickEvent.openUrl("https://triton.rexcantor64.com"))
                                         .append(
                                                 Component.text()
                                                         .content("lit")

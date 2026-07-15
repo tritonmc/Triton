@@ -1,7 +1,7 @@
 package com.rexcantor64.triton.loader.utils;
 
 public enum LoaderFlag {
-    /** Vendor the Adventure core and examination API */
+    /** Vendor the Adventure core */
     VENDOR_ADVENTURE,
     /** Vendor the Adventure NBT API */
     VENDOR_ADVENTURE_NBT,

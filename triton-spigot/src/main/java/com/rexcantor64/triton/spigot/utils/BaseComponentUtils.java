@@ -1,12 +1,10 @@
 package com.rexcantor64.triton.spigot.utils;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
 
 /**
  * Utilities for {@link BaseComponent BaseComponents}.
@@ -23,7 +21,7 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static @NotNull Component deserialize(@NotNull BaseComponent... components) {
-        return BungeeComponentSerializer.get().deserialize(components);
+        return GsonComponentSerializer.gson().deserialize(ComponentSerializer.toString(components));
     }
 
     /**
@@ -34,7 +32,7 @@ public class BaseComponentUtils {
      * @since 4.0.0
      */
     public static @NotNull BaseComponent @NotNull [] serialize(@NotNull Component component) {
-        return BungeeComponentSerializer.get().serialize(component);
+        return ComponentSerializer.parse(GsonComponentSerializer.gson().serialize(component));
     }
 
 }

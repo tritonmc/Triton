@@ -33,7 +33,6 @@ public class CommonLoader {
         List<Relocation> relocations = new ArrayList<>();
         if (flags.contains(LoaderFlag.VENDOR_ADVENTURE)) {
             relocations.add(new Relocation("net/kyori/adventure", "com/rexcantor64/triton/lib/adventure"));
-            relocations.add(new Relocation("net/kyori/examination", "com/rexcantor64/triton/lib/kyori/examination"));
         }
         if (flags.contains(LoaderFlag.VENDOR_ADVENTURE_NBT)) {
             relocations.add(new Relocation("net/kyori/adventure/nbt", "com/rexcantor64/triton/lib/adventure/nbt", null, Collections.singleton("net/kyori/adventure/nbt/api/*")));
@@ -41,6 +40,7 @@ public class CommonLoader {
         if (flags.contains(LoaderFlag.VENDOR_ADVENTURE_SERIALIZERS)) {
             relocations.add(new Relocation("net/kyori/adventure/text/minimessage", "com/rexcantor64/triton/lib/adventure/text/minimessage"));
             relocations.add(new Relocation("net/kyori/adventure/text/serializer/gson", "com/rexcantor64/triton/lib/adventure/text/serializer/gson"));
+            relocations.add(new Relocation("net/kyori/adventure/text/serializer/json", "com/rexcantor64/triton/lib/adventure/text/serializer/json"));
             relocations.add(new Relocation("net/kyori/adventure/text/serializer/legacy", "com/rexcantor64/triton/lib/adventure/text/serializer/legacy"));
             relocations.add(new Relocation("net/kyori/adventure/text/serializer/plain", "com/rexcantor64/triton/lib/adventure/text/serializer/plain"));
             relocations.add(new Relocation("net/kyori/option", "com/rexcantor64/triton/lib/kyori/option"));

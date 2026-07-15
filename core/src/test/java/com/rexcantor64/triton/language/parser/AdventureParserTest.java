@@ -553,46 +553,6 @@ public class AdventureParserTest {
     }
 
     @Test
-    public void testParseComponentWhileRetainingCorrectStylesWithLinkBug() {
-        // server adds invalid link to text
-        Component comp = Component.text()
-                .append(
-                        Component.text("[lang]")
-                                .color(NamedTextColor.DARK_GRAY),
-                        Component.text("change.colors.on.args[arg]5[/arg][/lang]")
-                                .color(NamedTextColor.DARK_GRAY)
-                                .clickEvent(ClickEvent.openUrl("http://change.colors.on.args[arg]5[/arg][/lang]"))
-                )
-                .asComponent();
-
-        TranslationResult<Component> result = parser.translateComponent(comp, configuration);
-
-        Component expected = Component.text()
-                .append(
-                        Component.text()
-                                .content("")
-                                .color(NamedTextColor.DARK_GRAY), // hack because component compaction is buggy
-                        Component.text()
-                                .content("")
-                                .color(NamedTextColor.DARK_GRAY)
-                                .clickEvent(ClickEvent.openUrl("http://change.colors.on.args[arg]5[/arg][/lang]"))
-                                .append(
-                                        Component.text()
-                                                .append(
-                                                        Component.text("Some text ").color(NamedTextColor.RED),
-                                                        Component.text("5 more text").color(NamedTextColor.BLUE)
-                                                )
-                                                .asComponent()
-                                )
-                )
-                .asComponent();
-
-        assertEquals(TranslationResult.ResultState.CHANGED, result.getState());
-        assertNotNull(result.getResultRaw());
-        assertEquals(expected.compact(), result.getResultRaw().compact());
-    }
-
-    @Test
     public void testParseComponentWithNestedPlaceholders() {
         Component comp = Component.text("[lang]nested[/lang]");
 

@@ -12,7 +12,7 @@ dependencies {
     compileOnly libs.bungeecord.api
 
     compileOnly libs.adventure.api
-    compileOnly libs.adventure.serializer.bungeecord
+    compileOnly libs.adventure.serializer.gson
 }
 
 java {
@@ -34,7 +34,7 @@ javadoc {
             'https://hub.spigotmc.org/javadocs/spigot/',
             'https://jd.papermc.io/waterfall/1.21/', // Use Waterfall's JavaDocs instead of Bungee's since those are broken
             'https://docs.oracle.com/en/java/javase/25/docs/api/',
-            "https://jd.advntr.dev/api/${libs.adventure.api.get().version}/",
+            "https://jd.papermc.io/adventure/${libs.adventure.api.get().version}/",
     )
 
     // Disable the crazy super-strict doclint tool
