@@ -32,7 +32,7 @@ hikari = { group = "com.zaxxer", name = "HikariCP", version = "7.1.0" }
 jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.3" }
 jarrelocator = { group = "me.lucko", name = "jar-relocator", version = "1.7" }
 jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "26.1.0" }
-jsonpatch = { group = "com.tananaev", name = "json-patch", version = "1.1" }
+jsonpatch = { group = "com.tananaev", name = "json-patch", version = "1.2" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
 libby-bukkit = { group = "com.rexcantor64", name = "libby-bukkit", version.ref = "libby" }
