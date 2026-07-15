@@ -5,6 +5,11 @@ plugins {
 
 group = 'com.rexcantor64.triton'
 
+java {
+    // Velocity wants Java 25, but we are targeting 21 for now
+    disableAutoTargetJvm()
+}
+
 dependencies {
     compileOnly project(':api')
     compileOnly project(':core')
