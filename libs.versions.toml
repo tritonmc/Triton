@@ -9,7 +9,7 @@ libby = "2.1.0"
 packetevents = "2.13.0-triton"
 plugin-yml = "0.9.0"
 spigot = "26.2-R0.1-SNAPSHOT"
-velocity = "3.5.1"
+velocity = "4.0.0"
 
 [libraries]
 adventure-api = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
