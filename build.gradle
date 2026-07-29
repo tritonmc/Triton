@@ -73,6 +73,7 @@ dependencies {
     implementation project(':triton-velocity:triton-velocity-loader')
 
     compileOnly project(':core')
+    compileOnly project(':api:api-impl')
     compileOnly project(':triton-bungeecord')
     compileOnly project(':triton-spigot')
     compileOnly project(':triton-velocity')
@@ -82,7 +83,7 @@ shadowJar {
     getArchiveBaseName().set(rootProject.name)
 
     // Include .jarinjar files in the final build
-    def modules = [':core', ':triton-bungeecord', ':triton-spigot', ':triton-velocity']
+    def modules = [':core', ':api:api-impl', ':triton-bungeecord', ':triton-spigot', ':triton-velocity']
     modules.each { path ->
         def moduleProject = project(path)
         moduleProject.afterEvaluate {

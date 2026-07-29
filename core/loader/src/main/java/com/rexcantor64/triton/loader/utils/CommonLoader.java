@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 @Builder
 public class CommonLoader {
     private static final String CORE_JAR_NAME = "triton-core.jarinjar";
+    private static final String API_IMPL_JAR_NAME = "triton-api-impl.jarinjar";
 
     private final String jarInJarName;
     private final String bootstrapClassName;
@@ -56,6 +57,8 @@ public class CommonLoader {
 
         @SuppressWarnings("resource")
         JarInJarClassLoader loader = new JarInJarClassLoader(getClass().getClassLoader(), relocations, CORE_JAR_NAME, jarInJarName);
+        // add API impl without relocating
+        loader.addResourceToClasspath(API_IMPL_JAR_NAME);
 
         Class<?>[] constructorTypes = this.constructorTypes.toArray(new Class<?>[this.constructorTypes.size() + 1]);
         constructorTypes[constructorTypes.length - 1] = Set.class;

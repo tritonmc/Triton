@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,6 +101,26 @@ public class ComponentUtils {
      */
     public static JsonElement serializeToJsonTree(@NotNull Component component) {
         return GSON_SERIALIZER.serializeToTree(component);
+    }
+
+    /**
+     * Deserialize an array of {@link JsonElement} representing an array of {@link Component}.
+     *
+     * @param elements The array of {@link JsonElement} to deserialize.
+     * @return The corresponding array of {@link Component}.
+     */
+    public static Component[] deserializeFromJsonTree(JsonElement... elements) {
+        return Arrays.stream(elements).map(ComponentUtils::deserializeFromJsonTree).toArray(Component[]::new);
+    }
+
+    /**
+     * Serialize an array of {@link Component} to an array of {@link JsonElement}.
+     *
+     * @param components The array of {@link Component} to serialize.
+     * @return The corresponding array of {@link JsonElement}.
+     */
+    public static JsonElement[] serializeToJsonTree(Component... components) {
+        return Arrays.stream(components).map(ComponentUtils::serializeToJsonTree).toArray(JsonElement[]::new);
     }
 
     /**

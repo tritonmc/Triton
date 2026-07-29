@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,6 +62,10 @@ public class JarInJarClassLoader extends URLClassLoader {
         } catch (Exception e) {
             // ignore
         }
+    }
+
+    public void addResourceToClasspath(String resource) {
+        addJarToClasspath(extractJar(getParent(), resource, Collections.emptyList()));
     }
 
     /**

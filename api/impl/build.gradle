@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    alias(libs.plugins.shadow)
+}
+
+group = 'com.rexcantor64.triton'
+
+dependencies {
+    compileOnly project(":api")
+    compileOnly project(":core")
+    compileOnly libs.adventure.api
+    compileOnly libs.adventure.serializer.gson
+    compileOnly libs.gson
+}
+
+shadowJar {
+    archiveFileName = 'triton-api-impl.jarinjar'
+}

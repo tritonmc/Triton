@@ -1,7 +1,9 @@
 package com.rexcantor64.triton.language.parser;
 
+import com.google.gson.JsonElement;
 import com.rexcantor64.triton.api.config.FeatureSyntax;
 import com.rexcantor64.triton.api.language.Localized;
+import com.rexcantor64.triton.utils.ComponentUtils;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,5 +34,10 @@ public abstract class MessageParser implements com.rexcantor64.triton.api.langua
     // Method has to be redeclared so that it doesn't break with jar-in-jar relocation
     @Override
     public abstract @NotNull TranslationResult<Component> translateComponent(@NotNull Component component, @NotNull Localized language, @NotNull FeatureSyntax syntax);
+
+    public @NotNull TranslationResult<JsonElement> translateComponentJson(@NotNull JsonElement component, @NotNull Localized language, @NotNull FeatureSyntax syntax) {
+        return this.translateComponent(ComponentUtils.deserializeFromJsonTree(component), language, syntax)
+                .map(ComponentUtils::serializeToJsonTree);
+    }
 
 }

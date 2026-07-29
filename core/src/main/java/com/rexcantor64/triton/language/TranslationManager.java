@@ -1,6 +1,7 @@
 package com.rexcantor64.triton.language;
 
 import com.google.common.collect.Streams;
+import com.google.gson.JsonElement;
 import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.language.Language;
 import com.rexcantor64.triton.api.language.Localized;
@@ -243,9 +244,18 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
                 .orElseGet(() -> getTranslationNotFoundComponent(key, arguments));
     }
 
+    public @NotNull JsonElement getTextComponentOr404Json(@NotNull Localized locale, @NotNull String key, JsonElement... arguments) {
+        return ComponentUtils.serializeToJsonTree(this.getTextComponentOr404(locale, key, ComponentUtils.deserializeFromJsonTree(arguments)));
+    }
+
     @Override
     public @NotNull Optional<Component> getTextComponent(@NotNull Localized locale, @NotNull String key, Component... arguments) {
         return getTextString(locale, key).map(string -> replaceArguments(handleTranslationType(string, locale.getLanguage()), arguments));
+    }
+
+    public @NotNull Optional<JsonElement> getTextComponentJson(@NotNull Localized locale, @NotNull String key, JsonElement... arguments) {
+        return this.getTextComponent(locale, key, ComponentUtils.deserializeFromJsonTree(arguments))
+                .map(ComponentUtils::serializeToJsonTree);
     }
 
     @Override
@@ -326,6 +336,24 @@ public class TranslationManager implements com.rexcantor64.triton.api.language.T
         }
 
         return getSignComponentsForLanguage(triton.getLanguageManager().getMainLanguage(), location, defaultLinesSupplier);
+    }
+
+    public @NotNull Optional<JsonElement[]> getSignComponentsJson(@NotNull Localized locale, @NotNull SignLocation location) {
+        return this.getSignComponents(locale, location).map(ComponentUtils::serializeToJsonTree);
+    }
+
+    public @NotNull Optional<JsonElement[]> getSignComponentsJson(@NotNull Localized locale,
+                                                                  @NotNull SignLocation location,
+                                                                  @NotNull JsonElement[] defaultLines) {
+        return this.getSignComponents(locale, location, ComponentUtils.deserializeFromJsonTree(defaultLines))
+                .map(ComponentUtils::serializeToJsonTree);
+    }
+
+    public @NotNull Optional<JsonElement[]> getSignComponentsJson(@NotNull Localized locale,
+                                                                  @NotNull SignLocation location,
+                                                                  @NotNull Supplier<JsonElement[]> defaultLinesSupplier) {
+        return this.getSignComponents(locale, location, () -> ComponentUtils.deserializeFromJsonTree(defaultLinesSupplier.get()))
+                .map(ComponentUtils::serializeToJsonTree);
     }
 
     private @NotNull Optional<Component[]> getSignComponentsForLanguage(@NotNull Language language,

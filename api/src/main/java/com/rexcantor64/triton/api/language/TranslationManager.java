@@ -24,7 +24,7 @@ public interface TranslationManager {
      * @return An Adventure component of the translation with its arguments replaced, or the 404 message if the translation was not found.
      * @since 4.0.0
      */
-    @NotNull Component getTextComponentOr404(@NotNull Localized locale, @NotNull String key, Component... arguments);
+    @NotNull Component getTextComponentOr404(@NotNull Localized locale, @NotNull String key, @NotNull Component... arguments);
 
     /**
      * Get a text translation with a given key in the given language, replacing argument placeholders (%1, %2, etc.)

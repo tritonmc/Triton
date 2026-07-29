@@ -1,6 +1,6 @@
 package com.rexcantor64.triton.utils;
 
-import com.rexcantor64.triton.api.Triton;
+import com.rexcantor64.triton.Triton;
 import com.rexcantor64.triton.api.TritonAPI;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,19 +17,20 @@ public class TritonAPIUtils {
 
     static {
         try {
-            REGISTER = TritonAPI.class.getDeclaredMethod("register", Triton.class);
+            Class<?> apiClass = Class.forName("com.rexcantor64.triton.api.TritonAPIImpl");
+            REGISTER = apiClass.getDeclaredMethod("register", Triton.class, boolean.class);
             REGISTER.setAccessible(true);
 
-        } catch (NoSuchMethodException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new RuntimeException("Failed to initialize Triton API", e);
         }
     }
 
-    public static void register(@NotNull Triton instance) {
+    public static void register(@NotNull Triton<?, ?> instance, boolean adventureRelocated) {
         try {
-            REGISTER.invoke(null, instance);
+            REGISTER.invoke(null, instance, adventureRelocated);
         } catch (Exception e) {
-            com.rexcantor64.triton.Triton.get().getLogger().logError(e, "Failed to initialize Triton API");
+            Triton.get().getLogger().logError(e, "Failed to initialize Triton API");
         }
     }
 
