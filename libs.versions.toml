@@ -43,7 +43,7 @@ log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version 
 lombok = { group = "org.projectlombok", name = "lombok", version = "1.18.46" }
 minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "adventure" }
 mysql-connector = { group = "com.mysql", name = "mysql-connector-j", version = "26.7.0" }
-netty-codec = { group = "io.netty", name = "netty-codec", version = "4.2.16.Final" }
+netty-codec = { group = "io.netty", name = "netty-codec", version = "4.2.17.Final" }
 packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }
 packetevents-bungeecord = { group = "com.github.retrooper", name = "packetevents-bungeecord", version.ref = "packetevents" }
 packetevents-netty-common = { group = "com.github.retrooper", name = "packetevents-netty-common", version.ref = "packetevents" }
