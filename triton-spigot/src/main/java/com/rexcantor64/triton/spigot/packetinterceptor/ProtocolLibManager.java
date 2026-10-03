@@ -13,7 +13,7 @@ public class ProtocolLibManager {
     /**
      * Checks if ProtocolLib is enabled and if its version matches
      * the expected version.
-     * Triton requires ProtocolLib 5.4.0 or later.
+     * Triton requires ProtocolLib 5.5.0 or later.
      *
      * @return Whether the plugin should continue loading
      * @since 3.8.2
@@ -33,11 +33,11 @@ public class ProtocolLibManager {
         }
 
         try {
-            // Field known to exist in build 717 (commit e726f6e)
-            boolean ignore = MinecraftVersion.v1_21_5.atOrAbove();
+            // Field known to exist in commit 583353e (5.5.0-SNAPSHOT)
+            boolean ignore = MinecraftVersion.v26_3.atOrAbove();
         } catch (NoSuchFieldError ignore) {
-            // Triton requires ProtocolLib 5.4.0 or later
-            logger.logError("ProtocolLib 5.4.0 or later is required! Older versions of ProtocolLib will only partially work or not work at all, and are therefore not recommended.");
+            // Triton requires ProtocolLib 5.5.0 or later
+            logger.logError("ProtocolLib 5.5.0 or later is required! Older versions of ProtocolLib will only partially work or not work at all, and are therefore not recommended.");
             logger.logError("It is likely that you need the latest dev version, which you can download at https://triton.rexcantor64.com/protocollib");
             logger.logError("If you want to enable the plugin anyway, add `i-know-what-i-am-doing: true` to Triton's config.yml.");
             return false;
