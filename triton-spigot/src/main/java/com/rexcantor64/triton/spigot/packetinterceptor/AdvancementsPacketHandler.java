@@ -8,6 +8,7 @@ import com.comphenix.protocol.reflect.accessors.FieldAccessor;
 import com.comphenix.protocol.reflect.accessors.MethodAccessor;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.utility.MinecraftVersion;
+import com.comphenix.protocol.wrappers.AutoWrapper;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.MinecraftKey;
 import com.rexcantor64.triton.Triton;
@@ -17,11 +18,12 @@ import com.rexcantor64.triton.spigot.utils.NMSUtils;
 import com.rexcantor64.triton.spigot.utils.WrappedComponentUtils;
 import com.rexcantor64.triton.spigot.wrappers.WrappedAdvancementDisplay;
 import com.rexcantor64.triton.spigot.wrappers.WrappedAdvancementHolder;
+import com.rexcantor64.triton.spigot.wrappers.WrappedPositionedAdvancement;
 import lombok.val;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,6 +37,7 @@ public class AdvancementsPacketHandler extends PacketHandler {
     private final MethodAccessor CRAFT_SERVER_GET_SERVER_METHOD;
     private final MethodAccessor MINECRAFT_SERVER_GET_ADVANCEMENT_DATA_METHOD;
     private final MethodAccessor ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD;
+    private final AutoWrapper<WrappedPositionedAdvancement> POSITIONED_ADVANCEMENT_WRAPPER;
 
     private AdvancementsPacketHandler() {
         if (!MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
@@ -76,6 +79,13 @@ public class AdvancementsPacketHandler extends PacketHandler {
             // MC 1.12-1.15
             // Loading of achievements only needs the method to be called without any parameters
             ADVANCEMENT_DATA_PLAYER_LOAD_FROM_ADVANCEMENT_DATA_WORLD_METHOD = Accessors.getMethodAccessor(advancementDataPlayerClass, "b");
+        }
+
+        if (MinecraftVersion.v26_3.atOrAbove()) {
+            POSITIONED_ADVANCEMENT_WRAPPER = AutoWrapper.wrap(WrappedPositionedAdvancement.class, "network.protocol.game.ClientboundUpdateAdvancementsPacket$PositionedAdvancement")
+                    .field(0, WrappedAdvancementHolder.CONVERTER);
+        } else {
+            POSITIONED_ADVANCEMENT_WRAPPER = null;
         }
     }
 
@@ -134,12 +144,18 @@ public class AdvancementsPacketHandler extends PacketHandler {
     private void handleAdvancementsPost1_20_2(PacketEvent packet, SpigotLanguagePlayer languagePlayer) {
         if (areAdvancementsDisabled()) return;
 
-        val advancementHolders = packet.getPacket().getLists(WrappedAdvancementHolder.CONVERTER).readSafely(0);
+        List<WrappedAdvancementHolder> advancementHolders;
+        if (MinecraftVersion.v26_3.atOrAbove()) {
+            val positionedAdvancements = packet.getPacket().getLists(POSITIONED_ADVANCEMENT_WRAPPER).readSafely(0);
+            advancementHolders = positionedAdvancements.stream().map(pa -> pa.advancement).toList();
+        } else {
+            advancementHolders = packet.getPacket().getLists(WrappedAdvancementHolder.CONVERTER).readSafely(0);
+        }
 
         for (WrappedAdvancementHolder advancementHolder : advancementHolders) {
             val advancement = advancementHolder.getAdvancement();
             val advancementDisplayOpt = advancement.getAdvancementDisplay();
-            if (!advancementDisplayOpt.isPresent()) {
+            if (advancementDisplayOpt.isEmpty()) {
                 continue;
             }
 

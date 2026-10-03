@@ -36,8 +36,8 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
     private static FieldAccessor ANNOUNCE_TO_CHAT = BOOLEANS[1];
     private static FieldAccessor HIDDEN = BOOLEANS[2];
     private static FieldAccessor[] FLOATS = Accessors.getFieldAccessorArray(ADVANCEMENT_DISPLAY, float.class, true);
-    private static FieldAccessor X_CORD = FLOATS[0];
-    private static FieldAccessor Y_CORD = FLOATS[1];
+    private static FieldAccessor X_CORD = FLOATS.length > 0 ? FLOATS[0] : null;
+    private static FieldAccessor Y_CORD = FLOATS.length > 1 ? FLOATS[1] : null;
 
     private static EquivalentConverter<WrappedChatComponent> CHAT_CONVERT = BukkitConverters.getWrappedChatComponentConverter();
 
@@ -143,8 +143,12 @@ public class WrappedAdvancementDisplay extends AbstractWrapper {
                 ANNOUNCE_TO_CHAT.get(handle),
                 HIDDEN.get(handle)
         );
-        X_CORD.set(newInstance, X_CORD.get(handle));
-        Y_CORD.set(newInstance, Y_CORD.get(handle));
+        if (X_CORD != null) {
+            X_CORD.set(newInstance, X_CORD.get(handle));
+        }
+        if (Y_CORD != null) {
+            Y_CORD.set(newInstance, Y_CORD.get(handle));
+        }
 
         return new WrappedAdvancementDisplay(newInstance);
     }
