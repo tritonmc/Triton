@@ -919,7 +919,7 @@ public class ProtocolLibListener implements PacketListener, ProtocolLibRefresher
             val clientConfigurations = packet.getPacket().getStructures().withType(WrappedClientConfiguration.getWrappedClass(), WrappedClientConfiguration.CONVERTER);
             val locale = clientConfigurations.readSafely(0).getLocale();
             val language = main.getLanguageManager().getLanguageByLocaleOrDefault(locale);
-            main.getScheduler().runSyncLater(packet.getPlayer(), () -> languagePlayer.setLang(language), 2L);
+            main.getScheduler().runSyncLater(() -> languagePlayer.setLang(language), 2L);
         }
     }
 
