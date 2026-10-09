@@ -1,6 +1,6 @@
 [versions]
 adventure = "5.2.0"
-asm = "9.10.1"
+asm = "9.11"
 bstats = "3.2.1"
 bungeecord = "1.21-R0.5-SNAPSHOT"
 folia = "26.1.2.build.8-stable"
