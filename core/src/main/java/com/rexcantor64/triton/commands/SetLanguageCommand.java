@@ -46,7 +46,7 @@ public class SetLanguageCommand implements Command {
             return;
         }
 
-        val lang = Triton.get().getLanguageManager().getLanguageByName(langName, false);
+        val lang = (com.rexcantor64.triton.language.Language) Triton.get().getLanguageManager().getLanguageByName(langName, false);
         if (lang == null) {
             sender.sendMessageFormatted("error.lang-not-found", langName);
             return;
@@ -64,9 +64,9 @@ public class SetLanguageCommand implements Command {
         }
 
         if (target.equals(sender.getUUID())) {
-            sender.sendMessageFormatted("success.setlanguage", lang.getDisplayName());
+            sender.sendMessageFormatted("success.setlanguage", lang.getDisplayNameComponent());
         } else {
-            sender.sendMessageFormatted("success.setlanguage-others", args[1], lang.getDisplayName());
+            sender.sendMessageFormatted("success.setlanguage-others", args[1], lang.getDisplayNameComponent());
         }
     }
 

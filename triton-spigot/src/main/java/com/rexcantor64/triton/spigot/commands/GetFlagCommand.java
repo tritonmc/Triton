@@ -37,7 +37,7 @@ public class GetFlagCommand extends com.rexcantor64.triton.commands.GetFlagComma
         Objects.requireNonNull(Bukkit.getPlayer(uuid))
                 .getInventory()
                 .addItem(SpigotTriton.asSpigot().getBannerBuilder().fromLanguage(lang, false));
-        sender.sendMessageFormatted("success.getflag", lang.getDisplayName());
+        sender.sendMessageFormatted("success.getflag", lang.getDisplayNameComponent());
     }
 
 }
