@@ -26,7 +26,7 @@ bstats-velocity = { group = "org.bstats", name = "bstats-velocity", version.ref 
 bungeecord-api = { group = "net.md-5", name = "bungeecord-api", version.ref = "bungeecord" }
 bungeecord-proxy = { group = "net.md-5", name = "bungeecord-proxy", version.ref = "bungeecord" }
 folia = { group = "dev.folia", name = "folia-api", version.ref = "folia" }
-gson = { group = "com.google.code.gson", name = "gson", version = "2.14.0" }
+gson = { group = "com.google.code.gson", name = "gson", version = "2.15.0" }
 guava = { group = "com.google.guava", name = "guava", version = "33.7.2-jre" }
 hikari = { group = "com.zaxxer", name = "HikariCP", version = "7.1.0" }
 jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.3" }
