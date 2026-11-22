@@ -8,6 +8,7 @@ on:
       - v4
       - ci/**
   pull_request:
+  merge_group:
 
 jobs:
   build:
